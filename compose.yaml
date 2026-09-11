@@ -1,0 +1,9 @@
+services:
+  frontend:
+    build:
+      context: .
+      args:
+        API_URL: ${API_URL}
+    image: sotra-frontend:local
+    ports:
+      - "3100:3000"

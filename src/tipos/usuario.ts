@@ -1,33 +1,16 @@
 export type EstadoUsuario = "activo" | "inactivo";
 
-export type Rol = {
-  id: number;
-  codigo: string;
-  nombre: string;
-};
-
 export type Usuario = {
   id: number;
   nombre: string;
   apellido: string;
   correo: string;
   telefono: string;
-  rolId: number;
   estado: EstadoUsuario;
   creadoEn: string;
 };
 
-export type UsuarioListado = {
-  id: number;
-  nombre: string;
-  apellido: string;
-  correo: string;
-  telefono: string;
-  rolId: number;
-  estado: EstadoUsuario;
-  creadoEn: string;
-  nombreRol: string;
-};
+export type UsuarioListado = Usuario;
 
 export type UsuarioDetalle = UsuarioListado;
 
@@ -37,7 +20,6 @@ export type CrearUsuarioInput = {
   correo: string;
   telefono: string;
   contrasenaTemporal: string;
-  rolId: number;
 };
 
 export type ActualizarUsuarioInput = {
@@ -45,5 +27,4 @@ export type ActualizarUsuarioInput = {
   apellido: string;
   correo: string;
   telefono: string;
-  rolId: number;
 };

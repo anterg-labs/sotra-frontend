@@ -122,7 +122,7 @@ export default function PaginaUsuarios() {
                     <strong>{usuario.nombre} {usuario.apellido}</strong>
                   </td>
                   <td>{usuario.correo}</td>
-                  <td>{usuario.nombreRol}</td>
+                  <td>Por definirse</td>
                   <td>
                     <span className={claseEstado}>{obtenerEtiquetaEstado(usuario.estado)}</span>
                   </td>

@@ -2,30 +2,14 @@ import {
   apiActualizarUsuario,
   apiCrearUsuario,
   apiDesactivarUsuario,
-  apiListarRoles,
   apiListarUsuarios,
   apiObtenerUsuario,
 } from "@/servicios/cliente-api";
-import type {
-  ActualizarUsuarioInput,
-  CrearUsuarioInput,
-  Rol,
-  Usuario,
-  UsuarioListado,
-} from "@/tipos/usuario";
+import type { ActualizarUsuarioInput, CrearUsuarioInput } from "@/tipos/usuario";
 
 const patronFormatoCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function convertirAListado(usuario: Usuario, roles: Rol[]): UsuarioListado {
-  const rol = roles.find((rolActual) => rolActual.id === usuario.rolId);
-
-  return {
-    ...usuario,
-    nombreRol: rol?.nombre ?? "Sin rol asignado",
-  };
-}
-
-function validarUsuario(input: CrearUsuarioInput | ActualizarUsuarioInput, roles: Rol[]) {
+function validarUsuario(input: CrearUsuarioInput | ActualizarUsuarioInput) {
   if (!input.nombre.trim()) {
     throw new Error("El nombre es obligatorio.");
   }
@@ -42,33 +26,18 @@ function validarUsuario(input: CrearUsuarioInput | ActualizarUsuarioInput, roles
     throw new Error("El número de teléfono es obligatorio.");
   }
 
-  if (!roles.some((rol) => rol.id === input.rolId)) {
-    throw new Error("El rol seleccionado no es válido.");
-  }
-}
-
-export async function listarRoles() {
-  const roles = await apiListarRoles();
-  return roles;
 }
 
 export async function listarUsuarios() {
-  const usuarios = await apiListarUsuarios();
-  const roles = await listarRoles();
-  return usuarios.map((usuario) => convertirAListado(usuario, roles));
+  return apiListarUsuarios();
 }
 
 export async function obtenerDetalleUsuario(usuarioId: number) {
-  const roles = await listarRoles();
-  const usuario = await apiObtenerUsuario(usuarioId);
-
-  return convertirAListado(usuario, roles);
+  return apiObtenerUsuario(usuarioId);
 }
 
 export async function crearUsuario(input: CrearUsuarioInput) {
-  const roles = await listarRoles();
-
-  validarUsuario(input, roles);
+  validarUsuario(input);
 
   if (!input.contrasenaTemporal.trim()) {
     throw new Error("La contraseña temporal es obligatoria.");
@@ -78,9 +47,7 @@ export async function crearUsuario(input: CrearUsuarioInput) {
 }
 
 export async function actualizarUsuario(usuarioId: number, input: ActualizarUsuarioInput) {
-  const roles = await listarRoles();
-
-  validarUsuario(input, roles);
+  validarUsuario(input);
   return apiActualizarUsuario(usuarioId, input);
 }
 

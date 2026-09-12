@@ -1,9 +1,76 @@
+# Mantenemos esto hasta que pruebes lo nuevo. Recuerda que es una sugerencia
+# services:
+#   frontend:
+#     build:
+#       context: .
+#       args:
+#         API_URL: ${API_URL}
+#     image: sotra-frontend:local
+#     ports:
+#       - "3100:3000"
+
 services:
-  frontend:
+  sotra-frontend-prod: #renombre el servicio y cada uno esta pensado para diferente enfoque
     build:
       context: .
-      args:
-        API_URL: ${API_URL}
-    image: sotra-frontend:local
+      dockerfile: Dockerfile
+      args: 
+        API_URL: ${API_URL} # mantuve esto de lo tuyo
+    image: sotra-frontend:prod
+    container_name: sotra-frontend-prod
     ports:
-      - "3100:3000"
+      - "3100:3000" # mantuve tu puerto 3100
+
+# este servicio es que refleja cambios automaticos dentro del container
+  sotra-frontend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: sotra-frontend:dev
+    container_name: sotra-frontend-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - WATCHPACK_POLLING=true
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - node_modules/
+            - .next/
+        - action: rebuild
+          path: package.json
+
+# este es por su qures correr unicamente los unitest dentro del contendor y ta, solo hace eso
+  sotra-frontend-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: sotra-frontend:dev
+    container_name: sotra-frontend-test
+    command:
+      [
+        "sh",
+        "-c",
+        "npm run test:run 2>/dev/null || npm run test -- --run",
+      ]
+    profiles:
+      - tools
+
+# este es por su qures correr unicamente los lints dentro del contendor y solo hace eso
+  sotra-frontend-lint:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: sotra-frontend:dev
+    container_name: sotra-frontend-lint
+    command:
+      [
+        "sh",
+        "-c",
+        "npm run lint",
+      ]
+    profiles:
+      - tools

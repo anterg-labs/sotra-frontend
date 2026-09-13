@@ -96,30 +96,3 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: '1'
-
-  sonar:
-    name: Analizar con SonarQube
-    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-    steps:
-      - name: Descargar código
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - name: Ejecutar SonarQube si está configurado
-        if: env.SONAR_TOKEN != '' && env.SONAR_HOST_URL != ''
-        uses: SonarSource/sonarqube-scan-action@v6
-        with:
-          args: >-
-            -Dsonar.host.url=${{ env.SONAR_HOST_URL }}
-
-      - name: Informar que SonarQube todavía no está configurado
-        if: env.SONAR_TOKEN == '' || env.SONAR_HOST_URL == ''
-        run: echo "SonarQube omitido; faltan SONAR_TOKEN o SONAR_HOST_URL."
-

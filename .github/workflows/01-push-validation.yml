@@ -1,0 +1,53 @@
+name: Validación rápida del frontend
+
+on:
+  push:
+    branches-ignore:
+      - main
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-push-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, tipos, pruebas y compilación
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v7
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Revisar código
+        run: npm run lint
+
+      - name: Revisar tipos
+        run: npm run type-check
+
+      # Mientras el proyecto no tenga script "test", este paso no falla.
+      # Cuando las pruebas estén listas, cambiar a: npm test
+      - name: Ejecutar pruebas unitarias disponibles
+        run: npm run test --if-present
+        env:
+          CI: true
+
+      - name: Compilar frontend
+        run: npm run build
+        env:
+          API_URL: http://localhost:5000
+

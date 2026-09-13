@@ -40,10 +40,10 @@ jobs:
       - name: Revisar tipos
         run: npm run type-check
 
-      - name: Ejecutar pruebas unitarias disponibles
-        run: npm run test --if-present
-        env:
-          CI: true
+      # - name: Ejecutar pruebas unitarias disponibles
+      #   run: npm run test --if-present
+      #   env:
+      #     CI: true
 
       - name: Generar cobertura si está configurada
         run: npm run test:coverage --if-present

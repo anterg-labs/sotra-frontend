@@ -15,5 +15,16 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: resolve(import.meta.dirname, "vitest.setup.ts"),
     globals: true,
+
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html", "lcov"],
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: [
+        "src/**/*.d.ts",
+        "src/**/*.test.{ts,tsx}",
+        "src/**/*.spec.{ts,tsx}",
+      ],
+    },
   },
 });

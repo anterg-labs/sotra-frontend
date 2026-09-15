@@ -73,10 +73,17 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Instalar Gitleaks
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/gitleaks/gitleaks/master/scripts/install.sh \
+            | sh -s -- -b /usr/local/bin v8.30.1
+
       - name: Ejecutar Gitleaks
-        uses: gitleaks/gitleaks-action@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gitleaks detect \
+            --source . \
+            --redact \
+            --verbose
 
   trivy:
     name: Analizar dependencias y archivos

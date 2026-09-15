@@ -16,7 +16,7 @@ services:
       dockerfile: Dockerfile
       args: 
         API_URL: ${API_URL} # mantuve esto de lo tuyo
-    image: sotra-frontend:prod
+    image: ${IMAGE_NAME}:${IMAGE_TAG}
     container_name: sotra-frontend-prod
     ports:
       - "3100:3000" # mantuve tu puerto 3100

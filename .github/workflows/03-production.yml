@@ -115,7 +115,9 @@ jobs:
           IMAGE_TAG: ${{ needs.publish.outputs.version }}
         run: |
           ssh -i ~/.ssh/id_ed25519 "$VPS_USER@$VPS_HOST" \
-            "cd '$VPS_APP_PATH' && IMAGE_NAME='$IMAGE_NAME' IMAGE_TAG='$IMAGE_TAG' docker compose pull frontend && IMAGE_NAME='$IMAGE_NAME' IMAGE_TAG='$IMAGE_TAG' docker compose up -d --no-deps frontend"
+            "cd '$VPS_APP_PATH' && \
+            IMAGE_NAME='$IMAGE_NAME' IMAGE_TAG='$IMAGE_TAG' docker compose --env-file .env.production -f compose.production.yml pull sotra-frontend-prod && \
+            IMAGE_NAME='$IMAGE_NAME' IMAGE_TAG='$IMAGE_TAG' docker compose --env-file .env.production -f compose.production.yml up -d --no-deps sotra-frontend-prod"
 
       - name: Ejecutar smoke test
         if: vars.PRODUCTION_URL != ''

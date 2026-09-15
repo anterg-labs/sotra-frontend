@@ -26,6 +26,9 @@ COPY --from=dependencies /app/node_modules ./node_modules
 # Copy application source code
 COPY . .
 
+ARG API_URL
+ENV API_URL=$API_URL
+
 ENV NODE_ENV=production
 
 RUN npm run build

@@ -1,0 +1,98 @@
+name: Validación QA del frontend
+
+on:
+  pull_request:
+    branches:
+      - dev
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-qa-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Calidad, pruebas y compilación
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v7
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Revisar código
+        run: npm run lint
+
+      - name: Revisar tipos
+        run: npm run type-check
+
+      # - name: Ejecutar pruebas unitarias disponibles
+      #   run: npm run test --if-present
+      #   env:
+      #     CI: true
+
+      - name: Generar cobertura si está configurada
+        run: npm run test:coverage --if-present
+        env:
+          CI: true
+
+      - name: Ejecutar pruebas de integración si están configuradas
+        run: npm run test:integration --if-present
+        env:
+          CI: true
+          API_URL: http://localhost:5000
+
+      - name: Compilar frontend
+        run: npm run build
+        env:
+          API_URL: http://localhost:5000
+
+  gitleaks:
+    name: Detectar secretos expuestos
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Descargar historial del repositorio
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Ejecutar Gitleaks
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  trivy:
+    name: Analizar dependencias y archivos
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v7
+
+      - name: Ejecutar Trivy
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'

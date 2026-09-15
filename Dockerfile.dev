@@ -1,0 +1,27 @@
+# ============================================
+# Development Dockerfile for Next.js
+# ============================================
+ARG NODE_VERSION=26-slim
+
+FROM node:${NODE_VERSION} AS dev
+
+WORKDIR /app
+
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
+
+RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=cache,target=/usr/local/share/.cache/yarn \
+    --mount=type=cache,target=/root/.local/share/pnpm/store \
+    npm ci --no-audit --no-fund
+
+COPY . .
+
+ENV WATCHPACK_POLLING=true
+ENV HOSTNAME="0.0.0.0"
+
+RUN chown -R node:node /app
+USER node
+
+EXPOSE 3000
+
+CMD ["sh", "-c", "npm run dev"]

@@ -1,4 +1,4 @@
-FROM dhi.io/node:26-alpine-sfw-dev AS dependencies
+FROM node:26-alpine AS dependencies
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/root/.npm \
 # Stage 2: Build Next.js application in standalone mode
 # ============================================
 
-FROM dhi.io/node:26-alpine-sfw-dev AS builder
+FROM node:26-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -37,7 +37,7 @@ RUN npm run build
 # Stage 3: Run Next.js application
 # ============================================
 
-FROM dhi.io/node:26-alpine-sfw-dev AS runner
+FROM node:26-alpine AS runner
 
 # Set working directory
 WORKDIR /app

@@ -14,12 +14,12 @@ RUN --mount=type=cache,target=/root/.npm \
     --mount=type=cache,target=/root/.local/share/pnpm/store \
     npm ci --no-audit --no-fund
 
-COPY . .
+COPY --chown=node:node . .
 
 ENV WATCHPACK_POLLING=true
 ENV HOSTNAME="0.0.0.0"
 
-RUN chown -R node:node /app
+RUN chown node:node /app
 USER node
 
 EXPOSE 3000

@@ -2,6 +2,7 @@ import {
   apiActualizarUsuario,
   apiCrearUsuario,
   apiDesactivarUsuario,
+  apiListarRoles,
   apiListarUsuarios,
   apiObtenerUsuario,
 } from "@/servicios/cliente-api";
@@ -32,6 +33,10 @@ export async function listarUsuarios() {
   return apiListarUsuarios();
 }
 
+export async function listarRoles() {
+  return apiListarRoles();
+}
+
 export async function obtenerDetalleUsuario(usuarioId: number) {
   return apiObtenerUsuario(usuarioId);
 }
@@ -41,6 +46,10 @@ export async function crearUsuario(input: CrearUsuarioInput) {
 
   if (!input.contrasenaTemporal.trim()) {
     throw new Error("La contraseña temporal es obligatoria.");
+  }
+
+  if (input.rolId <= 0) {
+    throw new Error("El rol es obligatorio.");
   }
 
   return apiCrearUsuario(input);

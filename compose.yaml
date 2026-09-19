@@ -32,7 +32,7 @@ services:
       - "3000:3000"
     environment:
       - WATCHPACK_POLLING=true
-      - API_URL=http://localhost:8080
+      - API_URL=http://localhost:8081
     develop:
       watch:
         - action: sync

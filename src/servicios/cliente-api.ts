@@ -1,5 +1,5 @@
 import type { ActualizarClienteInput, Cliente, CrearClienteInput } from "@/tipos/cliente";
-import type { ActualizarUsuarioInput, CrearUsuarioInput, Usuario } from "@/tipos/usuario";
+import type { ActualizarUsuarioInput, CrearUsuarioInput, Rol, Usuario } from "@/tipos/usuario";
 
 function obtenerUrlBaseApi(): string {
   const urlBaseApi = process.env.API_URL;
@@ -81,6 +81,15 @@ export async function apiListarUsuarios() {
 
   const usuarios = await respuesta.json();
   return usuarios as Usuario[];
+}
+
+export async function apiListarRoles() {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/roles", { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener el listado de roles.");
+
+  const roles = await respuesta.json();
+  return roles as Rol[];
 }
 
 export async function apiObtenerUsuario(usuarioId: number) {

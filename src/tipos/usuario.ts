@@ -1,11 +1,17 @@
 export type EstadoUsuario = "activo" | "inactivo";
 
+export type Rol = {
+  id: number;
+  nombre: string;
+};
+
 export type Usuario = {
   id: number;
   nombre: string;
   apellido: string;
   correo: string;
   telefono: string;
+  rolId: number;
   estado: EstadoUsuario;
   creadoEn: string;
 };
@@ -19,6 +25,7 @@ export type CrearUsuarioInput = {
   apellido: string;
   correo: string;
   telefono: string;
+  rolId: number;
   contrasenaTemporal: string;
 };
 

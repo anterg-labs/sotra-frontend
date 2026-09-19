@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { ActualizarUsuarioInput, CrearUsuarioInput, Usuario } from "@/tipos/usuario";
+import type { ActualizarUsuarioInput, CrearUsuarioInput, Rol, Usuario } from "@/tipos/usuario";
 
 type PropiedadesFormularioUsuario = {
   usuarioInicial?: ActualizarUsuarioInput;
@@ -11,6 +11,7 @@ type PropiedadesFormularioUsuario = {
   etiquetaConfirmacion: string;
   rutaCancelar: string;
   rutaExito: string;
+  roles?: Rol[];
   alEnviar: (usuario: CrearUsuarioInput) => Promise<Usuario>;
 };
 
@@ -23,6 +24,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   const etiquetaConfirmacion = props.etiquetaConfirmacion;
   const rutaCancelar = props.rutaCancelar;
   const rutaExito = props.rutaExito;
+  const roles = props.roles;
   const alEnviar = props.alEnviar;
 
   let nombreInicial = "";
@@ -42,6 +44,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   const [correo, setCorreo] = useState(correoInicial);
   const [telefono, setTelefono] = useState(telefonoInicial);
   const [contrasenaTemporal, setContrasenaTemporal] = useState("");
+  const [rolId, setRolId] = useState(0);
   const [errorGeneral, setErrorGeneral] = useState("");
   const [estaEnviando, setEstaEnviando] = useState(false);
 
@@ -65,6 +68,10 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
     setContrasenaTemporal(evento.target.value);
   }
 
+  function cambiarRol(evento: React.ChangeEvent<HTMLSelectElement>) {
+    setRolId(Number(evento.target.value));
+  }
+
   async function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     setErrorGeneral("");
@@ -75,6 +82,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
       apellido,
       correo,
       telefono,
+      rolId,
       contrasenaTemporal,
     };
 
@@ -105,6 +113,21 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
           type="password"
           value={contrasenaTemporal}
         />
+      </div>
+    );
+  }
+
+  let campoRol = null;
+  if (roles) {
+    campoRol = (
+      <div className="form-field">
+        <label htmlFor="rolId">Rol</label>
+        <select id="rolId" onChange={cambiarRol} required value={rolId}>
+          <option disabled value={0}>Seleccioná un rol</option>
+          {roles.map((rol) => (
+            <option key={rol.id} value={rol.id}>{rol.nombre}</option>
+          ))}
+        </select>
       </div>
     );
   }
@@ -140,12 +163,13 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
         </div>
 
         {campoContrasenaTemporal}
+        {campoRol}
 
       </div>
 
       <div className="form-actions">
         <Link className="secondary-button" href={rutaCancelar}>
-          Cancelar (cambio de prueba despliegue a prod)
+          Cancelar
         </Link>
         <button className="primary-button" disabled={estaEnviando} type="submit">
           {textoBoton}

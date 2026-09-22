@@ -44,7 +44,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   const [correo, setCorreo] = useState(correoInicial);
   const [telefono, setTelefono] = useState(telefonoInicial);
   const [contrasenaTemporal, setContrasenaTemporal] = useState("");
-  const [rolId, setRolId] = useState(0);
+  const [rolId, setRolId] = useState("");
   const [errorGeneral, setErrorGeneral] = useState("");
   const [estaEnviando, setEstaEnviando] = useState(false);
 
@@ -69,7 +69,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   }
 
   function cambiarRol(evento: React.ChangeEvent<HTMLSelectElement>) {
-    setRolId(Number(evento.target.value));
+    setRolId(evento.target.value);
   }
 
   async function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
@@ -82,7 +82,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
       apellido,
       correo,
       telefono,
-      rolId,
+      rolId: Number(rolId),
       contrasenaTemporal,
     };
 
@@ -108,6 +108,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
         <label htmlFor="contrasenaTemporal">Contraseña temporal</label>
         <input
           id="contrasenaTemporal"
+          maxLength={255}
           onChange={cambiarContrasenaTemporal}
           required
           type="password"
@@ -123,7 +124,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
       <div className="form-field">
         <label htmlFor="rolId">Rol</label>
         <select id="rolId" onChange={cambiarRol} required value={rolId}>
-          <option disabled value={0}>Seleccioná un rol</option>
+          <option disabled value="">Seleccioná un rol</option>
           {roles.map((rol) => (
             <option key={rol.id} value={rol.id}>{rol.nombre}</option>
           ))}
@@ -144,22 +145,22 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
       <div className="form-grid">
         <div className="form-field">
           <label htmlFor="nombre">Nombre</label>
-          <input id="nombre" onChange={cambiarNombre} required type="text" value={nombre} />
+          <input id="nombre" maxLength={100} onChange={cambiarNombre} required type="text" value={nombre} />
         </div>
 
         <div className="form-field">
           <label htmlFor="apellido">Apellido</label>
-          <input id="apellido" onChange={cambiarApellido} required type="text" value={apellido} />
+          <input id="apellido" maxLength={100} onChange={cambiarApellido} required type="text" value={apellido} />
         </div>
 
         <div className="form-field">
           <label htmlFor="correo">Correo electrónico</label>
-          <input id="correo" onChange={cambiarCorreo} required type="email" value={correo} />
+          <input id="correo" maxLength={254} onChange={cambiarCorreo} required type="email" value={correo} />
         </div>
 
         <div className="form-field">
           <label htmlFor="telefono">Número de teléfono</label>
-          <input id="telefono" onChange={cambiarTelefono} required type="tel" value={telefono} />
+          <input id="telefono" maxLength={30} onChange={cambiarTelefono} required type="tel" value={telefono} />
         </div>
 
         {campoContrasenaTemporal}

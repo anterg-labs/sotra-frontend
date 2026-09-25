@@ -1,3 +1,4 @@
+import type { DocumentoTecnico } from "@/tipos/documento-tecnico";
 import type { ActualizarActivoInput, Activo, CrearActivoInput } from "@/tipos/activo";
 import type { ActualizarClienteInput, Cliente, CrearClienteInput } from "@/tipos/cliente";
 import type { ActualizarUsuarioInput, CrearUsuarioInput, Rol, Usuario } from "@/tipos/usuario";
@@ -196,4 +197,45 @@ export async function apiDesactivarActivo(activoId: number) {
 
   const activoActualizado = await respuesta.json();
   return activoActualizado as Activo;
+}
+
+export async function apiListarDocumentosTecnicos() {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/documentos-tecnicos", { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener el listado de documentos técnicos.");
+
+  const documentos = await respuesta.json();
+  return documentos as DocumentoTecnico[];
+}
+
+export async function apiCrearDocumentoTecnico(archivo: File, activoId: number | null, usaSugerenciasIA: boolean) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const datosFormulario = new FormData();
+  datosFormulario.append("archivo", archivo);
+  datosFormulario.append("usaSugerenciasIA", String(usaSugerenciasIA));
+  if (activoId !== null) {
+    datosFormulario.append("activoId", String(activoId));
+  }
+
+  const respuesta = await fetch(urlBaseApi + "/api/v1/documentos-tecnicos", {
+    method: "POST",
+    body: datosFormulario,
+  });
+  verificarRespuesta(respuesta, "No se pudo guardar el documento técnico.");
+
+  const documentoCreado = await respuesta.json();
+  return documentoCreado as DocumentoTecnico;
+}
+
+export function apiObtenerUrlDescargaDocumentoTecnico(documentoId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  return urlBaseApi + "/api/v1/documentos-tecnicos/" + documentoId + "/archivo";
+}
+
+export async function apiEliminarDocumentoTecnico(documentoId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/documentos-tecnicos/" + documentoId, {
+    method: "DELETE",
+  });
+  verificarRespuesta(respuesta, "No se pudo eliminar el documento técnico.");
 }

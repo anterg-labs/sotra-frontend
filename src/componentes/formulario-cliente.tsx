@@ -77,8 +77,8 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
     };
 
     try {
-      const clienteGuardado = await alEnviar(clienteParaGuardar);
-      enrutador.push("/clientes/" + clienteGuardado.id);
+      await alEnviar(clienteParaGuardar);
+      enrutador.push("/clientes");
     } catch {
       setErrorGeneral("No se pudo guardar la información del cliente.");
     } finally {
@@ -88,7 +88,7 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
 
   let mensajeError = null;
   if (errorGeneral) {
-    mensajeError = <p className="form-error-banner !mx-0 !mt-0 !mb-5">{errorGeneral}</p>;
+    mensajeError = <p className="form-error-banner">{errorGeneral}</p>;
   }
 
   let textoBoton = etiquetaConfirmacion;

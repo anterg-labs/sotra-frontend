@@ -209,6 +209,11 @@ h2 {
   font-size: 13px;
 }
 
+.form-panel .form-error-banner,
+.detail-panel .form-error-banner {
+  margin: 0 0 20px;
+}
+
 .table-actions {
   display: flex;
   align-items: center;

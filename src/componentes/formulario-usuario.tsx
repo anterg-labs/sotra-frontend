@@ -7,7 +7,7 @@ import type { ActualizarUsuarioInput, CrearUsuarioInput, Rol, Usuario } from "@/
 
 type PropiedadesFormularioUsuario = {
   usuarioInicial?: ActualizarUsuarioInput;
-  solicitarContrasenaTemporal?: boolean;
+  solicitarContrasena?: boolean;
   etiquetaConfirmacion: string;
   rutaCancelar: string;
   rutaExito: string;
@@ -17,9 +17,9 @@ type PropiedadesFormularioUsuario = {
 
 export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   const usuarioInicial = props.usuarioInicial;
-  let solicitarContrasenaTemporal = props.solicitarContrasenaTemporal;
-  if (solicitarContrasenaTemporal === undefined) {
-    solicitarContrasenaTemporal = false;
+  let solicitarContrasena = props.solicitarContrasena;
+  if (solicitarContrasena === undefined) {
+    solicitarContrasena = false;
   }
   const etiquetaConfirmacion = props.etiquetaConfirmacion;
   const rutaCancelar = props.rutaCancelar;
@@ -31,11 +31,13 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   let apellidoInicial = "";
   let correoInicial = "";
   let telefonoInicial = "";
+  let idsRolIniciales: number[] = [];
   if (usuarioInicial) {
     nombreInicial = usuarioInicial.nombre;
     apellidoInicial = usuarioInicial.apellido;
     correoInicial = usuarioInicial.correo;
     telefonoInicial = usuarioInicial.telefono;
+    idsRolIniciales = usuarioInicial.idsRol;
   }
 
   const enrutador = useRouter();
@@ -43,8 +45,8 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   const [apellido, setApellido] = useState(apellidoInicial);
   const [correo, setCorreo] = useState(correoInicial);
   const [telefono, setTelefono] = useState(telefonoInicial);
-  const [contrasenaTemporal, setContrasenaTemporal] = useState("");
-  const [rolId, setRolId] = useState("");
+  const [contrasena, setContrasena] = useState("");
+  const [idsRolSeleccionados, setIdsRolSeleccionados] = useState<number[]>(idsRolIniciales);
   const [errorGeneral, setErrorGeneral] = useState("");
   const [estaEnviando, setEstaEnviando] = useState(false);
 
@@ -64,12 +66,28 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
     setTelefono(evento.target.value);
   }
 
-  function cambiarContrasenaTemporal(evento: React.ChangeEvent<HTMLInputElement>) {
-    setContrasenaTemporal(evento.target.value);
+  function cambiarContrasena(evento: React.ChangeEvent<HTMLInputElement>) {
+    setContrasena(evento.target.value);
   }
 
-  function cambiarRol(evento: React.ChangeEvent<HTMLSelectElement>) {
-    setRolId(evento.target.value);
+  function cambiarRol(evento: React.ChangeEvent<HTMLInputElement>) {
+    const rolIdCambiado = Number(evento.target.value);
+    const nuevosIdsRol: number[] = [];
+
+    if (evento.target.checked) {
+      for (const rolIdSeleccionado of idsRolSeleccionados) {
+        nuevosIdsRol.push(rolIdSeleccionado);
+      }
+      nuevosIdsRol.push(rolIdCambiado);
+    } else {
+      for (const rolIdSeleccionado of idsRolSeleccionados) {
+        if (rolIdSeleccionado !== rolIdCambiado) {
+          nuevosIdsRol.push(rolIdSeleccionado);
+        }
+      }
+    }
+
+    setIdsRolSeleccionados(nuevosIdsRol);
   }
 
   async function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
@@ -82,8 +100,8 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
       apellido,
       correo,
       telefono,
-      rolId: Number(rolId),
-      contrasenaTemporal,
+      idsRol: idsRolSeleccionados,
+      contrasena,
     };
 
     try {
@@ -98,21 +116,21 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
 
   let mensajeError = null;
   if (errorGeneral) {
-    mensajeError = <p className="form-error-banner !mx-0 !mt-0 !mb-5">{errorGeneral}</p>;
+    mensajeError = <p className="form-error-banner">{errorGeneral}</p>;
   }
 
-  let campoContrasenaTemporal = null;
-  if (solicitarContrasenaTemporal) {
-    campoContrasenaTemporal = (
+  let campoContrasena = null;
+  if (solicitarContrasena) {
+    campoContrasena = (
       <div className="form-field">
-        <label htmlFor="contrasenaTemporal">Contraseña temporal</label>
+        <label htmlFor="contrasena">Contraseña</label>
         <input
-          id="contrasenaTemporal"
+          id="contrasena"
           maxLength={255}
-          onChange={cambiarContrasenaTemporal}
+          onChange={cambiarContrasena}
           required
           type="password"
-          value={contrasenaTemporal}
+          value={contrasena}
         />
       </div>
     );
@@ -122,13 +140,19 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   if (roles) {
     campoRol = (
       <div className="form-field">
-        <label htmlFor="rolId">Rol</label>
-        <select id="rolId" onChange={cambiarRol} required value={rolId}>
-          <option disabled value="">Seleccioná un rol</option>
-          {roles.map((rol) => (
-            <option key={rol.id} value={rol.id}>{rol.nombre}</option>
-          ))}
-        </select>
+        <label>Roles</label>
+        {roles.map((rol) => (
+          <div key={rol.id}>
+            <input
+              checked={idsRolSeleccionados.includes(rol.id)}
+              id={"rol-" + rol.id}
+              onChange={cambiarRol}
+              type="checkbox"
+              value={rol.id}
+            />
+            <label htmlFor={"rol-" + rol.id}> {rol.nombre}</label>
+          </div>
+        ))}
       </div>
     );
   }
@@ -163,7 +187,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
           <input id="telefono" maxLength={30} onChange={cambiarTelefono} required type="tel" value={telefono} />
         </div>
 
-        {campoContrasenaTemporal}
+        {campoContrasena}
         {campoRol}
 
       </div>

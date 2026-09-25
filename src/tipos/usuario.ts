@@ -5,13 +5,19 @@ export type Rol = {
   nombre: string;
 };
 
+export type RolDeUsuario = {
+  id: number;
+  nombre: string;
+  activo: boolean;
+};
+
 export type Usuario = {
   id: number;
   nombre: string;
   apellido: string;
   correo: string;
   telefono: string;
-  rolId: number;
+  roles: RolDeUsuario[];
   estado: EstadoUsuario;
   creadoEn: string;
 };
@@ -25,8 +31,8 @@ export type CrearUsuarioInput = {
   apellido: string;
   correo: string;
   telefono: string;
-  rolId: number;
-  contrasenaTemporal: string;
+  idsRol: number[];
+  contrasena: string;
 };
 
 export type ActualizarUsuarioInput = {
@@ -34,4 +40,5 @@ export type ActualizarUsuarioInput = {
   apellido: string;
   correo: string;
   telefono: string;
+  idsRol: number[];
 };

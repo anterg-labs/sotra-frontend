@@ -11,6 +11,10 @@ import type { ActualizarUsuarioInput, CrearUsuarioInput } from "@/tipos/usuario"
 const patronFormatoCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function validarUsuario(input: CrearUsuarioInput | ActualizarUsuarioInput) {
+  if (input.idsRol.length === 0) {
+    throw new Error("Debe seleccionar al menos un rol.");
+  }
+
   if (!input.nombre.trim()) {
     throw new Error("El nombre es obligatorio.");
   }
@@ -44,12 +48,8 @@ export async function obtenerDetalleUsuario(usuarioId: number) {
 export async function crearUsuario(input: CrearUsuarioInput) {
   validarUsuario(input);
 
-  if (!input.contrasenaTemporal.trim()) {
-    throw new Error("La contraseña temporal es obligatoria.");
-  }
-
-  if (input.rolId <= 0) {
-    throw new Error("El rol es obligatorio.");
+  if (!input.contrasena.trim()) {
+    throw new Error("La contraseña es obligatoria.");
   }
 
   return apiCrearUsuario(input);

@@ -44,7 +44,7 @@ export default function PaginaNuevoUsuario() {
         roles={roles}
         rutaCancelar="/usuarios"
         rutaExito="/usuarios"
-        solicitarContrasenaTemporal
+        solicitarContrasena
       />
     );
   }
@@ -56,7 +56,7 @@ export default function PaginaNuevoUsuario() {
           <p className="eyebrow">Gestión de usuarios</p>
           <h1>Crear nuevo usuario</h1>
           <p className="page-description">
-            Registrá un usuario interno indicando sus datos de contacto, contraseña temporal y rol.
+            Registrá un usuario interno indicando sus datos de contacto, contraseña y roles.
           </p>
         </div>
         <Link className="text-link" href="/usuarios">

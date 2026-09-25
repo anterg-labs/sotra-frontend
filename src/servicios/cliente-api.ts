@@ -1,3 +1,4 @@
+import type { ActualizarActivoInput, Activo, CrearActivoInput } from "@/tipos/activo";
 import type { ActualizarClienteInput, Cliente, CrearClienteInput } from "@/tipos/cliente";
 import type { ActualizarUsuarioInput, CrearUsuarioInput, Rol, Usuario } from "@/tipos/usuario";
 
@@ -138,4 +139,61 @@ export async function apiDesactivarUsuario(usuarioId: number) {
 
   const usuarioActualizado = await respuesta.json();
   return usuarioActualizado as Usuario;
+}
+
+export async function apiListarActivos() {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/activos", { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener el listado de activos.");
+
+  const activos = await respuesta.json();
+  return activos as Activo[];
+}
+
+export async function apiObtenerActivo(activoId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/activos/" + activoId, { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener el activo solicitado.");
+
+  const activo = await respuesta.json();
+  return activo as Activo;
+}
+
+export async function apiCrearActivo(activo: CrearActivoInput) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/activos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(activo),
+  });
+  verificarRespuesta(respuesta, "No se pudo crear el activo.");
+
+  const activoCreado = await respuesta.json();
+  return activoCreado as Activo;
+}
+
+export async function apiActualizarActivo(activoId: number, activo: ActualizarActivoInput) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/activos/" + activoId, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(activo),
+  });
+  verificarRespuesta(respuesta, "No se pudo actualizar el activo.");
+
+  const activoActualizado = await respuesta.json();
+  return activoActualizado as Activo;
+}
+
+export async function apiDesactivarActivo(activoId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/activos/" + activoId, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ estado: "inactivo" }),
+  });
+  verificarRespuesta(respuesta, "No se pudo desactivar el activo.");
+
+  const activoActualizado = await respuesta.json();
+  return activoActualizado as Activo;
 }

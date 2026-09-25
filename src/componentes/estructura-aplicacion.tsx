@@ -8,6 +8,7 @@ import { useState } from "react";
 const enlacesNavegacion = [
   { ruta: "/usuarios", etiqueta: "Usuarios", simbolo: "US" },
   { ruta: "/clientes", etiqueta: "Clientes", simbolo: "CL" },
+  { ruta: "/activos", etiqueta: "Activos", simbolo: "AC" },
 ];
 
 type EstructuraAplicacionProps = {

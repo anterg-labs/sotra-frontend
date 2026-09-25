@@ -4,20 +4,23 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FormularioUsuario } from "@/componentes/formulario-usuario";
-import { actualizarUsuario, obtenerDetalleUsuario } from "@/servicios/servicio-usuarios";
-import type { CrearUsuarioInput, UsuarioDetalle } from "@/tipos/usuario";
+import { actualizarUsuario, listarRoles, obtenerDetalleUsuario } from "@/servicios/servicio-usuarios";
+import type { CrearUsuarioInput, Rol, UsuarioDetalle } from "@/tipos/usuario";
 
 export default function PaginaEditarUsuario() {
   const parametros = useParams<{ id: string }>();
   const usuarioId = Number(parametros.id);
   const [usuario, setUsuario] = useState<UsuarioDetalle | null>(null);
+  const [roles, setRoles] = useState<Rol[] | null>(null);
   const [errorCarga, setErrorCarga] = useState("");
 
   useEffect(() => {
     async function cargarDatosFormulario() {
       try {
         const usuarioObtenido = await obtenerDetalleUsuario(usuarioId);
+        const rolesObtenidos = await listarRoles();
         setUsuario(usuarioObtenido);
+        setRoles(rolesObtenidos);
       } catch {
         setErrorCarga("No se pudo obtener la información del usuario solicitado.");
       }
@@ -34,6 +37,7 @@ export default function PaginaEditarUsuario() {
       apellido: usuario.apellido,
       correo: usuario.correo,
       telefono: usuario.telefono,
+      idsRol: usuario.idsRol,
     });
   }
 
@@ -43,20 +47,34 @@ export default function PaginaEditarUsuario() {
   }
 
   let mensajeCargando = null;
-  if (!usuario && !errorCarga) {
+  if ((!usuario || !roles) && !errorCarga) {
     mensajeCargando = <p className="empty-state">Cargando información del usuario…</p>;
   }
 
   let formulario = null;
-  if (usuario) {
+  if (usuario && roles) {
+    const idsRolDelUsuario: number[] = [];
+    for (const rolDelUsuario of usuario.roles) {
+      idsRolDelUsuario.push(rolDelUsuario.id);
+    }
+
+    const usuarioInicial = {
+      nombre: usuario.nombre,
+      apellido: usuario.apellido,
+      correo: usuario.correo,
+      telefono: usuario.telefono,
+      idsRol: idsRolDelUsuario,
+    };
+
     formulario = (
       <section className="panel form-panel">
         <FormularioUsuario
           alEnviar={guardarUsuario}
           etiquetaConfirmacion="Confirmar modificación"
+          roles={roles}
           rutaCancelar={rutaListado}
           rutaExito={rutaListado}
-          usuarioInicial={usuario}
+          usuarioInicial={usuarioInicial}
         />
       </section>
     );

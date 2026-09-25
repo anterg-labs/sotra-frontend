@@ -88,7 +88,7 @@ export default function PaginaUsuarios() {
             <tr>
               <th>Nombre y apellido</th>
               <th>Correo electrónico</th>
-              <th>Rol asignado</th>
+              <th>Roles asignados</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
@@ -116,13 +116,30 @@ export default function PaginaUsuarios() {
                 );
               }
 
+              let celdaRoles = <span>Sin roles</span>;
+              if (usuario.roles.length === 1) {
+                celdaRoles = <span>{usuario.roles[0].nombre}</span>;
+              }
+              if (usuario.roles.length > 1) {
+                celdaRoles = (
+                  <details>
+                    <summary className="cursor-pointer">{usuario.roles.length} roles</summary>
+                    <ul>
+                      {usuario.roles.map((rol) => (
+                        <li key={rol.id}>{rol.nombre}</li>
+                      ))}
+                    </ul>
+                  </details>
+                );
+              }
+
               return (
                 <tr key={usuario.id}>
                   <td>
                     <strong>{usuario.nombre} {usuario.apellido}</strong>
                   </td>
                   <td>{usuario.correo}</td>
-                  <td>Por definirse</td>
+                  <td>{celdaRoles}</td>
                   <td>
                     <span className={claseEstado}>{obtenerEtiquetaEstado(usuario.estado)}</span>
                   </td>

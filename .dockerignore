@@ -109,3 +109,6 @@ Jenkinsfile
 ehthumbs.db
 Thumbs.db
 Desktop.ini
+
+
+*.txt

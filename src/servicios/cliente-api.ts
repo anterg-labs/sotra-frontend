@@ -1,5 +1,13 @@
+import type { DocumentoTecnico } from "@/tipos/documento-tecnico";
+import type { ActualizarActivoInput, Activo, CrearActivoInput } from "@/tipos/activo";
 import type { ActualizarClienteInput, Cliente, CrearClienteInput } from "@/tipos/cliente";
-import type { ActualizarUsuarioInput, CrearUsuarioInput, Usuario } from "@/tipos/usuario";
+import type {
+  ActualizarOrdenTrabajoInput,
+  CrearOrdenTrabajoInput,
+  EstadoOrdenTrabajo,
+  OrdenTrabajo,
+} from "@/tipos/orden-trabajo";
+import type { ActualizarUsuarioInput, CrearUsuarioInput, Rol, Usuario } from "@/tipos/usuario";
 
 function obtenerUrlBaseApi(): string {
   const urlBaseApi = process.env.API_URL;
@@ -83,6 +91,15 @@ export async function apiListarUsuarios() {
   return usuarios as Usuario[];
 }
 
+export async function apiListarRoles() {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/roles", { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener el listado de roles.");
+
+  const roles = await respuesta.json();
+  return roles as Rol[];
+}
+
 export async function apiObtenerUsuario(usuarioId: number) {
   const urlBaseApi = obtenerUrlBaseApi();
   const respuesta = await fetch(urlBaseApi + "/api/v1/usuarios/" + usuarioId, { cache: "no-store" });
@@ -129,4 +146,170 @@ export async function apiDesactivarUsuario(usuarioId: number) {
 
   const usuarioActualizado = await respuesta.json();
   return usuarioActualizado as Usuario;
+}
+
+export async function apiListarActivos() {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/activos", { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener el listado de activos.");
+
+  const activos = await respuesta.json();
+  return activos as Activo[];
+}
+
+export async function apiObtenerActivo(activoId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/activos/" + activoId, { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener el activo solicitado.");
+
+  const activo = await respuesta.json();
+  return activo as Activo;
+}
+
+export async function apiCrearActivo(activo: CrearActivoInput) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/activos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(activo),
+  });
+  verificarRespuesta(respuesta, "No se pudo crear el activo.");
+
+  const activoCreado = await respuesta.json();
+  return activoCreado as Activo;
+}
+
+export async function apiActualizarActivo(activoId: number, activo: ActualizarActivoInput) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/activos/" + activoId, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(activo),
+  });
+  verificarRespuesta(respuesta, "No se pudo actualizar el activo.");
+
+  const activoActualizado = await respuesta.json();
+  return activoActualizado as Activo;
+}
+
+export async function apiDesactivarActivo(activoId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/activos/" + activoId, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ estado: "inactivo" }),
+  });
+  verificarRespuesta(respuesta, "No se pudo desactivar el activo.");
+
+  const activoActualizado = await respuesta.json();
+  return activoActualizado as Activo;
+}
+
+export async function apiListarDocumentosTecnicos() {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/documentos-tecnicos", { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener el listado de documentos técnicos.");
+
+  const documentos = await respuesta.json();
+  return documentos as DocumentoTecnico[];
+}
+
+export async function apiCrearDocumentoTecnico(archivo: File, activoId: number | null, usaSugerenciasIA: boolean) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const datosFormulario = new FormData();
+  datosFormulario.append("archivo", archivo);
+  datosFormulario.append("usaSugerenciasIA", String(usaSugerenciasIA));
+  if (activoId !== null) {
+    datosFormulario.append("activoId", String(activoId));
+  }
+
+  const respuesta = await fetch(urlBaseApi + "/api/v1/documentos-tecnicos", {
+    method: "POST",
+    body: datosFormulario,
+  });
+  verificarRespuesta(respuesta, "No se pudo guardar el documento técnico.");
+
+  const documentoCreado = await respuesta.json();
+  return documentoCreado as DocumentoTecnico;
+}
+
+export function apiObtenerUrlDescargaDocumentoTecnico(documentoId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  return urlBaseApi + "/api/v1/documentos-tecnicos/" + documentoId + "/archivo";
+}
+
+export async function apiEliminarDocumentoTecnico(documentoId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/documentos-tecnicos/" + documentoId, {
+    method: "DELETE",
+  });
+  verificarRespuesta(respuesta, "No se pudo eliminar el documento técnico.");
+}
+
+export async function apiListarOrdenesTrabajo() {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo", { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener el listado de órdenes de trabajo.");
+
+  const ordenes = await respuesta.json();
+  return ordenes as OrdenTrabajo[];
+}
+
+export async function apiObtenerOrdenTrabajo(ordenTrabajoId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo/" + ordenTrabajoId, { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener la orden de trabajo solicitada.");
+
+  const orden = await respuesta.json();
+  return orden as OrdenTrabajo;
+}
+
+export async function apiCrearOrdenTrabajo(orden: CrearOrdenTrabajoInput) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(orden),
+  });
+  verificarRespuesta(respuesta, "No se pudo crear la orden de trabajo.");
+
+  const ordenCreada = await respuesta.json();
+  return ordenCreada as OrdenTrabajo;
+}
+
+export async function apiActualizarOrdenTrabajo(ordenTrabajoId: number, orden: ActualizarOrdenTrabajoInput) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo/" + ordenTrabajoId, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(orden),
+  });
+  verificarRespuesta(respuesta, "No se pudo actualizar la orden de trabajo.");
+
+  const ordenActualizada = await respuesta.json();
+  return ordenActualizada as OrdenTrabajo;
+}
+
+export async function apiCambiarEstadoOrdenTrabajo(ordenTrabajoId: number, estado: EstadoOrdenTrabajo) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo/" + ordenTrabajoId, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ estado: estado }),
+  });
+  verificarRespuesta(respuesta, "No se pudo cambiar el estado de la orden de trabajo.");
+
+  const ordenActualizada = await respuesta.json();
+  return ordenActualizada as OrdenTrabajo;
+}
+
+export async function apiSolicitarSugerenciaOrdenTrabajo(ordenTrabajoId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo/" + ordenTrabajoId + "/sugerencia", {
+    method: "POST",
+  });
+  verificarRespuesta(respuesta, "No se pudo obtener la sugerencia para la orden de trabajo.");
+
+  const ordenActualizada = await respuesta.json();
+  return ordenActualizada as OrdenTrabajo;
 }

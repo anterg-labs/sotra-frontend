@@ -1,6 +1,12 @@
 import type { DocumentoTecnico } from "@/tipos/documento-tecnico";
 import type { ActualizarActivoInput, Activo, CrearActivoInput } from "@/tipos/activo";
 import type { ActualizarClienteInput, Cliente, CrearClienteInput } from "@/tipos/cliente";
+import type {
+  ActualizarOrdenTrabajoInput,
+  CrearOrdenTrabajoInput,
+  EstadoOrdenTrabajo,
+  OrdenTrabajo,
+} from "@/tipos/orden-trabajo";
 import type { ActualizarUsuarioInput, CrearUsuarioInput, Rol, Usuario } from "@/tipos/usuario";
 
 function obtenerUrlBaseApi(): string {
@@ -238,4 +244,72 @@ export async function apiEliminarDocumentoTecnico(documentoId: number) {
     method: "DELETE",
   });
   verificarRespuesta(respuesta, "No se pudo eliminar el documento técnico.");
+}
+
+export async function apiListarOrdenesTrabajo() {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo", { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener el listado de órdenes de trabajo.");
+
+  const ordenes = await respuesta.json();
+  return ordenes as OrdenTrabajo[];
+}
+
+export async function apiObtenerOrdenTrabajo(ordenTrabajoId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo/" + ordenTrabajoId, { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener la orden de trabajo solicitada.");
+
+  const orden = await respuesta.json();
+  return orden as OrdenTrabajo;
+}
+
+export async function apiCrearOrdenTrabajo(orden: CrearOrdenTrabajoInput) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(orden),
+  });
+  verificarRespuesta(respuesta, "No se pudo crear la orden de trabajo.");
+
+  const ordenCreada = await respuesta.json();
+  return ordenCreada as OrdenTrabajo;
+}
+
+export async function apiActualizarOrdenTrabajo(ordenTrabajoId: number, orden: ActualizarOrdenTrabajoInput) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo/" + ordenTrabajoId, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(orden),
+  });
+  verificarRespuesta(respuesta, "No se pudo actualizar la orden de trabajo.");
+
+  const ordenActualizada = await respuesta.json();
+  return ordenActualizada as OrdenTrabajo;
+}
+
+export async function apiCambiarEstadoOrdenTrabajo(ordenTrabajoId: number, estado: EstadoOrdenTrabajo) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo/" + ordenTrabajoId, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ estado: estado }),
+  });
+  verificarRespuesta(respuesta, "No se pudo cambiar el estado de la orden de trabajo.");
+
+  const ordenActualizada = await respuesta.json();
+  return ordenActualizada as OrdenTrabajo;
+}
+
+export async function apiSolicitarSugerenciaOrdenTrabajo(ordenTrabajoId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo/" + ordenTrabajoId + "/sugerencia", {
+    method: "POST",
+  });
+  verificarRespuesta(respuesta, "No se pudo obtener la sugerencia para la orden de trabajo.");
+
+  const ordenActualizada = await respuesta.json();
+  return ordenActualizada as OrdenTrabajo;
 }

@@ -9,6 +9,7 @@ const enlacesNavegacion = [
   { ruta: "/usuarios", etiqueta: "Usuarios", simbolo: "US" },
   { ruta: "/clientes", etiqueta: "Clientes", simbolo: "CL" },
   { ruta: "/activos", etiqueta: "Activos", simbolo: "AC" },
+  { ruta: "/ordenes-trabajo", etiqueta: "Órdenes de trabajo", simbolo: "OT" },
   { ruta: "/documentacion-tecnica", etiqueta: "Documentación técnica", simbolo: "DT" },
 ];
 

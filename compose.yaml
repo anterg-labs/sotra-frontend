@@ -21,7 +21,7 @@ services:
     ports:
       - "3100:3000" # mantuve tu puerto 3100
 
-# este servicio es que refleja cambios automaticos dentro del container
+# este servicio refleja los cambios en tiempo real: la carpeta del proyecto esta montada dentro del contenedor
   sotra-frontend-dev:
     build:
       context: .
@@ -29,20 +29,14 @@ services:
     image: sotra-frontend:dev
     container_name: sotra-frontend-dev
     ports:
-      - "3000:3000"
+      - "80:3000"
+    restart: unless-stopped
     environment:
-      - WATCHPACK_POLLING=true
       - API_URL=http://localhost:8081
-    develop:
-      watch:
-        - action: sync
-          path: .
-          target: /app
-          ignore:
-            - node_modules/
-            - .next/
-        - action: rebuild
-          path: package.json
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
 
 # este es por su qures correr unicamente los unitest dentro del contendor y ta, solo hace eso
   sotra-frontend-test:

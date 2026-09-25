@@ -19,9 +19,9 @@ COPY --chown=node:node . .
 ENV WATCHPACK_POLLING=true
 ENV HOSTNAME="0.0.0.0"
 
-RUN chown node:node /app
+RUN mkdir -p /app/.next && chown node:node /app /app/.next
 USER node
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "npm run dev"]
+CMD ["sh", "-c", "npm run dev -- --webpack"]

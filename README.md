@@ -1,8 +1,10 @@
 # sotra-frontend
 
-Frontend de SOTRA. Usa la API que indica `API_URL` en el archivo `.env`; en desarrollo es el backend simulado: `http://localhost:8081`.
+Frontend de SOTRA. Usa la API que indica `API_URL`; en desarrollo es el backend simulado: `http://localhost:8081`.
 
 ## Desarrollo
+
+Copiar `.env.dev.example` como `.env.dev` (ya trae el valor por defecto) y luego:
 
 ```bash
 docker compose up -d --build sotra-frontend-dev

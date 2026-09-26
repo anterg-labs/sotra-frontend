@@ -5,10 +5,12 @@ Frontend de SOTRA. Usa la API que indica `API_URL` en el archivo `.env`; en desa
 ## Desarrollo
 
 ```bash
-docker compose up -d sotra-frontend-dev
+docker compose up -d --build sotra-frontend-dev
 ```
 
-Se abre en http://localhost (puerto 80). La carpeta del proyecto está montada dentro del contenedor, así que al guardar un cambio solo hay que refrescar la página. Si cambias `package.json` o los Dockerfiles, reconstruye con `docker compose up -d --build sotra-frontend-dev`.
+La primera vez, `--build` construye la imagen. Las veces siguientes no hace falta: alcanza con `docker compose up -d sotra-frontend-dev`, salvo que cambies `package.json` o los Dockerfiles, en cuyo caso hay que volver a agregar `--build`.
+
+Se abre en http://localhost (puerto 80). La carpeta del proyecto está montada dentro del contenedor, así que al guardar un cambio solo hay que refrescar la página; no hace falta reconstruir ni reiniciar el contenedor.
 
 Sin Docker, con `npm run dev`, se abre en http://localhost:3000.
 

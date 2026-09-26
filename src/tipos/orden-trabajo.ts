@@ -21,6 +21,12 @@ export const estadosOrdenTrabajo: EstadoOrdenTrabajo[] = [
   "cancelada",
 ];
 
+export type RepuestoDeOrden = {
+  id: number;
+  codigo: string;
+  nombre: string;
+};
+
 export type OrdenTrabajo = {
   id: number;
   clienteId: number;
@@ -38,7 +44,8 @@ export type OrdenTrabajo = {
   creadoEn: string;
   fechaInicio: string | null;
   fechaCierre: string | null;
-  recomendacionIa: string;
+  sugerencias: string[];
+  repuestos: RepuestoDeOrden[];
 };
 
 export type CrearOrdenTrabajoInput = {
@@ -50,6 +57,18 @@ export type CrearOrdenTrabajoInput = {
   descripcion: string;
   observaciones: string;
   fechaPrevistaEjecucion: string;
+  sugerencias: string[];
+  repuestosIds: number[];
+  estado: EstadoOrdenTrabajo;
+};
+
+export type SolicitarSugerenciaInput = {
+  descripcion: string;
+  numero: number;
+};
+
+export type SugerenciaOrdenTrabajo = {
+  sugerencia: string;
 };
 
 export type ActualizarOrdenTrabajoInput = CrearOrdenTrabajoInput;

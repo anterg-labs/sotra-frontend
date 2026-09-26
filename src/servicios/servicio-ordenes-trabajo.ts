@@ -1,13 +1,17 @@
 import {
   apiActualizarOrdenTrabajo,
-  apiCambiarEstadoOrdenTrabajo,
   apiCrearOrdenTrabajo,
   apiListarOrdenesTrabajo,
   apiObtenerOrdenTrabajo,
   apiSolicitarSugerenciaOrdenTrabajo,
 } from "@/servicios/cliente-api";
 import { listarUsuarios } from "@/servicios/servicio-usuarios";
-import type { ActualizarOrdenTrabajoInput, CrearOrdenTrabajoInput, EstadoOrdenTrabajo } from "@/tipos/orden-trabajo";
+import type {
+  ActualizarOrdenTrabajoInput,
+  CrearOrdenTrabajoInput,
+  EstadoOrdenTrabajo,
+  SolicitarSugerenciaInput,
+} from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
 
 const etiquetasEstado = {
@@ -85,10 +89,42 @@ export async function actualizarOrdenTrabajo(ordenTrabajoId: number, input: Actu
   return apiActualizarOrdenTrabajo(ordenTrabajoId, input);
 }
 
-export async function cambiarEstadoOrdenTrabajo(ordenTrabajoId: number, estado: EstadoOrdenTrabajo) {
-  return apiCambiarEstadoOrdenTrabajo(ordenTrabajoId, estado);
+export async function solicitarSugerenciaOrdenTrabajo(input: SolicitarSugerenciaInput) {
+  if (!input.descripcion.trim()) {
+    throw new Error("Escribí la descripción de la tarea para pedir la sugerencia.");
+  }
+
+  const respuesta = await apiSolicitarSugerenciaOrdenTrabajo(input);
+  return respuesta.sugerencia;
 }
 
-export async function solicitarSugerenciaOrdenTrabajo(ordenTrabajoId: number) {
-  return apiSolicitarSugerenciaOrdenTrabajo(ordenTrabajoId);
+export function leerSugerenciasTemporales(clave: string) {
+  try {
+    const textoGuardado = localStorage.getItem(clave);
+    if (textoGuardado === null) {
+      return null;
+    }
+
+    return JSON.parse(textoGuardado) as string[];
+  } catch {
+    return null;
+  }
+}
+
+export function guardarSugerenciasTemporales(clave: string, sugerencias: string[]) {
+  try {
+    localStorage.setItem(clave, JSON.stringify(sugerencias));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function borrarSugerenciasTemporales(clave: string) {
+  try {
+    localStorage.removeItem(clave);
+    return true;
+  } catch {
+    return false;
+  }
 }

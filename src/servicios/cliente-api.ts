@@ -7,6 +7,7 @@ import type {
   EstadoOrdenTrabajo,
   OrdenTrabajo,
 } from "@/tipos/orden-trabajo";
+import type { ActualizarRepuestoInput, CrearRepuestoInput, Repuesto } from "@/tipos/repuesto";
 import type { ActualizarUsuarioInput, CrearUsuarioInput, Rol, Usuario } from "@/tipos/usuario";
 
 function obtenerUrlBaseApi(): string {
@@ -312,4 +313,61 @@ export async function apiSolicitarSugerenciaOrdenTrabajo(ordenTrabajoId: number)
 
   const ordenActualizada = await respuesta.json();
   return ordenActualizada as OrdenTrabajo;
+}
+
+export async function apiListarRepuestos() {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/repuestos", { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener el listado de repuestos.");
+
+  const repuestos = await respuesta.json();
+  return repuestos as Repuesto[];
+}
+
+export async function apiObtenerRepuesto(repuestoId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/repuestos/" + repuestoId, { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener el repuesto solicitado.");
+
+  const repuesto = await respuesta.json();
+  return repuesto as Repuesto;
+}
+
+export async function apiCrearRepuesto(repuesto: CrearRepuestoInput) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/repuestos", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(repuesto),
+  });
+  verificarRespuesta(respuesta, "No se pudo crear el repuesto.");
+
+  const repuestoCreado = await respuesta.json();
+  return repuestoCreado as Repuesto;
+}
+
+export async function apiActualizarRepuesto(repuestoId: number, repuesto: ActualizarRepuestoInput) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/repuestos/" + repuestoId, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(repuesto),
+  });
+  verificarRespuesta(respuesta, "No se pudo actualizar el repuesto.");
+
+  const repuestoActualizado = await respuesta.json();
+  return repuestoActualizado as Repuesto;
+}
+
+export async function apiDesactivarRepuesto(repuestoId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/repuestos/" + repuestoId, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ estado: "inactivo" }),
+  });
+  verificarRespuesta(respuesta, "No se pudo dar de baja el repuesto.");
+
+  const repuestoActualizado = await respuesta.json();
+  return repuestoActualizado as Repuesto;
 }

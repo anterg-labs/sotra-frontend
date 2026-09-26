@@ -4,8 +4,9 @@ import type { ActualizarClienteInput, Cliente, CrearClienteInput } from "@/tipos
 import type {
   ActualizarOrdenTrabajoInput,
   CrearOrdenTrabajoInput,
-  EstadoOrdenTrabajo,
   OrdenTrabajo,
+  SolicitarSugerenciaInput,
+  SugerenciaOrdenTrabajo,
 } from "@/tipos/orden-trabajo";
 import type { ActualizarRepuestoInput, CrearRepuestoInput, Repuesto } from "@/tipos/repuesto";
 import type { ActualizarUsuarioInput, CrearUsuarioInput, Rol, Usuario } from "@/tipos/usuario";
@@ -291,28 +292,20 @@ export async function apiActualizarOrdenTrabajo(ordenTrabajoId: number, orden: A
   return ordenActualizada as OrdenTrabajo;
 }
 
-export async function apiCambiarEstadoOrdenTrabajo(ordenTrabajoId: number, estado: EstadoOrdenTrabajo) {
+export async function apiSolicitarSugerenciaOrdenTrabajo(datosOrden: SolicitarSugerenciaInput) {
   const urlBaseApi = obtenerUrlBaseApi();
-  const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo/" + ordenTrabajoId, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ estado: estado }),
-  });
-  verificarRespuesta(respuesta, "No se pudo cambiar el estado de la orden de trabajo.");
-
-  const ordenActualizada = await respuesta.json();
-  return ordenActualizada as OrdenTrabajo;
-}
-
-export async function apiSolicitarSugerenciaOrdenTrabajo(ordenTrabajoId: number) {
-  const urlBaseApi = obtenerUrlBaseApi();
-  const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo/" + ordenTrabajoId + "/sugerencia", {
+  const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo/sugerencia", {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datosOrden),
   });
+  if (respuesta.status === 422) {
+    throw new Error("El sistema no encontró información suficiente en la documentación técnica para esta tarea.");
+  }
   verificarRespuesta(respuesta, "No se pudo obtener la sugerencia para la orden de trabajo.");
 
-  const ordenActualizada = await respuesta.json();
-  return ordenActualizada as OrdenTrabajo;
+  const sugerenciaObtenida = await respuesta.json();
+  return sugerenciaObtenida as SugerenciaOrdenTrabajo;
 }
 
 export async function apiListarRepuestos() {

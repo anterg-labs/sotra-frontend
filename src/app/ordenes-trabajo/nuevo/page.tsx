@@ -5,14 +5,17 @@ import { FormularioOrdenTrabajo } from "@/componentes/formulario-orden-trabajo";
 import { listarActivos } from "@/servicios/servicio-activos";
 import { listarClientes } from "@/servicios/servicio-clientes";
 import { crearOrdenTrabajo, listarTecnicos } from "@/servicios/servicio-ordenes-trabajo";
+import { listarRepuestos } from "@/servicios/servicio-repuestos";
 import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
+import type { Repuesto } from "@/tipos/repuesto";
 import type { Usuario } from "@/tipos/usuario";
 
 export default function PaginaNuevaOrdenTrabajo() {
   const [clientes, setClientes] = useState<Cliente[] | null>(null);
   const [activos, setActivos] = useState<Activo[] | null>(null);
   const [tecnicos, setTecnicos] = useState<Usuario[] | null>(null);
+  const [repuestos, setRepuestos] = useState<Repuesto[]>([]);
   const [errorCarga, setErrorCarga] = useState("");
 
   useEffect(() => {
@@ -21,9 +24,11 @@ export default function PaginaNuevaOrdenTrabajo() {
         const clientesObtenidos = await listarClientes();
         const activosObtenidos = await listarActivos();
         const tecnicosObtenidos = await listarTecnicos();
+        const repuestosObtenidos = await listarRepuestos();
         setClientes(clientesObtenidos);
         setActivos(activosObtenidos);
         setTecnicos(tecnicosObtenidos);
+        setRepuestos(repuestosObtenidos);
       } catch {
         setErrorCarga("No se pudieron obtener los datos necesarios para crear la orden.");
       }
@@ -48,6 +53,7 @@ export default function PaginaNuevaOrdenTrabajo() {
         alEnviar={crearOrdenTrabajo}
         clientes={clientes}
         etiquetaConfirmacion="Confirmar creación"
+        repuestos={repuestos}
         tecnicos={tecnicos}
       />
     );

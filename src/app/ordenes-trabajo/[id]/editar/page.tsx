@@ -10,9 +10,11 @@ import {
   listarTecnicos,
   obtenerDetalleOrdenTrabajo,
 } from "@/servicios/servicio-ordenes-trabajo";
+import { listarRepuestos } from "@/servicios/servicio-repuestos";
 import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
 import type { CrearOrdenTrabajoInput, OrdenTrabajo } from "@/tipos/orden-trabajo";
+import type { Repuesto } from "@/tipos/repuesto";
 import type { Usuario } from "@/tipos/usuario";
 
 export default function PaginaEditarOrdenTrabajo() {
@@ -22,6 +24,7 @@ export default function PaginaEditarOrdenTrabajo() {
   const [clientes, setClientes] = useState<Cliente[] | null>(null);
   const [activos, setActivos] = useState<Activo[] | null>(null);
   const [tecnicos, setTecnicos] = useState<Usuario[] | null>(null);
+  const [repuestos, setRepuestos] = useState<Repuesto[]>([]);
   const [errorCarga, setErrorCarga] = useState("");
 
   useEffect(() => {
@@ -31,10 +34,12 @@ export default function PaginaEditarOrdenTrabajo() {
         const clientesObtenidos = await listarClientes();
         const activosObtenidos = await listarActivos();
         const tecnicosObtenidos = await listarTecnicos();
+        const repuestosObtenidos = await listarRepuestos();
         setOrden(ordenObtenida);
         setClientes(clientesObtenidos);
         setActivos(activosObtenidos);
         setTecnicos(tecnicosObtenidos);
+        setRepuestos(repuestosObtenidos);
       } catch {
         setErrorCarga("No se pudo obtener la información de la orden solicitada.");
       }
@@ -67,6 +72,7 @@ export default function PaginaEditarOrdenTrabajo() {
           clientes={clientes}
           etiquetaConfirmacion="Confirmar modificación"
           ordenInicial={orden}
+          repuestos={repuestos}
           tecnicos={tecnicos}
         />
       </section>

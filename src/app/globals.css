@@ -55,6 +55,14 @@ h2 {
   letter-spacing: -0.015em;
 }
 
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
 .page-content {
   max-width: 1500px;
   margin: 0 auto;

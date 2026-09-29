@@ -4,7 +4,7 @@ import {
   apiDesactivarActivo,
   apiListarActivos,
   apiObtenerActivo,
-} from "@/servicios/cliente-api";
+} from "@/servicios/api/api-activos";
 import type { ActualizarActivoInput, CrearActivoInput } from "@/tipos/activo";
 
 function validarActivo(input: CrearActivoInput) {

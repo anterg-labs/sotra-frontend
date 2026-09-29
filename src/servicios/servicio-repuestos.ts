@@ -4,7 +4,7 @@ import {
   apiDesactivarRepuesto,
   apiListarRepuestos,
   apiObtenerRepuesto,
-} from "@/servicios/cliente-api";
+} from "@/servicios/api/api-repuestos";
 import type { ActualizarRepuestoInput, CrearRepuestoInput } from "@/tipos/repuesto";
 
 function validarRepuesto(input: CrearRepuestoInput) {

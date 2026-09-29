@@ -4,7 +4,7 @@ import {
   apiDesactivarTipoMaquina,
   apiListarTiposMaquina,
   apiObtenerTipoMaquina,
-} from "@/servicios/cliente-api";
+} from "@/servicios/api/api-tipos-maquina";
 import type { ActualizarTipoMaquinaInput, CrearTipoMaquinaInput } from "@/tipos/tipo-maquina";
 
 function validarTipoMaquina(input: CrearTipoMaquinaInput) {

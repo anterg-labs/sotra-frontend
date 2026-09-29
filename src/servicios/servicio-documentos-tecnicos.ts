@@ -3,7 +3,7 @@ import {
   apiEliminarDocumentoTecnico,
   apiListarDocumentosTecnicos,
   apiObtenerUrlDescargaDocumentoTecnico,
-} from "@/servicios/cliente-api";
+} from "@/servicios/api/api-documentos-tecnicos";
 import type { CrearDocumentoTecnicoInput } from "@/tipos/documento-tecnico";
 
 async function validarArchivoPdf(archivo: File | null) {

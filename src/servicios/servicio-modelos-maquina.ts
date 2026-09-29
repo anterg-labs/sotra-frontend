@@ -4,7 +4,7 @@ import {
   apiDesactivarModeloMaquina,
   apiListarModelosMaquina,
   apiObtenerModeloMaquina,
-} from "@/servicios/cliente-api";
+} from "@/servicios/api/api-modelos-maquina";
 import type { ActualizarModeloMaquinaInput, CrearModeloMaquinaInput } from "@/tipos/modelo-maquina";
 
 function validarModeloMaquina(input: CrearModeloMaquinaInput) {

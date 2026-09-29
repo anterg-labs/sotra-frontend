@@ -5,7 +5,7 @@ import {
   apiListarClientes,
   apiObtenerCliente,
   apiReactivarCliente,
-} from "@/servicios/cliente-api";
+} from "@/servicios/api/api-clientes";
 import type {
   ActualizarClienteInput,
   CrearClienteInput,

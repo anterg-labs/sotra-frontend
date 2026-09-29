@@ -31,13 +31,19 @@ export default function PaginaEditarUsuario() {
 
   const rutaListado = "/usuarios";
 
-  function guardarUsuario(usuario: CrearUsuarioInput) {
+  function guardarUsuario(camposUsuario: CrearUsuarioInput) {
+    if (!usuario) {
+      throw new Error("No se pudo obtener la información del usuario solicitado.");
+    }
+
     return actualizarUsuario(usuarioId, {
-      nombre: usuario.nombre,
-      apellido: usuario.apellido,
-      correo: usuario.correo,
-      telefono: usuario.telefono,
-      idsRol: usuario.idsRol,
+      nombre: camposUsuario.nombre,
+      apellido: camposUsuario.apellido,
+      correo: camposUsuario.correo,
+      telefono: camposUsuario.telefono,
+      idsRol: camposUsuario.idsRol,
+      estado: usuario.estado,
+      fechaIngreso: usuario.fechaIngreso,
     });
   }
 
@@ -64,6 +70,8 @@ export default function PaginaEditarUsuario() {
       correo: usuario.correo,
       telefono: usuario.telefono,
       idsRol: idsRolDelUsuario,
+      estado: usuario.estado,
+      fechaIngreso: usuario.fechaIngreso,
     };
 
     formulario = (

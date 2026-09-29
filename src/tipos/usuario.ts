@@ -19,7 +19,7 @@ export type Usuario = {
   telefono: string;
   roles: RolDeUsuario[];
   estado: EstadoUsuario;
-  creadoEn: string;
+  fechaIngreso: string;
 };
 
 export type UsuarioListado = Usuario;
@@ -41,4 +41,6 @@ export type ActualizarUsuarioInput = {
   correo: string;
   telefono: string;
   idsRol: number[];
+  estado: EstadoUsuario;
+  fechaIngreso: string;
 };

@@ -4,7 +4,8 @@ import {
   apiDesactivarCliente,
   apiListarClientes,
   apiObtenerCliente,
-} from "@/servicios/cliente-api";
+  apiReactivarCliente,
+} from "@/servicios/api/api-clientes";
 import type {
   ActualizarClienteInput,
   CrearClienteInput,
@@ -21,16 +22,11 @@ function validarCliente(input: CrearClienteInput) {
     throw new Error("El nombre de contacto es obligatorio.");
   }
 
-  if (!patronFormatoCorreo.test(input.correo)) {
-    throw new Error("El correo electrónico no tiene un formato válido.");
-  }
-
-  if (!input.telefono.trim()) {
-    throw new Error("El número de teléfono es obligatorio.");
-  }
-
-  if (!input.direccion.trim()) {
-    throw new Error("La dirección es obligatoria.");
+  if (input.correo !== null) {
+    const correoSinEspacios = input.correo.trim();
+    if (correoSinEspacios !== "" && !patronFormatoCorreo.test(input.correo)) {
+      throw new Error("El correo electrónico no tiene un formato válido.");
+    }
   }
 }
 
@@ -54,4 +50,8 @@ export async function actualizarCliente(clienteId: number, input: ActualizarClie
 
 export async function desactivarCliente(clienteId: number) {
   return apiDesactivarCliente(clienteId);
+}
+
+export async function reactivarCliente(clienteId: number) {
+  return apiReactivarCliente(clienteId);
 }

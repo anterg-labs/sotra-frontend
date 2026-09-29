@@ -107,8 +107,12 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
     try {
       await alEnviar(usuarioParaGuardar);
       enrutador.push(rutaExito);
-    } catch {
-      setErrorGeneral("No se pudo guardar la información del usuario.");
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrorGeneral(error.message);
+      } else {
+        setErrorGeneral("No se pudo guardar la información del usuario.");
+      }
     } finally {
       setEstaEnviando(false);
     }

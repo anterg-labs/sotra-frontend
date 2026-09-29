@@ -8,12 +8,14 @@ describe("servicio-activos", () => {
     const activosSimulados = [
       {
         id: 1,
-        nombre: "Excavadora 01",
-        numeroSerie: "CAT320D-0001",
-        descripcion: "",
-        estado: "activo",
         clienteId: 1,
-        nombreCliente: "Constructora del Sur",
+        numSerie: "CAT320D-0001",
+        descripcion: null,
+        modeloMaquinaId: 1,
+        anioFabricacion: 2024,
+        nombre: "Excavadora 01",
+        ubicacion: "Obra norte",
+        estado: "activo",
       },
     ];
 
@@ -23,12 +25,14 @@ describe("servicio-activos", () => {
         if (opciones && opciones.method === "PATCH") {
           const activoDesactivado = {
             id: 1,
-            nombre: "Excavadora 01",
-            numeroSerie: "CAT320D-0001",
-            descripcion: "",
-            estado: "inactivo",
             clienteId: 1,
-            nombreCliente: "Constructora del Sur",
+            numSerie: "CAT320D-0001",
+            descripcion: null,
+            modeloMaquinaId: 1,
+            anioFabricacion: 2024,
+            nombre: "Excavadora 01",
+            ubicacion: "Obra norte",
+            estado: "inactivo",
           };
 
           return new Response(JSON.stringify(activoDesactivado), {
@@ -59,10 +63,13 @@ describe("servicio-activos", () => {
 
   it("no permite crear un activo sin número de serie", async () => {
     const activoSinNumeroSerie = {
-      nombre: "Excavadora 02",
-      numeroSerie: "",
-      descripcion: "",
       clienteId: 1,
+      numSerie: "",
+      descripcion: null,
+      modeloMaquinaId: 1,
+      anioFabricacion: null,
+      nombre: "Excavadora 02",
+      ubicacion: null,
     };
 
     await expect(crearActivo(activoSinNumeroSerie)).rejects.toThrow("El número de serie es obligatorio.");

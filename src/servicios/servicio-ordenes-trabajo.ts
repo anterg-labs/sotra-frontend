@@ -4,7 +4,7 @@ import {
   apiListarOrdenesTrabajo,
   apiObtenerOrdenTrabajo,
   apiSolicitarSugerenciaOrdenTrabajo,
-} from "@/servicios/cliente-api";
+} from "@/servicios/api/api-ordenes-trabajo";
 import { listarUsuarios } from "@/servicios/servicio-usuarios";
 import type {
   ActualizarOrdenTrabajoInput,

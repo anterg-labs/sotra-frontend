@@ -28,13 +28,33 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
   const etiquetaConfirmacion = props.etiquetaConfirmacion;
   const alEnviar = props.alEnviar;
 
+  let correoInicial = "";
+  if (clienteInicial.correo !== null) {
+    correoInicial = clienteInicial.correo;
+  }
+
+  let telefonoInicial = "";
+  if (clienteInicial.telefono !== null) {
+    telefonoInicial = clienteInicial.telefono;
+  }
+
+  let direccionInicial = "";
+  if (clienteInicial.direccion !== null) {
+    direccionInicial = clienteInicial.direccion;
+  }
+
+  let observacionesIniciales = "";
+  if (clienteInicial.observaciones !== null) {
+    observacionesIniciales = clienteInicial.observaciones;
+  }
+
   const enrutador = useRouter();
   const [razonSocial, setRazonSocial] = useState(clienteInicial.razonSocial);
   const [nombreContacto, setNombreContacto] = useState(clienteInicial.nombreContacto);
-  const [correo, setCorreo] = useState(clienteInicial.correo);
-  const [telefono, setTelefono] = useState(clienteInicial.telefono);
-  const [direccion, setDireccion] = useState(clienteInicial.direccion);
-  const [observaciones, setObservaciones] = useState(clienteInicial.observaciones);
+  const [correo, setCorreo] = useState(correoInicial);
+  const [telefono, setTelefono] = useState(telefonoInicial);
+  const [direccion, setDireccion] = useState(direccionInicial);
+  const [observaciones, setObservaciones] = useState(observacionesIniciales);
   const [estaEnviando, setEstaEnviando] = useState(false);
   const [errorGeneral, setErrorGeneral] = useState("");
 
@@ -67,20 +87,44 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
     setEstaEnviando(true);
     setErrorGeneral("");
 
+    let correoParaGuardar: string | null = correo;
+    if (!correo.trim()) {
+      correoParaGuardar = null;
+    }
+
+    let telefonoParaGuardar: string | null = telefono;
+    if (!telefono.trim()) {
+      telefonoParaGuardar = null;
+    }
+
+    let direccionParaGuardar: string | null = direccion;
+    if (!direccion.trim()) {
+      direccionParaGuardar = null;
+    }
+
+    let observacionesParaGuardar: string | null = observaciones;
+    if (!observaciones.trim()) {
+      observacionesParaGuardar = null;
+    }
+
     const clienteParaGuardar: CrearClienteInput = {
       razonSocial,
       nombreContacto,
-      correo,
-      telefono,
-      direccion,
-      observaciones,
+      correo: correoParaGuardar,
+      telefono: telefonoParaGuardar,
+      direccion: direccionParaGuardar,
+      observaciones: observacionesParaGuardar,
     };
 
     try {
       await alEnviar(clienteParaGuardar);
       enrutador.push("/clientes");
-    } catch {
-      setErrorGeneral("No se pudo guardar la información del cliente.");
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrorGeneral(error.message);
+      } else {
+        setErrorGeneral("No se pudo guardar la información del cliente.");
+      }
     } finally {
       setEstaEnviando(false);
     }
@@ -112,23 +156,23 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
         </div>
 
         <div className="form-field">
-          <label htmlFor="correo">Correo electrónico</label>
-          <input id="correo" onChange={cambiarCorreo} required type="email" value={correo} />
+          <label htmlFor="correo">Correo electrónico (opcional)</label>
+          <input id="correo" onChange={cambiarCorreo} type="email" value={correo} />
         </div>
 
         <div className="form-field">
-          <label htmlFor="telefono">Número telefónico</label>
-          <input id="telefono" onChange={cambiarTelefono} required type="tel" value={telefono} />
+          <label htmlFor="telefono">Número telefónico (opcional)</label>
+          <input id="telefono" onChange={cambiarTelefono} type="tel" value={telefono} />
         </div>
       </div>
 
       <div className="form-field form-field-full">
-        <label htmlFor="direccion">Dirección</label>
-        <input id="direccion" onChange={cambiarDireccion} required value={direccion} />
+        <label htmlFor="direccion">Dirección (opcional)</label>
+        <input id="direccion" onChange={cambiarDireccion} value={direccion} />
       </div>
 
       <div className="form-field form-field-full">
-        <label htmlFor="observaciones">Observaciones adicionales</label>
+        <label htmlFor="observaciones">Observaciones adicionales (opcional)</label>
         <textarea id="observaciones" onChange={cambiarObservaciones} rows={4} value={observaciones} />
       </div>
 

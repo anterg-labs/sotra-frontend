@@ -4,20 +4,20 @@ import {
   apiDesactivarActivo,
   apiListarActivos,
   apiObtenerActivo,
-} from "@/servicios/cliente-api";
+} from "@/servicios/api/api-activos";
 import type { ActualizarActivoInput, CrearActivoInput } from "@/tipos/activo";
 
 function validarActivo(input: CrearActivoInput) {
-  if (!input.nombre.trim()) {
-    throw new Error("El nombre del activo es obligatorio.");
-  }
-
-  if (!input.numeroSerie.trim()) {
+  if (!input.numSerie.trim()) {
     throw new Error("El número de serie es obligatorio.");
   }
 
   if (input.clienteId <= 0) {
     throw new Error("El cliente es obligatorio.");
+  }
+
+  if (input.modeloMaquinaId <= 0) {
+    throw new Error("El modelo de máquina es obligatorio.");
   }
 }
 

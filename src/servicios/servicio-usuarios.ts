@@ -5,7 +5,7 @@ import {
   apiListarRoles,
   apiListarUsuarios,
   apiObtenerUsuario,
-} from "@/servicios/cliente-api";
+} from "@/servicios/api/api-usuarios";
 import type { ActualizarUsuarioInput, CrearUsuarioInput } from "@/tipos/usuario";
 
 const patronFormatoCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

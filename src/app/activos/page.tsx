@@ -2,9 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ListadoModelosMaquina } from "@/componentes/listado-modelos-maquina";
+import { ListadoTiposMaquina } from "@/componentes/listado-tipos-maquina";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
 import { desactivarActivo, listarActivos } from "@/servicios/servicio-activos";
+import { listarClientes } from "@/servicios/servicio-clientes";
+import { listarModelosMaquina } from "@/servicios/servicio-modelos-maquina";
 import type { Activo } from "@/tipos/activo";
+import type { Cliente } from "@/tipos/cliente";
+import type { ModeloMaquina } from "@/tipos/modelo-maquina";
 
 function obtenerEtiquetaEstado(estado: Activo["estado"]) {
   if (estado === "activo") {
@@ -16,6 +22,8 @@ function obtenerEtiquetaEstado(estado: Activo["estado"]) {
 
 export default function PaginaActivos() {
   const [activos, setActivos] = useState<Activo[] | null>(null);
+  const [clientes, setClientes] = useState<Cliente[] | null>(null);
+  const [modelosMaquina, setModelosMaquina] = useState<ModeloMaquina[] | null>(null);
   const [errorCarga, setErrorCarga] = useState("");
   const [activoDesactivandoId, setActivoDesactivandoId] = useState<number | null>(null);
   const [activoPendienteDesactivacion, setActivoPendienteDesactivacion] = useState<Activo | null>(null);
@@ -27,7 +35,11 @@ export default function PaginaActivos() {
 
       try {
         const activosObtenidos = await listarActivos();
+        const clientesObtenidos = await listarClientes();
+        const modelosObtenidos = await listarModelosMaquina();
         setActivos(activosObtenidos);
+        setClientes(clientesObtenidos);
+        setModelosMaquina(modelosObtenidos);
       } catch {
         setErrorCarga("No se pudo obtener el listado de activos.");
       }
@@ -70,7 +82,7 @@ export default function PaginaActivos() {
   }
 
   let mensajeCargando = null;
-  if (activos === null && !errorCarga) {
+  if ((activos === null || clientes === null || modelosMaquina === null) && !errorCarga) {
     mensajeCargando = <p className="empty-state">Cargando activos…</p>;
   }
 
@@ -80,7 +92,7 @@ export default function PaginaActivos() {
   }
 
   let tablaActivos = null;
-  if (activos !== null && activos.length > 0) {
+  if (activos !== null && activos.length > 0 && clientes !== null && modelosMaquina !== null) {
     tablaActivos = (
       <div className="table-container">
         <table>
@@ -89,6 +101,7 @@ export default function PaginaActivos() {
               <th>Nombre del activo</th>
               <th>Número de serie</th>
               <th>Cliente</th>
+              <th>Modelo</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
@@ -116,11 +129,31 @@ export default function PaginaActivos() {
                 );
               }
 
+              let nombreCliente = "Cliente " + activo.clienteId;
+              for (const cliente of clientes) {
+                if (cliente.id === activo.clienteId) {
+                  nombreCliente = cliente.razonSocial;
+                }
+              }
+
+              let nombreModelo = "Modelo " + activo.modeloMaquinaId;
+              for (const modeloMaquina of modelosMaquina) {
+                if (modeloMaquina.id === activo.modeloMaquinaId) {
+                  nombreModelo = modeloMaquina.nombre;
+                }
+              }
+
+              let nombreActivo = "Sin nombre";
+              if (activo.nombre !== null) {
+                nombreActivo = activo.nombre;
+              }
+
               return (
                 <tr key={activo.id}>
-                  <td><strong>{activo.nombre}</strong></td>
-                  <td>{activo.numeroSerie}</td>
-                  <td>{activo.nombreCliente}</td>
+                  <td><strong>{nombreActivo}</strong></td>
+                  <td>{activo.numSerie}</td>
+                  <td>{nombreCliente}</td>
+                  <td>{nombreModelo}</td>
                   <td>
                     <span className={claseEstado}>{obtenerEtiquetaEstado(activo.estado)}</span>
                   </td>
@@ -148,11 +181,16 @@ export default function PaginaActivos() {
 
   let modalBaja = null;
   if (activoPendienteDesactivacion) {
+    let nombreActivoPendiente = "el activo seleccionado";
+    if (activoPendienteDesactivacion.nombre !== null) {
+      nombreActivoPendiente = activoPendienteDesactivacion.nombre;
+    }
+
     modalBaja = (
       <ModalConfirmacion
         descripcion={
           "¿Confirmás la baja de " +
-          activoPendienteDesactivacion.nombre +
+          nombreActivoPendiente +
           "? El activo quedará inactivo, pero sus datos seguirán disponibles."
         }
         estaConfirmando={activoDesactivandoId === activoPendienteDesactivacion.id}
@@ -175,12 +213,15 @@ export default function PaginaActivos() {
         </Link>
       </header>
 
-      <section className="panel">
+      <section className="panel mb-8">
         {mensajeError}
         {mensajeCargando}
         {mensajeSinResultados}
         {tablaActivos}
       </section>
+
+      <ListadoModelosMaquina />
+      <ListadoTiposMaquina />
 
       {modalBaja}
     </main>

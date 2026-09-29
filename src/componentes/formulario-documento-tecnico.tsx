@@ -103,9 +103,18 @@ export function FormularioDocumentoTecnico(props: PropiedadesFormularioDocumento
           <label htmlFor="activoId">Activo asociado (opcional)</label>
           <select id="activoId" onChange={cambiarActivo} value={activoId}>
             <option value="">Sin activo asociado</option>
-            {activos.map((activo) => (
-              <option key={activo.id} value={activo.id}>{activo.nombre + " (" + activo.nombreCliente + ")"}</option>
-            ))}
+            {activos.map((activo) => {
+              let nombreActivo = "Activo " + activo.id;
+              if (activo.nombre !== null) {
+                nombreActivo = activo.nombre;
+              }
+
+              return (
+                <option key={activo.id} value={activo.id}>
+                  {nombreActivo + " (cliente " + activo.clienteId + ")"}
+                </option>
+              );
+            })}
           </select>
         </div>
       </div>

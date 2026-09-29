@@ -10,6 +10,11 @@ import type {
 } from "@/tipos/orden-trabajo";
 import type { ActualizarRepuestoInput, CrearRepuestoInput, Repuesto } from "@/tipos/repuesto";
 import type { ActualizarUsuarioInput, CrearUsuarioInput, Rol, Usuario } from "@/tipos/usuario";
+import type {
+  ActualizarModeloMaquinaInput,
+  CrearModeloMaquinaInput,
+  ModeloMaquina,
+} from "@/tipos/modelo-maquina";
 import type { ActualizarTipoMaquinaInput, CrearTipoMaquinaInput, TipoMaquina } from "@/tipos/tipo-maquina";
 
 function obtenerUrlBaseApi(): string {
@@ -171,6 +176,63 @@ export async function apiListarActivos() {
 
   const activos = await respuesta.json();
   return activos as Activo[];
+}
+
+export async function apiListarModelosMaquina() {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/modelos-maquina", { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener el listado de modelos de máquina.");
+
+  const modelosMaquina = await respuesta.json();
+  return modelosMaquina as ModeloMaquina[];
+}
+
+export async function apiObtenerModeloMaquina(modeloMaquinaId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/modelos-maquina/" + modeloMaquinaId, { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener el modelo de máquina solicitado.");
+
+  const modeloMaquina = await respuesta.json();
+  return modeloMaquina as ModeloMaquina;
+}
+
+export async function apiCrearModeloMaquina(modeloMaquina: CrearModeloMaquinaInput) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/modelos-maquina", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(modeloMaquina),
+  });
+  verificarRespuesta(respuesta, "No se pudo crear el modelo de máquina.");
+
+  const modeloMaquinaCreado = await respuesta.json();
+  return modeloMaquinaCreado as ModeloMaquina;
+}
+
+export async function apiActualizarModeloMaquina(modeloMaquinaId: number, modeloMaquina: ActualizarModeloMaquinaInput) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/modelos-maquina/" + modeloMaquinaId, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(modeloMaquina),
+  });
+  verificarRespuesta(respuesta, "No se pudo actualizar el modelo de máquina.");
+
+  const modeloMaquinaActualizado = await respuesta.json();
+  return modeloMaquinaActualizado as ModeloMaquina;
+}
+
+export async function apiDesactivarModeloMaquina(modeloMaquinaId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/modelos-maquina/" + modeloMaquinaId, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ estado: "inactivo" }),
+  });
+  verificarRespuesta(respuesta, "No se pudo dar de baja el modelo de máquina.");
+
+  const modeloMaquinaActualizado = await respuesta.json();
+  return modeloMaquinaActualizado as ModeloMaquina;
 }
 
 export async function apiListarTiposMaquina() {

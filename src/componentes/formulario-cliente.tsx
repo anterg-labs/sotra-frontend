@@ -119,8 +119,12 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
     try {
       await alEnviar(clienteParaGuardar);
       enrutador.push("/clientes");
-    } catch {
-      setErrorGeneral("No se pudo guardar la información del cliente.");
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrorGeneral(error.message);
+      } else {
+        setErrorGeneral("No se pudo guardar la información del cliente.");
+      }
     } finally {
       setEstaEnviando(false);
     }

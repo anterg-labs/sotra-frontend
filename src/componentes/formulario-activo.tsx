@@ -124,8 +124,12 @@ export function FormularioActivo(props: PropiedadesFormularioActivo) {
     try {
       await alEnviar(activoParaGuardar);
       enrutador.push("/activos");
-    } catch {
-      setErrorGeneral("No se pudo guardar la información del activo.");
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrorGeneral(error.message);
+      } else {
+        setErrorGeneral("No se pudo guardar la información del activo.");
+      }
     } finally {
       setEstaEnviando(false);
     }

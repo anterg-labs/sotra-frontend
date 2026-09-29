@@ -8,11 +8,28 @@ export function obtenerUrlBaseApi(): string {
   return urlBaseApi.replace(/\/$/, "");
 }
 
+async function leerMensajeDelServidor(respuesta: Response) {
+  try {
+    const cuerpo = await respuesta.json();
+    if (typeof cuerpo.mensaje === "string") {
+      return cuerpo.mensaje;
+    }
+    return "";
+  } catch {
+    return "";
+  }
+}
+
 export async function enviarPedidoApi(ruta: string, opciones: RequestInit, mensajeError: string) {
   const urlBaseApi = obtenerUrlBaseApi();
   const respuesta = await fetch(urlBaseApi + ruta, opciones);
 
   if (!respuesta.ok) {
+    const mensajeDelServidor = await leerMensajeDelServidor(respuesta);
+    if (mensajeDelServidor !== "") {
+      throw new Error(mensajeDelServidor);
+    }
+
     throw new Error(mensajeError);
   }
 

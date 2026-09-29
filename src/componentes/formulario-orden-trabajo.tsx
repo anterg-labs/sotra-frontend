@@ -53,7 +53,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
   let observacionesInicial = "";
   let fechaPrevistaInicial = "";
   let sugerenciasIniciales: string[] = [];
-  let claveSugerenciasTemporales = "sugerencias-orden-nueva";
+  let claveSugerenciasTemporales = "";
   const idsRepuestosIniciales: number[] = [];
   if (ordenInicial) {
     clienteIdInicial = String(ordenInicial.clienteId);
@@ -76,9 +76,11 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
     }
   }
 
-  const sugerenciasTemporales = leerSugerenciasTemporales(claveSugerenciasTemporales);
-  if (sugerenciasTemporales !== null) {
-    sugerenciasIniciales = sugerenciasTemporales;
+  if (claveSugerenciasTemporales !== "") {
+    const sugerenciasTemporales = leerSugerenciasTemporales(claveSugerenciasTemporales);
+    if (sugerenciasTemporales !== null) {
+      sugerenciasIniciales = sugerenciasTemporales;
+    }
   }
 
   const enrutador = useRouter();
@@ -106,6 +108,14 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
 
   function cambiarActivo(evento: React.ChangeEvent<HTMLSelectElement>) {
     setActivoId(evento.target.value);
+  }
+
+  function obtenerNombreVisibleDeActivo(activo: Activo) {
+    if (activo.nombre !== null && activo.nombre.trim() !== "") {
+      return activo.nombre;
+    }
+
+    return activo.numSerie;
   }
 
   function cambiarTecnico(evento: React.ChangeEvent<HTMLSelectElement>) {
@@ -138,7 +148,9 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
 
   function actualizarSugerencias(nuevasSugerencias: string[]) {
     setSugerencias(nuevasSugerencias);
-    guardarSugerenciasTemporales(claveSugerenciasTemporales, nuevasSugerencias);
+    if (claveSugerenciasTemporales !== "") {
+      guardarSugerenciasTemporales(claveSugerenciasTemporales, nuevasSugerencias);
+    }
   }
 
   function descartarSugerenciasTemporales() {
@@ -307,6 +319,13 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
     }
   }
 
+  let avisoSinActivos = null;
+  if (clienteId !== "" && activosDelCliente.length === 0) {
+    avisoSinActivos = (
+      <p className="field-error">Este cliente no tiene activos disponibles. Registrá uno en la sección Activos.</p>
+    );
+  }
+
   const repuestosSeleccionados: Repuesto[] = [];
   const repuestosDisponibles: Repuesto[] = [];
   for (const repuesto of repuestos) {
@@ -389,9 +408,10 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
           <select id="activoId" onChange={cambiarActivo} required value={activoId}>
             <option disabled value="">Seleccioná un activo</option>
             {activosDelCliente.map((activo) => (
-              <option key={activo.id} value={activo.id}>{activo.nombre}</option>
+              <option key={activo.id} value={activo.id}>{obtenerNombreVisibleDeActivo(activo)}</option>
             ))}
           </select>
+          {avisoSinActivos}
         </div>
 
         <div className="form-field">

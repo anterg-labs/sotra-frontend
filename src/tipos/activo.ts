@@ -2,19 +2,33 @@ export type EstadoActivo = "activo" | "inactivo";
 
 export type Activo = {
   id: number;
-  nombre: string;
-  numeroSerie: string;
-  descripcion: string;
-  estado: EstadoActivo;
   clienteId: number;
-  nombreCliente: string;
+  numSerie: string;
+  descripcion: string | null;
+  modeloMaquinaId: number;
+  anioFabricacion: number | null;
+  nombre: string | null;
+  ubicacion: string | null;
+  estado: EstadoActivo;
 };
 
 export type CrearActivoInput = {
-  nombre: string;
-  numeroSerie: string;
-  descripcion: string;
   clienteId: number;
+  numSerie: string;
+  descripcion: string | null;
+  modeloMaquinaId: number;
+  anioFabricacion: number | null;
+  nombre: string | null;
+  ubicacion: string | null;
 };
 
-export type ActualizarActivoInput = CrearActivoInput;
+export type ActualizarActivoInput = {
+  clienteId: number;
+  numSerie: string;
+  descripcion: string | null;
+  modeloMaquinaId: number;
+  anioFabricacion: number | null;
+  nombre: string | null;
+  ubicacion: string | null;
+  estado: EstadoActivo;
+};

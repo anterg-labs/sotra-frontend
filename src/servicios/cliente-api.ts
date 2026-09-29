@@ -10,6 +10,7 @@ import type {
 } from "@/tipos/orden-trabajo";
 import type { ActualizarRepuestoInput, CrearRepuestoInput, Repuesto } from "@/tipos/repuesto";
 import type { ActualizarUsuarioInput, CrearUsuarioInput, Rol, Usuario } from "@/tipos/usuario";
+import type { ActualizarTipoMaquinaInput, CrearTipoMaquinaInput, TipoMaquina } from "@/tipos/tipo-maquina";
 
 function obtenerUrlBaseApi(): string {
   const urlBaseApi = process.env.API_URL;
@@ -170,6 +171,63 @@ export async function apiListarActivos() {
 
   const activos = await respuesta.json();
   return activos as Activo[];
+}
+
+export async function apiListarTiposMaquina() {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/tipos-maquina", { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener el listado de tipos de máquina.");
+
+  const tiposMaquina = await respuesta.json();
+  return tiposMaquina as TipoMaquina[];
+}
+
+export async function apiObtenerTipoMaquina(tipoMaquinaId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/tipos-maquina/" + tipoMaquinaId, { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener el tipo de máquina solicitado.");
+
+  const tipoMaquina = await respuesta.json();
+  return tipoMaquina as TipoMaquina;
+}
+
+export async function apiCrearTipoMaquina(tipoMaquina: CrearTipoMaquinaInput) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/tipos-maquina", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(tipoMaquina),
+  });
+  verificarRespuesta(respuesta, "No se pudo crear el tipo de máquina.");
+
+  const tipoMaquinaCreado = await respuesta.json();
+  return tipoMaquinaCreado as TipoMaquina;
+}
+
+export async function apiActualizarTipoMaquina(tipoMaquinaId: number, tipoMaquina: ActualizarTipoMaquinaInput) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/tipos-maquina/" + tipoMaquinaId, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(tipoMaquina),
+  });
+  verificarRespuesta(respuesta, "No se pudo actualizar el tipo de máquina.");
+
+  const tipoMaquinaActualizado = await respuesta.json();
+  return tipoMaquinaActualizado as TipoMaquina;
+}
+
+export async function apiDesactivarTipoMaquina(tipoMaquinaId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/tipos-maquina/" + tipoMaquinaId, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ estado: "inactivo" }),
+  });
+  verificarRespuesta(respuesta, "No se pudo dar de baja el tipo de máquina.");
+
+  const tipoMaquinaActualizado = await respuesta.json();
+  return tipoMaquinaActualizado as TipoMaquina;
 }
 
 export async function apiObtenerActivo(activoId: number) {

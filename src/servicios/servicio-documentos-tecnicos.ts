@@ -20,6 +20,8 @@ async function validarArchivoPdf(archivo: File | null) {
   if (primerosCaracteres !== "%PDF-") {
     throw new Error("El archivo no es un PDF válido.");
   }
+
+  return archivo;
 }
 
 export async function listarDocumentosTecnicos() {
@@ -27,13 +29,8 @@ export async function listarDocumentosTecnicos() {
 }
 
 export async function crearDocumentoTecnico(input: CrearDocumentoTecnicoInput) {
-  await validarArchivoPdf(input.archivo);
-
-  if (!input.archivo) {
-    throw new Error("Seleccioná un archivo PDF.");
-  }
-
-  return apiCrearDocumentoTecnico(input.archivo, input.activoId, input.usaSugerenciasIA);
+  const archivoValidado = await validarArchivoPdf(input.archivo);
+  return apiCrearDocumentoTecnico(archivoValidado, input.activoId, input.usaSugerenciasIA);
 }
 
 export function obtenerUrlDescargaDocumentoTecnico(documentoId: number) {

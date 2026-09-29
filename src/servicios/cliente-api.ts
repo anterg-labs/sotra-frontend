@@ -84,6 +84,19 @@ export async function apiDesactivarCliente(clienteId: number) {
   return clienteActualizado as Cliente;
 }
 
+export async function apiReactivarCliente(clienteId: number) {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/clientes/" + clienteId, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ estado: "activo" }),
+  });
+  verificarRespuesta(respuesta, "No se pudo reactivar el cliente.");
+
+  const clienteActualizado = await respuesta.json();
+  return clienteActualizado as Cliente;
+}
+
 export async function apiListarUsuarios() {
   const urlBaseApi = obtenerUrlBaseApi();
   const respuesta = await fetch(urlBaseApi + "/api/v1/usuarios", { cache: "no-store" });

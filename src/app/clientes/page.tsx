@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
-import { desactivarCliente, listarClientes } from "@/servicios/servicio-clientes";
+import { desactivarCliente, listarClientes, reactivarCliente } from "@/servicios/servicio-clientes";
 import type { Cliente } from "@/tipos/cliente";
 
 function obtenerEtiquetaEstado(estado: Cliente["estado"]) {
@@ -65,6 +65,20 @@ export default function PaginaClientes() {
     }
   }
 
+  async function reactivarClienteSeleccionado(cliente: Cliente) {
+    setClienteDesactivandoId(cliente.id);
+
+    try {
+      await reactivarCliente(cliente.id);
+      const respuesta = await listarClientes();
+      setClientes(respuesta);
+    } catch {
+      setErrorCarga("No se pudo reactivar al cliente seleccionado.");
+    } finally {
+      setClienteDesactivandoId(null);
+    }
+  }
+
   let mensajeError = null;
   if (errorCarga) {
     mensajeError = <p className="form-error-banner">{errorCarga}</p>;
@@ -119,6 +133,31 @@ export default function PaginaClientes() {
                 );
               }
 
+              let botonPrincipal = (
+                <Link
+                  aria-label="Modificar cliente"
+                  className="table-action-link"
+                  href={"/clientes/" + cliente.id + "/editar"}
+                  title="Modificar cliente"
+                >
+                  Modificar
+                </Link>
+              );
+              if (cliente.estado === "inactivo") {
+                botonPrincipal = (
+                  <button
+                    aria-label="Reactivar cliente"
+                    className="table-action-link"
+                    disabled={clienteDesactivandoId === cliente.id}
+                    onClick={() => reactivarClienteSeleccionado(cliente)}
+                    title="Reactivar cliente"
+                    type="button"
+                  >
+                    Reactivar
+                  </button>
+                );
+              }
+
               return (
                 <tr key={cliente.id}>
                   <td><strong>{cliente.razonSocial}</strong></td>
@@ -131,14 +170,7 @@ export default function PaginaClientes() {
                   </td>
                   <td>
                     <div className="table-actions">
-                      <Link
-                        aria-label="Modificar cliente"
-                        className="table-action-link"
-                        href={"/clientes/" + cliente.id + "/editar"}
-                        title="Modificar cliente"
-                      >
-                        Modificar
-                      </Link>
+                      {botonPrincipal}
                       {botonBaja}
                     </div>
                   </td>

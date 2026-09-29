@@ -6,12 +6,12 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const enlacesNavegacion = [
-  { ruta: "/usuarios", etiqueta: "Usuarios", simbolo: "US" },
+  { ruta: "/ordenes-trabajo", etiqueta: "Órdenes de trabajo", simbolo: "OT" },
   { ruta: "/clientes", etiqueta: "Clientes", simbolo: "CL" },
   { ruta: "/activos", etiqueta: "Activos", simbolo: "AC" },
-  { ruta: "/ordenes-trabajo", etiqueta: "Órdenes de trabajo", simbolo: "OT" },
   { ruta: "/repuestos", etiqueta: "Repuestos", simbolo: "RE" },
   { ruta: "/documentacion-tecnica", etiqueta: "Documentación técnica", simbolo: "DT" },
+  { ruta: "/usuarios", etiqueta: "Usuarios", simbolo: "US" },
 ];
 
 type EstructuraAplicacionProps = {

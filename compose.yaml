@@ -9,9 +9,6 @@ services:
     container_name: sotra-frontend-prod
     ports:
       - "80:3000" # mantuve tu puerto 3100
-    env_file:
-      - .env.dev
-
 
 # este servicio refleja los cambios en tiempo real: la carpeta del proyecto esta montada dentro del contenedor
   sotra-frontend-dev:

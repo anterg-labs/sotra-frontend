@@ -2,7 +2,7 @@ services:
   sotra-frontend-prod: #renombre el servicio y cada uno esta pensado para diferente enfoque
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
       args:
         API_URL: ${API_URL}
     image: sotra-frontend-prod

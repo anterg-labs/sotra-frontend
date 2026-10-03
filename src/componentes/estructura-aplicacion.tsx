@@ -127,7 +127,8 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
         </nav>
 
         <div className="border-t border-gray-200 px-4 py-3 text-xs text-gray-500">
-          <p>Versión: {versionBackend}</p>
+          <p>Frontend: {versionFrontend.version}</p>
+          <p>Backend: {versionBackend}</p>
         </div>
       </aside>
 

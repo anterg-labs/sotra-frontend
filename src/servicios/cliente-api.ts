@@ -1,6 +1,10 @@
 import type { ActualizarClienteInput, Cliente, CrearClienteInput } from "@/tipos/cliente";
 import type { ActualizarUsuarioInput, CrearUsuarioInput, Usuario } from "@/tipos/usuario";
 
+export type VersionBackend = {
+  version: string;
+};
+
 function obtenerUrlBaseApi(): string {
   const urlBaseApi = process.env.API_URL;
 
@@ -15,6 +19,15 @@ function verificarRespuesta(respuesta: Response, mensajeError: string) {
   if (!respuesta.ok) {
     throw new Error(mensajeError);
   }
+}
+
+export async function apiObtenerVersionBackend() {
+  const urlBaseApi = obtenerUrlBaseApi();
+  const respuesta = await fetch(urlBaseApi + "/api/v1/version", { cache: "no-store" });
+  verificarRespuesta(respuesta, "No se pudo obtener la versión del backend.");
+
+  const versionBackend = await respuesta.json();
+  return versionBackend as VersionBackend;
 }
 
 export async function apiListarClientes() {

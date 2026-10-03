@@ -3,7 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { apiObtenerVersionBackend } from "@/servicios/cliente-api";
+import versionFrontend from "../../version.json";
 
 const enlacesNavegacion = [
   { ruta: "/usuarios", etiqueta: "Usuarios", simbolo: "US" },
@@ -18,6 +20,31 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
   const children = props.children;
   const rutaActual = usePathname();
   const [estaMenuAbierto, setEstaMenuAbierto] = useState(false);
+  const [versionBackend, setVersionBackend] = useState("Cargando...");
+
+  useEffect(() => {
+    async function cargarVersionBackend() {
+      try {
+        const respuestaVersionBackend = await apiObtenerVersionBackend();
+        setVersionBackend(respuestaVersionBackend.version);
+        console.log(
+          "Versión frontend: " +
+            versionFrontend.version +
+            " | Versión backend: " +
+            respuestaVersionBackend.version
+        );
+      } catch {
+        setVersionBackend("No disponible");
+        console.log(
+          "Versión frontend: " +
+            versionFrontend.version +
+            " | Versión backend: No disponible"
+        );
+      }
+    }
+
+    cargarVersionBackend();
+  }, []);
 
   function cerrarMenu() {
     setEstaMenuAbierto(false);
@@ -98,6 +125,10 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
             );
           })}
         </nav>
+
+        <div className="border-t border-gray-200 px-4 py-3 text-xs text-gray-500">
+          <p>Versión: {versionBackend}</p>
+        </div>
       </aside>
 
       {fondoOscuro}

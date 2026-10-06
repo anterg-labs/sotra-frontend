@@ -12,6 +12,7 @@ const enlacesNavegacion = [
   { ruta: "/repuestos", etiqueta: "Repuestos", simbolo: "RE" },
   { ruta: "/documentacion-tecnica", etiqueta: "Documentación técnica", simbolo: "DT" },
   { ruta: "/usuarios", etiqueta: "Usuarios", simbolo: "US" },
+  { ruta: "/reportes", etiqueta: "Reportes", simbolo: "RP" },
 ];
 
 type EstructuraAplicacionProps = {

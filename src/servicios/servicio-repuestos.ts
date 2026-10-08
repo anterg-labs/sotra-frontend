@@ -3,9 +3,10 @@ import {
   apiCrearRepuesto,
   apiDesactivarRepuesto,
   apiListarRepuestos,
+  apiListarRepuestosPaginados,
   apiObtenerRepuesto,
 } from "@/servicios/api/api-repuestos";
-import type { ActualizarRepuestoInput, CrearRepuestoInput } from "@/tipos/repuesto";
+import type { ActualizarRepuestoInput, CrearRepuestoInput, FiltrosRepuestos, Repuesto } from "@/tipos/repuesto";
 
 function validarRepuesto(input: CrearRepuestoInput) {
   if (!input.codigo.trim()) {
@@ -27,6 +28,14 @@ function validarRepuesto(input: CrearRepuestoInput) {
 
 export async function listarRepuestos() {
   return apiListarRepuestos();
+}
+
+export async function listarRepuestosPaginados(filtros: FiltrosRepuestos) {
+  return apiListarRepuestosPaginados(filtros);
+}
+
+export function tieneBajoStock(repuesto: Repuesto) {
+  return repuesto.estado === "activo" && repuesto.cantidad <= repuesto.cantidadMinima;
 }
 
 export async function obtenerDetalleRepuesto(repuestoId: number) {

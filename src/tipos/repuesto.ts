@@ -23,3 +23,11 @@ export type CrearRepuestoInput = {
 };
 
 export type ActualizarRepuestoInput = CrearRepuestoInput;
+
+export type FiltrosRepuestos = {
+  buscar: string;
+  estado: string;
+  ubicacion: string;
+  bajoStock: boolean;
+  pagina: number;
+};

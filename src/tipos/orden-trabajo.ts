@@ -92,5 +92,6 @@ export type FiltrosOrdenesTrabajo = {
   tipo: string;
   fechaDesde: string;
   fechaHasta: string;
+  conSugerencias: boolean;
   pagina: number;
 };

@@ -28,6 +28,7 @@ const filtrosVacios: FiltrosOrdenesTrabajo = {
   tipo: "",
   fechaDesde: "",
   fechaHasta: "",
+  conSugerencias: false,
   pagina: 1,
 };
 
@@ -61,6 +62,7 @@ export default function PaginaOrdenesTrabajo() {
   const [tipo, setTipo] = useState("");
   const [fechaDesde, setFechaDesde] = useState("");
   const [fechaHasta, setFechaHasta] = useState("");
+  const [conSugerencias, setConSugerencias] = useState(false);
 
   async function cargarOrdenes(filtros: FiltrosOrdenesTrabajo) {
     setOrdenes(null);
@@ -124,6 +126,7 @@ export default function PaginaOrdenesTrabajo() {
       tipo: tipo,
       fechaDesde: fechaDesde,
       fechaHasta: fechaHasta,
+      conSugerencias: conSugerencias,
       pagina: 1,
     };
     cargarOrdenes(filtros);
@@ -139,6 +142,7 @@ export default function PaginaOrdenesTrabajo() {
     setTipo("");
     setFechaDesde("");
     setFechaHasta("");
+    setConSugerencias(false);
     cargarOrdenes(filtrosVacios);
   }
 
@@ -153,6 +157,7 @@ export default function PaginaOrdenesTrabajo() {
       tipo: filtrosAplicados.tipo,
       fechaDesde: filtrosAplicados.fechaDesde,
       fechaHasta: filtrosAplicados.fechaHasta,
+      conSugerencias: filtrosAplicados.conSugerencias,
       pagina: numeroPagina,
     };
     cargarOrdenes(filtros);
@@ -201,6 +206,10 @@ export default function PaginaOrdenesTrabajo() {
 
   function cambiarFechaHasta(evento: React.ChangeEvent<HTMLInputElement>) {
     setFechaHasta(evento.target.value);
+  }
+
+  function cambiarConSugerencias(evento: React.ChangeEvent<HTMLInputElement>) {
+    setConSugerencias(evento.target.checked);
   }
 
   function obtenerNombreVisibleDeActivo(activo: Activo) {
@@ -460,6 +469,13 @@ export default function PaginaOrdenesTrabajo() {
           <div className="form-field">
             <label htmlFor="fechaHasta">Creada hasta</label>
             <input id="fechaHasta" onChange={cambiarFechaHasta} type="date" value={fechaHasta} />
+          </div>
+
+          <div className="form-field">
+            <label className="flex items-center gap-2" htmlFor="conSugerencias">
+              <input checked={conSugerencias} id="conSugerencias" onChange={cambiarConSugerencias} type="checkbox" />
+              Solo con recomendaciones de IA
+            </label>
           </div>
         </div>
         <div className="form-actions">

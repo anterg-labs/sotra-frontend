@@ -71,6 +71,7 @@ describe("servicio-ordenes-trabajo", () => {
       tipo: "",
       fechaDesde: "",
       fechaHasta: "",
+      conSugerencias: false,
       pagina: 1,
     };
 
@@ -93,6 +94,7 @@ describe("servicio-ordenes-trabajo", () => {
       tipo: "",
       fechaDesde: "",
       fechaHasta: "",
+      conSugerencias: false,
       pagina: 2,
     };
 

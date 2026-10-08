@@ -124,7 +124,10 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
     avisoExito = <p className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">{mensajeExito}</p>;
   }
 
-  let listaEvidencias = <p className="empty-state">Cargando evidencias…</p>;
+  let listaEvidencias: React.ReactNode = <p className="empty-state">Cargando evidencias…</p>;
+  if (errorCarga) {
+    listaEvidencias = null;
+  }
   if (evidencias !== null && evidencias.length === 0) {
     listaEvidencias = <p className="empty-state">Esta orden todavía no tiene evidencias registradas.</p>;
   }

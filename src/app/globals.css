@@ -208,6 +208,26 @@ button:disabled {
   color: #16a34a;
 }
 
+.validacion-pendiente {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.validacion-aceptada {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.validacion-rechazada {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.validacion-observada {
+  background: #fff5de;
+  color: #b7791f;
+}
+
 .prioridad-alta {
   background: #fef2f2;
   color: #ef4444;

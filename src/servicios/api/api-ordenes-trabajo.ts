@@ -38,6 +38,9 @@ export async function apiListarOrdenesTrabajo(filtros: FiltrosOrdenesTrabajo) {
   if (filtros.fechaHasta !== "") {
     parametros.append("fechaHasta", filtros.fechaHasta);
   }
+  if (filtros.conSugerencias) {
+    parametros.append("conSugerencias", "true");
+  }
   parametros.append("pagina", String(filtros.pagina));
 
   const ruta = "/api/v1/ordenes-trabajo?" + parametros.toString();

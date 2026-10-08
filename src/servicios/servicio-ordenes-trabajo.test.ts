@@ -37,7 +37,14 @@ describe("servicio-ordenes-trabajo", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => {
-        return new Response(JSON.stringify([ordenSimulada]), {
+        const paginaSimulada = {
+          elementos: [ordenSimulada],
+          pagina: 1,
+          tamanoPagina: 20,
+          totalElementos: 1,
+          totalPaginas: 1,
+        };
+        return new Response(JSON.stringify(paginaSimulada), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         });
@@ -50,11 +57,48 @@ describe("servicio-ordenes-trabajo", () => {
     vi.unstubAllGlobals();
   });
 
-  it("obtiene el listado de órdenes de trabajo", async () => {
-    const respuesta = await listarOrdenesTrabajo();
+  it("obtiene el listado paginado de órdenes de trabajo", async () => {
+    const filtros = {
+      buscar: "",
+      clienteId: "",
+      activoId: "",
+      tecnicoId: "",
+      estado: "",
+      prioridad: "",
+      tipo: "",
+      fechaDesde: "",
+      fechaHasta: "",
+      pagina: 1,
+    };
 
-    expect(respuesta).toHaveLength(1);
-    expect(respuesta[0].descripcion).toBe("Cambiar aceite del motor");
+    const respuesta = await listarOrdenesTrabajo(filtros);
+
+    expect(respuesta.elementos).toHaveLength(1);
+    expect(respuesta.elementos[0].descripcion).toBe("Cambiar aceite del motor");
+    expect(respuesta.totalPaginas).toBe(1);
+    expect(fetch).toHaveBeenCalledWith("http://localhost:4000/api/v1/ordenes-trabajo?pagina=1", { cache: "no-store" });
+  });
+
+  it("envía la búsqueda y los filtros completados", async () => {
+    const filtros = {
+      buscar: " aceite ",
+      clienteId: "1",
+      activoId: "",
+      tecnicoId: "",
+      estado: "creada",
+      prioridad: "alta",
+      tipo: "",
+      fechaDesde: "",
+      fechaHasta: "",
+      pagina: 2,
+    };
+
+    await listarOrdenesTrabajo(filtros);
+
+    expect(fetch).toHaveBeenCalledWith(
+      "http://localhost:4000/api/v1/ordenes-trabajo?buscar=aceite&clienteId=1&estado=creada&prioridad=alta&pagina=2",
+      { cache: "no-store" },
+    );
   });
 
   it("no permite crear una orden sin descripción", async () => {

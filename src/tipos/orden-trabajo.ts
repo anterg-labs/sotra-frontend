@@ -72,3 +72,16 @@ export type SugerenciaOrdenTrabajo = {
 };
 
 export type ActualizarOrdenTrabajoInput = CrearOrdenTrabajoInput;
+
+export type FiltrosOrdenesTrabajo = {
+  buscar: string;
+  clienteId: string;
+  activoId: string;
+  tecnicoId: string;
+  estado: string;
+  prioridad: string;
+  tipo: string;
+  fechaDesde: string;
+  fechaHasta: string;
+  pagina: number;
+};

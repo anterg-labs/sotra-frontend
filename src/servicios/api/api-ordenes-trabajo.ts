@@ -2,14 +2,47 @@ import { crearOpcionesJson, leerDatosApi, obtenerUrlBaseApi } from "@/servicios/
 import type {
   ActualizarOrdenTrabajoInput,
   CrearOrdenTrabajoInput,
+  FiltrosOrdenesTrabajo,
   OrdenTrabajo,
   SolicitarSugerenciaInput,
   SugerenciaOrdenTrabajo,
 } from "@/tipos/orden-trabajo";
+import type { Pagina } from "@/tipos/pagina";
 
-export async function apiListarOrdenesTrabajo() {
-  const ordenes = await leerDatosApi("/api/v1/ordenes-trabajo", { cache: "no-store" }, "No se pudo obtener el listado de órdenes de trabajo.");
-  return ordenes as OrdenTrabajo[];
+export async function apiListarOrdenesTrabajo(filtros: FiltrosOrdenesTrabajo) {
+  const parametros = new URLSearchParams();
+  if (filtros.buscar.trim() !== "") {
+    parametros.append("buscar", filtros.buscar.trim());
+  }
+  if (filtros.clienteId !== "") {
+    parametros.append("clienteId", filtros.clienteId);
+  }
+  if (filtros.activoId !== "") {
+    parametros.append("activoId", filtros.activoId);
+  }
+  if (filtros.tecnicoId !== "") {
+    parametros.append("tecnicoId", filtros.tecnicoId);
+  }
+  if (filtros.estado !== "") {
+    parametros.append("estado", filtros.estado);
+  }
+  if (filtros.prioridad !== "") {
+    parametros.append("prioridad", filtros.prioridad);
+  }
+  if (filtros.tipo !== "") {
+    parametros.append("tipo", filtros.tipo);
+  }
+  if (filtros.fechaDesde !== "") {
+    parametros.append("fechaDesde", filtros.fechaDesde);
+  }
+  if (filtros.fechaHasta !== "") {
+    parametros.append("fechaHasta", filtros.fechaHasta);
+  }
+  parametros.append("pagina", String(filtros.pagina));
+
+  const ruta = "/api/v1/ordenes-trabajo?" + parametros.toString();
+  const pagina = await leerDatosApi(ruta, { cache: "no-store" }, "No se pudo obtener el listado de órdenes de trabajo.");
+  return pagina as Pagina<OrdenTrabajo>;
 }
 
 export async function apiObtenerOrdenTrabajo(ordenTrabajoId: number) {

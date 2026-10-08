@@ -10,6 +10,7 @@ import type {
   ActualizarOrdenTrabajoInput,
   CrearOrdenTrabajoInput,
   EstadoOrdenTrabajo,
+  FiltrosOrdenesTrabajo,
   SolicitarSugerenciaInput,
 } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
@@ -71,8 +72,8 @@ export async function listarTecnicos() {
   return tecnicos;
 }
 
-export async function listarOrdenesTrabajo() {
-  return apiListarOrdenesTrabajo();
+export async function listarOrdenesTrabajo(filtros: FiltrosOrdenesTrabajo) {
+  return apiListarOrdenesTrabajo(filtros);
 }
 
 export async function obtenerDetalleOrdenTrabajo(ordenTrabajoId: number) {

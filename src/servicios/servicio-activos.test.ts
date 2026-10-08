@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { crearActivo, desactivarActivo, listarActivos } from "@/servicios/servicio-activos";
+import { crearActivo, desactivarActivo, listarActivos, listarActivosPaginados } from "@/servicios/servicio-activos";
 
 describe("servicio-activos", () => {
   beforeEach(() => {
@@ -41,7 +41,14 @@ describe("servicio-activos", () => {
           });
         }
 
-        return new Response(JSON.stringify(activosSimulados), {
+        const paginaSimulada = {
+          elementos: activosSimulados,
+          pagina: 1,
+          tamanoPagina: 100,
+          totalElementos: 1,
+          totalPaginas: 1,
+        };
+        return new Response(JSON.stringify(paginaSimulada), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         });
@@ -59,6 +66,19 @@ describe("servicio-activos", () => {
 
     expect(respuesta).toHaveLength(1);
     expect(respuesta[0].nombre).toBe("Excavadora 01");
+    expect(fetch).toHaveBeenCalledWith("http://localhost:4000/api/v1/activos?pagina=1&tamanoPagina=100", { cache: "no-store" });
+  });
+
+  it("obtiene una página de activos con los filtros completados", async () => {
+    const filtros = { buscar: " excavadora ", clienteId: "3", modeloMaquinaId: "", estado: "activo", pagina: 2 };
+
+    const respuesta = await listarActivosPaginados(filtros);
+
+    expect(respuesta.elementos).toHaveLength(1);
+    expect(fetch).toHaveBeenCalledWith(
+      "http://localhost:4000/api/v1/activos?buscar=excavadora&clienteId=3&estado=activo&pagina=2",
+      { cache: "no-store" },
+    );
   });
 
   it("no permite crear un activo sin número de serie", async () => {

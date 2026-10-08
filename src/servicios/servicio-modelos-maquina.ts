@@ -3,9 +3,14 @@ import {
   apiCrearModeloMaquina,
   apiDesactivarModeloMaquina,
   apiListarModelosMaquina,
+  apiListarModelosMaquinaPaginados,
   apiObtenerModeloMaquina,
 } from "@/servicios/api/api-modelos-maquina";
-import type { ActualizarModeloMaquinaInput, CrearModeloMaquinaInput } from "@/tipos/modelo-maquina";
+import type {
+  ActualizarModeloMaquinaInput,
+  CrearModeloMaquinaInput,
+  FiltrosModelosMaquina,
+} from "@/tipos/modelo-maquina";
 
 function validarModeloMaquina(input: CrearModeloMaquinaInput) {
   if (!input.nombre.trim()) {
@@ -19,6 +24,10 @@ function validarModeloMaquina(input: CrearModeloMaquinaInput) {
 
 export async function listarModelosMaquina() {
   return apiListarModelosMaquina();
+}
+
+export async function listarModelosMaquinaPaginados(filtros: FiltrosModelosMaquina) {
+  return apiListarModelosMaquinaPaginados(filtros);
 }
 
 export async function obtenerDetalleModeloMaquina(modeloMaquinaId: number) {

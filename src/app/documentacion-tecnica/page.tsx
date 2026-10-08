@@ -3,34 +3,122 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
+import { listarActivos } from "@/servicios/servicio-activos";
 import {
   eliminarDocumentoTecnico,
-  listarDocumentosTecnicos,
+  listarDocumentosTecnicosPaginados,
   obtenerUrlDescargaDocumentoTecnico,
 } from "@/servicios/servicio-documentos-tecnicos";
-import type { DocumentoTecnico } from "@/tipos/documento-tecnico";
+import type { Activo } from "@/tipos/activo";
+import type { DocumentoTecnico, FiltrosDocumentosTecnicos } from "@/tipos/documento-tecnico";
+
+const filtrosVacios: FiltrosDocumentosTecnicos = {
+  buscar: "",
+  activoId: "",
+  pagina: 1,
+};
 
 export default function PaginaDocumentacionTecnica() {
   const [documentos, setDocumentos] = useState<DocumentoTecnico[] | null>(null);
+  const [activos, setActivos] = useState<Activo[]>([]);
   const [errorCarga, setErrorCarga] = useState("");
   const [documentoEliminandoId, setDocumentoEliminandoId] = useState<number | null>(null);
   const [documentoPendienteEliminacion, setDocumentoPendienteEliminacion] = useState<DocumentoTecnico | null>(null);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [totalElementos, setTotalElementos] = useState(0);
+  const [filtrosAplicados, setFiltrosAplicados] = useState<FiltrosDocumentosTecnicos>(filtrosVacios);
+  const [buscar, setBuscar] = useState("");
+  const [activoIdFiltro, setActivoIdFiltro] = useState("");
 
   useEffect(() => {
     async function cargarDocumentos() {
-      setDocumentos(null);
-      setErrorCarga("");
-
       try {
-        const documentosObtenidos = await listarDocumentosTecnicos();
-        setDocumentos(documentosObtenidos);
+        const paginaObtenida = await listarDocumentosTecnicosPaginados(filtrosVacios);
+        setDocumentos(paginaObtenida.elementos);
+        setPaginaActual(paginaObtenida.pagina);
+        setTotalPaginas(paginaObtenida.totalPaginas);
+        setTotalElementos(paginaObtenida.totalElementos);
       } catch {
         setErrorCarga("No se pudo obtener el listado de documentos técnicos.");
+      }
+
+      try {
+        const activosObtenidos = await listarActivos();
+        setActivos(activosObtenidos);
+      } catch {
+        setErrorCarga("No se pudo obtener el listado de activos para el filtro.");
       }
     }
 
     cargarDocumentos();
   }, []);
+
+  async function cargarPagina(filtros: FiltrosDocumentosTecnicos) {
+    setDocumentos(null);
+    setErrorCarga("");
+    setFiltrosAplicados(filtros);
+
+    try {
+      const paginaObtenida = await listarDocumentosTecnicosPaginados(filtros);
+      setDocumentos(paginaObtenida.elementos);
+      setPaginaActual(paginaObtenida.pagina);
+      setTotalPaginas(paginaObtenida.totalPaginas);
+      setTotalElementos(paginaObtenida.totalElementos);
+    } catch {
+      setErrorCarga("No se pudo obtener el listado de documentos técnicos.");
+    }
+  }
+
+  function aplicarFiltros(evento: React.FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+
+    const filtros: FiltrosDocumentosTecnicos = {
+      buscar: buscar,
+      activoId: activoIdFiltro,
+      pagina: 1,
+    };
+    cargarPagina(filtros);
+  }
+
+  function limpiarFiltros() {
+    setBuscar("");
+    setActivoIdFiltro("");
+    cargarPagina(filtrosVacios);
+  }
+
+  function irAPagina(numeroPagina: number) {
+    const filtros: FiltrosDocumentosTecnicos = {
+      buscar: filtrosAplicados.buscar,
+      activoId: filtrosAplicados.activoId,
+      pagina: numeroPagina,
+    };
+    cargarPagina(filtros);
+  }
+
+  function irAPaginaAnterior() {
+    irAPagina(paginaActual - 1);
+  }
+
+  function irAPaginaSiguiente() {
+    irAPagina(paginaActual + 1);
+  }
+
+  function cambiarBuscar(evento: React.ChangeEvent<HTMLInputElement>) {
+    setBuscar(evento.target.value);
+  }
+
+  function cambiarActivoFiltro(evento: React.ChangeEvent<HTMLSelectElement>) {
+    setActivoIdFiltro(evento.target.value);
+  }
+
+  function obtenerNombreVisibleDeActivo(activo: Activo) {
+    if (activo.nombre !== null && activo.nombre.trim() !== "") {
+      return activo.nombre;
+    }
+
+    return activo.numSerie;
+  }
 
   function pedirEliminacionDocumento(documento: DocumentoTecnico) {
     setDocumentoPendienteEliminacion(documento);
@@ -50,9 +138,8 @@ export default function PaginaDocumentacionTecnica() {
 
     try {
       await eliminarDocumentoTecnico(documentoId);
-      const documentosActualizados = await listarDocumentosTecnicos();
-      setDocumentos(documentosActualizados);
       setDocumentoPendienteEliminacion(null);
+      await cargarPagina(filtrosAplicados);
     } catch {
       setErrorCarga("No se pudo eliminar el documento seleccionado.");
     } finally {
@@ -72,7 +159,7 @@ export default function PaginaDocumentacionTecnica() {
 
   let mensajeSinResultados = null;
   if (documentos !== null && documentos.length === 0) {
-    mensajeSinResultados = <p className="empty-state">No hay documentos técnicos cargados.</p>;
+    mensajeSinResultados = <p className="empty-state">No se encontraron documentos técnicos con los filtros aplicados.</p>;
   }
 
   let tablaDocumentos = null;
@@ -115,6 +202,14 @@ export default function PaginaDocumentacionTecnica() {
                   <td>{fechaCarga}</td>
                   <td>
                     <div className="table-actions">
+                      <Link
+                        aria-label="Ver detalle"
+                        className="table-action-link"
+                        href={"/documentacion-tecnica/" + documento.id}
+                        title="Ver detalle"
+                      >
+                        Ver detalle
+                      </Link>
                       <a
                         aria-label="Descargar PDF"
                         className="table-action-link"
@@ -140,6 +235,21 @@ export default function PaginaDocumentacionTecnica() {
             })}
           </tbody>
         </table>
+      </div>
+    );
+  }
+
+  let paginacion = null;
+  if (totalPaginas > 1) {
+    paginacion = (
+      <div className="pagination">
+        <button disabled={paginaActual <= 1} onClick={irAPaginaAnterior} type="button">
+          Anterior
+        </button>
+        <span>{"Página " + paginaActual + " de " + totalPaginas + " (" + totalElementos + " documentos)"}</span>
+        <button disabled={paginaActual >= totalPaginas} onClick={irAPaginaSiguiente} type="button">
+          Siguiente
+        </button>
       </div>
     );
   }
@@ -173,11 +283,47 @@ export default function PaginaDocumentacionTecnica() {
         </Link>
       </header>
 
+      <form className="panel form-panel mb-6" onSubmit={aplicarFiltros}>
+        <div className="panel-heading">
+          <h2>Búsqueda y filtros</h2>
+        </div>
+        <div className="form-grid">
+          <div className="form-field">
+            <label htmlFor="buscarDocumento">Buscar</label>
+            <input
+              id="buscarDocumento"
+              onChange={cambiarBuscar}
+              placeholder="Nombre del archivo o del activo"
+              type="text"
+              value={buscar}
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="activoDocumentoFiltro">Activo asociado</label>
+            <select id="activoDocumentoFiltro" onChange={cambiarActivoFiltro} value={activoIdFiltro}>
+              <option value="">Todos los activos</option>
+              {activos.map((activo) => (
+                <option key={activo.id} value={activo.id}>{obtenerNombreVisibleDeActivo(activo)}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="form-actions">
+          <button className="secondary-button" onClick={limpiarFiltros} type="button">
+            Limpiar filtros
+          </button>
+          <button className="primary-button" type="submit">
+            Aplicar filtros
+          </button>
+        </div>
+      </form>
+
       <section className="panel">
         {mensajeError}
         {mensajeCargando}
         {mensajeSinResultados}
         {tablaDocumentos}
+        {paginacion}
       </section>
 
       {modalEliminacion}

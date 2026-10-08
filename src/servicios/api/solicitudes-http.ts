@@ -42,6 +42,30 @@ export async function leerDatosApi(ruta: string, opciones: RequestInit, mensajeE
   return datos;
 }
 
+export async function leerTodasLasPaginas(ruta: string, mensajeError: string) {
+  const elementos = [];
+  let pagina = 1;
+  let totalPaginas = 1;
+
+  while (pagina <= totalPaginas) {
+    const rutaDeLaPagina = ruta + "?pagina=" + pagina + "&tamanoPagina=100";
+    const respuesta = await leerDatosApi(rutaDeLaPagina, { cache: "no-store" }, mensajeError);
+    for (const elemento of respuesta.elementos) {
+      elementos.push(elemento);
+    }
+    totalPaginas = respuesta.totalPaginas;
+    pagina = pagina + 1;
+  }
+
+  return elementos;
+}
+
+export async function leerPagina(ruta: string, parametros: URLSearchParams, mensajeError: string) {
+  const rutaConParametros = ruta + "?" + parametros.toString();
+  const respuesta = await leerDatosApi(rutaConParametros, { cache: "no-store" }, mensajeError);
+  return respuesta;
+}
+
 export function crearOpcionesJson(metodo: string, cuerpo: unknown): RequestInit {
   return {
     method: metodo,

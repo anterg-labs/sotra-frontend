@@ -28,7 +28,14 @@ describe("servicio-documentos-tecnicos", () => {
           return new Response(null, { status: 204 });
         }
 
-        return new Response(JSON.stringify(documentosSimulados), {
+        const paginaSimulada = {
+          elementos: documentosSimulados,
+          pagina: 1,
+          tamanoPagina: 100,
+          totalElementos: 1,
+          totalPaginas: 1,
+        };
+        return new Response(JSON.stringify(paginaSimulada), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         });

@@ -32,3 +32,11 @@ export type ActualizarActivoInput = {
   ubicacion: string | null;
   estado: EstadoActivo;
 };
+
+export type FiltrosActivos = {
+  buscar: string;
+  clienteId: string;
+  modeloMaquinaId: string;
+  estado: string;
+  pagina: number;
+};

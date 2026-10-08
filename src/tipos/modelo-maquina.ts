@@ -20,3 +20,10 @@ export type ActualizarModeloMaquinaInput = {
   descripcion: string | null;
   estado: EstadoModeloMaquina;
 };
+
+export type FiltrosModelosMaquina = {
+  buscar: string;
+  tipoMaquinaId: string;
+  estado: string;
+  pagina: number;
+};

@@ -23,3 +23,9 @@ export type CrearClienteInput = {
 };
 
 export type ActualizarClienteInput = CrearClienteInput;
+
+export type FiltrosClientes = {
+  buscar: string;
+  estado: string;
+  pagina: number;
+};

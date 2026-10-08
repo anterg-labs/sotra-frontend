@@ -3,8 +3,14 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
-import { desactivarCliente, listarClientes, reactivarCliente } from "@/servicios/servicio-clientes";
-import type { Cliente } from "@/tipos/cliente";
+import { desactivarCliente, listarClientesPaginados, reactivarCliente } from "@/servicios/servicio-clientes";
+import type { Cliente, FiltrosClientes } from "@/tipos/cliente";
+
+const filtrosVacios: FiltrosClientes = {
+  buscar: "",
+  estado: "",
+  pagina: 1,
+};
 
 function obtenerEtiquetaEstado(estado: Cliente["estado"]) {
   if (estado === "activo") {
@@ -19,15 +25,21 @@ export default function PaginaClientes() {
   const [errorCarga, setErrorCarga] = useState("");
   const [clienteDesactivandoId, setClienteDesactivandoId] = useState<number | null>(null);
   const [clientePendienteDesactivacion, setClientePendienteDesactivacion] = useState<Cliente | null>(null);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [totalElementos, setTotalElementos] = useState(0);
+  const [filtrosAplicados, setFiltrosAplicados] = useState<FiltrosClientes>(filtrosVacios);
+  const [buscar, setBuscar] = useState("");
+  const [estadoFiltro, setEstadoFiltro] = useState("");
 
   useEffect(() => {
     async function cargarClientes() {
-      setClientes(null);
-      setErrorCarga("");
-
       try {
-        const respuesta = await listarClientes();
-        setClientes(respuesta);
+        const paginaObtenida = await listarClientesPaginados(filtrosVacios);
+        setClientes(paginaObtenida.elementos);
+        setPaginaActual(paginaObtenida.pagina);
+        setTotalPaginas(paginaObtenida.totalPaginas);
+        setTotalElementos(paginaObtenida.totalElementos);
       } catch {
         setErrorCarga("No se pudo obtener el listado de clientes.");
       }
@@ -35,6 +47,64 @@ export default function PaginaClientes() {
 
     cargarClientes();
   }, []);
+
+  async function cargarPagina(filtros: FiltrosClientes) {
+    setClientes(null);
+    setErrorCarga("");
+    setFiltrosAplicados(filtros);
+
+    try {
+      const paginaObtenida = await listarClientesPaginados(filtros);
+      setClientes(paginaObtenida.elementos);
+      setPaginaActual(paginaObtenida.pagina);
+      setTotalPaginas(paginaObtenida.totalPaginas);
+      setTotalElementos(paginaObtenida.totalElementos);
+    } catch {
+      setErrorCarga("No se pudo obtener el listado de clientes.");
+    }
+  }
+
+  function aplicarFiltros(evento: React.FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+
+    const filtros: FiltrosClientes = {
+      buscar: buscar,
+      estado: estadoFiltro,
+      pagina: 1,
+    };
+    cargarPagina(filtros);
+  }
+
+  function limpiarFiltros() {
+    setBuscar("");
+    setEstadoFiltro("");
+    cargarPagina(filtrosVacios);
+  }
+
+  function irAPagina(numeroPagina: number) {
+    const filtros: FiltrosClientes = {
+      buscar: filtrosAplicados.buscar,
+      estado: filtrosAplicados.estado,
+      pagina: numeroPagina,
+    };
+    cargarPagina(filtros);
+  }
+
+  function irAPaginaAnterior() {
+    irAPagina(paginaActual - 1);
+  }
+
+  function irAPaginaSiguiente() {
+    irAPagina(paginaActual + 1);
+  }
+
+  function cambiarBuscar(evento: React.ChangeEvent<HTMLInputElement>) {
+    setBuscar(evento.target.value);
+  }
+
+  function cambiarEstadoFiltro(evento: React.ChangeEvent<HTMLSelectElement>) {
+    setEstadoFiltro(evento.target.value);
+  }
 
   function pedirBajaCliente(cliente: Cliente) {
     setClientePendienteDesactivacion(cliente);
@@ -54,10 +124,8 @@ export default function PaginaClientes() {
 
     try {
       await desactivarCliente(clienteId);
-      const respuesta = await listarClientes();
-
-      setClientes(respuesta);
       setClientePendienteDesactivacion(null);
+      await cargarPagina(filtrosAplicados);
     } catch {
       setErrorCarga("No se pudo dar de baja al cliente seleccionado.");
     } finally {
@@ -70,8 +138,7 @@ export default function PaginaClientes() {
 
     try {
       await reactivarCliente(cliente.id);
-      const respuesta = await listarClientes();
-      setClientes(respuesta);
+      await cargarPagina(filtrosAplicados);
     } catch {
       setErrorCarga("No se pudo reactivar al cliente seleccionado.");
     } finally {
@@ -91,7 +158,7 @@ export default function PaginaClientes() {
 
   let mensajeSinResultados = null;
   if (clientes !== null && clientes.length === 0) {
-    mensajeSinResultados = <p className="empty-state">No hay clientes registrados.</p>;
+    mensajeSinResultados = <p className="empty-state">No se encontraron clientes con los filtros aplicados.</p>;
   }
 
   let tablaClientes = null;
@@ -170,6 +237,14 @@ export default function PaginaClientes() {
                   </td>
                   <td>
                     <div className="table-actions">
+                      <Link
+                        aria-label="Ver detalle"
+                        className="table-action-link"
+                        href={"/clientes/" + cliente.id}
+                        title="Ver detalle"
+                      >
+                        Ver detalle
+                      </Link>
                       {botonPrincipal}
                       {botonBaja}
                     </div>
@@ -179,6 +254,21 @@ export default function PaginaClientes() {
             })}
           </tbody>
         </table>
+      </div>
+    );
+  }
+
+  let paginacion = null;
+  if (totalPaginas > 1) {
+    paginacion = (
+      <div className="pagination">
+        <button disabled={paginaActual <= 1} onClick={irAPaginaAnterior} type="button">
+          Anterior
+        </button>
+        <span>{"Página " + paginaActual + " de " + totalPaginas + " (" + totalElementos + " clientes)"}</span>
+        <button disabled={paginaActual >= totalPaginas} onClick={irAPaginaSiguiente} type="button">
+          Siguiente
+        </button>
       </div>
     );
   }
@@ -212,11 +302,46 @@ export default function PaginaClientes() {
         </Link>
       </header>
 
+      <form className="panel form-panel mb-6" onSubmit={aplicarFiltros}>
+        <div className="panel-heading">
+          <h2>Búsqueda y filtros</h2>
+        </div>
+        <div className="form-grid">
+          <div className="form-field">
+            <label htmlFor="buscarCliente">Buscar</label>
+            <input
+              id="buscarCliente"
+              onChange={cambiarBuscar}
+              placeholder="Razón social, contacto o correo"
+              type="text"
+              value={buscar}
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="estadoClienteFiltro">Estado</label>
+            <select id="estadoClienteFiltro" onChange={cambiarEstadoFiltro} value={estadoFiltro}>
+              <option value="">Todos los estados</option>
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+          </div>
+        </div>
+        <div className="form-actions">
+          <button className="secondary-button" onClick={limpiarFiltros} type="button">
+            Limpiar filtros
+          </button>
+          <button className="primary-button" type="submit">
+            Aplicar filtros
+          </button>
+        </div>
+      </form>
+
       <section className="panel">
         {mensajeError}
         {mensajeCargando}
         {mensajeSinResultados}
         {tablaClientes}
+        {paginacion}
       </section>
 
       {modalBaja}

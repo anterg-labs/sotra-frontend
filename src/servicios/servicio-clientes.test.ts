@@ -41,7 +41,14 @@ describe("servicio-clientes", () => {
           });
         }
 
-        return new Response(JSON.stringify(clientesSimulados), {
+        const paginaSimulada = {
+          elementos: clientesSimulados,
+          pagina: 1,
+          tamanoPagina: 100,
+          totalElementos: 1,
+          totalPaginas: 1,
+        };
+        return new Response(JSON.stringify(paginaSimulada), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         });

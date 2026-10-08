@@ -3,12 +3,14 @@ import {
   apiCrearCliente,
   apiDesactivarCliente,
   apiListarClientes,
+  apiListarClientesPaginados,
   apiObtenerCliente,
   apiReactivarCliente,
 } from "@/servicios/api/api-clientes";
 import type {
   ActualizarClienteInput,
   CrearClienteInput,
+  FiltrosClientes,
 } from "@/tipos/cliente";
 
 const patronFormatoCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -32,6 +34,10 @@ function validarCliente(input: CrearClienteInput) {
 
 export async function listarClientes() {
   return apiListarClientes();
+}
+
+export async function listarClientesPaginados(filtros: FiltrosClientes) {
+  return apiListarClientesPaginados(filtros);
 }
 
 export async function obtenerDetalleCliente(clienteId: number) {

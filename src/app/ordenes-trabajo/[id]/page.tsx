@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { EvidenciasOrdenTrabajo } from "@/componentes/evidencias-orden-trabajo";
 import {
   asignarTecnicoOrdenTrabajo,
   cambiarEstadoOrdenTrabajo,
@@ -268,6 +269,7 @@ export default function PaginaDetalleOrdenTrabajo() {
 
     contenidoOrden = (
       <div className="grid items-start gap-6 lg:grid-cols-[2fr_1fr]">
+      <div className="grid gap-6">
       <section className="panel detail-panel">
         <dl className="detail-list">
           <div>
@@ -321,6 +323,9 @@ export default function PaginaDetalleOrdenTrabajo() {
         </dl>
         <div className="form-actions">{enlaceModificar}</div>
       </section>
+
+      <EvidenciasOrdenTrabajo ordenTrabajoId={orden.id} permiteRegistrar={!ordenEstaTerminada} />
+      </div>
 
       <div className="grid gap-6">
         <section className="panel detail-panel">

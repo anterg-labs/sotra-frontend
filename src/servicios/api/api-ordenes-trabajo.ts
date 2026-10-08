@@ -50,6 +50,20 @@ export async function apiObtenerOrdenTrabajo(ordenTrabajoId: number) {
   return orden as OrdenTrabajo;
 }
 
+export async function apiCambiarEstadoOrdenTrabajo(ordenTrabajoId: number, estado: string, motivo: string) {
+  const opciones = crearOpcionesJson("PATCH", { estado: estado, motivo: motivo });
+  const ruta = "/api/v1/ordenes-trabajo/" + ordenTrabajoId + "/estado";
+  const orden = await leerDatosApi(ruta, opciones, "No se pudo cambiar el estado de la orden de trabajo.");
+  return orden as OrdenTrabajo;
+}
+
+export async function apiAsignarTecnicoOrdenTrabajo(ordenTrabajoId: number, tecnicoId: number) {
+  const opciones = crearOpcionesJson("PATCH", { tecnicoId: tecnicoId });
+  const ruta = "/api/v1/ordenes-trabajo/" + ordenTrabajoId + "/tecnico";
+  const orden = await leerDatosApi(ruta, opciones, "No se pudo asignar el técnico a la orden de trabajo.");
+  return orden as OrdenTrabajo;
+}
+
 export async function apiCrearOrdenTrabajo(orden: CrearOrdenTrabajoInput) {
   const opciones = crearOpcionesJson("POST", orden);
   const ordenCreada = await leerDatosApi("/api/v1/ordenes-trabajo", opciones, "No se pudo crear la orden de trabajo.");

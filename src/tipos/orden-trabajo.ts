@@ -27,6 +27,12 @@ export type RepuestoDeOrden = {
   nombre: string;
 };
 
+export type HistorialEstadoOrdenTrabajo = {
+  estado: EstadoOrdenTrabajo;
+  fechaHora: string;
+  observacion: string | null;
+};
+
 export type OrdenTrabajo = {
   id: number;
   clienteId: number;
@@ -46,6 +52,8 @@ export type OrdenTrabajo = {
   fechaCierre: string | null;
   sugerencias: string[];
   repuestos: RepuestoDeOrden[];
+  estadosSiguientes: EstadoOrdenTrabajo[];
+  historialEstados: HistorialEstadoOrdenTrabajo[];
 };
 
 export type CrearOrdenTrabajoInput = {
@@ -60,6 +68,7 @@ export type CrearOrdenTrabajoInput = {
   sugerencias: string[];
   repuestosIds: number[];
   estado: EstadoOrdenTrabajo;
+  motivoEstado: string;
 };
 
 export type SolicitarSugerenciaInput = {

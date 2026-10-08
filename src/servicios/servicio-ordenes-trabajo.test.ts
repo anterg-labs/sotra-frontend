@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  asignarTecnicoOrdenTrabajo,
   borrarSugerenciasTemporales,
+  cambiarEstadoOrdenTrabajo,
   crearOrdenTrabajo,
+  estadoNecesitaMotivo,
   formatearFechaPrevista,
   guardarSugerenciasTemporales,
   leerSugerenciasTemporales,
@@ -114,9 +117,49 @@ describe("servicio-ordenes-trabajo", () => {
       sugerencias: [],
       repuestosIds: [],
       estado: "creada" as const,
+      motivoEstado: "",
     };
 
     await expect(crearOrdenTrabajo(ordenSinDescripcion)).rejects.toThrow("La descripción de la tarea es obligatoria.");
+  });
+
+  it("pide motivo al pausar, cancelar, cerrar o reasignar una orden finalizada", () => {
+    expect(estadoNecesitaMotivo("en_ejecucion", "pausada")).toBe(true);
+    expect(estadoNecesitaMotivo("creada", "cancelada")).toBe(true);
+    expect(estadoNecesitaMotivo("finalizada", "cerrada")).toBe(true);
+    expect(estadoNecesitaMotivo("finalizada", "asignada")).toBe(true);
+    expect(estadoNecesitaMotivo("asignada", "en_ejecucion")).toBe(false);
+    expect(estadoNecesitaMotivo("pausada", "pausada")).toBe(false);
+  });
+
+  it("no cambia el estado sin motivo cuando hace falta", async () => {
+    await expect(cambiarEstadoOrdenTrabajo(1, "en_ejecucion", "pausada", "  ")).rejects.toThrow(
+      "Indicá el motivo u observación del cambio de estado.",
+    );
+  });
+
+  it("envía el cambio de estado con su motivo", async () => {
+    await cambiarEstadoOrdenTrabajo(1, "en_ejecucion", "pausada", " Falta de repuestos ");
+
+    expect(fetch).toHaveBeenCalledWith("http://localhost:4000/api/v1/ordenes-trabajo/1/estado", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ estado: "pausada", motivo: "Falta de repuestos" }),
+    });
+  });
+
+  it("no asigna técnico si no se eligió ninguno", async () => {
+    await expect(asignarTecnicoOrdenTrabajo(1, "")).rejects.toThrow("Seleccioná un técnico.");
+  });
+
+  it("envía la asignación del técnico", async () => {
+    await asignarTecnicoOrdenTrabajo(1, "25");
+
+    expect(fetch).toHaveBeenCalledWith("http://localhost:4000/api/v1/ordenes-trabajo/1/tecnico", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tecnicoId: 25 }),
+    });
   });
 
   it("muestra la fecha prevista con formato día, mes y año", () => {

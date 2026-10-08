@@ -1,5 +1,7 @@
 import {
   apiActualizarOrdenTrabajo,
+  apiAsignarTecnicoOrdenTrabajo,
+  apiCambiarEstadoOrdenTrabajo,
   apiCrearOrdenTrabajo,
   apiListarOrdenesTrabajo,
   apiObtenerOrdenTrabajo,
@@ -88,6 +90,47 @@ export async function crearOrdenTrabajo(input: CrearOrdenTrabajoInput) {
 export async function actualizarOrdenTrabajo(ordenTrabajoId: number, input: ActualizarOrdenTrabajoInput) {
   validarOrdenTrabajo(input);
   return apiActualizarOrdenTrabajo(ordenTrabajoId, input);
+}
+
+export function estadoNecesitaMotivo(estadoActual: string, estadoNuevo: string) {
+  if (estadoNuevo === estadoActual) {
+    return false;
+  }
+
+  if (estadoNuevo === "pausada" || estadoNuevo === "cancelada" || estadoNuevo === "cerrada") {
+    return true;
+  }
+
+  if (estadoActual === "finalizada" && estadoNuevo === "asignada") {
+    return true;
+  }
+
+  return false;
+}
+
+export async function cambiarEstadoOrdenTrabajo(
+  ordenTrabajoId: number,
+  estadoActual: string,
+  estadoNuevo: string,
+  motivo: string,
+) {
+  if (estadoNuevo === "") {
+    throw new Error("Seleccioná el nuevo estado.");
+  }
+
+  if (estadoNecesitaMotivo(estadoActual, estadoNuevo) && motivo.trim() === "") {
+    throw new Error("Indicá el motivo u observación del cambio de estado.");
+  }
+
+  return apiCambiarEstadoOrdenTrabajo(ordenTrabajoId, estadoNuevo, motivo.trim());
+}
+
+export async function asignarTecnicoOrdenTrabajo(ordenTrabajoId: number, tecnicoId: string) {
+  if (tecnicoId === "") {
+    throw new Error("Seleccioná un técnico.");
+  }
+
+  return apiAsignarTecnicoOrdenTrabajo(ordenTrabajoId, Number(tecnicoId));
 }
 
 export async function solicitarSugerenciaOrdenTrabajo(input: SolicitarSugerenciaInput) {

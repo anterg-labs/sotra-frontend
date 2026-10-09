@@ -181,6 +181,48 @@ button:disabled {
   color: #ef4444;
 }
 
+.status-creada,
+.status-cancelada {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.status-asignada,
+.status-en_ejecucion {
+  background: #e9f6fe;
+  color: #0f83c7;
+}
+
+.status-pausada {
+  background: #fff5de;
+  color: #b7791f;
+}
+
+.status-finalizada {
+  background: #eee8fa;
+  color: #6447a5;
+}
+
+.status-cerrada {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.prioridad-alta {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.prioridad-media {
+  background: #fff5de;
+  color: #b7791f;
+}
+
+.prioridad-baja {
+  background: #e9f6fe;
+  color: #0f83c7;
+}
+
 .filters-bar {
   display: flex;
   gap: 14px;

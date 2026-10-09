@@ -1,5 +1,7 @@
 import {
   apiActualizarOrdenTrabajo,
+  apiAsignarTecnicoOrdenTrabajo,
+  apiCambiarEstadoOrdenTrabajo,
   apiCrearOrdenTrabajo,
   apiListarOrdenesTrabajo,
   apiObtenerOrdenTrabajo,
@@ -10,6 +12,7 @@ import type {
   ActualizarOrdenTrabajoInput,
   CrearOrdenTrabajoInput,
   EstadoOrdenTrabajo,
+  FiltrosOrdenesTrabajo,
   SolicitarSugerenciaInput,
 } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
@@ -71,8 +74,8 @@ export async function listarTecnicos() {
   return tecnicos;
 }
 
-export async function listarOrdenesTrabajo() {
-  return apiListarOrdenesTrabajo();
+export async function listarOrdenesTrabajo(filtros: FiltrosOrdenesTrabajo) {
+  return apiListarOrdenesTrabajo(filtros);
 }
 
 export async function obtenerDetalleOrdenTrabajo(ordenTrabajoId: number) {
@@ -87,6 +90,65 @@ export async function crearOrdenTrabajo(input: CrearOrdenTrabajoInput) {
 export async function actualizarOrdenTrabajo(ordenTrabajoId: number, input: ActualizarOrdenTrabajoInput) {
   validarOrdenTrabajo(input);
   return apiActualizarOrdenTrabajo(ordenTrabajoId, input);
+}
+
+export function crearSesionDeSugerencias() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  let identificador = "";
+  const plantilla = "xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx";
+  for (const caracter of plantilla) {
+    if (caracter === "x") {
+      const numeroAlAzar = Math.floor(Math.random() * 16);
+      identificador = identificador + numeroAlAzar.toString(16);
+    } else {
+      identificador = identificador + caracter;
+    }
+  }
+  return identificador;
+}
+
+export function estadoNecesitaMotivo(estadoActual: string, estadoNuevo: string) {
+  if (estadoNuevo === estadoActual) {
+    return false;
+  }
+
+  if (estadoNuevo === "pausada" || estadoNuevo === "cancelada" || estadoNuevo === "cerrada") {
+    return true;
+  }
+
+  if (estadoActual === "finalizada" && estadoNuevo === "asignada") {
+    return true;
+  }
+
+  return false;
+}
+
+export async function cambiarEstadoOrdenTrabajo(
+  ordenTrabajoId: number,
+  estadoActual: string,
+  estadoNuevo: string,
+  motivo: string,
+) {
+  if (estadoNuevo === "") {
+    throw new Error("Seleccioná el nuevo estado.");
+  }
+
+  if (estadoNecesitaMotivo(estadoActual, estadoNuevo) && motivo.trim() === "") {
+    throw new Error("Indicá el motivo u observación del cambio de estado.");
+  }
+
+  return apiCambiarEstadoOrdenTrabajo(ordenTrabajoId, estadoNuevo, motivo.trim());
+}
+
+export async function asignarTecnicoOrdenTrabajo(ordenTrabajoId: number, tecnicoId: string) {
+  if (tecnicoId === "") {
+    throw new Error("Seleccioná un técnico.");
+  }
+
+  return apiAsignarTecnicoOrdenTrabajo(ordenTrabajoId, Number(tecnicoId));
 }
 
 export async function solicitarSugerenciaOrdenTrabajo(input: SolicitarSugerenciaInput) {

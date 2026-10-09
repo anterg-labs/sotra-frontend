@@ -10,6 +10,8 @@ import { SelectorRepuestosOrdenTrabajo } from "@/componentes/selector-repuestos-
 import { SugerenciasOrdenTrabajo } from "@/componentes/sugerencias-orden-trabajo";
 import {
   borrarSugerenciasTemporales,
+  crearSesionDeSugerencias,
+  estadoNecesitaMotivo,
   leerSugerenciasTemporales,
 } from "@/servicios/servicio-ordenes-trabajo";
 import type { Activo } from "@/tipos/activo";
@@ -51,6 +53,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
   let sugerenciasIniciales: string[] = [];
   let claveSugerenciasTemporales = "";
   const idsRepuestosIniciales: number[] = [];
+  const estadosDisponibles: EstadoOrdenTrabajo[] = [];
 
   if (ordenInicial) {
     clienteIdInicial = String(ordenInicial.clienteId);
@@ -73,6 +76,11 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
     for (const repuestoDeLaOrden of ordenInicial.repuestos) {
       idsRepuestosIniciales.push(repuestoDeLaOrden.id);
     }
+
+    estadosDisponibles.push(ordenInicial.estado);
+    for (const estadoSiguiente of ordenInicial.estadosSiguientes) {
+      estadosDisponibles.push(estadoSiguiente);
+    }
   }
 
   if (claveSugerenciasTemporales !== "") {
@@ -89,6 +97,8 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
   const [tipo, setTipo] = useState(tipoInicial);
   const [prioridad, setPrioridad] = useState(prioridadInicial);
   const [estado, setEstado] = useState(estadoInicial);
+  const [motivoEstado, setMotivoEstado] = useState("");
+  const [sesionSugerencias] = useState(crearSesionDeSugerencias);
   const [descripcion, setDescripcion] = useState(descripcionInicial);
   const [observaciones, setObservaciones] = useState(observacionesInicial);
   const [fechaPrevistaEjecucion, setFechaPrevistaEjecucion] = useState(fechaPrevistaInicial);
@@ -136,6 +146,8 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
       sugerencias,
       repuestosIds: idsRepuestos,
       estado: estado as EstadoOrdenTrabajo,
+      motivoEstado: motivoEstado,
+      sesion: sesionSugerencias,
     };
 
     try {
@@ -196,8 +208,12 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
         <CamposEstadoFechasOrdenTrabajo
           alCambiarEstado={setEstado}
           alCambiarFechaPrevista={setFechaPrevistaEjecucion}
+          alCambiarMotivo={setMotivoEstado}
           estado={estado}
+          estadosDisponibles={estadosDisponibles}
           fechaPrevistaEjecucion={fechaPrevistaEjecucion}
+          motivoEstado={motivoEstado}
+          necesitaMotivo={estadoNecesitaMotivo(estadoInicial, estado)}
           permiteCambiarEstado={permiteCambiarEstado}
         />
       </div>
@@ -223,6 +239,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
         alCambiarSugerencias={setSugerencias}
         claveSugerenciasTemporales={claveSugerenciasTemporales}
         descripcion={descripcion}
+        sesion={sesionSugerencias}
         sugerencias={sugerencias}
       />
 

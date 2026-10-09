@@ -7,6 +7,7 @@ import type { SolicitarSugerenciaInput } from "@/tipos/orden-trabajo";
 
 type PropiedadesSugerenciasOrdenTrabajo = {
   descripcion: string;
+  sesion: string;
   sugerencias: string[];
   claveSugerenciasTemporales: string;
   alCambiarSugerencias: (sugerencias: string[]) => void;
@@ -28,6 +29,7 @@ export function SugerenciasOrdenTrabajo(props: PropiedadesSugerenciasOrdenTrabaj
     const datosSugerencia: SolicitarSugerenciaInput = {
       descripcion: props.descripcion,
       numero: cantidadSolicitudes + 1,
+      sesion: props.sesion,
     };
 
     const textoObtenido = await solicitarSugerenciaOrdenTrabajo(datosSugerencia);

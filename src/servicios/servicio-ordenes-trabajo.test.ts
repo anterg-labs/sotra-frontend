@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  asignarTecnicoOrdenTrabajo,
   borrarSugerenciasTemporales,
+  cambiarEstadoOrdenTrabajo,
   crearOrdenTrabajo,
+  estadoNecesitaMotivo,
   formatearFechaPrevista,
   guardarSugerenciasTemporales,
   leerSugerenciasTemporales,
@@ -37,7 +40,14 @@ describe("servicio-ordenes-trabajo", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => {
-        return new Response(JSON.stringify([ordenSimulada]), {
+        const paginaSimulada = {
+          elementos: [ordenSimulada],
+          pagina: 1,
+          tamanoPagina: 20,
+          totalElementos: 1,
+          totalPaginas: 1,
+        };
+        return new Response(JSON.stringify(paginaSimulada), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         });
@@ -50,11 +60,50 @@ describe("servicio-ordenes-trabajo", () => {
     vi.unstubAllGlobals();
   });
 
-  it("obtiene el listado de órdenes de trabajo", async () => {
-    const respuesta = await listarOrdenesTrabajo();
+  it("obtiene el listado paginado de órdenes de trabajo", async () => {
+    const filtros = {
+      buscar: "",
+      clienteId: "",
+      activoId: "",
+      tecnicoId: "",
+      estado: "",
+      prioridad: "",
+      tipo: "",
+      fechaDesde: "",
+      fechaHasta: "",
+      conSugerencias: false,
+      pagina: 1,
+    };
 
-    expect(respuesta).toHaveLength(1);
-    expect(respuesta[0].descripcion).toBe("Cambiar aceite del motor");
+    const respuesta = await listarOrdenesTrabajo(filtros);
+
+    expect(respuesta.elementos).toHaveLength(1);
+    expect(respuesta.elementos[0].descripcion).toBe("Cambiar aceite del motor");
+    expect(respuesta.totalPaginas).toBe(1);
+    expect(fetch).toHaveBeenCalledWith("http://localhost:4000/api/v1/ordenes-trabajo?pagina=1", { cache: "no-store" });
+  });
+
+  it("envía la búsqueda y los filtros completados", async () => {
+    const filtros = {
+      buscar: " aceite ",
+      clienteId: "1",
+      activoId: "",
+      tecnicoId: "",
+      estado: "creada",
+      prioridad: "alta",
+      tipo: "",
+      fechaDesde: "",
+      fechaHasta: "",
+      conSugerencias: false,
+      pagina: 2,
+    };
+
+    await listarOrdenesTrabajo(filtros);
+
+    expect(fetch).toHaveBeenCalledWith(
+      "http://localhost:4000/api/v1/ordenes-trabajo?buscar=aceite&clienteId=1&estado=creada&prioridad=alta&pagina=2",
+      { cache: "no-store" },
+    );
   });
 
   it("no permite crear una orden sin descripción", async () => {
@@ -70,9 +119,50 @@ describe("servicio-ordenes-trabajo", () => {
       sugerencias: [],
       repuestosIds: [],
       estado: "creada" as const,
+      motivoEstado: "",
+      sesion: "",
     };
 
     await expect(crearOrdenTrabajo(ordenSinDescripcion)).rejects.toThrow("La descripción de la tarea es obligatoria.");
+  });
+
+  it("pide motivo al pausar, cancelar, cerrar o reasignar una orden finalizada", () => {
+    expect(estadoNecesitaMotivo("en_ejecucion", "pausada")).toBe(true);
+    expect(estadoNecesitaMotivo("creada", "cancelada")).toBe(true);
+    expect(estadoNecesitaMotivo("finalizada", "cerrada")).toBe(true);
+    expect(estadoNecesitaMotivo("finalizada", "asignada")).toBe(true);
+    expect(estadoNecesitaMotivo("asignada", "en_ejecucion")).toBe(false);
+    expect(estadoNecesitaMotivo("pausada", "pausada")).toBe(false);
+  });
+
+  it("no cambia el estado sin motivo cuando hace falta", async () => {
+    await expect(cambiarEstadoOrdenTrabajo(1, "en_ejecucion", "pausada", "  ")).rejects.toThrow(
+      "Indicá el motivo u observación del cambio de estado.",
+    );
+  });
+
+  it("envía el cambio de estado con su motivo", async () => {
+    await cambiarEstadoOrdenTrabajo(1, "en_ejecucion", "pausada", " Falta de repuestos ");
+
+    expect(fetch).toHaveBeenCalledWith("http://localhost:4000/api/v1/ordenes-trabajo/1/estado", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ estado: "pausada", motivo: "Falta de repuestos" }),
+    });
+  });
+
+  it("no asigna técnico si no se eligió ninguno", async () => {
+    await expect(asignarTecnicoOrdenTrabajo(1, "")).rejects.toThrow("Seleccioná un técnico.");
+  });
+
+  it("envía la asignación del técnico", async () => {
+    await asignarTecnicoOrdenTrabajo(1, "25");
+
+    expect(fetch).toHaveBeenCalledWith("http://localhost:4000/api/v1/ordenes-trabajo/1/tecnico", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tecnicoId: 25 }),
+    });
   });
 
   it("muestra la fecha prevista con formato día, mes y año", () => {
@@ -88,7 +178,7 @@ describe("servicio-ordenes-trabajo", () => {
   });
 
   it("no pide la sugerencia sin descripción", async () => {
-    await expect(solicitarSugerenciaOrdenTrabajo({ descripcion: "  ", numero: 1 })).rejects.toThrow(
+    await expect(solicitarSugerenciaOrdenTrabajo({ descripcion: "  ", numero: 1, sesion: "" })).rejects.toThrow(
       "Escribí la descripción de la tarea para pedir la sugerencia.",
     );
   });
@@ -101,7 +191,7 @@ describe("servicio-ordenes-trabajo", () => {
       }),
     );
 
-    await expect(solicitarSugerenciaOrdenTrabajo({ descripcion: "Configurar la red", numero: 1 })).rejects.toThrow(
+    await expect(solicitarSugerenciaOrdenTrabajo({ descripcion: "Configurar la red", numero: 1, sesion: "" })).rejects.toThrow(
       "El sistema no encontró información suficiente",
     );
   });
@@ -114,7 +204,7 @@ describe("servicio-ordenes-trabajo", () => {
       }),
     );
 
-    const texto = await solicitarSugerenciaOrdenTrabajo({ descripcion: "Cambiar aceite", numero: 1 });
+    const texto = await solicitarSugerenciaOrdenTrabajo({ descripcion: "Cambiar aceite", numero: 1, sesion: "" });
 
     expect(texto).toBe("Texto de la documentación");
   });

@@ -2,9 +2,11 @@ import {
   apiCrearDocumentoTecnico,
   apiEliminarDocumentoTecnico,
   apiListarDocumentosTecnicos,
+  apiListarDocumentosTecnicosPaginados,
+  apiObtenerDocumentoTecnico,
   apiObtenerUrlDescargaDocumentoTecnico,
 } from "@/servicios/api/api-documentos-tecnicos";
-import type { CrearDocumentoTecnicoInput } from "@/tipos/documento-tecnico";
+import type { CrearDocumentoTecnicoInput, FiltrosDocumentosTecnicos } from "@/tipos/documento-tecnico";
 
 async function validarArchivoPdf(archivo: File | null) {
   if (!archivo) {
@@ -26,6 +28,14 @@ async function validarArchivoPdf(archivo: File | null) {
 
 export async function listarDocumentosTecnicos() {
   return apiListarDocumentosTecnicos();
+}
+
+export async function listarDocumentosTecnicosPaginados(filtros: FiltrosDocumentosTecnicos) {
+  return apiListarDocumentosTecnicosPaginados(filtros);
+}
+
+export async function obtenerDetalleDocumentoTecnico(documentoId: number) {
+  return apiObtenerDocumentoTecnico(documentoId);
 }
 
 export async function crearDocumentoTecnico(input: CrearDocumentoTecnicoInput) {

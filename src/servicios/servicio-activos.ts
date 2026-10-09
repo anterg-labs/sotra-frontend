@@ -3,9 +3,10 @@ import {
   apiCrearActivo,
   apiDesactivarActivo,
   apiListarActivos,
+  apiListarActivosPaginados,
   apiObtenerActivo,
 } from "@/servicios/api/api-activos";
-import type { ActualizarActivoInput, CrearActivoInput } from "@/tipos/activo";
+import type { ActualizarActivoInput, CrearActivoInput, FiltrosActivos } from "@/tipos/activo";
 
 function validarActivo(input: CrearActivoInput) {
   if (!input.numSerie.trim()) {
@@ -23,6 +24,10 @@ function validarActivo(input: CrearActivoInput) {
 
 export async function listarActivos() {
   return apiListarActivos();
+}
+
+export async function listarActivosPaginados(filtros: FiltrosActivos) {
+  return apiListarActivosPaginados(filtros);
 }
 
 export async function obtenerDetalleActivo(activoId: number) {

@@ -3,9 +3,10 @@ import {
   apiCrearTipoMaquina,
   apiDesactivarTipoMaquina,
   apiListarTiposMaquina,
+  apiListarTiposMaquinaPaginados,
   apiObtenerTipoMaquina,
 } from "@/servicios/api/api-tipos-maquina";
-import type { ActualizarTipoMaquinaInput, CrearTipoMaquinaInput } from "@/tipos/tipo-maquina";
+import type { ActualizarTipoMaquinaInput, CrearTipoMaquinaInput, FiltrosTiposMaquina } from "@/tipos/tipo-maquina";
 
 function validarTipoMaquina(input: CrearTipoMaquinaInput) {
   if (!input.nombre.trim()) {
@@ -15,6 +16,10 @@ function validarTipoMaquina(input: CrearTipoMaquinaInput) {
 
 export async function listarTiposMaquina() {
   return apiListarTiposMaquina();
+}
+
+export async function listarTiposMaquinaPaginados(filtros: FiltrosTiposMaquina) {
+  return apiListarTiposMaquinaPaginados(filtros);
 }
 
 export async function obtenerDetalleTipoMaquina(tipoMaquinaId: number) {

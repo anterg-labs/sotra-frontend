@@ -13,3 +13,9 @@ export type CrearDocumentoTecnicoInput = {
   activoId: number | null;
   usaSugerenciasIA: boolean;
 };
+
+export type FiltrosDocumentosTecnicos = {
+  buscar: string;
+  activoId: string;
+  pagina: number;
+};

@@ -1,9 +1,24 @@
-import { crearOpcionesJson, leerDatosApi } from "@/servicios/api/solicitudes-http";
-import type { ActualizarTipoMaquinaInput, CrearTipoMaquinaInput, TipoMaquina } from "@/tipos/tipo-maquina";
+import { crearOpcionesJson, leerDatosApi, leerPagina, leerTodasLasPaginas } from "@/servicios/api/solicitudes-http";
+import type { ActualizarTipoMaquinaInput, CrearTipoMaquinaInput, FiltrosTiposMaquina, TipoMaquina } from "@/tipos/tipo-maquina";
+import type { Pagina } from "@/tipos/pagina";
 
 export async function apiListarTiposMaquina() {
-  const tiposMaquina = await leerDatosApi("/api/v1/tipos-maquina", { cache: "no-store" }, "No se pudo obtener el listado de tipos de máquina.");
+  const tiposMaquina = await leerTodasLasPaginas("/api/v1/tipos-maquina", "No se pudo obtener el listado de tipos de máquina.");
   return tiposMaquina as TipoMaquina[];
+}
+
+export async function apiListarTiposMaquinaPaginados(filtros: FiltrosTiposMaquina) {
+  const parametros = new URLSearchParams();
+  if (filtros.buscar.trim() !== "") {
+    parametros.append("buscar", filtros.buscar.trim());
+  }
+  if (filtros.estado !== "") {
+    parametros.append("estado", filtros.estado);
+  }
+  parametros.append("pagina", String(filtros.pagina));
+
+  const pagina = await leerPagina("/api/v1/tipos-maquina", parametros, "No se pudo obtener el listado de tipos de máquina.");
+  return pagina as Pagina<TipoMaquina>;
 }
 
 export async function apiObtenerTipoMaquina(tipoMaquinaId: number) {

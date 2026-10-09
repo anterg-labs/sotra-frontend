@@ -14,3 +14,9 @@ export type ActualizarTipoMaquinaInput = {
   nombre: string;
   estado: EstadoTipoMaquina;
 };
+
+export type FiltrosTiposMaquina = {
+  buscar: string;
+  estado: string;
+  pagina: number;
+};

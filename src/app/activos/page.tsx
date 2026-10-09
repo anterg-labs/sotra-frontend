@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { ListadoModelosMaquina } from "@/componentes/listado-modelos-maquina";
 import { ListadoTiposMaquina } from "@/componentes/listado-tipos-maquina";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
@@ -29,7 +30,27 @@ function obtenerEtiquetaEstado(estado: Activo["estado"]) {
   return "Inactivo";
 }
 
+const pestanas = [
+  { valor: "activos", etiqueta: "Activos" },
+  { valor: "modelos", etiqueta: "Modelos de máquina" },
+  { valor: "tipos", etiqueta: "Tipos de máquina" },
+];
+
 export default function PaginaActivos() {
+  return (
+    <Suspense fallback={<p className="empty-state">Cargando activos…</p>}>
+      <ContenidoActivos />
+    </Suspense>
+  );
+}
+
+function ContenidoActivos() {
+  const parametros = useSearchParams();
+  let seccion = parametros.get("seccion");
+  if (seccion !== "modelos" && seccion !== "tipos") {
+    seccion = "activos";
+  }
+
   const [activos, setActivos] = useState<Activo[] | null>(null);
   const [clientes, setClientes] = useState<Cliente[] | null>(null);
   const [modelosMaquina, setModelosMaquina] = useState<ModeloMaquina[] | null>(null);
@@ -327,17 +348,17 @@ export default function PaginaActivos() {
     );
   }
 
-  return (
-    <main className="page-content">
-      <header className="page-heading">
-        <div>
-          <h1>Gestión de activos</h1>
-        </div>
-        <Link className="primary-button" href="/activos/nuevo">
-          Registrar nuevo activo
-        </Link>
-      </header>
+  let botonRegistrarActivo = null;
+  if (seccion === "activos") {
+    botonRegistrarActivo = (
+      <Link className="primary-button" href="/activos/nuevo">
+        Registrar nuevo activo
+      </Link>
+    );
+  }
 
+  let contenidoSeccion = (
+    <>
       <form aria-label="Búsqueda y filtros de activos" className="barra-filtros" onSubmit={aplicarFiltros}>
         <div className="form-field campo-busqueda">
           <label htmlFor="buscarActivo">Buscar</label>
@@ -388,9 +409,47 @@ export default function PaginaActivos() {
         {tablaActivos}
         {paginacion}
       </section>
+    </>
+  );
+  if (seccion === "modelos") {
+    contenidoSeccion = <ListadoModelosMaquina />;
+  }
+  if (seccion === "tipos") {
+    contenidoSeccion = <ListadoTiposMaquina />;
+  }
 
-      <ListadoModelosMaquina />
-      <ListadoTiposMaquina />
+  return (
+    <main className="page-content">
+      <header className="page-heading">
+        <div>
+          <h1>Gestión de activos</h1>
+        </div>
+        {botonRegistrarActivo}
+      </header>
+
+      <nav aria-label="Secciones de activos" className="pestanas">
+        {pestanas.map((pestana) => {
+          let clasePestana = "pestana";
+          let paginaActualDeLaPestana: "page" | undefined = undefined;
+          if (pestana.valor === seccion) {
+            clasePestana = "pestana pestana-activa";
+            paginaActualDeLaPestana = "page";
+          }
+
+          return (
+            <Link
+              aria-current={paginaActualDeLaPestana}
+              className={clasePestana}
+              href={"/activos?seccion=" + pestana.valor}
+              key={pestana.valor}
+            >
+              {pestana.etiqueta}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {contenidoSeccion}
 
       {modalBaja}
     </main>

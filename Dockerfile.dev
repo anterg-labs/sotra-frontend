@@ -18,6 +18,7 @@ COPY --chown=node:node . .
 
 ENV WATCHPACK_POLLING=true
 ENV HOSTNAME="0.0.0.0"
+ENV NODE_OPTIONS=--no-experimental-webstorage
 
 RUN mkdir -p /app/.next && chown node:node /app /app/.next
 USER node

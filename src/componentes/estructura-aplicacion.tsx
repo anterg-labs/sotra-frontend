@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { cerrarSesion, obtenerUsuarioEnSesion } from "@/servicios/servicio-sesion";
 import { obtenerVersionSistema } from "@/servicios/servicio-version";
 import versionFrontend from "../../version.json";
 
@@ -26,6 +27,8 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
   const rutaActual = usePathname();
   const [estaMenuAbierto, setEstaMenuAbierto] = useState(false);
   const [versionBackend, setVersionBackend] = useState("Cargando...");
+  const enrutador = useRouter();
+  const usuarioEnSesion = obtenerUsuarioEnSesion();
 
   useEffect(() => {
     async function cargarVersionBackend() {
@@ -51,6 +54,29 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
     cargarVersionBackend();
   }, []);
 
+  async function salirDeLaSesion() {
+    await cerrarSesion();
+    enrutador.push("/");
+  }
+
+  const fechaActual = new Date().toLocaleDateString("es-UY", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  let textoUsuario = "Usuario no logueado";
+  let botonCerrarSesion = null;
+  if (usuarioEnSesion !== null) {
+    textoUsuario = usuarioEnSesion.nombre + " " + usuarioEnSesion.apellido;
+    botonCerrarSesion = (
+      <button className="secondary-button" onClick={salirDeLaSesion} type="button">
+        Cerrar sesión
+      </button>
+    );
+  }
+
   function cerrarMenu() {
     setEstaMenuAbierto(false);
   }
@@ -60,7 +86,7 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
   }
 
   let claseBarraLateral =
-    "group fixed left-0 top-0 z-30 flex h-screen w-64 flex-col overflow-hidden border-r border-[#3c3c3c] bg-[#252526] text-[#cccccc] transition-all duration-200 md:w-[72px] md:translate-x-0 md:hover:w-64 md:hover:shadow-xl md:focus-within:w-64 md:focus-within:shadow-xl";
+    "group fixed left-0 top-0 z-30 flex h-screen w-64 flex-col overflow-hidden border-r border-[#3c3c3c] bg-[#252526] text-[#cccccc] transition-all duration-200 md:w-[72px] md:translate-x-0 md:hover:w-64 md:hover:shadow-xl md:has-[:focus-visible]:w-64 md:has-[:focus-visible]:shadow-xl";
   if (estaMenuAbierto) {
     claseBarraLateral = claseBarraLateral + " translate-x-0";
   } else {
@@ -125,7 +151,7 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
                 >
                   {enlace.simbolo}
                 </span>
-                <span className="whitespace-nowrap transition-opacity duration-200 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
+                <span className="whitespace-nowrap transition-opacity duration-200 md:opacity-0 md:group-hover:opacity-100 md:group-has-[:focus-visible]:opacity-100">
                   {enlace.etiqueta}
                 </span>
               </Link>
@@ -151,11 +177,14 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
           >
             ☰
           </button>
-          <div className="flex-1" />
+          <div className="flex-1 text-sm font-semibold text-gray-500 first-letter:uppercase" suppressHydrationWarning>
+            {fechaActual}
+          </div>
+          {botonCerrarSesion}
         </header>
         <div className="flex-1 pb-16">{children}</div>
         <footer className="fixed bottom-0 left-0 right-0 z-20 flex h-14 items-center justify-between gap-4 bg-black px-4 text-sm font-bold text-gray-300 md:left-[72px] md:px-8">
-          <span>Usuario no logueado</span>
+          <span>{textoUsuario}</span>
           <span>{"Copyright © 2026 | AnterG Labs | Sotra App Versión " + versionBackend}</span>
         </footer>
       </div>

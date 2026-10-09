@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { cerrarSesion, obtenerUsuarioEnSesion } from "@/servicios/servicio-sesion";
+import { obtenerVersionSistema } from "@/servicios/servicio-version";
+import versionFrontend from "../../version.json";
 
 const enlacesNavegacion = [
   { ruta: "/ordenes-trabajo", etiqueta: "Órdenes de trabajo", simbolo: "OT" },
@@ -23,6 +26,66 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
   const children = props.children;
   const rutaActual = usePathname();
   const [estaMenuAbierto, setEstaMenuAbierto] = useState(false);
+  const [versionBackend, setVersionBackend] = useState("Cargando...");
+  const enrutador = useRouter();
+  const usuarioEnSesion = obtenerUsuarioEnSesion();
+
+  useEffect(() => {
+    async function cargarVersionBackend() {
+      try {
+        const versionObtenida = await obtenerVersionSistema();
+        setVersionBackend(versionObtenida);
+        console.log(
+          "Versión frontend: " +
+            versionFrontend.version +
+            " | Versión backend: " +
+            versionObtenida
+        );
+      } catch {
+        setVersionBackend("No disponible");
+        console.log(
+          "Versión frontend: " +
+            versionFrontend.version +
+            " | Versión backend: No disponible"
+        );
+      }
+    }
+
+    cargarVersionBackend();
+  }, []);
+
+  async function salirDeLaSesion() {
+    await cerrarSesion();
+    enrutador.push("/");
+  }
+
+  const fechaActual = new Date().toLocaleDateString("es-UY", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  let textoUsuario = "Usuario no logueado";
+  let haySesion = false;
+  let tituloCerrarSesion = "No hay sesión iniciada";
+  if (usuarioEnSesion !== null) {
+    textoUsuario = usuarioEnSesion.nombre + " " + usuarioEnSesion.apellido;
+    haySesion = true;
+    tituloCerrarSesion = "Cerrar sesión";
+  }
+
+  const botonCerrarSesion = (
+    <button
+      className="secondary-button disabled:cursor-not-allowed disabled:opacity-50"
+      disabled={!haySesion}
+      onClick={salirDeLaSesion}
+      title={tituloCerrarSesion}
+      type="button"
+    >
+      Cerrar sesión
+    </button>
+  );
 
   function cerrarMenu() {
     setEstaMenuAbierto(false);
@@ -33,7 +96,7 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
   }
 
   let claseBarraLateral =
-    "fixed left-0 top-0 z-30 flex h-screen w-64 flex-col border-r border-gray-200 bg-white text-slate-800 transition-transform duration-200 md:translate-x-0";
+    "group fixed left-0 top-0 z-30 flex h-screen w-64 flex-col overflow-hidden border-r border-[#3c3c3c] bg-[#252526] text-[#cccccc] transition-all duration-200 md:w-[72px] md:translate-x-0 md:hover:w-64 md:hover:shadow-xl md:has-[:focus-visible]:w-64 md:has-[:focus-visible]:shadow-xl";
   if (estaMenuAbierto) {
     claseBarraLateral = claseBarraLateral + " translate-x-0";
   } else {
@@ -56,11 +119,11 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
     <div className="min-h-screen">
       <aside className={claseBarraLateral}>
         <Link
-          className="flex h-20 items-center gap-3 border-b border-gray-200 px-4"
+          className="flex h-20 items-center justify-center border-b border-[#3c3c3c] px-3"
           href="/usuarios"
           onClick={cerrarMenu}
         >
-          <span className="flex h-12 w-12 items-center justify-center">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white">
             <Image
               src="/images/logo-cvm.png"
               alt="Logo CVM"
@@ -73,15 +136,15 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
 
         <nav
           aria-label="Navegación principal"
-          className="flex flex-1 flex-col gap-2 overflow-y-auto p-4"
+          className="flex flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden px-3 py-4"
         >
           {enlacesNavegacion.map((enlace) => {
             const estaActivo = rutaActual.startsWith(enlace.ruta);
 
             let claseEnlace =
-              "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold text-gray-500 hover:bg-slate-50 hover:text-slate-800";
+              "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold text-[#cccccc] hover:bg-[#2a2d2e] hover:text-white";
             if (estaActivo) {
-              claseEnlace = claseEnlace + " bg-sky-50 text-sky-600";
+              claseEnlace = "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold bg-[#37373d] text-white";
             }
 
             return (
@@ -94,20 +157,27 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
               >
                 <span
                   aria-hidden="true"
-                  className="flex h-6 w-6 items-center justify-center rounded-md border border-current text-xs font-bold"
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-current text-xs font-bold"
                 >
                   {enlace.simbolo}
                 </span>
-                <span>{enlace.etiqueta}</span>
+                <span className="whitespace-nowrap transition-opacity duration-200 md:opacity-0 md:group-hover:opacity-100 md:group-has-[:focus-visible]:opacity-100">
+                  {enlace.etiqueta}
+                </span>
               </Link>
             );
           })}
         </nav>
+
+        <div className="border-t border-gray-200 px-4 py-3 text-xs text-gray-500">
+          <p>Frontend: {versionFrontend.version}</p>
+          <p>Backend: {versionBackend}</p>
+        </div>
       </aside>
 
       {fondoOscuro}
 
-      <div className="min-h-screen md:ml-64">
+      <div className="flex min-h-screen flex-col md:ml-[72px]">
         <header className="sticky top-0 z-10 flex h-16 items-center border-b border-gray-200 bg-white px-4 md:h-20 md:px-8">
           <button
             aria-label="Abrir menú"
@@ -117,9 +187,16 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
           >
             ☰
           </button>
-          <div className="flex-1" />
+          <div className="flex-1 text-sm font-semibold text-gray-500 first-letter:uppercase" suppressHydrationWarning>
+            {fechaActual}
+          </div>
+          {botonCerrarSesion}
         </header>
-        {children}
+        <div className="flex-1 pb-16">{children}</div>
+        <footer className="fixed bottom-0 left-0 right-0 z-20 flex h-14 items-center justify-between gap-4 bg-black px-4 text-sm font-bold text-gray-300 md:left-[72px] md:px-8">
+          <span>{textoUsuario}</span>
+          <span>{"Copyright © 2026 | AnterG Labs | Sotra App Versión " + versionBackend}</span>
+        </footer>
       </div>
     </div>
   );

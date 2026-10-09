@@ -128,7 +128,9 @@ export default function PaginaDetalleActivo() {
               </div>
               <div>
                 <dt>Cliente</dt>
-                <dd>{nombreCliente}</dd>
+                <dd>
+                  <Link className="text-link" href={"/clientes/" + activo.clienteId}>{nombreCliente}</Link>
+                </dd>
               </div>
               <div>
                 <dt>Modelo</dt>

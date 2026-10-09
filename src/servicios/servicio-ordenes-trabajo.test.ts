@@ -120,6 +120,7 @@ describe("servicio-ordenes-trabajo", () => {
       repuestosIds: [],
       estado: "creada" as const,
       motivoEstado: "",
+      sesion: "",
     };
 
     await expect(crearOrdenTrabajo(ordenSinDescripcion)).rejects.toThrow("La descripción de la tarea es obligatoria.");
@@ -177,7 +178,7 @@ describe("servicio-ordenes-trabajo", () => {
   });
 
   it("no pide la sugerencia sin descripción", async () => {
-    await expect(solicitarSugerenciaOrdenTrabajo({ descripcion: "  ", numero: 1 })).rejects.toThrow(
+    await expect(solicitarSugerenciaOrdenTrabajo({ descripcion: "  ", numero: 1, sesion: "" })).rejects.toThrow(
       "Escribí la descripción de la tarea para pedir la sugerencia.",
     );
   });
@@ -190,7 +191,7 @@ describe("servicio-ordenes-trabajo", () => {
       }),
     );
 
-    await expect(solicitarSugerenciaOrdenTrabajo({ descripcion: "Configurar la red", numero: 1 })).rejects.toThrow(
+    await expect(solicitarSugerenciaOrdenTrabajo({ descripcion: "Configurar la red", numero: 1, sesion: "" })).rejects.toThrow(
       "El sistema no encontró información suficiente",
     );
   });
@@ -203,7 +204,7 @@ describe("servicio-ordenes-trabajo", () => {
       }),
     );
 
-    const texto = await solicitarSugerenciaOrdenTrabajo({ descripcion: "Cambiar aceite", numero: 1 });
+    const texto = await solicitarSugerenciaOrdenTrabajo({ descripcion: "Cambiar aceite", numero: 1, sesion: "" });
 
     expect(texto).toBe("Texto de la documentación");
   });

@@ -92,6 +92,24 @@ export async function actualizarOrdenTrabajo(ordenTrabajoId: number, input: Actu
   return apiActualizarOrdenTrabajo(ordenTrabajoId, input);
 }
 
+export function crearSesionDeSugerencias() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  let identificador = "";
+  const plantilla = "xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx";
+  for (const caracter of plantilla) {
+    if (caracter === "x") {
+      const numeroAlAzar = Math.floor(Math.random() * 16);
+      identificador = identificador + numeroAlAzar.toString(16);
+    } else {
+      identificador = identificador + caracter;
+    }
+  }
+  return identificador;
+}
+
 export function estadoNecesitaMotivo(estadoActual: string, estadoNuevo: string) {
   if (estadoNuevo === estadoActual) {
     return false;

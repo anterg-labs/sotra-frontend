@@ -10,6 +10,7 @@ import { SelectorRepuestosOrdenTrabajo } from "@/componentes/selector-repuestos-
 import { SugerenciasOrdenTrabajo } from "@/componentes/sugerencias-orden-trabajo";
 import {
   borrarSugerenciasTemporales,
+  crearSesionDeSugerencias,
   estadoNecesitaMotivo,
   leerSugerenciasTemporales,
 } from "@/servicios/servicio-ordenes-trabajo";
@@ -97,6 +98,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
   const [prioridad, setPrioridad] = useState(prioridadInicial);
   const [estado, setEstado] = useState(estadoInicial);
   const [motivoEstado, setMotivoEstado] = useState("");
+  const [sesionSugerencias] = useState(crearSesionDeSugerencias);
   const [descripcion, setDescripcion] = useState(descripcionInicial);
   const [observaciones, setObservaciones] = useState(observacionesInicial);
   const [fechaPrevistaEjecucion, setFechaPrevistaEjecucion] = useState(fechaPrevistaInicial);
@@ -145,6 +147,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
       repuestosIds: idsRepuestos,
       estado: estado as EstadoOrdenTrabajo,
       motivoEstado: motivoEstado,
+      sesion: sesionSugerencias,
     };
 
     try {
@@ -236,6 +239,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
         alCambiarSugerencias={setSugerencias}
         claveSugerenciasTemporales={claveSugerenciasTemporales}
         descripcion={descripcion}
+        sesion={sesionSugerencias}
         sugerencias={sugerencias}
       />
 

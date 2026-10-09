@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { EvidenciasOrdenTrabajo } from "@/componentes/evidencias-orden-trabajo";
-import { RecomendacionesOrdenTrabajo } from "@/componentes/recomendaciones-orden-trabajo";
 import {
   asignarTecnicoOrdenTrabajo,
   cambiarEstadoOrdenTrabajo,
@@ -147,6 +146,19 @@ export default function PaginaDetalleOrdenTrabajo() {
             <li key={repuestoDeLaOrden.id}>{repuestoDeLaOrden.codigo + " - " + repuestoDeLaOrden.nombre}</li>
           ))}
         </ul>
+      );
+    }
+
+    let textoSugerencias = <span>Sin sugerencias</span>;
+    if (orden.sugerencias.length > 0) {
+      textoSugerencias = (
+        <div className="flex flex-col gap-3">
+          {orden.sugerencias.map((textoSugerencia, indice) => (
+            <p className="whitespace-pre-wrap rounded-lg border border-gray-200 bg-slate-50 p-4 text-sm" key={indice}>
+              {textoSugerencia}
+            </p>
+          ))}
+        </div>
       );
     }
 
@@ -304,11 +316,13 @@ export default function PaginaDetalleOrdenTrabajo() {
             <dt>Repuestos</dt>
             <dd>{textoRepuestos}</dd>
           </div>
+          <div>
+            <dt>Sugerencias</dt>
+            <dd>{textoSugerencias}</dd>
+          </div>
         </dl>
         <div className="form-actions">{enlaceModificar}</div>
       </section>
-
-      <RecomendacionesOrdenTrabajo ordenTrabajoId={orden.id} sugerencias={orden.sugerencias} />
 
       <EvidenciasOrdenTrabajo ordenTrabajoId={orden.id} permiteRegistrar={!ordenEstaTerminada} />
       </div>

@@ -69,11 +69,13 @@ export type CrearOrdenTrabajoInput = {
   repuestosIds: number[];
   estado: EstadoOrdenTrabajo;
   motivoEstado: string;
+  sesion: string;
 };
 
 export type SolicitarSugerenciaInput = {
   descripcion: string;
   numero: number;
+  sesion: string;
 };
 
 export type SugerenciaOrdenTrabajo = {

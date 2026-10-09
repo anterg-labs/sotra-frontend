@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import { ListadoModelosMaquina } from "@/componentes/listado-modelos-maquina";
 import { ListadoTiposMaquina } from "@/componentes/listado-tipos-maquina";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
@@ -11,6 +12,7 @@ import { listarModelosMaquina } from "@/servicios/servicio-modelos-maquina";
 import type { Activo, FiltrosActivos } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
 import type { ModeloMaquina } from "@/tipos/modelo-maquina";
+import { IconoLapiz, IconoOjo, IconoPapelera } from "@/componentes/iconos";
 
 const filtrosVacios: FiltrosActivos = {
   buscar: "",
@@ -28,7 +30,27 @@ function obtenerEtiquetaEstado(estado: Activo["estado"]) {
   return "Inactivo";
 }
 
+const pestanas = [
+  { valor: "activos", etiqueta: "Activos" },
+  { valor: "modelos", etiqueta: "Modelos de máquina" },
+  { valor: "tipos", etiqueta: "Tipos de máquina" },
+];
+
 export default function PaginaActivos() {
+  return (
+    <Suspense fallback={<p className="empty-state">Cargando activos…</p>}>
+      <ContenidoActivos />
+    </Suspense>
+  );
+}
+
+function ContenidoActivos() {
+  const parametros = useSearchParams();
+  let seccion = parametros.get("seccion");
+  if (seccion !== "modelos" && seccion !== "tipos") {
+    seccion = "activos";
+  }
+
   const [activos, setActivos] = useState<Activo[] | null>(null);
   const [clientes, setClientes] = useState<Cliente[] | null>(null);
   const [modelosMaquina, setModelosMaquina] = useState<ModeloMaquina[] | null>(null);
@@ -205,13 +227,13 @@ export default function PaginaActivos() {
                 botonBaja = (
                   <button
                     aria-label="Dar de baja"
-                    className="table-action-link table-action-link-danger"
+                    className="boton-icono boton-icono-peligro"
                     disabled={activoDesactivandoId === activo.id}
                     onClick={() => pedirBajaActivo(activo)}
                     title="Dar de baja"
                     type="button"
                   >
-                    Dar de baja
+                    <IconoPapelera />
                   </button>
                 );
               }
@@ -248,19 +270,19 @@ export default function PaginaActivos() {
                     <div className="table-actions">
                       <Link
                         aria-label="Ver detalle"
-                        className="table-action-link"
+                        className="boton-icono"
                         href={"/activos/" + activo.id}
                         title="Ver detalle"
                       >
-                        Ver detalle
+                        <IconoOjo />
                       </Link>
                       <Link
                         aria-label="Modificar activo"
-                        className="table-action-link"
+                        className="boton-icono"
                         href={"/activos/" + activo.id + "/editar"}
                         title="Modificar activo"
                       >
-                        Modificar
+                        <IconoLapiz />
                       </Link>
                       {botonBaja}
                     </div>
@@ -326,56 +348,51 @@ export default function PaginaActivos() {
     );
   }
 
-  return (
-    <main className="page-content">
-      <header className="page-heading">
-        <div>
-          <h1>Gestión de activos</h1>
-        </div>
-        <Link className="primary-button" href="/activos/nuevo">
-          Registrar nuevo activo
-        </Link>
-      </header>
+  let botonRegistrarActivo = null;
+  if (seccion === "activos") {
+    botonRegistrarActivo = (
+      <Link className="primary-button" href="/activos/nuevo">
+        Registrar nuevo activo
+      </Link>
+    );
+  }
 
-      <form className="panel form-panel mb-6" onSubmit={aplicarFiltros}>
-        <div className="panel-heading">
-          <h2>Búsqueda y filtros de activos</h2>
+  let contenidoSeccion = (
+    <>
+      <form aria-label="Búsqueda y filtros de activos" className="barra-filtros" onSubmit={aplicarFiltros}>
+        <div className="form-field campo-busqueda">
+          <label htmlFor="buscarActivo">Buscar</label>
+          <input
+            id="buscarActivo"
+            onChange={cambiarBuscar}
+            placeholder="Nombre, número de serie, ubicación o descripción"
+            type="text"
+            value={buscar}
+          />
         </div>
-        <div className="form-grid">
-          <div className="form-field">
-            <label htmlFor="buscarActivo">Buscar</label>
-            <input
-              id="buscarActivo"
-              onChange={cambiarBuscar}
-              placeholder="Nombre, número de serie, ubicación o descripción"
-              type="text"
-              value={buscar}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="clienteFiltro">Cliente</label>
-            <select id="clienteFiltro" onChange={cambiarClienteFiltro} value={clienteIdFiltro}>
-              <option value="">Todos los clientes</option>
-              {opcionesClientes}
-            </select>
-          </div>
-          <div className="form-field">
-            <label htmlFor="modeloFiltro">Modelo</label>
-            <select id="modeloFiltro" onChange={cambiarModeloFiltro} value={modeloMaquinaIdFiltro}>
-              <option value="">Todos los modelos</option>
-              {opcionesModelos}
-            </select>
-          </div>
-          <div className="form-field">
-            <label htmlFor="estadoActivoFiltro">Estado</label>
-            <select id="estadoActivoFiltro" onChange={cambiarEstadoFiltro} value={estadoFiltro}>
-              <option value="">Todos los estados</option>
-              <option value="activo">Activo</option>
-              <option value="inactivo">Inactivo</option>
-            </select>
-          </div>
+        <div className="form-field">
+          <label htmlFor="clienteFiltro">Cliente</label>
+          <select id="clienteFiltro" onChange={cambiarClienteFiltro} value={clienteIdFiltro}>
+            <option value="">Todos los clientes</option>
+            {opcionesClientes}
+          </select>
         </div>
-        <div className="form-actions">
+        <div className="form-field">
+          <label htmlFor="modeloFiltro">Modelo</label>
+          <select id="modeloFiltro" onChange={cambiarModeloFiltro} value={modeloMaquinaIdFiltro}>
+            <option value="">Todos los modelos</option>
+            {opcionesModelos}
+          </select>
+        </div>
+        <div className="form-field">
+          <label htmlFor="estadoActivoFiltro">Estado</label>
+          <select id="estadoActivoFiltro" onChange={cambiarEstadoFiltro} value={estadoFiltro}>
+            <option value="">Todos los estados</option>
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+        </div>
+        <div className="barra-filtros-acciones">
           <button className="secondary-button" onClick={limpiarFiltros} type="button">
             Limpiar filtros
           </button>
@@ -392,9 +409,47 @@ export default function PaginaActivos() {
         {tablaActivos}
         {paginacion}
       </section>
+    </>
+  );
+  if (seccion === "modelos") {
+    contenidoSeccion = <ListadoModelosMaquina />;
+  }
+  if (seccion === "tipos") {
+    contenidoSeccion = <ListadoTiposMaquina />;
+  }
 
-      <ListadoModelosMaquina />
-      <ListadoTiposMaquina />
+  return (
+    <main className="page-content">
+      <header className="page-heading">
+        <div>
+          <h1>Gestión de activos</h1>
+        </div>
+        {botonRegistrarActivo}
+      </header>
+
+      <nav aria-label="Secciones de activos" className="pestanas">
+        {pestanas.map((pestana) => {
+          let clasePestana = "pestana";
+          let paginaActualDeLaPestana: "page" | undefined = undefined;
+          if (pestana.valor === seccion) {
+            clasePestana = "pestana pestana-activa";
+            paginaActualDeLaPestana = "page";
+          }
+
+          return (
+            <Link
+              aria-current={paginaActualDeLaPestana}
+              className={clasePestana}
+              href={"/activos?seccion=" + pestana.valor}
+              key={pestana.valor}
+            >
+              {pestana.etiqueta}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {contenidoSeccion}
 
       {modalBaja}
     </main>

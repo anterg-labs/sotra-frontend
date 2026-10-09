@@ -17,6 +17,7 @@ import { estadosOrdenTrabajo } from "@/tipos/orden-trabajo";
 import type { FiltrosOrdenesTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
 import type { FiltrosIndicadores, Indicadores } from "@/tipos/reporte";
 import type { Usuario } from "@/tipos/usuario";
+import { IconoLapiz, IconoOjo } from "@/componentes/iconos";
 
 const filtrosVacios: FiltrosOrdenesTrabajo = {
   buscar: "",
@@ -244,22 +245,22 @@ export default function PaginaOrdenesTrabajo() {
   let tarjetasResumen = null;
   if (resumen !== null) {
     tarjetasResumen = (
-      <section aria-label="Resumen de órdenes de trabajo" className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <article className="panel p-5">
-          <p className="text-xs font-bold uppercase text-gray-500">Total de órdenes</p>
-          <p className="mt-1 text-3xl font-bold">{resumen.totalOrdenes}</p>
+      <section aria-label="Resumen de órdenes de trabajo" className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <article className="panel flex items-center justify-between px-4 py-3">
+          <p className="text-[11px] font-bold uppercase tracking-wide text-gray-500">Total de órdenes</p>
+          <p className="text-xl font-bold">{resumen.totalOrdenes}</p>
         </article>
-        <article className="panel p-5">
-          <p className="text-xs font-bold uppercase text-gray-500">Creadas</p>
-          <p className="mt-1 text-3xl font-bold">{contarPorEstado("creada")}</p>
+        <article className="panel flex items-center justify-between px-4 py-3">
+          <p className="text-[11px] font-bold uppercase tracking-wide text-gray-500">Creadas</p>
+          <p className="text-xl font-bold">{contarPorEstado("creada")}</p>
         </article>
-        <article className="panel p-5">
-          <p className="text-xs font-bold uppercase text-gray-500">En ejecución</p>
-          <p className="mt-1 text-3xl font-bold">{contarPorEstado("en_ejecucion")}</p>
+        <article className="panel flex items-center justify-between px-4 py-3">
+          <p className="text-[11px] font-bold uppercase tracking-wide text-gray-500">En ejecución</p>
+          <p className="text-xl font-bold">{contarPorEstado("en_ejecucion")}</p>
         </article>
-        <article className="panel p-5">
-          <p className="text-xs font-bold uppercase text-gray-500">Cerradas</p>
-          <p className="mt-1 text-3xl font-bold">{contarPorEstado("cerrada")}</p>
+        <article className="panel flex items-center justify-between px-4 py-3">
+          <p className="text-[11px] font-bold uppercase tracking-wide text-gray-500">Cerradas</p>
+          <p className="text-xl font-bold">{contarPorEstado("cerrada")}</p>
         </article>
       </section>
     );
@@ -313,11 +314,11 @@ export default function PaginaOrdenesTrabajo() {
                 enlaceModificar = (
                   <Link
                     aria-label="Modificar orden"
-                    className="table-action-link"
+                    className="boton-icono"
                     href={"/ordenes-trabajo/" + orden.id + "/editar"}
                     title="Modificar orden"
                   >
-                    Modificar
+                    <IconoLapiz />
                   </Link>
                 );
               }
@@ -340,11 +341,11 @@ export default function PaginaOrdenesTrabajo() {
                     <div className="table-actions">
                       <Link
                         aria-label="Ver detalle"
-                        className="table-action-link"
+                        className="boton-icono"
                         href={"/ordenes-trabajo/" + orden.id}
                         title="Ver detalle"
                       >
-                        Ver detalle
+                        <IconoOjo />
                       </Link>
                       {enlaceModificar}
                     </div>
@@ -386,99 +387,94 @@ export default function PaginaOrdenesTrabajo() {
 
       {tarjetasResumen}
 
-      <form className="panel form-panel mb-6" onSubmit={aplicarFiltros}>
-        <div className="panel-heading">
-          <h2>Búsqueda y filtros</h2>
+      <form aria-label="Búsqueda y filtros" className="barra-filtros" onSubmit={aplicarFiltros}>
+        <div className="form-field campo-busqueda">
+          <label htmlFor="buscar">Buscar</label>
+          <input
+            id="buscar"
+            onChange={cambiarBuscar}
+            placeholder="Número, descripción, cliente, activo o técnico"
+            type="text"
+            value={buscar}
+          />
         </div>
-        <div className="form-grid">
-          <div className="form-field">
-            <label htmlFor="buscar">Buscar</label>
-            <input
-              id="buscar"
-              onChange={cambiarBuscar}
-              placeholder="Número, descripción, cliente, activo o técnico"
-              type="text"
-              value={buscar}
-            />
-          </div>
 
-          <div className="form-field">
-            <label htmlFor="clienteId">Cliente</label>
-            <select id="clienteId" onChange={cambiarCliente} value={clienteId}>
-              <option value="">Todos los clientes</option>
-              {clientes.map((cliente) => (
-                <option key={cliente.id} value={cliente.id}>{cliente.razonSocial}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="activoId">Activo</label>
-            <select id="activoId" onChange={cambiarActivo} value={activoId}>
-              <option value="">Todos los activos</option>
-              {activosDelCliente.map((activo) => (
-                <option key={activo.id} value={activo.id}>{obtenerNombreVisibleDeActivo(activo)}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="tecnicoId">Técnico</label>
-            <select id="tecnicoId" onChange={cambiarTecnico} value={tecnicoId}>
-              <option value="">Todos los técnicos</option>
-              {tecnicos.map((tecnico) => (
-                <option key={tecnico.id} value={tecnico.id}>{tecnico.nombre + " " + tecnico.apellido}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="estado">Estado</label>
-            <select id="estado" onChange={cambiarEstado} value={estado}>
-              <option value="">Todos los estados</option>
-              {estadosOrdenTrabajo.map((estadoOrden) => (
-                <option key={estadoOrden} value={estadoOrden}>{obtenerEtiquetaEstadoOrdenTrabajo(estadoOrden)}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="prioridad">Prioridad</label>
-            <select id="prioridad" onChange={cambiarPrioridad} value={prioridad}>
-              <option value="">Todas las prioridades</option>
-              <option value="alta">Alta</option>
-              <option value="media">Media</option>
-              <option value="baja">Baja</option>
-            </select>
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="tipo">Tipo de mantenimiento</label>
-            <select id="tipo" onChange={cambiarTipo} value={tipo}>
-              <option value="">Todos los tipos</option>
-              <option value="preventivo">Preventivo</option>
-              <option value="correctivo">Correctivo</option>
-            </select>
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="fechaDesde">Creada desde</label>
-            <input id="fechaDesde" onChange={cambiarFechaDesde} type="date" value={fechaDesde} />
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="fechaHasta">Creada hasta</label>
-            <input id="fechaHasta" onChange={cambiarFechaHasta} type="date" value={fechaHasta} />
-          </div>
-
-          <div className="form-field">
-            <label className="flex items-center gap-2" htmlFor="conSugerencias">
-              <input checked={conSugerencias} id="conSugerencias" onChange={cambiarConSugerencias} type="checkbox" />
-              Solo con recomendaciones de IA
-            </label>
-          </div>
+        <div className="form-field">
+          <label htmlFor="clienteId">Cliente</label>
+          <select id="clienteId" onChange={cambiarCliente} value={clienteId}>
+            <option value="">Todos los clientes</option>
+            {clientes.map((cliente) => (
+              <option key={cliente.id} value={cliente.id}>{cliente.razonSocial}</option>
+            ))}
+          </select>
         </div>
-        <div className="form-actions">
+
+        <div className="form-field">
+          <label htmlFor="activoId">Activo</label>
+          <select id="activoId" onChange={cambiarActivo} value={activoId}>
+            <option value="">Todos los activos</option>
+            {activosDelCliente.map((activo) => (
+              <option key={activo.id} value={activo.id}>{obtenerNombreVisibleDeActivo(activo)}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="tecnicoId">Técnico</label>
+          <select id="tecnicoId" onChange={cambiarTecnico} value={tecnicoId}>
+            <option value="">Todos los técnicos</option>
+            {tecnicos.map((tecnico) => (
+              <option key={tecnico.id} value={tecnico.id}>{tecnico.nombre + " " + tecnico.apellido}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="estado">Estado</label>
+          <select id="estado" onChange={cambiarEstado} value={estado}>
+            <option value="">Todos los estados</option>
+            {estadosOrdenTrabajo.map((estadoOrden) => (
+              <option key={estadoOrden} value={estadoOrden}>{obtenerEtiquetaEstadoOrdenTrabajo(estadoOrden)}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="prioridad">Prioridad</label>
+          <select id="prioridad" onChange={cambiarPrioridad} value={prioridad}>
+            <option value="">Todas las prioridades</option>
+            <option value="alta">Alta</option>
+            <option value="media">Media</option>
+            <option value="baja">Baja</option>
+          </select>
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="tipo">Tipo de mantenimiento</label>
+          <select id="tipo" onChange={cambiarTipo} value={tipo}>
+            <option value="">Todos los tipos</option>
+            <option value="preventivo">Preventivo</option>
+            <option value="correctivo">Correctivo</option>
+          </select>
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="fechaDesde">Creada desde</label>
+          <input id="fechaDesde" onChange={cambiarFechaDesde} type="date" value={fechaDesde} />
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="fechaHasta">Creada hasta</label>
+          <input id="fechaHasta" onChange={cambiarFechaHasta} type="date" value={fechaHasta} />
+        </div>
+
+        <div className="form-field campo-casilla">
+          <label className="flex items-center gap-2" htmlFor="conSugerencias">
+            <input checked={conSugerencias} id="conSugerencias" onChange={cambiarConSugerencias} type="checkbox" />
+            Solo con recomendaciones de IA
+          </label>
+        </div>
+        <div className="barra-filtros-acciones">
           <button className="secondary-button" onClick={limpiarFiltros} type="button">
             Limpiar filtros
           </button>

@@ -8,6 +8,7 @@ import { listarUsuarios } from "@/servicios/servicio-usuarios";
 import type { FiltrosMovimientosStock, MovimientoStock } from "@/tipos/movimiento-stock";
 import type { Repuesto } from "@/tipos/repuesto";
 import type { Usuario } from "@/tipos/usuario";
+import { IconoOjo } from "@/componentes/iconos";
 
 const filtrosVacios: FiltrosMovimientosStock = {
   buscar: "",
@@ -210,8 +211,8 @@ export default function PaginaMovimientosStock() {
                   <td>{nombreUsuario}</td>
                   <td>{movimiento.motivo}</td>
                   <td>
-                    <Link className="table-action-link" href={"/repuestos/movimientos/" + movimiento.id}>
-                      Ver detalle
+                    <Link aria-label="Ver detalle" className="boton-icono" href={"/repuestos/movimientos/" + movimiento.id} title="Ver detalle">
+                      <IconoOjo />
                     </Link>
                   </td>
                 </tr>
@@ -250,62 +251,57 @@ export default function PaginaMovimientosStock() {
         </Link>
       </header>
 
-      <form className="panel form-panel mb-6" onSubmit={aplicarFiltros}>
-        <div className="panel-heading">
-          <h2>Búsqueda y filtros</h2>
+      <form aria-label="Búsqueda y filtros" className="barra-filtros" onSubmit={aplicarFiltros}>
+        <div className="form-field campo-busqueda">
+          <label htmlFor="buscarMovimiento">Buscar</label>
+          <input
+            id="buscarMovimiento"
+            onChange={cambiarBuscar}
+            placeholder="Código o nombre del repuesto, o motivo"
+            type="text"
+            value={buscar}
+          />
         </div>
-        <div className="form-grid">
-          <div className="form-field">
-            <label htmlFor="buscarMovimiento">Buscar</label>
-            <input
-              id="buscarMovimiento"
-              onChange={cambiarBuscar}
-              placeholder="Código o nombre del repuesto, o motivo"
-              type="text"
-              value={buscar}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="repuestoMovimiento">Repuesto</label>
-            <select id="repuestoMovimiento" onChange={cambiarRepuesto} value={repuestoId}>
-              <option value="">Todos los repuestos</option>
-              {repuestos.map((repuesto) => (
-                <option key={repuesto.id} value={repuesto.id}>{repuesto.codigo + " - " + repuesto.nombre}</option>
-              ))}
-            </select>
-          </div>
-          <div className="form-field">
-            <label htmlFor="tipoMovimiento">Tipo de movimiento</label>
-            <select id="tipoMovimiento" onChange={cambiarTipo} value={tipo}>
-              <option value="">Todos los tipos</option>
-              <option value="ingreso">Ingreso</option>
-              <option value="egreso">Egreso</option>
-              <option value="ajuste">Ajuste</option>
-            </select>
-          </div>
-          <div className="form-field">
-            <label htmlFor="usuarioMovimiento">Usuario responsable</label>
-            <select id="usuarioMovimiento" onChange={cambiarUsuario} value={usuarioId}>
-              <option value="">Todos los usuarios</option>
-              {usuarios.map((usuario) => (
-                <option key={usuario.id} value={usuario.id}>{usuario.nombre + " " + usuario.apellido}</option>
-              ))}
-            </select>
-          </div>
-          <div className="form-field">
-            <label htmlFor="ubicacionMovimiento">Ubicación o depósito</label>
-            <input id="ubicacionMovimiento" onChange={cambiarUbicacion} type="text" value={ubicacion} />
-          </div>
-          <div className="form-field">
-            <label htmlFor="fechaDesdeMovimiento">Fecha desde</label>
-            <input id="fechaDesdeMovimiento" onChange={cambiarFechaDesde} type="date" value={fechaDesde} />
-          </div>
-          <div className="form-field">
-            <label htmlFor="fechaHastaMovimiento">Fecha hasta</label>
-            <input id="fechaHastaMovimiento" onChange={cambiarFechaHasta} type="date" value={fechaHasta} />
-          </div>
+        <div className="form-field">
+          <label htmlFor="repuestoMovimiento">Repuesto</label>
+          <select id="repuestoMovimiento" onChange={cambiarRepuesto} value={repuestoId}>
+            <option value="">Todos los repuestos</option>
+            {repuestos.map((repuesto) => (
+              <option key={repuesto.id} value={repuesto.id}>{repuesto.codigo + " - " + repuesto.nombre}</option>
+            ))}
+          </select>
         </div>
-        <div className="form-actions">
+        <div className="form-field">
+          <label htmlFor="tipoMovimiento">Tipo de movimiento</label>
+          <select id="tipoMovimiento" onChange={cambiarTipo} value={tipo}>
+            <option value="">Todos los tipos</option>
+            <option value="ingreso">Ingreso</option>
+            <option value="egreso">Egreso</option>
+            <option value="ajuste">Ajuste</option>
+          </select>
+        </div>
+        <div className="form-field">
+          <label htmlFor="usuarioMovimiento">Usuario responsable</label>
+          <select id="usuarioMovimiento" onChange={cambiarUsuario} value={usuarioId}>
+            <option value="">Todos los usuarios</option>
+            {usuarios.map((usuario) => (
+              <option key={usuario.id} value={usuario.id}>{usuario.nombre + " " + usuario.apellido}</option>
+            ))}
+          </select>
+        </div>
+        <div className="form-field">
+          <label htmlFor="ubicacionMovimiento">Ubicación o depósito</label>
+          <input id="ubicacionMovimiento" onChange={cambiarUbicacion} type="text" value={ubicacion} />
+        </div>
+        <div className="form-field">
+          <label htmlFor="fechaDesdeMovimiento">Fecha desde</label>
+          <input id="fechaDesdeMovimiento" onChange={cambiarFechaDesde} type="date" value={fechaDesde} />
+        </div>
+        <div className="form-field">
+          <label htmlFor="fechaHastaMovimiento">Fecha hasta</label>
+          <input id="fechaHastaMovimiento" onChange={cambiarFechaHasta} type="date" value={fechaHasta} />
+        </div>
+        <div className="barra-filtros-acciones">
           <button className="secondary-button" onClick={limpiarFiltros} type="button">
             Limpiar filtros
           </button>

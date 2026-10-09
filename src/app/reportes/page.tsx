@@ -11,6 +11,7 @@ import type { Cliente } from "@/tipos/cliente";
 import { estadosOrdenTrabajo } from "@/tipos/orden-trabajo";
 import type { CantidadPorGrupo, FiltrosIndicadores, Indicadores } from "@/tipos/reporte";
 import type { Usuario } from "@/tipos/usuario";
+import { IconoOjo } from "@/componentes/iconos";
 
 const filtrosVacios: FiltrosIndicadores = {
   fechaDesde: "",
@@ -283,8 +284,8 @@ export default function PaginaReportes() {
                   <td>{orden.prioridad}</td>
                   <td>{obtenerEtiquetaEstadoOrdenTrabajo(orden.estado)}</td>
                   <td>
-                    <Link className="text-link" href={"/ordenes-trabajo/" + orden.id}>
-                      Ver detalle
+                    <Link aria-label="Ver detalle" className="boton-icono" href={"/ordenes-trabajo/" + orden.id} title="Ver detalle">
+                      <IconoOjo />
                     </Link>
                   </td>
                 </tr>
@@ -349,71 +350,66 @@ export default function PaginaReportes() {
         </div>
       </header>
 
-      <form className="panel form-panel mb-6" onSubmit={aplicarFiltros}>
-        <div className="panel-heading">
-          <h2>Filtros</h2>
+      <form aria-label="Filtros" className="barra-filtros" onSubmit={aplicarFiltros}>
+        <div className="form-field">
+          <label htmlFor="fechaDesde">Fecha desde</label>
+          <input id="fechaDesde" onChange={cambiarFechaDesde} type="date" value={fechaDesde} />
         </div>
-        <div className="form-grid">
-          <div className="form-field">
-            <label htmlFor="fechaDesde">Fecha desde</label>
-            <input id="fechaDesde" onChange={cambiarFechaDesde} type="date" value={fechaDesde} />
-          </div>
 
-          <div className="form-field">
-            <label htmlFor="fechaHasta">Fecha hasta</label>
-            <input id="fechaHasta" onChange={cambiarFechaHasta} type="date" value={fechaHasta} />
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="tecnicoId">Técnico</label>
-            <select id="tecnicoId" onChange={cambiarTecnico} value={tecnicoId}>
-              <option value="">Todos los técnicos</option>
-              {tecnicos.map((tecnico) => (
-                <option key={tecnico.id} value={tecnico.id}>{tecnico.nombre + " " + tecnico.apellido}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="clienteId">Cliente</label>
-            <select id="clienteId" onChange={cambiarCliente} value={clienteId}>
-              <option value="">Todos los clientes</option>
-              {clientes.map((cliente) => (
-                <option key={cliente.id} value={cliente.id}>{cliente.razonSocial}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="activoId">Activo</label>
-            <select id="activoId" onChange={cambiarActivo} value={activoId}>
-              <option value="">Todos los activos</option>
-              {activosDelCliente.map((activo) => (
-                <option key={activo.id} value={activo.id}>{obtenerNombreVisibleDeActivo(activo)}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="estado">Estado</label>
-            <select id="estado" onChange={cambiarEstado} value={estado}>
-              <option value="">Todos los estados</option>
-              {estadosOrdenTrabajo.map((estadoOrden) => (
-                <option key={estadoOrden} value={estadoOrden}>{obtenerEtiquetaEstadoOrdenTrabajo(estadoOrden)}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="tipo">Tipo de mantenimiento</label>
-            <select id="tipo" onChange={cambiarTipo} value={tipo}>
-              <option value="">Todos los tipos</option>
-              <option value="preventivo">Preventivo</option>
-              <option value="correctivo">Correctivo</option>
-            </select>
-          </div>
+        <div className="form-field">
+          <label htmlFor="fechaHasta">Fecha hasta</label>
+          <input id="fechaHasta" onChange={cambiarFechaHasta} type="date" value={fechaHasta} />
         </div>
-        <div className="form-actions">
+
+        <div className="form-field">
+          <label htmlFor="tecnicoId">Técnico</label>
+          <select id="tecnicoId" onChange={cambiarTecnico} value={tecnicoId}>
+            <option value="">Todos los técnicos</option>
+            {tecnicos.map((tecnico) => (
+              <option key={tecnico.id} value={tecnico.id}>{tecnico.nombre + " " + tecnico.apellido}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="clienteId">Cliente</label>
+          <select id="clienteId" onChange={cambiarCliente} value={clienteId}>
+            <option value="">Todos los clientes</option>
+            {clientes.map((cliente) => (
+              <option key={cliente.id} value={cliente.id}>{cliente.razonSocial}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="activoId">Activo</label>
+          <select id="activoId" onChange={cambiarActivo} value={activoId}>
+            <option value="">Todos los activos</option>
+            {activosDelCliente.map((activo) => (
+              <option key={activo.id} value={activo.id}>{obtenerNombreVisibleDeActivo(activo)}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="estado">Estado</label>
+          <select id="estado" onChange={cambiarEstado} value={estado}>
+            <option value="">Todos los estados</option>
+            {estadosOrdenTrabajo.map((estadoOrden) => (
+              <option key={estadoOrden} value={estadoOrden}>{obtenerEtiquetaEstadoOrdenTrabajo(estadoOrden)}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="tipo">Tipo de mantenimiento</label>
+          <select id="tipo" onChange={cambiarTipo} value={tipo}>
+            <option value="">Todos los tipos</option>
+            <option value="preventivo">Preventivo</option>
+            <option value="correctivo">Correctivo</option>
+          </select>
+        </div>
+        <div className="barra-filtros-acciones">
           <button className="secondary-button" onClick={limpiarFiltros} type="button">
             Limpiar filtros
           </button>

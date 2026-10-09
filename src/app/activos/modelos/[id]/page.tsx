@@ -135,7 +135,7 @@ export default function PaginaDetalleModeloMaquina() {
           <p className="eyebrow">Modelos de máquina</p>
           <h1>{titulo}</h1>
         </div>
-        <Link className="secondary-button" href="/activos">
+        <Link className="secondary-button" href="/activos?seccion=modelos">
           Volver a activos
         </Link>
       </header>

@@ -12,6 +12,7 @@ import {
 import { obtenerDetalleRepuesto, tieneBajoStock } from "@/servicios/servicio-repuestos";
 import type { MovimientoStock } from "@/tipos/movimiento-stock";
 import type { Repuesto } from "@/tipos/repuesto";
+import { IconoOjo } from "@/componentes/iconos";
 
 export default function PaginaDetalleRepuesto() {
   const parametros = useParams<{ id: string }>();
@@ -258,8 +259,8 @@ export default function PaginaDetalleRepuesto() {
                   <td>{movimiento.ubicacion}</td>
                   <td>{movimiento.motivo}</td>
                   <td>
-                    <Link className="table-action-link" href={"/repuestos/movimientos/" + movimiento.id}>
-                      Ver detalle
+                    <Link aria-label="Ver detalle" className="boton-icono" href={"/repuestos/movimientos/" + movimiento.id} title="Ver detalle">
+                      <IconoOjo />
                     </Link>
                   </td>
                 </tr>

@@ -41,7 +41,7 @@ export function FormularioTipoMaquina(props: PropiedadesFormularioTipoMaquina) {
 
     try {
       await alEnviar(tipoMaquinaParaGuardar);
-      enrutador.push("/activos");
+      enrutador.push("/activos?seccion=tipos");
     } catch (error) {
       if (error instanceof Error) {
         setErrorGeneral(error.message);
@@ -73,7 +73,7 @@ export function FormularioTipoMaquina(props: PropiedadesFormularioTipoMaquina) {
       </div>
 
       <div className="form-actions">
-        <Link className="secondary-button" href="/activos">
+        <Link className="secondary-button" href="/activos?seccion=tipos">
           Cancelar
         </Link>
         <button className="primary-button" disabled={estaEnviando} type="submit">

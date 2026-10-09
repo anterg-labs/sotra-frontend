@@ -35,19 +35,8 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
       try {
         const versionObtenida = await obtenerVersionSistema();
         setVersionBackend(versionObtenida);
-        console.log(
-          "Versión frontend: " +
-            versionFrontend.version +
-            " | Versión backend: " +
-            versionObtenida
-        );
       } catch {
         setVersionBackend("No disponible");
-        console.log(
-          "Versión frontend: " +
-            versionFrontend.version +
-            " | Versión backend: No disponible"
-        );
       }
     }
 
@@ -127,9 +116,9 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
             <Image
               src="/images/logo-cvm.png"
               alt="Logo CVM"
-              className="object-contain"
-              height={40}
-              width={40}
+              width={717}
+              height={152}
+              className="h-auto w-10 object-contain"
             />
           </span>
         </Link>
@@ -169,10 +158,6 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
           })}
         </nav>
 
-        <div className="border-t border-gray-200 px-4 py-3 text-xs text-gray-500">
-          <p>Frontend: {versionFrontend.version}</p>
-          <p>Backend: {versionBackend}</p>
-        </div>
       </aside>
 
       {fondoOscuro}
@@ -192,10 +177,13 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
           </div>
           {botonCerrarSesion}
         </header>
-        <div className="flex-1 pb-16">{children}</div>
-        <footer className="fixed bottom-0 left-0 right-0 z-20 flex h-14 items-center justify-between gap-4 bg-black px-4 text-sm font-bold text-gray-300 md:left-[72px] md:px-8">
+        <div className="flex-1 pb-24 md:pb-16">{children}</div>
+        <footer className="fixed bottom-0 left-0 right-0 z-20 flex min-h-16 flex-col items-center justify-center gap-1 bg-black px-4 py-2 text-center text-xs font-bold text-gray-300 md:left-[72px] md:min-h-14 md:flex-row md:justify-between md:px-8 md:text-sm">
           <span>{textoUsuario}</span>
-          <span>{"Copyright © 2026 | AnterG Labs | Sotra App Versión " + versionBackend}</span>
+          <div className="md:text-right">
+            <p>Copyright © 2026 | AnterG Labs | Sotra App</p>
+            <p>{"Frontend: " + versionFrontend.version + " | Backend: " + versionBackend}</p>
+          </div>
         </footer>
       </div>
     </div>

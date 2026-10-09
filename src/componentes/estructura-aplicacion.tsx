@@ -8,8 +8,13 @@ import { apiObtenerVersionBackend } from "@/servicios/cliente-api";
 import versionFrontend from "../../version.json";
 
 const enlacesNavegacion = [
-  { ruta: "/usuarios", etiqueta: "Usuarios", simbolo: "US" },
+  { ruta: "/ordenes-trabajo", etiqueta: "Órdenes de trabajo", simbolo: "OT" },
   { ruta: "/clientes", etiqueta: "Clientes", simbolo: "CL" },
+  { ruta: "/activos", etiqueta: "Activos", simbolo: "AC" },
+  { ruta: "/repuestos", etiqueta: "Repuestos", simbolo: "RE" },
+  { ruta: "/documentacion-tecnica", etiqueta: "Documentación técnica", simbolo: "DT" },
+  { ruta: "/usuarios", etiqueta: "Usuarios", simbolo: "US" },
+  { ruta: "/reportes", etiqueta: "Reportes", simbolo: "RP" },
 ];
 
 type EstructuraAplicacionProps = {

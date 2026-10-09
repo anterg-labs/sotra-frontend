@@ -5,7 +5,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "SOTRA",
-  description: "Gestión de usuarios y clientes de CVM",
+  description: "Gestión de usuarios, clientes, activos y documentación técnica de CVM",
 };
 
 type PropiedadesLayoutRaiz = {

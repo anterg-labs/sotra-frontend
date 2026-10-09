@@ -55,6 +55,14 @@ h2 {
   letter-spacing: -0.015em;
 }
 
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
 .page-content {
   max-width: 1500px;
   margin: 0 auto;
@@ -173,6 +181,48 @@ h2 {
   color: #ef4444;
 }
 
+.status-creada,
+.status-cancelada {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.status-asignada,
+.status-en_ejecucion {
+  background: #e9f6fe;
+  color: #0f83c7;
+}
+
+.status-pausada {
+  background: #fff5de;
+  color: #b7791f;
+}
+
+.status-finalizada {
+  background: #eee8fa;
+  color: #6447a5;
+}
+
+.status-cerrada {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.prioridad-alta {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.prioridad-media {
+  background: #fff5de;
+  color: #b7791f;
+}
+
+.prioridad-baja {
+  background: #e9f6fe;
+  color: #0f83c7;
+}
+
 .filters-bar {
   display: flex;
   gap: 14px;
@@ -209,10 +259,155 @@ h2 {
   font-size: 13px;
 }
 
+.form-panel .form-error-banner,
+.detail-panel .form-error-banner {
+  margin: 0 0 20px;
+}
+
 .table-actions {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 6px;
+}
+
+.boton-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  cursor: pointer;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #475569;
+}
+
+.boton-icono:hover,
+.boton-icono:focus-visible {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+  color: #0284c7;
+}
+
+.boton-icono-peligro {
+  color: #ef4444;
+}
+
+.boton-icono-peligro:hover,
+.boton-icono-peligro:focus-visible {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
+.boton-icono:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.barra-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.barra-filtros .form-field {
+  flex: 1 1 170px;
+  gap: 4px;
+  min-width: 150px;
+}
+
+.barra-filtros .campo-busqueda {
+  flex: 2 1 260px;
+}
+
+.barra-filtros .form-field label {
+  color: #6b7280;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.barra-filtros .form-field input,
+.barra-filtros .form-field select {
+  height: 36px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.barra-filtros .campo-casilla {
+  flex: 0 0 auto;
+  min-width: 0;
+  justify-content: center;
+  height: 36px;
+}
+
+.barra-filtros .campo-casilla label {
+  color: #1e293b;
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.barra-filtros .campo-casilla input {
+  height: auto;
+}
+
+.barra-filtros-acciones {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.barra-filtros-acciones .primary-button,
+.barra-filtros-acciones .secondary-button {
+  height: 36px;
+  padding: 0 14px;
+}
+
+.barra-filtros-acciones .primary-button {
+  background: #1e293b;
+}
+
+.barra-filtros-acciones .primary-button:hover,
+.barra-filtros-acciones .primary-button:focus-visible {
+  background: #0284c7;
+}
+
+.pestanas {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.pestana {
+  margin-bottom: -1px;
+  padding: 10px 16px;
+  border-bottom: 2px solid transparent;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pestana:hover,
+.pestana:focus-visible {
+  color: #1e293b;
+}
+
+.pestana-activa {
+  border-bottom-color: #dc2626;
+  color: #dc2626;
 }
 
 .table-action-link {

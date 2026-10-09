@@ -1,27 +1,16 @@
-# Mantenemos esto hasta que pruebes lo nuevo. Recuerda que es una sugerencia
-# services:
-#   frontend:
-#     build:
-#       context: .
-#       args:
-#         API_URL: ${API_URL}
-#     image: sotra-frontend:local
-#     ports:
-#       - "3100:3000"
-
 services:
   sotra-frontend-prod: #renombre el servicio y cada uno esta pensado para diferente enfoque
     build:
       context: .
-      dockerfile: Dockerfile
-      args: 
-        API_URL: ${API_URL} # mantuve esto de lo tuyo
-    image: ${IMAGE_NAME}:${IMAGE_TAG}
+      dockerfile: Dockerfile.dev
+      args:
+        API_URL: ${API_URL}
+    image: sotra-frontend-prod
     container_name: sotra-frontend-prod
     ports:
-      - "3100:3000" # mantuve tu puerto 3100
+      - "80:3000" # mantuve tu puerto 3100
 
-# este servicio es que refleja cambios automaticos dentro del container
+# este servicio refleja los cambios en tiempo real: la carpeta del proyecto esta montada dentro del contenedor
   sotra-frontend-dev:
     build:
       context: .
@@ -29,19 +18,14 @@ services:
     image: sotra-frontend:dev
     container_name: sotra-frontend-dev
     ports:
-      - "3000:3000"
-    environment:
-      - WATCHPACK_POLLING=true
-    develop:
-      watch:
-        - action: sync
-          path: .
-          target: /app
-          ignore:
-            - node_modules/
-            - .next/
-        - action: rebuild
-          path: package.json
+      - "80:3000"
+    restart: unless-stopped
+    env_file:
+      - .env.dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
 
 # este es por su qures correr unicamente los unitest dentro del contendor y ta, solo hace eso
   sotra-frontend-test:

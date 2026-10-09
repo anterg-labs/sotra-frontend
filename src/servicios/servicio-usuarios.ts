@@ -2,14 +2,20 @@ import {
   apiActualizarUsuario,
   apiCrearUsuario,
   apiDesactivarUsuario,
+  apiListarRoles,
   apiListarUsuarios,
+  apiListarUsuariosPaginados,
   apiObtenerUsuario,
-} from "@/servicios/cliente-api";
-import type { ActualizarUsuarioInput, CrearUsuarioInput } from "@/tipos/usuario";
+} from "@/servicios/api/api-usuarios";
+import type { ActualizarUsuarioInput, CrearUsuarioInput, FiltrosUsuarios } from "@/tipos/usuario";
 
 const patronFormatoCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function validarUsuario(input: CrearUsuarioInput | ActualizarUsuarioInput) {
+  if (input.idsRol.length === 0) {
+    throw new Error("Debe seleccionar al menos un rol.");
+  }
+
   if (!input.nombre.trim()) {
     throw new Error("El nombre es obligatorio.");
   }
@@ -32,6 +38,14 @@ export async function listarUsuarios() {
   return apiListarUsuarios();
 }
 
+export async function listarUsuariosPaginados(filtros: FiltrosUsuarios) {
+  return apiListarUsuariosPaginados(filtros);
+}
+
+export async function listarRoles() {
+  return apiListarRoles();
+}
+
 export async function obtenerDetalleUsuario(usuarioId: number) {
   return apiObtenerUsuario(usuarioId);
 }
@@ -39,8 +53,8 @@ export async function obtenerDetalleUsuario(usuarioId: number) {
 export async function crearUsuario(input: CrearUsuarioInput) {
   validarUsuario(input);
 
-  if (!input.contrasenaTemporal.trim()) {
-    throw new Error("La contraseña temporal es obligatoria.");
+  if (!input.contrasena.trim()) {
+    throw new Error("La contraseña es obligatoria.");
   }
 
   return apiCrearUsuario(input);

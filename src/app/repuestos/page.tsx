@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
 import { desactivarRepuesto, listarRepuestosPaginados, tieneBajoStock } from "@/servicios/servicio-repuestos";
 import type { FiltrosRepuestos, Repuesto } from "@/tipos/repuesto";
+import { IconoLapiz, IconoOjo, IconoPapelera } from "@/componentes/iconos";
 
 const filtrosVacios: FiltrosRepuestos = {
   buscar: "",
@@ -189,8 +190,8 @@ export default function PaginaRepuestos() {
                   <td>{repuesto.ubicacion}</td>
                   <td><span className="status status-activo">Activo</span></td>
                   <td>
-                    <Link className="table-action-link" href={"/repuestos/" + repuesto.id}>
-                      Ver detalle o registrar ingreso
+                    <Link aria-label="Ver detalle o registrar ingreso" className="boton-icono" href={"/repuestos/" + repuesto.id} title="Ver detalle o registrar ingreso">
+                      <IconoOjo />
                     </Link>
                   </td>
                 </tr>
@@ -253,13 +254,13 @@ export default function PaginaRepuestos() {
                 botonBaja = (
                   <button
                     aria-label="Dar de baja"
-                    className="table-action-link table-action-link-danger"
+                    className="boton-icono boton-icono-peligro"
                     disabled={repuestoDesactivandoId === repuesto.id}
                     onClick={() => pedirBajaRepuesto(repuesto)}
                     title="Dar de baja"
                     type="button"
                   >
-                    Dar de baja
+                    <IconoPapelera />
                   </button>
                 );
               }
@@ -282,19 +283,19 @@ export default function PaginaRepuestos() {
                     <div className="table-actions">
                       <Link
                         aria-label="Ver detalle"
-                        className="table-action-link"
+                        className="boton-icono"
                         href={"/repuestos/" + repuesto.id}
                         title="Ver detalle"
                       >
-                        Ver detalle
+                        <IconoOjo />
                       </Link>
                       <Link
                         aria-label="Modificar repuesto"
-                        className="table-action-link"
+                        className="boton-icono"
                         href={"/repuestos/" + repuesto.id + "/editar"}
                         title="Modificar repuesto"
                       >
-                        Modificar
+                        <IconoLapiz />
                       </Link>
                       {botonBaja}
                     </div>
@@ -359,41 +360,36 @@ export default function PaginaRepuestos() {
 
       {alertaStock}
 
-      <form className="panel form-panel mb-6" onSubmit={aplicarFiltros}>
-        <div className="panel-heading">
-          <h2>Búsqueda y filtros</h2>
+      <form aria-label="Búsqueda y filtros" className="barra-filtros" onSubmit={aplicarFiltros}>
+        <div className="form-field campo-busqueda">
+          <label htmlFor="buscarRepuesto">Buscar</label>
+          <input
+            id="buscarRepuesto"
+            onChange={cambiarBuscar}
+            placeholder="Código, nombre, marca o descripción"
+            type="text"
+            value={buscar}
+          />
         </div>
-        <div className="form-grid">
-          <div className="form-field">
-            <label htmlFor="buscarRepuesto">Buscar</label>
-            <input
-              id="buscarRepuesto"
-              onChange={cambiarBuscar}
-              placeholder="Código, nombre, marca o descripción"
-              type="text"
-              value={buscar}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="ubicacionRepuestoFiltro">Ubicación</label>
-            <input id="ubicacionRepuestoFiltro" onChange={cambiarUbicacionFiltro} type="text" value={ubicacionFiltro} />
-          </div>
-          <div className="form-field">
-            <label htmlFor="estadoRepuestoFiltro">Estado</label>
-            <select id="estadoRepuestoFiltro" onChange={cambiarEstadoFiltro} value={estadoFiltro}>
-              <option value="">Todos los estados</option>
-              <option value="activo">Activo</option>
-              <option value="inactivo">Inactivo</option>
-            </select>
-          </div>
-          <div className="form-field">
-            <label className="flex items-center gap-2" htmlFor="soloBajoStock">
-              <input checked={soloBajoStock} id="soloBajoStock" onChange={cambiarSoloBajoStock} type="checkbox" />
-              Solo con stock insuficiente
-            </label>
-          </div>
+        <div className="form-field">
+          <label htmlFor="ubicacionRepuestoFiltro">Ubicación</label>
+          <input id="ubicacionRepuestoFiltro" onChange={cambiarUbicacionFiltro} type="text" value={ubicacionFiltro} />
         </div>
-        <div className="form-actions">
+        <div className="form-field">
+          <label htmlFor="estadoRepuestoFiltro">Estado</label>
+          <select id="estadoRepuestoFiltro" onChange={cambiarEstadoFiltro} value={estadoFiltro}>
+            <option value="">Todos los estados</option>
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+        </div>
+        <div className="form-field campo-casilla">
+          <label className="flex items-center gap-2" htmlFor="soloBajoStock">
+            <input checked={soloBajoStock} id="soloBajoStock" onChange={cambiarSoloBajoStock} type="checkbox" />
+            Solo con stock insuficiente
+          </label>
+        </div>
+        <div className="barra-filtros-acciones">
           <button className="secondary-button" onClick={limpiarFiltros} type="button">
             Limpiar filtros
           </button>

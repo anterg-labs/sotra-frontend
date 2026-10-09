@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { FiltrosUsuarios, Rol, UsuarioListado } from "@/tipos/usuario";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
 import { desactivarUsuario, listarRoles, listarUsuariosPaginados } from "@/servicios/servicio-usuarios";
+import { IconoLapiz, IconoOjo, IconoPapelera } from "@/componentes/iconos";
 
 const filtrosVacios: FiltrosUsuarios = {
   buscar: "",
@@ -191,13 +192,13 @@ export default function PaginaUsuarios() {
                 botonBaja = (
                   <button
                     aria-label="Dar de baja"
-                    className="table-action-link table-action-link-danger"
+                    className="boton-icono boton-icono-peligro"
                     disabled={usuarioDesactivandoId === usuario.id}
                     onClick={() => pedirBajaUsuario(usuario)}
                     title="Dar de baja"
                     type="button"
                   >
-                    Dar de baja
+                    <IconoPapelera />
                   </button>
                 );
               }
@@ -233,19 +234,19 @@ export default function PaginaUsuarios() {
                     <div className="table-actions">
                       <Link
                         aria-label="Ver detalle"
-                        className="table-action-link"
+                        className="boton-icono"
                         href={"/usuarios/" + usuario.id}
                         title="Ver detalle"
                       >
-                        Ver detalle
+                        <IconoOjo />
                       </Link>
                       <Link
                         aria-label="Modificar usuario"
-                        className="table-action-link"
+                        className="boton-icono"
                         href={"/usuarios/" + usuario.id + "/editar"}
                         title="Modificar usuario"
                       >
-                        Modificar
+                        <IconoLapiz />
                       </Link>
                       {botonBaja}
                     </div>
@@ -305,40 +306,35 @@ export default function PaginaUsuarios() {
         </Link>
       </header>
 
-      <form className="panel form-panel mb-6" onSubmit={aplicarFiltros}>
-        <div className="panel-heading">
-          <h2>Búsqueda y filtros</h2>
+      <form aria-label="Búsqueda y filtros" className="barra-filtros" onSubmit={aplicarFiltros}>
+        <div className="form-field campo-busqueda">
+          <label htmlFor="buscarUsuario">Buscar</label>
+          <input
+            id="buscarUsuario"
+            onChange={cambiarBuscar}
+            placeholder="Nombre, apellido o correo electrónico"
+            type="text"
+            value={buscar}
+          />
         </div>
-        <div className="form-grid">
-          <div className="form-field">
-            <label htmlFor="buscarUsuario">Buscar</label>
-            <input
-              id="buscarUsuario"
-              onChange={cambiarBuscar}
-              placeholder="Nombre, apellido o correo electrónico"
-              type="text"
-              value={buscar}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="rolUsuarioFiltro">Rol</label>
-            <select id="rolUsuarioFiltro" onChange={cambiarRolFiltro} value={rolIdFiltro}>
-              <option value="">Todos los roles</option>
-              {roles.map((rol) => (
-                <option key={rol.id} value={rol.id}>{rol.nombre}</option>
-              ))}
-            </select>
-          </div>
-          <div className="form-field">
-            <label htmlFor="estadoUsuarioFiltro">Estado</label>
-            <select id="estadoUsuarioFiltro" onChange={cambiarEstadoFiltro} value={estadoFiltro}>
-              <option value="">Todos los estados</option>
-              <option value="activo">Activo</option>
-              <option value="inactivo">Inactivo</option>
-            </select>
-          </div>
+        <div className="form-field">
+          <label htmlFor="rolUsuarioFiltro">Rol</label>
+          <select id="rolUsuarioFiltro" onChange={cambiarRolFiltro} value={rolIdFiltro}>
+            <option value="">Todos los roles</option>
+            {roles.map((rol) => (
+              <option key={rol.id} value={rol.id}>{rol.nombre}</option>
+            ))}
+          </select>
         </div>
-        <div className="form-actions">
+        <div className="form-field">
+          <label htmlFor="estadoUsuarioFiltro">Estado</label>
+          <select id="estadoUsuarioFiltro" onChange={cambiarEstadoFiltro} value={estadoFiltro}>
+            <option value="">Todos los estados</option>
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+        </div>
+        <div className="barra-filtros-acciones">
           <button className="secondary-button" onClick={limpiarFiltros} type="button">
             Limpiar filtros
           </button>

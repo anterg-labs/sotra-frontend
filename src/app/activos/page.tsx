@@ -11,6 +11,7 @@ import { listarModelosMaquina } from "@/servicios/servicio-modelos-maquina";
 import type { Activo, FiltrosActivos } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
 import type { ModeloMaquina } from "@/tipos/modelo-maquina";
+import { IconoLapiz, IconoOjo, IconoPapelera } from "@/componentes/iconos";
 
 const filtrosVacios: FiltrosActivos = {
   buscar: "",
@@ -205,13 +206,13 @@ export default function PaginaActivos() {
                 botonBaja = (
                   <button
                     aria-label="Dar de baja"
-                    className="table-action-link table-action-link-danger"
+                    className="boton-icono boton-icono-peligro"
                     disabled={activoDesactivandoId === activo.id}
                     onClick={() => pedirBajaActivo(activo)}
                     title="Dar de baja"
                     type="button"
                   >
-                    Dar de baja
+                    <IconoPapelera />
                   </button>
                 );
               }
@@ -248,19 +249,19 @@ export default function PaginaActivos() {
                     <div className="table-actions">
                       <Link
                         aria-label="Ver detalle"
-                        className="table-action-link"
+                        className="boton-icono"
                         href={"/activos/" + activo.id}
                         title="Ver detalle"
                       >
-                        Ver detalle
+                        <IconoOjo />
                       </Link>
                       <Link
                         aria-label="Modificar activo"
-                        className="table-action-link"
+                        className="boton-icono"
                         href={"/activos/" + activo.id + "/editar"}
                         title="Modificar activo"
                       >
-                        Modificar
+                        <IconoLapiz />
                       </Link>
                       {botonBaja}
                     </div>
@@ -337,45 +338,40 @@ export default function PaginaActivos() {
         </Link>
       </header>
 
-      <form className="panel form-panel mb-6" onSubmit={aplicarFiltros}>
-        <div className="panel-heading">
-          <h2>Búsqueda y filtros de activos</h2>
+      <form aria-label="Búsqueda y filtros de activos" className="barra-filtros" onSubmit={aplicarFiltros}>
+        <div className="form-field campo-busqueda">
+          <label htmlFor="buscarActivo">Buscar</label>
+          <input
+            id="buscarActivo"
+            onChange={cambiarBuscar}
+            placeholder="Nombre, número de serie, ubicación o descripción"
+            type="text"
+            value={buscar}
+          />
         </div>
-        <div className="form-grid">
-          <div className="form-field">
-            <label htmlFor="buscarActivo">Buscar</label>
-            <input
-              id="buscarActivo"
-              onChange={cambiarBuscar}
-              placeholder="Nombre, número de serie, ubicación o descripción"
-              type="text"
-              value={buscar}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="clienteFiltro">Cliente</label>
-            <select id="clienteFiltro" onChange={cambiarClienteFiltro} value={clienteIdFiltro}>
-              <option value="">Todos los clientes</option>
-              {opcionesClientes}
-            </select>
-          </div>
-          <div className="form-field">
-            <label htmlFor="modeloFiltro">Modelo</label>
-            <select id="modeloFiltro" onChange={cambiarModeloFiltro} value={modeloMaquinaIdFiltro}>
-              <option value="">Todos los modelos</option>
-              {opcionesModelos}
-            </select>
-          </div>
-          <div className="form-field">
-            <label htmlFor="estadoActivoFiltro">Estado</label>
-            <select id="estadoActivoFiltro" onChange={cambiarEstadoFiltro} value={estadoFiltro}>
-              <option value="">Todos los estados</option>
-              <option value="activo">Activo</option>
-              <option value="inactivo">Inactivo</option>
-            </select>
-          </div>
+        <div className="form-field">
+          <label htmlFor="clienteFiltro">Cliente</label>
+          <select id="clienteFiltro" onChange={cambiarClienteFiltro} value={clienteIdFiltro}>
+            <option value="">Todos los clientes</option>
+            {opcionesClientes}
+          </select>
         </div>
-        <div className="form-actions">
+        <div className="form-field">
+          <label htmlFor="modeloFiltro">Modelo</label>
+          <select id="modeloFiltro" onChange={cambiarModeloFiltro} value={modeloMaquinaIdFiltro}>
+            <option value="">Todos los modelos</option>
+            {opcionesModelos}
+          </select>
+        </div>
+        <div className="form-field">
+          <label htmlFor="estadoActivoFiltro">Estado</label>
+          <select id="estadoActivoFiltro" onChange={cambiarEstadoFiltro} value={estadoFiltro}>
+            <option value="">Todos los estados</option>
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+        </div>
+        <div className="barra-filtros-acciones">
           <button className="secondary-button" onClick={limpiarFiltros} type="button">
             Limpiar filtros
           </button>

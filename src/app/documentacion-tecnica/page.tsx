@@ -11,6 +11,7 @@ import {
 } from "@/servicios/servicio-documentos-tecnicos";
 import type { Activo } from "@/tipos/activo";
 import type { DocumentoTecnico, FiltrosDocumentosTecnicos } from "@/tipos/documento-tecnico";
+import { IconoDescarga, IconoOjo, IconoPapelera } from "@/componentes/iconos";
 
 const filtrosVacios: FiltrosDocumentosTecnicos = {
   buscar: "",
@@ -204,29 +205,29 @@ export default function PaginaDocumentacionTecnica() {
                     <div className="table-actions">
                       <Link
                         aria-label="Ver detalle"
-                        className="table-action-link"
+                        className="boton-icono"
                         href={"/documentacion-tecnica/" + documento.id}
                         title="Ver detalle"
                       >
-                        Ver detalle
+                        <IconoOjo />
                       </Link>
                       <a
                         aria-label="Descargar PDF"
-                        className="table-action-link"
+                        className="boton-icono"
                         href={obtenerUrlDescargaDocumentoTecnico(documento.id)}
                         title="Descargar PDF"
                       >
-                        Descargar
+                        <IconoDescarga />
                       </a>
                       <button
                         aria-label="Eliminar documento"
-                        className="table-action-link table-action-link-danger"
+                        className="boton-icono boton-icono-peligro"
                         disabled={documentoEliminandoId === documento.id}
                         onClick={() => pedirEliminacionDocumento(documento)}
                         title="Eliminar documento"
                         type="button"
                       >
-                        Eliminar
+                        <IconoPapelera />
                       </button>
                     </div>
                   </td>
@@ -283,32 +284,27 @@ export default function PaginaDocumentacionTecnica() {
         </Link>
       </header>
 
-      <form className="panel form-panel mb-6" onSubmit={aplicarFiltros}>
-        <div className="panel-heading">
-          <h2>Búsqueda y filtros</h2>
+      <form aria-label="Búsqueda y filtros" className="barra-filtros" onSubmit={aplicarFiltros}>
+        <div className="form-field campo-busqueda">
+          <label htmlFor="buscarDocumento">Buscar</label>
+          <input
+            id="buscarDocumento"
+            onChange={cambiarBuscar}
+            placeholder="Nombre del archivo o del activo"
+            type="text"
+            value={buscar}
+          />
         </div>
-        <div className="form-grid">
-          <div className="form-field">
-            <label htmlFor="buscarDocumento">Buscar</label>
-            <input
-              id="buscarDocumento"
-              onChange={cambiarBuscar}
-              placeholder="Nombre del archivo o del activo"
-              type="text"
-              value={buscar}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="activoDocumentoFiltro">Activo asociado</label>
-            <select id="activoDocumentoFiltro" onChange={cambiarActivoFiltro} value={activoIdFiltro}>
-              <option value="">Todos los activos</option>
-              {activos.map((activo) => (
-                <option key={activo.id} value={activo.id}>{obtenerNombreVisibleDeActivo(activo)}</option>
-              ))}
-            </select>
-          </div>
+        <div className="form-field">
+          <label htmlFor="activoDocumentoFiltro">Activo asociado</label>
+          <select id="activoDocumentoFiltro" onChange={cambiarActivoFiltro} value={activoIdFiltro}>
+            <option value="">Todos los activos</option>
+            {activos.map((activo) => (
+              <option key={activo.id} value={activo.id}>{obtenerNombreVisibleDeActivo(activo)}</option>
+            ))}
+          </select>
         </div>
-        <div className="form-actions">
+        <div className="barra-filtros-acciones">
           <button className="secondary-button" onClick={limpiarFiltros} type="button">
             Limpiar filtros
           </button>

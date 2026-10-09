@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
 import { desactivarTipoMaquina, listarTiposMaquinaPaginados } from "@/servicios/servicio-tipos-maquina";
 import type { FiltrosTiposMaquina, TipoMaquina } from "@/tipos/tipo-maquina";
+import { IconoLapiz, IconoOjo, IconoPapelera } from "@/componentes/iconos";
 
 const filtrosVacios: FiltrosTiposMaquina = {
   buscar: "",
@@ -166,13 +167,13 @@ export function ListadoTiposMaquina() {
                 botonBaja = (
                   <button
                     aria-label="Dar de baja"
-                    className="table-action-link table-action-link-danger"
+                    className="boton-icono boton-icono-peligro"
                     disabled={tipoDesactivandoId === tipoMaquina.id}
                     onClick={() => pedirBajaTipo(tipoMaquina)}
                     title="Dar de baja"
                     type="button"
                   >
-                    Dar de baja
+                    <IconoPapelera />
                   </button>
                 );
               }
@@ -187,19 +188,19 @@ export function ListadoTiposMaquina() {
                     <div className="table-actions">
                       <Link
                         aria-label="Ver detalle"
-                        className="table-action-link"
+                        className="boton-icono"
                         href={"/activos/tipos/" + tipoMaquina.id}
                         title="Ver detalle"
                       >
-                        Ver detalle
+                        <IconoOjo />
                       </Link>
                       <Link
                         aria-label="Modificar tipo de máquina"
-                        className="table-action-link"
+                        className="boton-icono"
                         href={"/activos/tipos/" + tipoMaquina.id + "/editar"}
                         title="Modificar tipo de máquina"
                       >
-                        Modificar
+                        <IconoLapiz />
                       </Link>
                       {botonBaja}
                     </div>
@@ -257,8 +258,8 @@ export function ListadoTiposMaquina() {
         </Link>
       </header>
 
-      <form className="mb-4 flex flex-wrap items-end gap-3" onSubmit={aplicarFiltros}>
-        <div className="form-field">
+      <form aria-label="Filtros" className="barra-filtros" onSubmit={aplicarFiltros}>
+        <div className="form-field campo-busqueda">
           <label htmlFor="buscarTipo">Buscar tipo</label>
           <input id="buscarTipo" onChange={cambiarBuscar} placeholder="Nombre" type="text" value={buscar} />
         </div>
@@ -270,12 +271,14 @@ export function ListadoTiposMaquina() {
             <option value="inactivo">Inactivo</option>
           </select>
         </div>
-        <button className="secondary-button" onClick={limpiarFiltros} type="button">
-          Limpiar
-        </button>
-        <button className="primary-button" type="submit">
-          Filtrar tipos
-        </button>
+        <div className="barra-filtros-acciones">
+          <button className="secondary-button" onClick={limpiarFiltros} type="button">
+            Limpiar
+          </button>
+          <button className="primary-button" type="submit">
+            Filtrar tipos
+          </button>
+        </div>
       </form>
 
       <section className="panel">

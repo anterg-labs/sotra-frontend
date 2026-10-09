@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
 import { desactivarCliente, listarClientesPaginados, reactivarCliente } from "@/servicios/servicio-clientes";
 import type { Cliente, FiltrosClientes } from "@/tipos/cliente";
+import { IconoLapiz, IconoOjo, IconoPapelera, IconoReactivar } from "@/componentes/iconos";
 
 const filtrosVacios: FiltrosClientes = {
   buscar: "",
@@ -189,13 +190,13 @@ export default function PaginaClientes() {
                 botonBaja = (
                   <button
                     aria-label="Dar de baja"
-                    className="table-action-link table-action-link-danger"
+                    className="boton-icono boton-icono-peligro"
                     disabled={clienteDesactivandoId === cliente.id}
                     onClick={() => pedirBajaCliente(cliente)}
                     title="Dar de baja"
                     type="button"
                   >
-                    Dar de baja
+                    <IconoPapelera />
                   </button>
                 );
               }
@@ -203,24 +204,24 @@ export default function PaginaClientes() {
               let botonPrincipal = (
                 <Link
                   aria-label="Modificar cliente"
-                  className="table-action-link"
+                  className="boton-icono"
                   href={"/clientes/" + cliente.id + "/editar"}
                   title="Modificar cliente"
                 >
-                  Modificar
+                  <IconoLapiz />
                 </Link>
               );
               if (cliente.estado === "inactivo") {
                 botonPrincipal = (
                   <button
                     aria-label="Reactivar cliente"
-                    className="table-action-link"
+                    className="boton-icono"
                     disabled={clienteDesactivandoId === cliente.id}
                     onClick={() => reactivarClienteSeleccionado(cliente)}
                     title="Reactivar cliente"
                     type="button"
                   >
-                    Reactivar
+                    <IconoReactivar />
                   </button>
                 );
               }
@@ -239,11 +240,11 @@ export default function PaginaClientes() {
                     <div className="table-actions">
                       <Link
                         aria-label="Ver detalle"
-                        className="table-action-link"
+                        className="boton-icono"
                         href={"/clientes/" + cliente.id}
                         title="Ver detalle"
                       >
-                        Ver detalle
+                        <IconoOjo />
                       </Link>
                       {botonPrincipal}
                       {botonBaja}
@@ -302,31 +303,26 @@ export default function PaginaClientes() {
         </Link>
       </header>
 
-      <form className="panel form-panel mb-6" onSubmit={aplicarFiltros}>
-        <div className="panel-heading">
-          <h2>Búsqueda y filtros</h2>
+      <form aria-label="Búsqueda y filtros" className="barra-filtros" onSubmit={aplicarFiltros}>
+        <div className="form-field campo-busqueda">
+          <label htmlFor="buscarCliente">Buscar</label>
+          <input
+            id="buscarCliente"
+            onChange={cambiarBuscar}
+            placeholder="Razón social, contacto o correo"
+            type="text"
+            value={buscar}
+          />
         </div>
-        <div className="form-grid">
-          <div className="form-field">
-            <label htmlFor="buscarCliente">Buscar</label>
-            <input
-              id="buscarCliente"
-              onChange={cambiarBuscar}
-              placeholder="Razón social, contacto o correo"
-              type="text"
-              value={buscar}
-            />
-          </div>
-          <div className="form-field">
-            <label htmlFor="estadoClienteFiltro">Estado</label>
-            <select id="estadoClienteFiltro" onChange={cambiarEstadoFiltro} value={estadoFiltro}>
-              <option value="">Todos los estados</option>
-              <option value="activo">Activo</option>
-              <option value="inactivo">Inactivo</option>
-            </select>
-          </div>
+        <div className="form-field">
+          <label htmlFor="estadoClienteFiltro">Estado</label>
+          <select id="estadoClienteFiltro" onChange={cambiarEstadoFiltro} value={estadoFiltro}>
+            <option value="">Todos los estados</option>
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
         </div>
-        <div className="form-actions">
+        <div className="barra-filtros-acciones">
           <button className="secondary-button" onClick={limpiarFiltros} type="button">
             Limpiar filtros
           </button>

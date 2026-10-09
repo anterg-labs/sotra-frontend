@@ -8,6 +8,7 @@ import {
   obtenerEtiquetaEstadoOrdenTrabajo,
 } from "@/servicios/servicio-ordenes-trabajo";
 import type { FiltrosOrdenesTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
+import { IconoOjo } from "@/componentes/iconos";
 
 type PropiedadesOrdenesAsociadas = {
   titulo: string;
@@ -137,8 +138,8 @@ export function OrdenesAsociadas(props: PropiedadesOrdenesAsociadas) {
                   </td>
                   <td>{formatearFechaPrevista(orden.fechaPrevistaEjecucion)}</td>
                   <td>
-                    <Link className="table-action-link" href={"/ordenes-trabajo/" + orden.id}>
-                      Ver detalle
+                    <Link aria-label="Ver detalle" className="boton-icono" href={"/ordenes-trabajo/" + orden.id} title="Ver detalle">
+                      <IconoOjo />
                     </Link>
                   </td>
                 </tr>

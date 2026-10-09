@@ -16,6 +16,8 @@ Se abre en http://localhost (puerto 80). La carpeta del proyecto está montada d
 
 Las versiones de frontend y backend se muestran solamente en el pie de página. La versión del backend se consulta en `GET /api/v1/version` y muestra "Cargando..." o "No disponible" según corresponda.
 
+El logo del menú se sirve desde `public/images/logo-cvm.png` mediante la ruta `/images/logo-cvm.png`. Sus dimensiones originales se indican en el componente para conservar la proporción; la ruta pública permite comprobar tipos antes de generar los archivos de Next.js en CI.
+
 Sin Docker, con `npm run dev`, se abre en http://localhost:3000.
 
 ## Producción

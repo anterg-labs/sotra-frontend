@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { cerrarSesion, obtenerUsuarioEnSesion } from "@/servicios/servicio-sesion";
 import { obtenerVersionSistema } from "@/servicios/servicio-version";
 import versionFrontend from "../../version.json";
-import logoCvm from "../../public/images/logo-cvm.png";
 
 const enlacesNavegacion = [
   { ruta: "/ordenes-trabajo", etiqueta: "Órdenes de trabajo", simbolo: "OT" },
@@ -115,8 +114,10 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
         >
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white">
             <Image
-              src={logoCvm}
+              src="/images/logo-cvm.png"
               alt="Logo CVM"
+              width={717}
+              height={152}
               className="h-auto w-10 object-contain"
             />
           </span>

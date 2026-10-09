@@ -15,7 +15,7 @@ import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
 import { estadosOrdenTrabajo } from "@/tipos/orden-trabajo";
 import type { FiltrosOrdenesTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
-import type { FiltrosIndicadores, Indicadores } from "@/tipos/reporte";
+import type { Indicadores } from "@/tipos/reporte";
 import type { Usuario } from "@/tipos/usuario";
 
 const filtrosVacios: FiltrosOrdenesTrabajo = {
@@ -30,16 +30,6 @@ const filtrosVacios: FiltrosOrdenesTrabajo = {
   fechaHasta: "",
   conSugerencias: false,
   pagina: 1,
-};
-
-const filtrosVaciosIndicadores: FiltrosIndicadores = {
-  fechaDesde: "",
-  fechaHasta: "",
-  tecnicoId: "",
-  clienteId: "",
-  activoId: "",
-  estado: "",
-  tipo: "",
 };
 
 export default function PaginaOrdenesTrabajo() {
@@ -97,7 +87,7 @@ export default function PaginaOrdenesTrabajo() {
       }
 
       try {
-        const resumenObtenido = await obtenerIndicadores(filtrosVaciosIndicadores);
+        const resumenObtenido = await obtenerIndicadores();
         const clientesObtenidos = await listarClientes();
         const activosObtenidos = await listarActivos();
         const tecnicosObtenidos = await listarTecnicos();

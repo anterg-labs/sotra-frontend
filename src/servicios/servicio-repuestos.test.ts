@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { crearRepuesto, desactivarRepuesto, listarRepuestos } from "@/servicios/servicio-repuestos";
+import { crearRepuesto, desactivarRepuesto, listarRepuestos, tieneBajoStock } from "@/servicios/servicio-repuestos";
 
 describe("servicio-repuestos", () => {
   beforeEach(() => {
@@ -29,7 +29,14 @@ describe("servicio-repuestos", () => {
           });
         }
 
-        return new Response(JSON.stringify([crearRepuestoSimulado("activo")]), {
+        const paginaSimulada = {
+          elementos: [crearRepuestoSimulado("activo")],
+          pagina: 1,
+          tamanoPagina: 100,
+          totalElementos: 1,
+          totalPaginas: 1,
+        };
+        return new Response(JSON.stringify(paginaSimulada), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         });
@@ -81,5 +88,33 @@ describe("servicio-repuestos", () => {
     const repuesto = await desactivarRepuesto(1);
 
     expect(repuesto.estado).toBe("inactivo");
+  });
+
+  it("detecta el stock insuficiente solo en repuestos activos", () => {
+    const repuestoBajo = {
+      id: 1,
+      codigo: "FIL-ACE-001",
+      nombre: "Filtro de aceite",
+      descripcion: "",
+      marca: "Komatsu",
+      ubicacion: "Pañol A",
+      cantidad: 2,
+      cantidadMinima: 2,
+      estado: "activo" as const,
+    };
+    expect(tieneBajoStock(repuestoBajo)).toBe(true);
+
+    const repuestoInactivo = {
+      id: 2,
+      codigo: "FIL-AIR-001",
+      nombre: "Filtro de aire",
+      descripcion: "",
+      marca: "Komatsu",
+      ubicacion: "Pañol A",
+      cantidad: 0,
+      cantidadMinima: 5,
+      estado: "inactivo" as const,
+    };
+    expect(tieneBajoStock(repuestoInactivo)).toBe(false);
   });
 });

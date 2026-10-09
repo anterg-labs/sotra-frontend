@@ -44,3 +44,10 @@ export type ActualizarUsuarioInput = {
   estado: EstadoUsuario;
   fechaIngreso: string;
 };
+
+export type FiltrosUsuarios = {
+  buscar: string;
+  rolId: string;
+  estado: string;
+  pagina: number;
+};

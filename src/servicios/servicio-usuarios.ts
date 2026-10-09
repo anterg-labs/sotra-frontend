@@ -4,9 +4,10 @@ import {
   apiDesactivarUsuario,
   apiListarRoles,
   apiListarUsuarios,
+  apiListarUsuariosPaginados,
   apiObtenerUsuario,
 } from "@/servicios/api/api-usuarios";
-import type { ActualizarUsuarioInput, CrearUsuarioInput } from "@/tipos/usuario";
+import type { ActualizarUsuarioInput, CrearUsuarioInput, FiltrosUsuarios } from "@/tipos/usuario";
 
 const patronFormatoCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -35,6 +36,10 @@ function validarUsuario(input: CrearUsuarioInput | ActualizarUsuarioInput) {
 
 export async function listarUsuarios() {
   return apiListarUsuarios();
+}
+
+export async function listarUsuariosPaginados(filtros: FiltrosUsuarios) {
+  return apiListarUsuariosPaginados(filtros);
 }
 
 export async function listarRoles() {

@@ -2,11 +2,31 @@
 
 Frontend de SOTRA. Usa la API que indica `API_URL`; en desarrollo es el backend simulado: `http://localhost:8081`.
 
+## Requisitos
+
+### Linux
+
+Docker Engine con el plugin `docker compose`. El usuario debe pertenecer al grupo `docker` (`sudo usermod -aG docker $USER` y volver a iniciar sesión).
+
+### Windows
+
+Docker Desktop. Los comandos `docker compose` son los mismos; se pueden ejecutar desde PowerShell o Git Bash.
+
 ## Desarrollo
 
-Copiar `.env.dev.example` como `.env.dev` (ya trae el valor por defecto) y luego:
+Copiar `.env.dev.example` como `.env.dev` (ya trae el valor por defecto) y luego levantar el servicio.
+
+Linux:
 
 ```bash
+cp .env.dev.example .env.dev
+docker compose up -d --build sotra-frontend-dev
+```
+
+Windows (PowerShell):
+
+```powershell
+Copy-Item .env.dev.example .env.dev
 docker compose up -d --build sotra-frontend-dev
 ```
 
@@ -25,10 +45,18 @@ Sin Docker, con `npm run dev`, se abre en http://localhost:3000.
 El servicio `sotra-frontend-prod` compila la aplicación con el `Dockerfile` de producción. La URL de la API se escribe en el momento de compilar, así que hay que indicarla antes de construir la imagen.
 
 1. Iniciar sesión una vez en el registro de las imágenes base: `docker login dhi.io`.
-2. Crear el archivo `.env` junto a `compose.yaml` con la URL del backend que se va a usar, por ejemplo:
+2. Crear el archivo `.env` junto a `compose.yaml` con `API_URL`, la URL con la que el navegador alcanza la API (por ejemplo `https://api.ejemplo.com`, o `http://localhost:8080` en una máquina local).
 
-```env
-API_URL=http://localhost:8080
+Linux:
+
+```bash
+echo "API_URL=http://localhost:8080" > .env
+```
+
+Windows (PowerShell):
+
+```powershell
+"API_URL=http://localhost:8080" | Out-File -Encoding ascii .env
 ```
 
 3. Construir y levantar:

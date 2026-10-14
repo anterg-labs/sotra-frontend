@@ -22,15 +22,24 @@ Sin Docker, con `npm run dev`, se abre en http://localhost:3000.
 
 ## Producción
 
-Hacen falta el nombre y la etiqueta de la imagen. En PowerShell:
+El servicio `sotra-frontend-prod` compila la aplicación con el `Dockerfile` de producción. La URL de la API se escribe en el momento de compilar, así que hay que indicarla antes de construir la imagen.
 
-```powershell
-$env:IMAGE_NAME = "sotra-frontend"
-$env:IMAGE_TAG = "local"
+1. Iniciar sesión una vez en el registro de las imágenes base: `docker login dhi.io`.
+2. Crear el archivo `.env` junto a `compose.yaml` con la URL del backend que se va a usar, por ejemplo:
+
+```env
+API_URL=http://localhost:8080
+```
+
+3. Construir y levantar:
+
+```bash
 docker compose up -d --build sotra-frontend-prod
 ```
 
-Se abre en http://localhost:3100.
+Se abre en http://localhost (puerto 80). Usa el mismo puerto que `sotra-frontend-dev`, así que no pueden estar levantados a la vez; para pasar de uno a otro: `docker compose down`.
+
+Si cambia `API_URL` hay que volver a construir con `--build`, porque la URL queda dentro de la imagen. Si la pantalla muestra "La URL de la API no está configurada", falta el `.env` o se construyó sin él.
 
 ## Pruebas y lint
 

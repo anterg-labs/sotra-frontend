@@ -1,5 +1,6 @@
 "use client";
 
+import { FiltroFecha } from "@/componentes/filtro-fecha";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { listarActivos } from "@/servicios/servicio-activos";
@@ -201,12 +202,9 @@ export default function PaginaOrdenesTrabajo() {
     setTipo(evento.target.value);
   }
 
-  function cambiarFechaDesde(evento: React.ChangeEvent<HTMLInputElement>) {
-    setFechaDesde(evento.target.value);
-  }
-
-  function cambiarFechaHasta(evento: React.ChangeEvent<HTMLInputElement>) {
-    setFechaHasta(evento.target.value);
+  function cambiarFechas(nuevaFechaDesde: string, nuevaFechaHasta: string) {
+    setFechaDesde(nuevaFechaDesde);
+    setFechaHasta(nuevaFechaHasta);
   }
 
   function cambiarConSugerencias(evento: React.ChangeEvent<HTMLInputElement>) {
@@ -458,15 +456,13 @@ export default function PaginaOrdenesTrabajo() {
           </select>
         </div>
 
-        <div className="form-field">
-          <label htmlFor="fechaDesde">Creada desde</label>
-          <input id="fechaDesde" onChange={cambiarFechaDesde} type="date" value={fechaDesde} />
-        </div>
-
-        <div className="form-field">
-          <label htmlFor="fechaHasta">Creada hasta</label>
-          <input id="fechaHasta" onChange={cambiarFechaHasta} type="date" value={fechaHasta} />
-        </div>
+        <FiltroFecha
+          alCambiar={cambiarFechas}
+          etiqueta="Creada"
+          fechaDesde={fechaDesde}
+          fechaHasta={fechaHasta}
+          id="fechaCreacion"
+        />
 
         <div className="form-field campo-casilla">
           <label className="flex items-center gap-2" htmlFor="conSugerencias">

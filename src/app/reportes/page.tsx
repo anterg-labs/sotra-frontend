@@ -1,5 +1,6 @@
 "use client";
 
+import { FiltroFecha } from "@/componentes/filtro-fecha";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { listarActivos } from "@/servicios/servicio-activos";
@@ -105,12 +106,9 @@ export default function PaginaReportes() {
     cargarIndicadores(filtrosVacios);
   }
 
-  function cambiarFechaDesde(evento: React.ChangeEvent<HTMLInputElement>) {
-    setFechaDesde(evento.target.value);
-  }
-
-  function cambiarFechaHasta(evento: React.ChangeEvent<HTMLInputElement>) {
-    setFechaHasta(evento.target.value);
+  function cambiarFechas(nuevaFechaDesde: string, nuevaFechaHasta: string) {
+    setFechaDesde(nuevaFechaDesde);
+    setFechaHasta(nuevaFechaHasta);
   }
 
   function cambiarTecnico(evento: React.ChangeEvent<HTMLSelectElement>) {
@@ -351,15 +349,13 @@ export default function PaginaReportes() {
       </header>
 
       <form aria-label="Filtros" className="barra-filtros" onSubmit={aplicarFiltros}>
-        <div className="form-field">
-          <label htmlFor="fechaDesde">Fecha desde</label>
-          <input id="fechaDesde" onChange={cambiarFechaDesde} type="date" value={fechaDesde} />
-        </div>
-
-        <div className="form-field">
-          <label htmlFor="fechaHasta">Fecha hasta</label>
-          <input id="fechaHasta" onChange={cambiarFechaHasta} type="date" value={fechaHasta} />
-        </div>
+        <FiltroFecha
+          alCambiar={cambiarFechas}
+          etiqueta="Fecha"
+          fechaDesde={fechaDesde}
+          fechaHasta={fechaHasta}
+          id="fechaReporte"
+        />
 
         <div className="form-field">
           <label htmlFor="tecnicoId">Técnico</label>

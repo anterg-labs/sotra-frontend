@@ -1,5 +1,6 @@
 "use client";
 
+import { FiltroFecha } from "@/componentes/filtro-fecha";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { listarMovimientosStock, obtenerEtiquetaTipoMovimiento } from "@/servicios/servicio-movimientos-stock";
@@ -144,12 +145,9 @@ export default function PaginaMovimientosStock() {
     setTipo(evento.target.value);
   }
 
-  function cambiarFechaDesde(evento: React.ChangeEvent<HTMLInputElement>) {
-    setFechaDesde(evento.target.value);
-  }
-
-  function cambiarFechaHasta(evento: React.ChangeEvent<HTMLInputElement>) {
-    setFechaHasta(evento.target.value);
+  function cambiarFechas(nuevaFechaDesde: string, nuevaFechaHasta: string) {
+    setFechaDesde(nuevaFechaDesde);
+    setFechaHasta(nuevaFechaHasta);
   }
 
   function cambiarUbicacion(evento: React.ChangeEvent<HTMLInputElement>) {
@@ -293,14 +291,13 @@ export default function PaginaMovimientosStock() {
           <label htmlFor="ubicacionMovimiento">Ubicación o depósito</label>
           <input id="ubicacionMovimiento" onChange={cambiarUbicacion} type="text" value={ubicacion} />
         </div>
-        <div className="form-field">
-          <label htmlFor="fechaDesdeMovimiento">Fecha desde</label>
-          <input id="fechaDesdeMovimiento" onChange={cambiarFechaDesde} type="date" value={fechaDesde} />
-        </div>
-        <div className="form-field">
-          <label htmlFor="fechaHastaMovimiento">Fecha hasta</label>
-          <input id="fechaHastaMovimiento" onChange={cambiarFechaHasta} type="date" value={fechaHasta} />
-        </div>
+        <FiltroFecha
+          alCambiar={cambiarFechas}
+          etiqueta="Fecha"
+          fechaDesde={fechaDesde}
+          fechaHasta={fechaHasta}
+          id="fechaMovimiento"
+        />
         <div className="barra-filtros-acciones">
           <button className="secondary-button" onClick={limpiarFiltros} type="button">
             Limpiar filtros

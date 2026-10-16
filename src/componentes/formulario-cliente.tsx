@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { CrearClienteInput } from "@/tipos/cliente";
+import { validarCliente, type ErroresCliente } from "@/validaciones/cliente";
 
 type PropiedadesFormularioCliente = {
   clienteInicial?: CrearClienteInput;
@@ -57,6 +58,16 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
   const [observaciones, setObservaciones] = useState(observacionesIniciales);
   const [estaEnviando, setEstaEnviando] = useState(false);
   const [errorGeneral, setErrorGeneral] = useState("");
+  const [errores, setErrores] = useState<ErroresCliente>({});
+
+  function mostrarError(campo: string, mensaje?: string) {
+    if (!mensaje) return null;
+    return (
+      <p className="field-error" id={campo + "-error"} role="alert">
+        {mensaje}
+      </p>
+    );
+  }
 
   function cambiarRazonSocial(evento: React.ChangeEvent<HTMLInputElement>) {
     setRazonSocial(evento.target.value);
@@ -84,8 +95,15 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
 
   async function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    setEstaEnviando(true);
     setErrorGeneral("");
+
+    const erroresDetectados = validarCliente({ razonSocial, nombreContacto, correo, telefono, direccion });
+    setErrores(erroresDetectados);
+    if (Object.keys(erroresDetectados).length > 0) {
+      return;
+    }
+
+    setEstaEnviando(true);
 
     let correoParaGuardar: string | null = correo;
     if (!correo.trim()) {
@@ -141,34 +159,74 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
   }
 
   return (
-    <form onSubmit={enviarFormulario}>
+    <form noValidate onSubmit={enviarFormulario}>
       {mensajeError}
 
       <div className="form-grid">
         <div className="form-field">
           <label htmlFor="razonSocial">Nombre o razón social</label>
-          <input id="razonSocial" onChange={cambiarRazonSocial} required value={razonSocial} />
+          <input
+            aria-describedby={errores.razonSocial ? "razonSocial-error" : undefined}
+            aria-invalid={errores.razonSocial ? true : undefined}
+            id="razonSocial"
+            onChange={cambiarRazonSocial}
+            required
+            value={razonSocial}
+          />
+          {mostrarError("razonSocial", errores.razonSocial)}
         </div>
 
         <div className="form-field">
           <label htmlFor="nombreContacto">Nombre de contacto</label>
-          <input id="nombreContacto" onChange={cambiarNombreContacto} required value={nombreContacto} />
+          <input
+            aria-describedby={errores.nombreContacto ? "nombreContacto-error" : undefined}
+            aria-invalid={errores.nombreContacto ? true : undefined}
+            id="nombreContacto"
+            onChange={cambiarNombreContacto}
+            required
+            value={nombreContacto}
+          />
+          {mostrarError("nombreContacto", errores.nombreContacto)}
         </div>
 
         <div className="form-field">
           <label htmlFor="correo">Correo electrónico (opcional)</label>
-          <input id="correo" onChange={cambiarCorreo} type="email" value={correo} />
+          <input
+            aria-describedby={errores.correo ? "correo-error" : undefined}
+            aria-invalid={errores.correo ? true : undefined}
+            id="correo"
+            onChange={cambiarCorreo}
+            type="email"
+            value={correo}
+          />
+          {mostrarError("correo", errores.correo)}
         </div>
 
         <div className="form-field">
           <label htmlFor="telefono">Número telefónico (opcional)</label>
-          <input id="telefono" onChange={cambiarTelefono} type="tel" value={telefono} />
+          <input
+            aria-describedby={errores.telefono ? "telefono-error" : undefined}
+            aria-invalid={errores.telefono ? true : undefined}
+            id="telefono"
+            inputMode="numeric"
+            onChange={cambiarTelefono}
+            type="tel"
+            value={telefono}
+          />
+          {mostrarError("telefono", errores.telefono)}
         </div>
       </div>
 
       <div className="form-field form-field-full">
         <label htmlFor="direccion">Dirección (opcional)</label>
-        <input id="direccion" onChange={cambiarDireccion} value={direccion} />
+        <input
+            aria-describedby={errores.direccion ? "direccion-error" : undefined}
+            aria-invalid={errores.direccion ? true : undefined}
+            id="direccion"
+            onChange={cambiarDireccion}
+            value={direccion}
+          />
+          {mostrarError("direccion", errores.direccion)}
       </div>
 
       <div className="form-field form-field-full">

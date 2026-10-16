@@ -423,7 +423,7 @@ export default function PaginaReportes() {
         <div className="panel-heading">
           <h2>Descarga de reportes</h2>
         </div>
-        <p className="mb-4 mt-3 text-sm text-gray-500">
+        <p className="mb-4 mt-3 text-sm texto-tenue">
           El reporte en PDF usa los criterios elegidos en los filtros de arriba, más la prioridad.
         </p>
         <div className="form-grid">

@@ -247,19 +247,19 @@ export default function PaginaOrdenesTrabajo() {
     tarjetasResumen = (
       <section aria-label="Resumen de órdenes de trabajo" className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <article className="panel flex items-center justify-between px-4 py-3">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-gray-500">Total de órdenes</p>
+          <p className="text-[11px] font-bold uppercase tracking-wide texto-tenue">Total de órdenes</p>
           <p className="text-xl font-bold">{resumen.totalOrdenes}</p>
         </article>
         <article className="panel flex items-center justify-between px-4 py-3">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-gray-500">Creadas</p>
+          <p className="text-[11px] font-bold uppercase tracking-wide texto-tenue">Creadas</p>
           <p className="text-xl font-bold">{contarPorEstado("creada")}</p>
         </article>
         <article className="panel flex items-center justify-between px-4 py-3">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-gray-500">En ejecución</p>
+          <p className="text-[11px] font-bold uppercase tracking-wide texto-tenue">En ejecución</p>
           <p className="text-xl font-bold">{contarPorEstado("en_ejecucion")}</p>
         </article>
         <article className="panel flex items-center justify-between px-4 py-3">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-gray-500">Cerradas</p>
+          <p className="text-[11px] font-bold uppercase tracking-wide texto-tenue">Cerradas</p>
           <p className="text-xl font-bold">{contarPorEstado("cerrada")}</p>
         </article>
       </section>

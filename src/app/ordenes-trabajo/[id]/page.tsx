@@ -154,7 +154,7 @@ export default function PaginaDetalleOrdenTrabajo() {
       textoSugerencias = (
         <div className="flex flex-col gap-3">
           {orden.sugerencias.map((textoSugerencia, indice) => (
-            <p className="whitespace-pre-wrap rounded-lg border border-gray-200 bg-slate-50 p-4 text-sm" key={indice}>
+            <p className="whitespace-pre-wrap rounded-lg border u-borde u-fondo-suave p-4 text-sm" key={indice}>
               {textoSugerencia}
             </p>
           ))}
@@ -182,7 +182,7 @@ export default function PaginaDetalleOrdenTrabajo() {
 
     let mensajeAccionExito = null;
     if (mensajeExito) {
-      mensajeAccionExito = <p className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">{mensajeExito}</p>;
+      mensajeAccionExito = <p className="mb-4 rounded-lg u-fondo-exito p-3 text-sm">{mensajeExito}</p>;
     }
 
     let seccionTecnico = (
@@ -332,7 +332,7 @@ export default function PaginaDetalleOrdenTrabajo() {
           {mensajeAccionError}
           {mensajeAccionExito}
           <h2>Técnico responsable</h2>
-          <p className="mb-4 mt-1 text-sm text-gray-500">{nombreTecnico}</p>
+          <p className="mb-4 mt-1 text-sm texto-tenue">{nombreTecnico}</p>
           {seccionTecnico}
         </section>
 
@@ -348,9 +348,9 @@ export default function PaginaDetalleOrdenTrabajo() {
           <h2>Historial de estados</h2>
           <ul className="mt-4 grid gap-3">
             {historialMasNuevoPrimero.map((cambio, indice) => (
-              <li className="border-b border-gray-100 pb-3 text-sm" key={indice}>
+              <li className="border-b u-borde pb-3 text-sm" key={indice}>
                 <strong>{obtenerEtiquetaEstadoOrdenTrabajo(cambio.estado)}</strong>
-                <span className="block text-xs text-gray-500">{new Date(cambio.fechaHora).toLocaleString("es-UY")}</span>
+                <span className="block text-xs texto-tenue">{new Date(cambio.fechaHora).toLocaleString("es-UY")}</span>
                 <span className="block">{cambio.observacion}</span>
               </li>
             ))}

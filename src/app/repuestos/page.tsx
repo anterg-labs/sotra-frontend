@@ -162,9 +162,9 @@ export default function PaginaRepuestos() {
   let alertaStock = null;
   if (repuestosConAlerta.length > 0) {
     alertaStock = (
-      <section aria-label="Alerta de stock insuficiente" className="mb-6 rounded-xl border border-red-200 bg-red-50 p-5">
-        <h2 className="text-red-700">{"Stock insuficiente (" + repuestosConAlerta.length + ")"}</h2>
-        <p className="mb-3 mt-1 text-sm text-red-700">
+      <section aria-label="Alerta de stock insuficiente" className="mb-6 rounded-xl border u-borde-peligro u-fondo-peligro p-5">
+        <h2 className="u-texto-peligro">{"Stock insuficiente (" + repuestosConAlerta.length + ")"}</h2>
+        <p className="mb-3 mt-1 text-sm u-texto-peligro">
           Estos repuestos tienen una cantidad igual o menor a su stock mínimo.
         </p>
         <div className="table-container">

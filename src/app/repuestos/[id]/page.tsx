@@ -158,7 +158,7 @@ export default function PaginaDetalleRepuesto() {
     let avisoBajoStock = null;
     if (tieneBajoStock(repuesto)) {
       avisoBajoStock = (
-        <p className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+        <p className="mb-4 rounded-lg u-fondo-peligro p-3 text-sm u-texto-peligro">
           Stock insuficiente: la cantidad disponible es igual o menor al stock mínimo.
         </p>
       );
@@ -166,7 +166,7 @@ export default function PaginaDetalleRepuesto() {
 
     let avisoExito = null;
     if (mensajeExito) {
-      avisoExito = <p className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">{mensajeExito}</p>;
+      avisoExito = <p className="mb-4 rounded-lg u-fondo-exito p-3 text-sm">{mensajeExito}</p>;
     }
 
     let botonIngreso = null;
@@ -191,7 +191,7 @@ export default function PaginaDetalleRepuesto() {
       }
 
       formularioIngreso = (
-        <form className="mt-4 rounded-lg border border-gray-200 p-4" onSubmit={confirmarIngreso}>
+        <form className="mt-4 rounded-lg border u-borde p-4" onSubmit={confirmarIngreso}>
           {mensajeErrorIngreso}
           <div className="form-grid">
             <div className="form-field">

@@ -121,7 +121,7 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
 
   let avisoExito = null;
   if (mensajeExito) {
-    avisoExito = <p className="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-700">{mensajeExito}</p>;
+    avisoExito = <p className="mb-4 rounded-lg u-fondo-exito p-3 text-sm">{mensajeExito}</p>;
   }
 
   let listaEvidencias: React.ReactNode = <p className="empty-state">Cargando evidencias…</p>;
@@ -153,9 +153,9 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
           const fechaVisible = partesFecha[2] + "/" + partesFecha[1] + "/" + partesFecha[0];
 
           return (
-            <li className="rounded-lg border border-gray-200 p-4 text-sm" key={evidencia.id}>
+            <li className="rounded-lg border u-borde p-4 text-sm" key={evidencia.id}>
               <strong>{obtenerEtiquetaTipoEvidencia(evidencia.tipo)}</strong>
-              <span className="ml-2 text-xs text-gray-500">{fechaVisible}</span>
+              <span className="ml-2 text-xs texto-tenue">{fechaVisible}</span>
               <p className="mt-1 whitespace-pre-wrap">{evidencia.observacion}</p>
               {enlaceArchivo}
             </li>
@@ -192,7 +192,7 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
         <div className="form-field">
           <label htmlFor="archivoEvidencia">Archivo adjunto</label>
           <input accept={tiposAceptados} id="archivoEvidencia" onChange={cambiarArchivo} type="file" />
-          <span className="text-xs text-gray-500">JPG o PNG para fotos; PDF, JPG o PNG para documentos. Hasta 10 MB.</span>
+          <span className="text-xs texto-tenue">JPG o PNG para fotos; PDF, JPG o PNG para documentos. Hasta 10 MB.</span>
         </div>
       );
     }
@@ -203,7 +203,7 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
     }
 
     formulario = (
-      <form className="mb-6 rounded-lg border border-gray-200 p-4" onSubmit={registrarEvidencia}>
+      <form className="mb-6 rounded-lg border u-borde p-4" onSubmit={registrarEvidencia}>
         {mensajeErrorFormulario}
         <div className="form-grid">
           <div className="form-field">

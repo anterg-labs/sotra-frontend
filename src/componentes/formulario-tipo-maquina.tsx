@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { CrearTipoMaquinaInput, TipoMaquina } from "@/tipos/tipo-maquina";
+import { validarNombreCatalogo } from "@/validaciones/maquinaria";
 
 type PropiedadesFormularioTipoMaquina = {
   tipoMaquinaInicial?: TipoMaquina;
@@ -25,6 +26,16 @@ export function FormularioTipoMaquina(props: PropiedadesFormularioTipoMaquina) {
   const [nombre, setNombre] = useState(nombreInicial);
   const [estaEnviando, setEstaEnviando] = useState(false);
   const [errorGeneral, setErrorGeneral] = useState("");
+  const [errorNombre, setErrorNombre] = useState<string | undefined>();
+
+  function mostrarError(campo: string, mensaje?: string) {
+    if (!mensaje) return null;
+    return (
+      <p className="field-error" id={campo + "-error"} role="alert">
+        {mensaje}
+      </p>
+    );
+  }
 
   function cambiarNombre(evento: React.ChangeEvent<HTMLInputElement>) {
     setNombre(evento.target.value);
@@ -32,8 +43,15 @@ export function FormularioTipoMaquina(props: PropiedadesFormularioTipoMaquina) {
 
   async function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    setEstaEnviando(true);
     setErrorGeneral("");
+
+    const errorDetectado = validarNombreCatalogo(nombre);
+    setErrorNombre(errorDetectado);
+    if (errorDetectado) {
+      return;
+    }
+
+    setEstaEnviando(true);
 
     const tipoMaquinaParaGuardar: CrearTipoMaquinaInput = {
       nombre: nombre,
@@ -64,12 +82,20 @@ export function FormularioTipoMaquina(props: PropiedadesFormularioTipoMaquina) {
   }
 
   return (
-    <form onSubmit={enviarFormulario}>
+    <form noValidate onSubmit={enviarFormulario}>
       {mensajeError}
 
       <div className="form-field form-field-full">
         <label htmlFor="nombre">Nombre del tipo de máquina</label>
-        <input id="nombre" maxLength={60} onChange={cambiarNombre} required value={nombre} />
+        <input
+          aria-describedby={errorNombre ? "nombre-error" : undefined}
+          aria-invalid={errorNombre ? true : undefined}
+          id="nombre"
+          onChange={cambiarNombre}
+          required
+          value={nombre}
+        />
+        {mostrarError("nombre", errorNombre)}
       </div>
 
       <div className="form-actions">

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { CrearModeloMaquinaInput, ModeloMaquina } from "@/tipos/modelo-maquina";
 import type { TipoMaquina } from "@/tipos/tipo-maquina";
+import { validarNombreCatalogo, validarTipoMaquinaSeleccionado } from "@/validaciones/maquinaria";
 
 type PropiedadesFormularioModeloMaquina = {
   modeloMaquinaInicial?: ModeloMaquina;
@@ -36,6 +37,17 @@ export function FormularioModeloMaquina(props: PropiedadesFormularioModeloMaquin
   const [descripcion, setDescripcion] = useState(descripcionInicial);
   const [estaEnviando, setEstaEnviando] = useState(false);
   const [errorGeneral, setErrorGeneral] = useState("");
+  const [errorNombre, setErrorNombre] = useState<string | undefined>();
+  const [errorTipo, setErrorTipo] = useState<string | undefined>();
+
+  function mostrarError(campo: string, mensaje?: string) {
+    if (!mensaje) return null;
+    return (
+      <p className="field-error" id={campo + "-error"} role="alert">
+        {mensaje}
+      </p>
+    );
+  }
 
   function cambiarNombre(evento: React.ChangeEvent<HTMLInputElement>) {
     setNombre(evento.target.value);
@@ -51,8 +63,17 @@ export function FormularioModeloMaquina(props: PropiedadesFormularioModeloMaquin
 
   async function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    setEstaEnviando(true);
     setErrorGeneral("");
+
+    const errorNombreDetectado = validarNombreCatalogo(nombre);
+    const errorTipoDetectado = validarTipoMaquinaSeleccionado(tipoMaquinaId);
+    setErrorNombre(errorNombreDetectado);
+    setErrorTipo(errorTipoDetectado);
+    if (errorNombreDetectado || errorTipoDetectado) {
+      return;
+    }
+
+    setEstaEnviando(true);
 
     let descripcionParaGuardar: string | null = descripcion;
     if (!descripcion.trim()) {
@@ -97,23 +118,39 @@ export function FormularioModeloMaquina(props: PropiedadesFormularioModeloMaquin
   }
 
   return (
-    <form onSubmit={enviarFormulario}>
+    <form noValidate onSubmit={enviarFormulario}>
       {mensajeError}
 
       <div className="form-grid">
         <div className="form-field">
           <label htmlFor="nombre">Nombre del modelo</label>
-          <input id="nombre" maxLength={60} onChange={cambiarNombre} required value={nombre} />
+          <input
+            aria-describedby={errorNombre ? "nombre-error" : undefined}
+            aria-invalid={errorNombre ? true : undefined}
+            id="nombre"
+            onChange={cambiarNombre}
+            required
+            value={nombre}
+          />
+          {mostrarError("nombre", errorNombre)}
         </div>
 
         <div className="form-field">
           <label htmlFor="tipoMaquinaId">Tipo de máquina</label>
-          <select id="tipoMaquinaId" onChange={cambiarTipoMaquina} required value={tipoMaquinaId}>
+          <select
+            aria-describedby={errorTipo ? "tipoMaquinaId-error" : undefined}
+            aria-invalid={errorTipo ? true : undefined}
+            id="tipoMaquinaId"
+            onChange={cambiarTipoMaquina}
+            required
+            value={tipoMaquinaId}
+          >
             <option disabled value="">Seleccioná un tipo</option>
             {tiposDisponibles.map((tipoMaquina) => (
               <option key={tipoMaquina.id} value={tipoMaquina.id}>{tipoMaquina.nombre}</option>
             ))}
           </select>
+          {mostrarError("tipoMaquinaId", errorTipo)}
         </div>
       </div>
 

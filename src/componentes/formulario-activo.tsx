@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { Activo, CrearActivoInput } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
 import type { ModeloMaquina } from "@/tipos/modelo-maquina";
+import { validarActivo, type ErroresActivo } from "@/validaciones/activo";
 
 type PropiedadesFormularioActivo = {
   activoInicial?: Activo;
@@ -57,6 +58,23 @@ export function FormularioActivo(props: PropiedadesFormularioActivo) {
   const [ubicacion, setUbicacion] = useState(ubicacionInicial);
   const [estaEnviando, setEstaEnviando] = useState(false);
   const [errorGeneral, setErrorGeneral] = useState("");
+  const [errores, setErrores] = useState<ErroresActivo>({});
+
+  function mostrarError(campo: string, mensaje?: string) {
+    if (!mensaje) return null;
+    return (
+      <p className="field-error" id={campo + "-error"} role="alert">
+        {mensaje}
+      </p>
+    );
+  }
+
+  function atributosDeCampo(campo: keyof ErroresActivo, idCampo: string) {
+    return {
+      "aria-describedby": errores[campo] ? idCampo + "-error" : undefined,
+      "aria-invalid": errores[campo] ? true : undefined,
+    };
+  }
 
   function cambiarNombre(evento: React.ChangeEvent<HTMLInputElement>) {
     setNombre(evento.target.value);
@@ -88,8 +106,22 @@ export function FormularioActivo(props: PropiedadesFormularioActivo) {
 
   async function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    setEstaEnviando(true);
     setErrorGeneral("");
+
+    const erroresDetectados = validarActivo({
+      nombre,
+      numSerie,
+      clienteId,
+      modeloMaquinaId,
+      anioFabricacion,
+      ubicacion,
+    });
+    setErrores(erroresDetectados);
+    if (Object.keys(erroresDetectados).length > 0) {
+      return;
+    }
+
+    setEstaEnviando(true);
 
     let nombreParaGuardar: string | null = nombre;
     if (!nombre.trim()) {
@@ -160,48 +192,72 @@ export function FormularioActivo(props: PropiedadesFormularioActivo) {
   }
 
   return (
-    <form onSubmit={enviarFormulario}>
+    <form noValidate onSubmit={enviarFormulario}>
       {mensajeError}
 
       <div className="form-grid">
         <div className="form-field">
           <label htmlFor="nombre">Nombre del activo (opcional)</label>
-          <input id="nombre" maxLength={100} onChange={cambiarNombre} value={nombre} />
+          <input {...atributosDeCampo("nombre", "nombre")} id="nombre" onChange={cambiarNombre} value={nombre} />
+          {mostrarError("nombre", errores.nombre)}
         </div>
 
         <div className="form-field">
           <label htmlFor="numeroSerie">Número de serie</label>
-          <input id="numeroSerie" maxLength={100} onChange={cambiarNumeroSerie} required value={numSerie} />
+          <input
+            {...atributosDeCampo("numSerie", "numeroSerie")}
+            id="numeroSerie"
+            onChange={cambiarNumeroSerie}
+            required
+            value={numSerie}
+          />
+          {mostrarError("numeroSerie", errores.numSerie)}
         </div>
 
         <div className="form-field">
           <label htmlFor="clienteId">Cliente asociado</label>
-          <select id="clienteId" onChange={cambiarCliente} required value={clienteId}>
+          <select {...atributosDeCampo("clienteId", "clienteId")} id="clienteId" onChange={cambiarCliente} required value={clienteId}>
             <option disabled value="">Seleccioná un cliente</option>
             {clientesDisponibles.map((cliente) => (
               <option key={cliente.id} value={cliente.id}>{cliente.razonSocial}</option>
             ))}
           </select>
+          {mostrarError("clienteId", errores.clienteId)}
         </div>
 
         <div className="form-field">
           <label htmlFor="modeloMaquinaId">Modelo de máquina</label>
-          <select id="modeloMaquinaId" onChange={cambiarModeloMaquina} required value={modeloMaquinaId}>
+          <select
+            {...atributosDeCampo("modeloMaquinaId", "modeloMaquinaId")}
+            id="modeloMaquinaId"
+            onChange={cambiarModeloMaquina}
+            required
+            value={modeloMaquinaId}
+          >
             <option disabled value="">Seleccioná un modelo</option>
             {modelosDisponibles.map((modeloMaquina) => (
               <option key={modeloMaquina.id} value={modeloMaquina.id}>{modeloMaquina.nombre}</option>
             ))}
           </select>
+          {mostrarError("modeloMaquinaId", errores.modeloMaquinaId)}
         </div>
 
         <div className="form-field">
           <label htmlFor="anioFabricacion">Año de fabricación (opcional)</label>
-          <input id="anioFabricacion" onChange={cambiarAnioFabricacion} type="number" value={anioFabricacion} />
+          <input
+            {...atributosDeCampo("anioFabricacion", "anioFabricacion")}
+            id="anioFabricacion"
+            onChange={cambiarAnioFabricacion}
+            type="number"
+            value={anioFabricacion}
+          />
+          {mostrarError("anioFabricacion", errores.anioFabricacion)}
         </div>
 
         <div className="form-field">
           <label htmlFor="ubicacion">Ubicación (opcional)</label>
-          <input id="ubicacion" maxLength={150} onChange={cambiarUbicacion} value={ubicacion} />
+          <input {...atributosDeCampo("ubicacion", "ubicacion")} id="ubicacion" onChange={cambiarUbicacion} value={ubicacion} />
+          {mostrarError("ubicacion", errores.ubicacion)}
         </div>
       </div>
 

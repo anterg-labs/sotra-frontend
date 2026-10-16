@@ -16,7 +16,7 @@ concurrency:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  STAGING_API_URL: https://api.staging.sotra-app.online
+  STAGING_API_URL: https://api-staging.sotra-app.online
 
 jobs:
   publish:

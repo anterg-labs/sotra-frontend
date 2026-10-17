@@ -1,8 +1,6 @@
 name: Publicar y desplegar frontend QA
 
 on:
-  push:
-    branches: [qa]
   workflow_dispatch:
 
 permissions:

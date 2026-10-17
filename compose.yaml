@@ -7,6 +7,9 @@ services:
         API_URL: ${API_URL}
     image: sotra-frontend-prod
     container_name: sotra-frontend-prod
+    environment:
+      # Dirección de la API alcanzable desde el contenedor (la usa el servidor de Next, no el navegador).
+      API_URL_INTERNA: ${API_URL_INTERNA:-}
     ports:
       - "80:3000" # mantuve tu puerto 3100
 
@@ -22,6 +25,8 @@ services:
     restart: unless-stopped
     env_file:
       - .env.dev
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - .:/app
       - /app/node_modules

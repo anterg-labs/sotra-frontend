@@ -45,7 +45,7 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
 
   async function salirDeLaSesion() {
     await cerrarSesion();
-    enrutador.push("/");
+    enrutador.push("/login");
   }
 
   const fechaActual = new Date().toLocaleDateString("es-UY", {
@@ -56,25 +56,23 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
   });
 
   let textoUsuario = "Usuario no logueado";
-  let haySesion = false;
-  let tituloCerrarSesion = "No hay sesión iniciada";
   if (usuarioEnSesion !== null) {
     textoUsuario = usuarioEnSesion.nombre + " " + usuarioEnSesion.apellido;
-    haySesion = true;
-    tituloCerrarSesion = "Cerrar sesión";
   }
 
   const botonCerrarSesion = (
     <button
       className="secondary-button disabled:cursor-not-allowed disabled:opacity-50"
-      disabled={!haySesion}
       onClick={salirDeLaSesion}
-      title={tituloCerrarSesion}
       type="button"
     >
       Cerrar sesión
     </button>
   );
+
+  if (rutaActual === "/login" || rutaActual.startsWith("/login/")) {
+    return <>{children}</>;
+  }
 
   function cerrarMenu() {
     setEstaMenuAbierto(false);

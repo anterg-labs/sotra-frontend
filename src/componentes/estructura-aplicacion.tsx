@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cerrarSesion, obtenerUsuarioEnSesion } from "@/servicios/servicio-sesion";
+import { MenuUsuario } from "@/componentes/menu-usuario";
 import { obtenerVersionSistema } from "@/servicios/servicio-version";
 import versionFrontend from "../../version.json";
 
@@ -59,16 +60,6 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
   if (usuarioEnSesion !== null) {
     textoUsuario = usuarioEnSesion.nombre + " " + usuarioEnSesion.apellido;
   }
-
-  const botonCerrarSesion = (
-    <button
-      className="secondary-button disabled:cursor-not-allowed disabled:opacity-50"
-      onClick={salirDeLaSesion}
-      type="button"
-    >
-      Cerrar sesión
-    </button>
-  );
 
   if (rutaActual === "/login" || rutaActual.startsWith("/login/")) {
     return <>{children}</>;
@@ -173,7 +164,7 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
           <div className="flex-1 text-sm font-semibold text-gray-500 first-letter:uppercase" suppressHydrationWarning>
             {fechaActual}
           </div>
-          {botonCerrarSesion}
+          <MenuUsuario alCerrarSesion={salirDeLaSesion} usuario={usuarioEnSesion} />
         </header>
         <div className="flex-1 pb-24 md:pb-16">{children}</div>
         <footer className="fixed bottom-0 left-0 right-0 z-20 flex min-h-16 flex-col items-center justify-center gap-1 bg-black px-4 py-2 text-center text-xs font-bold text-gray-300 md:left-[72px] md:min-h-14 md:flex-row md:justify-between md:px-8 md:text-sm">

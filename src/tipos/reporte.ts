@@ -30,3 +30,93 @@ export type Indicadores = {
   ordenesPendientesDeValidacion: number;
   ordenesRecientes: OrdenTrabajo[];
 };
+
+export type AgrupacionTendencias = "semana" | "mes";
+
+export type PuntoTendencia = {
+  periodo: string;
+  preventivas: number;
+  correctivas: number;
+  total: number;
+};
+
+export type Tendencias = {
+  agrupacion: AgrupacionTendencias;
+  puntos: PuntoTendencia[];
+  totalPeriodo: number;
+  totalPeriodoAnterior: number | null;
+};
+
+export type Duracion = {
+  cantidad: number;
+  promedioHoras: number | null;
+  medianaHoras: number | null;
+  percentil90Horas: number | null;
+};
+
+export type EtapaTiempo = {
+  estado: string;
+  cantidad: number;
+  promedioHoras: number;
+};
+
+export type Cumplimiento = {
+  evaluadas: number;
+  enPlazo: number;
+  porcentajeEnPlazo: number | null;
+  atrasoPromedioDias: number | null;
+};
+
+export type Tiempos = {
+  duracion: Duracion;
+  etapas: EtapaTiempo[];
+  cumplimiento: Cumplimiento;
+};
+
+export type RepuestoUsado = {
+  repuestoId: number;
+  codigo: string;
+  nombre: string;
+  ordenes: number;
+};
+
+export type RepuestosUsados = {
+  elementos: RepuestoUsado[];
+};
+
+export type Reincidencia = {
+  activoId: number;
+  nombreActivo: string;
+  cliente: string;
+  correctivas: number;
+  reincidencias: number;
+  diasPromedioEntreIntervenciones: number | null;
+  ultimaIntervencion: string;
+};
+
+export type Reincidencias = {
+  dias: number;
+  minimo: number;
+  elementos: Reincidencia[];
+};
+
+export type TipoAlertaMaquinaria = "sin_asignar" | "demorada_para_iniciar" | "pausada_demasiado" | "maquina_detenida";
+
+export type AlertaMaquinaria = {
+  tipo: TipoAlertaMaquinaria;
+  gravedad: "alta" | "critica";
+  ordenId: number;
+  activoId: number;
+  nombreActivo: string;
+  cliente: string;
+  estado: string;
+  prioridad: string;
+  horasTranscurridas: number;
+  umbralHoras: number;
+};
+
+export type AlertasMaquinaria = {
+  total: number;
+  criticas: number;
+  alertas: AlertaMaquinaria[];
+};

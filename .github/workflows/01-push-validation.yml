@@ -2,9 +2,6 @@ name: Validación rápida del frontend
 
 on:
   push:
-    branches-ignore:
-      - main
-      - qa
   workflow_dispatch:
 
 permissions:
@@ -59,3 +56,21 @@ jobs:
         run: npm run build
         env:
           API_URL: http://localhost:5000
+
+  trivy:
+    name: Analizar dependencias y archivos
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v7
+
+      - name: Ejecutar Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'

@@ -1,121 +1,101 @@
-"use client";
-
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { EstadoRegistro } from "@/componentes/listado/estado-registro";
 import { OrdenesAsociadas } from "@/componentes/ordenes-asociadas";
-import { obtenerDetalleUsuario } from "@/servicios/servicio-usuarios";
+import { obtenerEstadoTerminosServidor } from "@/servicios/servidor/terminos";
+import { obtenerUsuarioServidor } from "@/servicios/servidor/usuarios";
+import type { EstadoTerminos } from "@/tipos/terminos";
 import type { UsuarioDetalle } from "@/tipos/usuario";
+import { formatearFechaNumerica } from "@/utilidades/fechas";
 
-export default function PaginaDetalleUsuario() {
-  const parametros = useParams<{ id: string }>();
-  const usuarioId = Number(parametros.id);
-  const [usuario, setUsuario] = useState<UsuarioDetalle | null>(null);
-  const [errorCarga, setErrorCarga] = useState("");
-
-  useEffect(() => {
-    async function cargarUsuario() {
-      try {
-        const usuarioObtenido = await obtenerDetalleUsuario(usuarioId);
-        setUsuario(usuarioObtenido);
-      } catch {
-        setErrorCarga("No se pudo obtener la información del usuario solicitado.");
-      }
-    }
-
-    cargarUsuario();
-  }, [usuarioId]);
-
-  let mensajeError = null;
-  if (errorCarga) {
-    mensajeError = <p className="form-error-banner">{errorCarga}</p>;
+async function cargarUsuario(usuarioId: number): Promise<UsuarioDetalle | null> {
+  if (!Number.isInteger(usuarioId) || usuarioId <= 0) return null;
+  try {
+    return await obtenerUsuarioServidor(usuarioId);
+  } catch {
+    return null;
   }
+}
 
-  let mensajeCargando = null;
-  if (usuario === null && !errorCarga) {
-    mensajeCargando = <p className="empty-state">Cargando información del usuario…</p>;
+async function cargarEstadoTerminos(usuarioId: number): Promise<EstadoTerminos | null> {
+  try {
+    return await obtenerEstadoTerminosServidor(usuarioId);
+  } catch {
+    return null;
   }
+}
 
-  let titulo = "Detalle de usuario";
-  let contenido = null;
-  if (usuario !== null) {
-    titulo = usuario.nombre + " " + usuario.apellido;
+function textoEstadoTerminos(estado: EstadoTerminos | null) {
+  if (estado === null) return "No se pudo consultar";
+  const fecha = estado.aceptadoEn ? formatearFechaNumerica(estado.aceptadoEn) : "";
+  if (!estado.pendiente) return "Aceptó la versión " + estado.versionAceptada + " el " + fecha;
+  if (estado.versionAceptada !== null) return "Pendiente (última aceptada: versión " + estado.versionAceptada + " el " + fecha + ")";
+  return "Pendiente";
+}
 
-    let claseEstado = "status status-inactivo";
-    let etiquetaEstado = "Inactivo";
-    if (usuario.estado === "activo") {
-      claseEstado = "status status-activo";
-      etiquetaEstado = "Activo";
-    }
-
-    let textoRoles = "Sin roles";
-    if (usuario.roles.length > 0) {
-      textoRoles = "";
-      for (const rol of usuario.roles) {
-        if (textoRoles !== "") {
-          textoRoles = textoRoles + ", ";
-        }
-        textoRoles = textoRoles + rol.nombre;
-      }
-    }
-
-    contenido = (
-      <div className="grid gap-6">
-        <section className="panel detail-panel">
-          <dl className="detail-list">
-            <div>
-              <dt>Correo electrónico</dt>
-              <dd>{usuario.correo}</dd>
-            </div>
-            <div>
-              <dt>Número de teléfono</dt>
-              <dd>{usuario.telefono}</dd>
-            </div>
-            <div>
-              <dt>Roles asignados</dt>
-              <dd>{textoRoles}</dd>
-            </div>
-            <div>
-              <dt>Fecha de ingreso</dt>
-              <dd>{usuario.fechaIngreso}</dd>
-            </div>
-            <div>
-              <dt>Estado</dt>
-              <dd><span className={claseEstado}>{etiquetaEstado}</span></dd>
-            </div>
-          </dl>
-          <div className="form-actions">
-            <Link className="primary-button" href={"/usuarios/" + usuario.id + "/editar"}>
-              Modificar
-            </Link>
-          </div>
-        </section>
-
-        <OrdenesAsociadas
-          activoId=""
-          clienteId=""
-          tecnicoId={String(usuario.id)}
-          titulo="Actividad: órdenes de trabajo asignadas"
-        />
-      </div>
-    );
-  }
+export default async function PaginaDetalleUsuario(props: { params: Promise<{ id: string }> }) {
+  const usuario = await cargarUsuario(Number((await props.params).id));
+  const estadoTerminos = usuario ? await cargarEstadoTerminos(usuario.id) : null;
 
   return (
     <main className="page-content">
       <header className="page-heading">
         <div>
           <p className="eyebrow">Gestión de usuarios</p>
-          <h1>{titulo}</h1>
+          <h1>{usuario ? usuario.nombre + " " + usuario.apellido : "Detalle de usuario"}</h1>
         </div>
         <Link className="secondary-button" href="/usuarios">
           Volver al listado
         </Link>
       </header>
 
-      {mensajeError}
-      {mensajeCargando}
-      {contenido}
+      {usuario ? (
+        <div className="grid gap-6">
+          <section className="panel detail-panel">
+            <dl className="detail-list">
+              <div>
+                <dt>Correo electrónico</dt>
+                <dd>{usuario.correo}</dd>
+              </div>
+              <div>
+                <dt>Número de teléfono</dt>
+                <dd>{usuario.telefono}</dd>
+              </div>
+              <div>
+                <dt>Roles asignados</dt>
+                <dd>{usuario.roles.length > 0 ? usuario.roles.map((rol) => rol.nombre).join(", ") : "Sin roles"}</dd>
+              </div>
+              <div>
+                <dt>Fecha de ingreso</dt>
+                <dd>{usuario.fechaIngreso}</dd>
+              </div>
+              <div>
+                <dt>Estado</dt>
+                <dd><EstadoRegistro estado={usuario.estado} /></dd>
+              </div>
+              <div>
+                <dt>Términos y condiciones</dt>
+                <dd>
+                  {textoEstadoTerminos(estadoTerminos)}
+                </dd>
+              </div>
+            </dl>
+            <div className="form-actions">
+              <Link className="primary-button" href={"/usuarios/" + usuario.id + "/editar"}>
+                Modificar
+              </Link>
+            </div>
+          </section>
+
+          <OrdenesAsociadas
+            activoId=""
+            clienteId=""
+            tecnicoId={String(usuario.id)}
+            titulo="Actividad: órdenes de trabajo asignadas"
+          />
+        </div>
+      ) : (
+        <p className="form-error-banner">No se pudo obtener la información del usuario solicitado.</p>
+      )}
     </main>
   );
 }

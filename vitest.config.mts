@@ -8,6 +8,8 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": resolve(import.meta.dirname, "src"),
+      // Next lo resuelve solo al compilar; en las pruebas se reemplaza por un módulo vacío.
+      "server-only": resolve(import.meta.dirname, "src/pruebas/server-only-vacio.ts"),
     },
   },
 
@@ -15,6 +17,7 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: resolve(import.meta.dirname, "vitest.setup.ts"),
     globals: true,
+    exclude: ["e2e/**", "e2e-casos/**", "node_modules/**"],
 
     coverage: {
       provider: "v8",
@@ -24,6 +27,7 @@ export default defineConfig({
         "src/**/*.d.ts",
         "src/**/*.test.{ts,tsx}",
         "src/**/*.spec.{ts,tsx}",
+        "src/pruebas/**",
       ],
     },
   },

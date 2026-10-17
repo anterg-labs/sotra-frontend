@@ -1,82 +1,19 @@
-"use client";
-
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { FormularioTipoMaquina } from "@/componentes/formulario-tipo-maquina";
-import { actualizarTipoMaquina, obtenerDetalleTipoMaquina } from "@/servicios/servicio-tipos-maquina";
-import type {
-  ActualizarTipoMaquinaInput,
-  CrearTipoMaquinaInput,
-  EstadoTipoMaquina,
-  TipoMaquina,
-} from "@/tipos/tipo-maquina";
+import { obtenerTipoMaquinaServidor } from "@/servicios/servidor/tipos-maquina";
+import type { TipoMaquina } from "@/tipos/tipo-maquina";
+import { actualizarTipoMaquinaAccion } from "../../acciones";
 
-export default function PaginaEditarTipoMaquina() {
-  const parametros = useParams<{ id: string }>();
-  const tipoMaquinaId = Number(parametros.id);
-  const [tipoMaquina, setTipoMaquina] = useState<TipoMaquina | null>(null);
-  const [errorCarga, setErrorCarga] = useState("");
-  const [estaActivo, setEstaActivo] = useState(false);
-
-  useEffect(() => {
-    async function cargarTipoMaquina() {
-      try {
-        const tipoObtenido = await obtenerDetalleTipoMaquina(tipoMaquinaId);
-        setTipoMaquina(tipoObtenido);
-        setEstaActivo(tipoObtenido.estado === "activo");
-      } catch {
-        setErrorCarga("No se pudo obtener la información del tipo de máquina solicitado.");
-      }
-    }
-
-    cargarTipoMaquina();
-  }, [tipoMaquinaId]);
-
-  function cambiarEstaActivo(evento: React.ChangeEvent<HTMLInputElement>) {
-    setEstaActivo(evento.target.checked);
+async function cargarTipo(tipoMaquinaId: number): Promise<TipoMaquina | null> {
+  if (!Number.isInteger(tipoMaquinaId) || tipoMaquinaId <= 0) return null;
+  try {
+    return await obtenerTipoMaquinaServidor(tipoMaquinaId);
+  } catch {
+    return null;
   }
+}
 
-  function guardarTipoMaquina(camposTipoMaquina: CrearTipoMaquinaInput) {
-    let estado: EstadoTipoMaquina = "inactivo";
-    if (estaActivo) {
-      estado = "activo";
-    }
-
-    const tipoMaquinaParaGuardar: ActualizarTipoMaquinaInput = {
-      nombre: camposTipoMaquina.nombre,
-      estado: estado,
-    };
-
-    return actualizarTipoMaquina(tipoMaquinaId, tipoMaquinaParaGuardar);
-  }
-
-  let mensajeError = null;
-  if (errorCarga) {
-    mensajeError = <p className="form-error-banner">{errorCarga}</p>;
-  }
-
-  let mensajeCargando = null;
-  if (tipoMaquina === null && !errorCarga) {
-    mensajeCargando = <p className="empty-state">Cargando información del tipo de máquina…</p>;
-  }
-
-  let formulario = null;
-  if (tipoMaquina !== null) {
-    formulario = (
-      <section className="panel form-panel">
-        <div className="form-field mb-4">
-          <label htmlFor="estaActivo">
-            <input checked={estaActivo} id="estaActivo" onChange={cambiarEstaActivo} type="checkbox" /> Activo
-          </label>
-        </div>
-        <FormularioTipoMaquina
-          alEnviar={guardarTipoMaquina}
-          etiquetaConfirmacion="Confirmar modificación"
-          tipoMaquinaInicial={tipoMaquina}
-        />
-      </section>
-    );
-  }
+export default async function PaginaEditarTipoMaquina(props: { params: Promise<{ id: string }> }) {
+  const tipoMaquina = await cargarTipo(Number((await props.params).id));
 
   return (
     <main className="page-content">
@@ -87,9 +24,17 @@ export default function PaginaEditarTipoMaquina() {
         </div>
       </header>
 
-      {mensajeError}
-      {mensajeCargando}
-      {formulario}
+      {tipoMaquina ? (
+        <section className="panel form-panel">
+          <FormularioTipoMaquina
+            accion={actualizarTipoMaquinaAccion.bind(null, tipoMaquina.id)}
+            etiquetaConfirmacion="Confirmar modificación"
+            tipoMaquinaInicial={tipoMaquina}
+          />
+        </section>
+      ) : (
+        <p className="form-error-banner">No se pudo obtener la información del tipo de máquina solicitado.</p>
+      )}
     </main>
   );
 }

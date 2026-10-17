@@ -2,26 +2,31 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { cerrarSesion, obtenerUsuarioEnSesion } from "@/servicios/servicio-sesion";
+import { MenuUsuario } from "@/componentes/menu-usuario";
+import { IndicadorNavegacion } from "@/componentes/indicador-navegacion";
+import { BotonTerminos } from "@/componentes/terminos/modal-terminos";
+import { EstructuraTecnico } from "@/componentes/estructura-tecnico";
+import { useAlertasStock } from "@/hooks/use-alertas-stock";
 import { obtenerVersionSistema } from "@/servicios/servicio-version";
 import {
   IconoActivos,
   IconoClientes,
+  IconoConfiguracion,
   IconoDocumentacion,
   IconoHamburguesa,
   IconoOrdenesTrabajo,
   IconoReportes,
   IconoRepuestos,
-  IconoSalir,
   IconoUsuarios,
 } from "@/componentes/iconos";
 
 type Submenu = {
   ruta: string;
   etiqueta: string;
-  esActivo: (ruta: string, seccion: string | null) => boolean;
+  esActivo: (ruta: string) => boolean;
 };
 
 type ElementoMenu = {
@@ -42,17 +47,17 @@ const elementosMenu: ElementoMenu[] = [
       {
         ruta: "/activos",
         etiqueta: "Activos",
-        esActivo: (ruta, seccion) => ruta.startsWith("/activos") && seccion !== "modelos" && seccion !== "tipos",
+        esActivo: (ruta) => ruta === "/activos" || /^\/activos\/(?:\d|nuevo)/.test(ruta),
       },
       {
-        ruta: "/activos?seccion=modelos",
+        ruta: "/activos/modelos",
         etiqueta: "Modelos de máquina",
-        esActivo: (ruta, seccion) => ruta.startsWith("/activos") && seccion === "modelos",
+        esActivo: (ruta) => ruta.startsWith("/activos/modelos"),
       },
       {
-        ruta: "/activos?seccion=tipos",
+        ruta: "/activos/tipos",
         etiqueta: "Tipos de máquina",
-        esActivo: (ruta, seccion) => ruta.startsWith("/activos") && seccion === "tipos",
+        esActivo: (ruta) => ruta.startsWith("/activos/tipos"),
       },
     ],
   },
@@ -76,18 +81,27 @@ const elementosMenu: ElementoMenu[] = [
   { ruta: "/documentacion-tecnica", etiqueta: "Documentación técnica", icono: <IconoDocumentacion /> },
   { ruta: "/usuarios", etiqueta: "Usuarios", icono: <IconoUsuarios /> },
   { ruta: "/reportes", etiqueta: "Reportes", icono: <IconoReportes /> },
+  {
+    ruta: "/configuracion",
+    etiqueta: "Configuración",
+    icono: <IconoConfiguracion />,
+    submenus: [
+      {
+        ruta: "/configuracion/terminos",
+        etiqueta: "Términos y condiciones",
+        esActivo: (ruta) => ruta.startsWith("/configuracion/terminos"),
+      },
+    ],
+  },
 ];
 
 type MenuLateralProps = {
   alElegirOpcion: () => void;
-  alCerrarSesion: () => void;
-  puedeCerrarSesion: boolean;
-  tituloCerrarSesion: string;
 };
 
 function MenuLateral(props: MenuLateralProps) {
   const rutaActual = usePathname();
-  const seccion = useSearchParams().get("seccion");
+  const alertasStock = useAlertasStock();
 
   return (
     <>
@@ -98,6 +112,8 @@ function MenuLateral(props: MenuLateralProps) {
             <div key={elemento.ruta}>
               <Link
                 aria-current={estaActivo && !elemento.submenus ? "page" : undefined}
+                aria-expanded={elemento.submenus ? estaActivo : undefined}
+                aria-controls={elemento.submenus && estaActivo ? `submenu-${elemento.ruta.slice(1)}` : undefined}
                 className="app-menu-enlace"
                 href={elemento.ruta}
                 onClick={props.alElegirOpcion}
@@ -105,18 +121,26 @@ function MenuLateral(props: MenuLateralProps) {
               >
                 {elemento.icono}
                 <span className="app-menu-texto">{elemento.etiqueta}</span>
+                <IndicadorNavegacion destino={elemento.etiqueta} />
+                {elemento.ruta === "/repuestos" && alertasStock && alertasStock.total > 0 ? (
+                  <span className="insignia-menu" title={alertasStock.total + " repuestos con alerta de stock"}>
+                    <span aria-hidden="true">{alertasStock.total > 99 ? "99+" : alertasStock.total}</span>
+                    <span className="sr-only">{alertasStock.total + " repuestos con alerta de stock"}</span>
+                  </span>
+                ) : null}
               </Link>
               {elemento.submenus && estaActivo ? (
-                <div className="app-submenu">
+                <div className="app-submenu" id={`submenu-${elemento.ruta.slice(1)}`}>
                   {elemento.submenus.map((submenu) => (
                     <Link
-                      aria-current={submenu.esActivo(rutaActual, seccion) ? "page" : undefined}
+                      aria-current={submenu.esActivo(rutaActual) ? "page" : undefined}
                       className="app-menu-enlace"
                       href={submenu.ruta}
                       key={submenu.ruta}
                       onClick={props.alElegirOpcion}
                     >
                       <span className="app-menu-texto">{submenu.etiqueta}</span>
+                      <IndicadorNavegacion destino={submenu.etiqueta} />
                     </Link>
                   ))}
                 </div>
@@ -126,18 +150,6 @@ function MenuLateral(props: MenuLateralProps) {
         })}
       </nav>
 
-      <div className="app-lateral-pie">
-        <button
-          className="app-menu-enlace"
-          disabled={!props.puedeCerrarSesion}
-          onClick={props.alCerrarSesion}
-          title={props.tituloCerrarSesion}
-          type="button"
-        >
-          <IconoSalir />
-          <span className="app-menu-texto">Cerrar sesión</span>
-        </button>
-      </div>
     </>
   );
 }
@@ -146,12 +158,30 @@ type EstructuraAplicacionProps = {
   children: React.ReactNode;
 };
 
-export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
+function EstructuraEscritorio(props: EstructuraAplicacionProps) {
   const children = props.children;
+  const referenciaEstructura = useRef<HTMLDivElement>(null);
+  const referenciaPie = useRef<HTMLElement>(null);
   const [estaMenuAbierto, setEstaMenuAbierto] = useState(false);
+  const [estaMenuRetraido, setEstaMenuRetraido] = useState(false);
   const [versionBackend, setVersionBackend] = useState("…");
   const enrutador = useRouter();
   const usuarioEnSesion = obtenerUsuarioEnSesion();
+
+  useLayoutEffect(() => {
+    const estructura = referenciaEstructura.current;
+    const pie = referenciaPie.current;
+    if (!estructura || !pie) return;
+    const ajustarAlturaDelPie = () => {
+      const altura = pie.getBoundingClientRect().height;
+      if (altura > 0) estructura.style.setProperty("--pie-alto", altura + "px");
+    };
+    ajustarAlturaDelPie();
+    if (typeof ResizeObserver === "undefined") return;
+    const observador = new ResizeObserver(ajustarAlturaDelPie);
+    observador.observe(pie);
+    return () => observador.disconnect();
+  }, []);
 
   useEffect(() => {
     async function cargarVersionBackend() {
@@ -169,6 +199,7 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
     function cerrarConEscape(evento: KeyboardEvent) {
       if (evento.key === "Escape") {
         setEstaMenuAbierto(false);
+        setEstaMenuRetraido(true);
       }
     }
 
@@ -179,7 +210,12 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
   async function salirDeLaSesion() {
     setEstaMenuAbierto(false);
     await cerrarSesion();
-    enrutador.push("/");
+    enrutador.push("/login");
+  }
+
+  function retraerMenu() {
+    setEstaMenuAbierto(false);
+    setEstaMenuRetraido(true);
   }
 
   const fechaActual = new Date().toLocaleDateString("es-UY", {
@@ -189,19 +225,19 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
     year: "numeric",
   });
 
-  const haySesion = usuarioEnSesion !== null;
-  const textoUsuario = haySesion ? usuarioEnSesion.nombre + " " + usuarioEnSesion.apellido : "Usuario no logueado";
-  const tituloCerrarSesion = haySesion ? "Cerrar sesión" : "No hay sesión iniciada";
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" ref={referenciaEstructura}>
       <aside
         className="app-lateral"
         data-abierto={estaMenuAbierto}
         data-compacto={!estaMenuAbierto}
+        data-retraido={estaMenuRetraido}
         id="menu-lateral"
+        onPointerEnter={() => setEstaMenuRetraido(false)}
+        onFocusCapture={() => setEstaMenuRetraido(false)}
       >
-        <Link className="app-lateral-logo" href="/usuarios" onClick={() => setEstaMenuAbierto(false)}>
+        <Link className="app-lateral-logo" href="/usuarios" onClick={retraerMenu}>
           <span>
             <Image
               src="/images/logo-cvm.png"
@@ -215,10 +251,7 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
 
         <Suspense fallback={null}>
           <MenuLateral
-            alCerrarSesion={salirDeLaSesion}
-            alElegirOpcion={() => setEstaMenuAbierto(false)}
-            puedeCerrarSesion={haySesion}
-            tituloCerrarSesion={tituloCerrarSesion}
+            alElegirOpcion={retraerMenu}
           />
         </Suspense>
       </aside>
@@ -247,16 +280,32 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
           <div className="app-cabecera-fecha" suppressHydrationWarning>
             {fechaActual}
           </div>
+          <MenuUsuario usuario={usuarioEnSesion} alCerrarSesion={salirDeLaSesion} />
         </header>
         <div className="app-contenido">{children}</div>
-        <footer className="app-pie">
-          <span>{textoUsuario}</span>
+        <footer className="app-pie" ref={referenciaPie}>
+          <div className="app-pie-enlaces"><BotonTerminos /></div>
           <div className="app-pie-derecha">
-            <p>Copyright © 2026 | AnterG Labs | Sotra App</p>
-            <p>{"Versión " + versionBackend}</p>
+            <div className="app-pie-linea">
+              <span>© 2026 AnterG Labs · Sotra App</span>
+              <span className="app-pie-version">{"Versión " + versionBackend}</span>
+            </div>
           </div>
         </footer>
       </div>
     </div>
   );
+}
+
+/** Elige la estructura según la zona: el técnico usa una pensada para el celular y el resto, la de escritorio. */
+export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
+  const rutaActual = usePathname();
+  if (rutaActual === "/login" || rutaActual.startsWith("/login/")) {
+    return <>{props.children}</>;
+  }
+  if (rutaActual === "/tecnico" || rutaActual.startsWith("/tecnico/")) {
+    return <EstructuraTecnico>{props.children}</EstructuraTecnico>;
+  }
+
+  return <EstructuraEscritorio>{props.children}</EstructuraEscritorio>;
 }

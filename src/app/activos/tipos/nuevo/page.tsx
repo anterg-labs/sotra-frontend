@@ -1,7 +1,5 @@
-"use client";
-
 import { FormularioTipoMaquina } from "@/componentes/formulario-tipo-maquina";
-import { crearTipoMaquina } from "@/servicios/servicio-tipos-maquina";
+import { crearTipoMaquinaAccion } from "../acciones";
 
 export default function PaginaNuevoTipoMaquina() {
   return (
@@ -14,7 +12,7 @@ export default function PaginaNuevoTipoMaquina() {
       </header>
 
       <section className="panel form-panel">
-        <FormularioTipoMaquina alEnviar={crearTipoMaquina} etiquetaConfirmacion="Confirmar registro" />
+        <FormularioTipoMaquina accion={crearTipoMaquinaAccion} etiquetaConfirmacion="Confirmar registro" />
       </section>
     </main>
   );

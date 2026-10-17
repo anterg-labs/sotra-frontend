@@ -1,90 +1,29 @@
-"use client";
-
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { FormularioModeloMaquina } from "@/componentes/formulario-modelo-maquina";
-import { actualizarModeloMaquina, obtenerDetalleModeloMaquina } from "@/servicios/servicio-modelos-maquina";
-import { listarTiposMaquina } from "@/servicios/servicio-tipos-maquina";
-import type {
-  ActualizarModeloMaquinaInput,
-  CrearModeloMaquinaInput,
-  EstadoModeloMaquina,
-  ModeloMaquina,
-} from "@/tipos/modelo-maquina";
+import { obtenerModeloMaquinaServidor } from "@/servicios/servidor/modelos-maquina";
+import { listarTiposMaquinaServidor, obtenerTipoMaquinaServidor } from "@/servicios/servidor/tipos-maquina";
+import type { ModeloMaquina } from "@/tipos/modelo-maquina";
 import type { TipoMaquina } from "@/tipos/tipo-maquina";
+import { actualizarModeloMaquinaAccion } from "../../acciones";
 
-export default function PaginaEditarModeloMaquina() {
-  const parametros = useParams<{ id: string }>();
-  const modeloMaquinaId = Number(parametros.id);
-  const [modeloMaquina, setModeloMaquina] = useState<ModeloMaquina | null>(null);
-  const [tiposMaquina, setTiposMaquina] = useState<TipoMaquina[] | null>(null);
-  const [errorCarga, setErrorCarga] = useState("");
-  const [estaActivo, setEstaActivo] = useState(false);
+type DatosEdicion = { modelo: ModeloMaquina; tiposMaquina: TipoMaquina[] };
 
-  useEffect(() => {
-    async function cargarDatosFormulario() {
-      try {
-        const modeloObtenido = await obtenerDetalleModeloMaquina(modeloMaquinaId);
-        const tiposObtenidos = await listarTiposMaquina();
-        setModeloMaquina(modeloObtenido);
-        setTiposMaquina(tiposObtenidos);
-        setEstaActivo(modeloObtenido.estado === "activo");
-      } catch {
-        setErrorCarga("No se pudo obtener la información del modelo de máquina solicitado.");
-      }
-    }
-
-    cargarDatosFormulario();
-  }, [modeloMaquinaId]);
-
-  function cambiarEstaActivo(evento: React.ChangeEvent<HTMLInputElement>) {
-    setEstaActivo(evento.target.checked);
+/** El tipo actual del modelo va primero, aunque esté inactivo, seguido de los tipos activos. */
+async function cargarDatos(modeloMaquinaId: number): Promise<DatosEdicion | null> {
+  if (!Number.isInteger(modeloMaquinaId) || modeloMaquinaId <= 0) return null;
+  try {
+    const [modelo, pagina] = await Promise.all([
+      obtenerModeloMaquinaServidor(modeloMaquinaId),
+      listarTiposMaquinaServidor({ buscar: "", estado: "activo", pagina: 1 }),
+    ]);
+    const tipoActual = await obtenerTipoMaquinaServidor(modelo.tipoMaquinaId);
+    return { modelo, tiposMaquina: [tipoActual, ...pagina.elementos.filter((tipo) => tipo.id !== tipoActual.id)] };
+  } catch {
+    return null;
   }
+}
 
-  function guardarModeloMaquina(camposModeloMaquina: CrearModeloMaquinaInput) {
-    let estado: EstadoModeloMaquina = "inactivo";
-    if (estaActivo) {
-      estado = "activo";
-    }
-
-    const modeloMaquinaParaGuardar: ActualizarModeloMaquinaInput = {
-      nombre: camposModeloMaquina.nombre,
-      tipoMaquinaId: camposModeloMaquina.tipoMaquinaId,
-      descripcion: camposModeloMaquina.descripcion,
-      estado: estado,
-    };
-
-    return actualizarModeloMaquina(modeloMaquinaId, modeloMaquinaParaGuardar);
-  }
-
-  let mensajeError = null;
-  if (errorCarga) {
-    mensajeError = <p className="form-error-banner">{errorCarga}</p>;
-  }
-
-  let mensajeCargando = null;
-  if ((modeloMaquina === null || tiposMaquina === null) && !errorCarga) {
-    mensajeCargando = <p className="empty-state">Cargando información del modelo de máquina…</p>;
-  }
-
-  let formulario = null;
-  if (modeloMaquina !== null && tiposMaquina !== null) {
-    formulario = (
-      <section className="panel form-panel">
-        <div className="form-field mb-4">
-          <label htmlFor="estaActivo">
-            <input checked={estaActivo} id="estaActivo" onChange={cambiarEstaActivo} type="checkbox" /> Activo
-          </label>
-        </div>
-        <FormularioModeloMaquina
-          alEnviar={guardarModeloMaquina}
-          etiquetaConfirmacion="Confirmar modificación"
-          modeloMaquinaInicial={modeloMaquina}
-          tiposMaquina={tiposMaquina}
-        />
-      </section>
-    );
-  }
+export default async function PaginaEditarModeloMaquina(props: { params: Promise<{ id: string }> }) {
+  const datos = await cargarDatos(Number((await props.params).id));
 
   return (
     <main className="page-content">
@@ -95,9 +34,18 @@ export default function PaginaEditarModeloMaquina() {
         </div>
       </header>
 
-      {mensajeError}
-      {mensajeCargando}
-      {formulario}
+      {datos ? (
+        <section className="panel form-panel">
+          <FormularioModeloMaquina
+            accion={actualizarModeloMaquinaAccion.bind(null, datos.modelo.id)}
+            etiquetaConfirmacion="Confirmar modificación"
+            modeloMaquinaInicial={datos.modelo}
+            tiposMaquina={datos.tiposMaquina}
+          />
+        </section>
+      ) : (
+        <p className="form-error-banner">No se pudo obtener la información del modelo de máquina solicitado.</p>
+      )}
     </main>
   );
 }

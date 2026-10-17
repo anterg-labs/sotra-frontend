@@ -11,6 +11,10 @@ type PropiedadesFiltroFecha = {
   alCambiar: (fechaDesde: string, fechaHasta: string) => void;
 };
 
+export function rangoDeFechasInvalido(fechaDesde: string, fechaHasta: string) {
+  return fechaDesde !== "" && fechaHasta !== "" && fechaHasta < fechaDesde;
+}
+
 /**
  * Filtro de fecha con un solo selector para un día fijo. La casilla "Rango de fechas" muestra el segundo
  * selector. Un día fijo se envía como desde y hasta con la misma fecha, que la API toma ambas incluidas.
@@ -19,7 +23,7 @@ export function FiltroFecha(props: PropiedadesFiltroFecha) {
   const { id, etiqueta, etiquetaFin = "hasta", fechaDesde, fechaHasta, alCambiar } = props;
   const [esRango, setEsRango] = useState(fechaHasta !== "" && fechaHasta !== fechaDesde);
 
-  const hayRangoInvertido = esRango && fechaDesde !== "" && fechaHasta !== "" && fechaHasta < fechaDesde;
+  const hayRangoInvertido = esRango && rangoDeFechasInvalido(fechaDesde, fechaHasta);
 
   function cambiarDia(evento: React.ChangeEvent<HTMLInputElement>) {
     const dia = evento.target.value;
@@ -77,7 +81,7 @@ export function FiltroFecha(props: PropiedadesFiltroFecha) {
 
       <div className="form-field campo-casilla">
         <label className="flex items-center gap-2" htmlFor={id + "-rango"}>
-          <input checked={esRango} id={id + "-rango"} onChange={cambiarModoRango} type="checkbox" />
+          <input checked={esRango} id={id + "-rango"} onChange={cambiarModoRango} role="switch" type="checkbox" />
           Rango de fechas
         </label>
       </div>

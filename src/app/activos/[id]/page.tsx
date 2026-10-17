@@ -1,193 +1,146 @@
-"use client";
-
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { EstadoRegistro } from "@/componentes/listado/estado-registro";
 import { OrdenesAsociadas } from "@/componentes/ordenes-asociadas";
-import { obtenerDetalleActivo } from "@/servicios/servicio-activos";
-import { obtenerDetalleCliente } from "@/servicios/servicio-clientes";
-import {
-  listarDocumentosTecnicosPaginados,
-  obtenerUrlDescargaDocumentoTecnico,
-} from "@/servicios/servicio-documentos-tecnicos";
-import { obtenerDetalleModeloMaquina } from "@/servicios/servicio-modelos-maquina";
+import { apiObtenerUrlDescargaDocumentoTecnico } from "@/servicios/api/api-documentos-tecnicos";
+import { listarDocumentosDeActivoServidor, obtenerActivoServidor } from "@/servicios/servidor/activos";
+import { obtenerClienteServidor } from "@/servicios/servidor/clientes";
+import { obtenerModeloMaquinaServidor } from "@/servicios/servidor/modelos-maquina";
 import type { Activo } from "@/tipos/activo";
 import type { DocumentoTecnico } from "@/tipos/documento-tecnico";
 
-export default function PaginaDetalleActivo() {
-  const parametros = useParams<{ id: string }>();
-  const activoId = Number(parametros.id);
-  const [activo, setActivo] = useState<Activo | null>(null);
-  const [nombreCliente, setNombreCliente] = useState("");
-  const [nombreModelo, setNombreModelo] = useState("");
-  const [documentos, setDocumentos] = useState<DocumentoTecnico[] | null>(null);
-  const [errorCarga, setErrorCarga] = useState("");
+type DatosActivo = {
+  activo: Activo;
+  nombreCliente: string;
+  nombreModelo: string;
+  tipoMaquina: { id: number; nombre: string };
+};
 
-  useEffect(() => {
-    async function cargarActivo() {
-      try {
-        const activoObtenido = await obtenerDetalleActivo(activoId);
-        setActivo(activoObtenido);
-
-        const clienteObtenido = await obtenerDetalleCliente(activoObtenido.clienteId);
-        setNombreCliente(clienteObtenido.razonSocial);
-
-        const modeloObtenido = await obtenerDetalleModeloMaquina(activoObtenido.modeloMaquinaId);
-        setNombreModelo(modeloObtenido.nombre);
-      } catch {
-        setErrorCarga("No se pudo obtener la información del activo solicitado.");
-      }
-
-      try {
-        const paginaDocumentos = await listarDocumentosTecnicosPaginados({
-          buscar: "",
-          activoId: String(activoId),
-          pagina: 1,
-        });
-        setDocumentos(paginaDocumentos.elementos);
-      } catch {
-        setDocumentos([]);
-      }
-    }
-
-    cargarActivo();
-  }, [activoId]);
-
-  let mensajeError = null;
-  if (errorCarga) {
-    mensajeError = <p className="form-error-banner">{errorCarga}</p>;
+async function cargarActivo(activoId: number): Promise<DatosActivo | null> {
+  if (!Number.isInteger(activoId) || activoId <= 0) return null;
+  try {
+    const activo = await obtenerActivoServidor(activoId);
+    const [cliente, modelo] = await Promise.all([
+      obtenerClienteServidor(activo.clienteId),
+      obtenerModeloMaquinaServidor(activo.modeloMaquinaId),
+    ]);
+    return {
+      activo,
+      nombreCliente: cliente.razonSocial,
+      nombreModelo: modelo.nombre,
+      tipoMaquina: { id: modelo.tipoMaquinaId, nombre: modelo.nombreTipoMaquina ?? "Tipo " + modelo.tipoMaquinaId },
+    };
+  } catch {
+    return null;
   }
+}
 
-  let mensajeCargando = null;
-  if (activo === null && !errorCarga) {
-    mensajeCargando = <p className="empty-state">Cargando información del activo…</p>;
+/** Si la documentación no se puede traer, el detalle igual se muestra con la lista vacía. */
+async function cargarDocumentos(activoId: number): Promise<DocumentoTecnico[]> {
+  if (!Number.isInteger(activoId) || activoId <= 0) return [];
+  try {
+    return (await listarDocumentosDeActivoServidor(activoId)).elementos;
+  } catch {
+    return [];
   }
+}
 
-  let titulo = "Detalle del activo";
-  let contenido = null;
-  if (activo !== null) {
-    let nombreActivo = "Sin nombre";
-    if (activo.nombre !== null) {
-      nombreActivo = activo.nombre;
-    }
-    titulo = nombreActivo;
-
-    let anio = "Sin dato";
-    if (activo.anioFabricacion !== null) {
-      anio = String(activo.anioFabricacion);
-    }
-
-    let ubicacion = "Sin dato";
-    if (activo.ubicacion !== null && activo.ubicacion !== "") {
-      ubicacion = activo.ubicacion;
-    }
-
-    let descripcion = "Sin descripción";
-    if (activo.descripcion !== null && activo.descripcion !== "") {
-      descripcion = activo.descripcion;
-    }
-
-    let claseEstado = "status status-inactivo";
-    let etiquetaEstado = "Inactivo";
-    if (activo.estado === "activo") {
-      claseEstado = "status status-activo";
-      etiquetaEstado = "Activo";
-    }
-
-    let listaDocumentos = <p className="empty-state">Cargando documentación…</p>;
-    if (documentos !== null && documentos.length === 0) {
-      listaDocumentos = <p className="empty-state">Este activo no tiene documentación técnica asociada.</p>;
-    }
-    if (documentos !== null && documentos.length > 0) {
-      listaDocumentos = (
-        <ul className="grid gap-2 text-sm">
-          {documentos.map((documento) => (
-            <li key={documento.id}>
-              <a
-                className="text-link"
-                href={obtenerUrlDescargaDocumentoTecnico(documento.id)}
-                rel="noreferrer"
-                target="_blank"
-              >
-                {documento.nombreArchivo}
-              </a>
-            </li>
-          ))}
-        </ul>
-      );
-    }
-
-    contenido = (
-      <div className="grid gap-6">
-        <div className="grid items-start gap-6 lg:grid-cols-[2fr_1fr]">
-          <section className="panel detail-panel">
-            <dl className="detail-list">
-              <div>
-                <dt>Número de serie</dt>
-                <dd>{activo.numSerie}</dd>
-              </div>
-              <div>
-                <dt>Cliente</dt>
-                <dd>
-                  <Link className="text-link" href={"/clientes/" + activo.clienteId}>{nombreCliente}</Link>
-                </dd>
-              </div>
-              <div>
-                <dt>Modelo</dt>
-                <dd>
-                  <Link className="text-link" href={"/activos/modelos/" + activo.modeloMaquinaId}>{nombreModelo}</Link>
-                </dd>
-              </div>
-              <div>
-                <dt>Año de fabricación</dt>
-                <dd>{anio}</dd>
-              </div>
-              <div>
-                <dt>Ubicación</dt>
-                <dd>{ubicacion}</dd>
-              </div>
-              <div>
-                <dt>Descripción</dt>
-                <dd>{descripcion}</dd>
-              </div>
-              <div>
-                <dt>Estado</dt>
-                <dd><span className={claseEstado}>{etiquetaEstado}</span></dd>
-              </div>
-            </dl>
-            <div className="form-actions">
-              <Link className="primary-button" href={"/activos/" + activo.id + "/editar"}>
-                Modificar
-              </Link>
-            </div>
-          </section>
-
-          <section className="panel detail-panel">
-            <h2>Documentación técnica</h2>
-            <div className="mt-4">{listaDocumentos}</div>
-          </section>
-        </div>
-
-        <OrdenesAsociadas activoId={String(activo.id)} clienteId="" tecnicoId="" titulo="Historial de órdenes de trabajo" />
-      </div>
-    );
-  }
+export default async function PaginaDetalleActivo(props: { params: Promise<{ id: string }> }) {
+  const activoId = Number((await props.params).id);
+  const [datos, documentos] = await Promise.all([cargarActivo(activoId), cargarDocumentos(activoId)]);
 
   return (
     <main className="page-content">
       <header className="page-heading">
         <div>
           <p className="eyebrow">Activos</p>
-          <h1>{titulo}</h1>
+          <h1>{datos ? (datos.activo.nombre ?? "Sin nombre") : "Detalle del activo"}</h1>
         </div>
         <Link className="secondary-button" href="/activos">
           Volver al listado
         </Link>
       </header>
 
-      {mensajeError}
-      {mensajeCargando}
-      {contenido}
+      {datos ? (
+        <div className="grid gap-6">
+          <div className="grid items-start gap-6 lg:grid-cols-[2fr_1fr]">
+            <section className="panel detail-panel">
+              <dl className="detail-list">
+                <div>
+                  <dt>Número de serie</dt>
+                  <dd>{datos.activo.numSerie}</dd>
+                </div>
+                <div>
+                  <dt>Cliente</dt>
+                  <dd>
+                    <Link className="text-link" href={"/clientes/" + datos.activo.clienteId}>{datos.nombreCliente}</Link>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Modelo</dt>
+                  <dd>
+                    <Link className="text-link" href={"/activos/modelos/" + datos.activo.modeloMaquinaId}>{datos.nombreModelo}</Link>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Tipo de máquina</dt>
+                  <dd>
+                    <Link className="text-link" href={"/activos/tipos/" + datos.tipoMaquina.id}>{datos.tipoMaquina.nombre}</Link>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Año de fabricación</dt>
+                  <dd>{datos.activo.anioFabricacion !== null ? String(datos.activo.anioFabricacion) : "Sin dato"}</dd>
+                </div>
+                <div>
+                  <dt>Ubicación</dt>
+                  <dd>{datos.activo.ubicacion ? datos.activo.ubicacion : "Sin dato"}</dd>
+                </div>
+                <div>
+                  <dt>Descripción</dt>
+                  <dd>{datos.activo.descripcion ? datos.activo.descripcion : "Sin descripción"}</dd>
+                </div>
+                <div>
+                  <dt>Estado</dt>
+                  <dd><EstadoRegistro estado={datos.activo.estado} /></dd>
+                </div>
+              </dl>
+              <div className="form-actions">
+                <Link className="primary-button" href={"/activos/" + datos.activo.id + "/editar"}>
+                  Modificar
+                </Link>
+              </div>
+            </section>
+
+            <section className="panel detail-panel">
+              <h2>Documentación técnica</h2>
+              <div className="mt-4">
+                {documentos.length === 0 ? (
+                  <p className="empty-state">Este activo no tiene documentación técnica asociada.</p>
+                ) : (
+                  <ul className="grid gap-2 text-sm">
+                    {documentos.map((documento) => (
+                      <li key={documento.id}>
+                        <a
+                          className="text-link"
+                          href={apiObtenerUrlDescargaDocumentoTecnico(documento.id)}
+                          rel="noreferrer"
+                          target="_blank"
+                        >
+                          {documento.nombreArchivo}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </section>
+          </div>
+
+          <OrdenesAsociadas activoId={String(datos.activo.id)} clienteId="" tecnicoId="" titulo="Historial de órdenes de trabajo" />
+        </div>
+      ) : (
+        <p className="form-error-banner">No se pudo obtener la información del activo solicitado.</p>
+      )}
     </main>
   );
 }

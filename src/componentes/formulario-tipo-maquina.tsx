@@ -3,107 +3,87 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { CrearTipoMaquinaInput, TipoMaquina } from "@/tipos/tipo-maquina";
+import { InterruptorActivo } from "@/componentes/listado/interruptor-activo";
+import { useFormularioAccion } from "@/componentes/use-formulario-accion";
+import type { ResultadoGuardar } from "@/tipos/resultado-accion";
+import type { GuardarTipoMaquinaInput, TipoMaquina } from "@/tipos/tipo-maquina";
 import { validarNombreCatalogo } from "@/validaciones/maquinaria";
 
 type PropiedadesFormularioTipoMaquina = {
   tipoMaquinaInicial?: TipoMaquina;
   etiquetaConfirmacion: string;
-  alEnviar: (tipoMaquina: CrearTipoMaquinaInput) => Promise<TipoMaquina>;
+  /** Server Action que guarda el tipo (alta o modificación). */
+  accion: (tipoMaquina: GuardarTipoMaquinaInput) => Promise<ResultadoGuardar<TipoMaquina>>;
+  /** Si se informa, el formulario no navega: avisa al guardar (por ejemplo, para cerrar un modal). */
+  alGuardar?: (resultado: TipoMaquina) => void;
+  alCancelar?: () => void;
 };
 
 export function FormularioTipoMaquina(props: PropiedadesFormularioTipoMaquina) {
-  const tipoMaquinaInicial = props.tipoMaquinaInicial;
-  const etiquetaConfirmacion = props.etiquetaConfirmacion;
-  const alEnviar = props.alEnviar;
-
-  let nombreInicial = "";
-  if (tipoMaquinaInicial) {
-    nombreInicial = tipoMaquinaInicial.nombre;
-  }
+  const { tipoMaquinaInicial, etiquetaConfirmacion, accion, alGuardar, alCancelar } = props;
 
   const enrutador = useRouter();
-  const [nombre, setNombre] = useState(nombreInicial);
-  const [estaEnviando, setEstaEnviando] = useState(false);
-  const [errorGeneral, setErrorGeneral] = useState("");
-  const [errorNombre, setErrorNombre] = useState<string | undefined>();
+  const [nombre, setNombre] = useState(tipoMaquinaInicial?.nombre ?? "");
+  const [estaActivo, setEstaActivo] = useState((tipoMaquinaInicial?.estado ?? "activo") === "activo");
 
-  function mostrarError(campo: string, mensaje?: string) {
-    if (!mensaje) return null;
-    return (
-      <p className="field-error" id={campo + "-error"} role="alert">
-        {mensaje}
-      </p>
-    );
-  }
-
-  function cambiarNombre(evento: React.ChangeEvent<HTMLInputElement>) {
-    setNombre(evento.target.value);
-  }
-
-  async function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
-    evento.preventDefault();
-    setErrorGeneral("");
-
-    const errorDetectado = validarNombreCatalogo(nombre);
-    setErrorNombre(errorDetectado);
-    if (errorDetectado) {
-      return;
-    }
-
-    setEstaEnviando(true);
-
-    const tipoMaquinaParaGuardar: CrearTipoMaquinaInput = {
-      nombre: nombre,
-    };
-
-    try {
-      await alEnviar(tipoMaquinaParaGuardar);
-      enrutador.push("/activos?seccion=tipos");
-    } catch (error) {
-      if (error instanceof Error) {
-        setErrorGeneral(error.message);
+  const { errores, errorGeneral, estaEnviando, enviar, referenciaErrorGeneral } = useFormularioAccion({
+    validar: (datos: GuardarTipoMaquinaInput) => {
+      const error = validarNombreCatalogo(datos.nombre);
+      return error ? { nombre: error } : {};
+    },
+    accion,
+    alExito: (tipoMaquina: TipoMaquina) => {
+      if (alGuardar) {
+        alGuardar(tipoMaquina);
       } else {
-        setErrorGeneral("No se pudo guardar el tipo de máquina.");
+        enrutador.push("/activos/tipos");
       }
-    } finally {
-      setEstaEnviando(false);
-    }
-  }
+    },
+    mensajeGeneral: "No se pudo guardar el tipo de máquina.",
+  });
 
-  let mensajeError = null;
-  if (errorGeneral) {
-    mensajeError = <p className="form-error-banner">{errorGeneral}</p>;
-  }
-
-  let textoBoton = etiquetaConfirmacion;
-  if (estaEnviando) {
-    textoBoton = "Guardando…";
+  function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    enviar({ nombre, estado: estaActivo ? "activo" : "inactivo" });
   }
 
   return (
-    <form noValidate onSubmit={enviarFormulario}>
-      {mensajeError}
+    <form aria-busy={estaEnviando} noValidate onSubmit={enviarFormulario}>
+      {tipoMaquinaInicial ? <InterruptorActivo alCambiar={setEstaActivo} estaActivo={estaActivo} /> : null}
+
+      {errorGeneral ? (
+        <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p>
+      ) : null}
 
       <div className="form-field form-field-full">
         <label htmlFor="nombre">Nombre del tipo de máquina</label>
         <input
-          aria-describedby={errorNombre ? "nombre-error" : undefined}
-          aria-invalid={errorNombre ? true : undefined}
+          aria-describedby={errores.nombre ? "nombre-error" : undefined}
+          aria-invalid={errores.nombre ? true : undefined}
           id="nombre"
-          onChange={cambiarNombre}
+          onChange={(evento) => setNombre(evento.target.value)}
           required
           value={nombre}
         />
-        {mostrarError("nombre", errorNombre)}
+        {errores.nombre ? (
+          <p className="field-error" id="nombre-error" role="alert">
+            {errores.nombre}
+          </p>
+        ) : null}
       </div>
 
       <div className="form-actions">
-        <Link className="secondary-button" href="/activos?seccion=tipos">
-          Cancelar
-        </Link>
+        {alCancelar ? (
+          <button className="secondary-button" onClick={alCancelar} type="button">
+            Cancelar
+          </button>
+        ) : (
+          <Link className="secondary-button" href="/activos/tipos">
+            Cancelar
+          </Link>
+        )}
         <button className="primary-button" disabled={estaEnviando} type="submit">
-          {textoBoton}
+          {estaEnviando ? "Guardando…" : etiquetaConfirmacion}
         </button>
       </div>
     </form>

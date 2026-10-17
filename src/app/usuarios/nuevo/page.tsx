@@ -1,53 +1,9 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { FormularioUsuario } from "@/componentes/formulario-usuario";
-import { crearUsuario, listarRoles } from "@/servicios/servicio-usuarios";
-import type { Rol } from "@/tipos/usuario";
+import { AltaUsuario } from "@/componentes/alta-usuario";
+import { listarRolesServidor } from "@/servicios/servidor/usuarios";
 
-export default function PaginaNuevoUsuario() {
-  const [roles, setRoles] = useState<Rol[] | null>(null);
-  const [errorCarga, setErrorCarga] = useState("");
-
-  useEffect(() => {
-    async function cargarRoles() {
-      try {
-        const rolesObtenidos = await listarRoles();
-        setRoles(rolesObtenidos);
-      } catch {
-        setErrorCarga("No se pudo obtener el listado de roles.");
-      }
-    }
-
-    cargarRoles();
-  }, []);
-
-  let contenidoFormulario = null;
-  if (roles === null && !errorCarga) {
-    contenidoFormulario = <p className="empty-state">Cargando roles…</p>;
-  }
-
-  if (errorCarga) {
-    contenidoFormulario = <p className="form-error-banner">{errorCarga}</p>;
-  }
-
-  if (roles !== null && roles.length === 0) {
-    contenidoFormulario = <p className="empty-state">No hay roles disponibles.</p>;
-  }
-
-  if (roles !== null && roles.length > 0) {
-    contenidoFormulario = (
-      <FormularioUsuario
-        alEnviar={crearUsuario}
-        etiquetaConfirmacion="Confirmar creación"
-        roles={roles}
-        rutaCancelar="/usuarios"
-        rutaExito="/usuarios"
-        solicitarContrasena
-      />
-    );
-  }
+export default async function PaginaNuevoUsuario() {
+  const roles = await listarRolesServidor().catch(() => null);
 
   return (
     <main className="page-content">
@@ -65,7 +21,7 @@ export default function PaginaNuevoUsuario() {
       </header>
 
       <section className="panel form-panel">
-        {contenidoFormulario}
+        <AltaUsuario roles={roles} />
       </section>
     </main>
   );

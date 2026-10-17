@@ -1,15 +1,22 @@
 "use client";
 
+import { useAvisos } from "@/componentes/avisos";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { CrearClienteInput } from "@/tipos/cliente";
-import { validarCliente, type ErroresCliente } from "@/validaciones/cliente";
+import { useFormularioAccion } from "@/componentes/use-formulario-accion";
+import type { ResultadoGuardar } from "@/tipos/resultado-accion";
+import type { Cliente, CrearClienteInput } from "@/tipos/cliente";
+import { validarCliente } from "@/validaciones/cliente";
 
 type PropiedadesFormularioCliente = {
   clienteInicial?: CrearClienteInput;
   etiquetaConfirmacion: string;
-  alEnviar: (cliente: CrearClienteInput) => Promise<{ id: number }>;
+  /** Server Action que guarda el cliente (alta o modificación). */
+  accion: (cliente: CrearClienteInput) => Promise<ResultadoGuardar<Cliente>>;
+  /** Si se informa, el formulario no navega: avisa al guardar (por ejemplo, para cerrar un modal). */
+  alGuardar?: (resultado: Cliente) => void;
+  alCancelar?: () => void;
 };
 
 const clienteVacio: CrearClienteInput = {
@@ -21,44 +28,47 @@ const clienteVacio: CrearClienteInput = {
   observaciones: "",
 };
 
+function textoOVacio(valor: string | null) {
+  return valor ?? "";
+}
+
+function nullSiVacio(valor: string) {
+  return valor.trim() === "" ? null : valor;
+}
+
 export function FormularioCliente(props: PropiedadesFormularioCliente) {
-  let clienteInicial = props.clienteInicial;
-  if (!clienteInicial) {
-    clienteInicial = clienteVacio;
-  }
-  const etiquetaConfirmacion = props.etiquetaConfirmacion;
-  const alEnviar = props.alEnviar;
-
-  let correoInicial = "";
-  if (clienteInicial.correo !== null) {
-    correoInicial = clienteInicial.correo;
-  }
-
-  let telefonoInicial = "";
-  if (clienteInicial.telefono !== null) {
-    telefonoInicial = clienteInicial.telefono;
-  }
-
-  let direccionInicial = "";
-  if (clienteInicial.direccion !== null) {
-    direccionInicial = clienteInicial.direccion;
-  }
-
-  let observacionesIniciales = "";
-  if (clienteInicial.observaciones !== null) {
-    observacionesIniciales = clienteInicial.observaciones;
-  }
+  const { accion, alGuardar, alCancelar, etiquetaConfirmacion } = props;
+  const clienteInicial = props.clienteInicial ?? clienteVacio;
+  const esModificacion = props.clienteInicial !== undefined;
 
   const enrutador = useRouter();
+  const { mostrarAviso } = useAvisos();
   const [razonSocial, setRazonSocial] = useState(clienteInicial.razonSocial);
   const [nombreContacto, setNombreContacto] = useState(clienteInicial.nombreContacto);
-  const [correo, setCorreo] = useState(correoInicial);
-  const [telefono, setTelefono] = useState(telefonoInicial);
-  const [direccion, setDireccion] = useState(direccionInicial);
-  const [observaciones, setObservaciones] = useState(observacionesIniciales);
-  const [estaEnviando, setEstaEnviando] = useState(false);
-  const [errorGeneral, setErrorGeneral] = useState("");
-  const [errores, setErrores] = useState<ErroresCliente>({});
+  const [correo, setCorreo] = useState(textoOVacio(clienteInicial.correo));
+  const [telefono, setTelefono] = useState(textoOVacio(clienteInicial.telefono));
+  const [direccion, setDireccion] = useState(textoOVacio(clienteInicial.direccion));
+  const [observaciones, setObservaciones] = useState(textoOVacio(clienteInicial.observaciones));
+  const { errores, errorGeneral, estaEnviando, enviar, referenciaErrorGeneral } = useFormularioAccion({
+    validar: (datos: CrearClienteInput) =>
+      validarCliente({
+        razonSocial: datos.razonSocial,
+        nombreContacto: datos.nombreContacto,
+        correo: datos.correo ?? "",
+        telefono: datos.telefono ?? "",
+        direccion: datos.direccion ?? "",
+      }),
+    accion,
+    alExito: (cliente: Cliente) => {
+      if (alGuardar) {
+        alGuardar(cliente);
+      } else {
+        mostrarAviso("exito", esModificacion ? "Cliente actualizado." : "Cliente registrado.");
+        enrutador.push("/clientes");
+      }
+    },
+    mensajeGeneral: "No se pudo guardar la información del cliente.",
+  });
 
   function mostrarError(campo: string, mensaje?: string) {
     if (!mensaje) return null;
@@ -69,88 +79,22 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
     );
   }
 
-  function cambiarRazonSocial(evento: React.ChangeEvent<HTMLInputElement>) {
-    setRazonSocial(evento.target.value);
-  }
-
-  function cambiarNombreContacto(evento: React.ChangeEvent<HTMLInputElement>) {
-    setNombreContacto(evento.target.value);
-  }
-
-  function cambiarCorreo(evento: React.ChangeEvent<HTMLInputElement>) {
-    setCorreo(evento.target.value);
-  }
-
-  function cambiarTelefono(evento: React.ChangeEvent<HTMLInputElement>) {
-    setTelefono(evento.target.value);
-  }
-
-  function cambiarDireccion(evento: React.ChangeEvent<HTMLInputElement>) {
-    setDireccion(evento.target.value);
-  }
-
-  function cambiarObservaciones(evento: React.ChangeEvent<HTMLTextAreaElement>) {
-    setObservaciones(evento.target.value);
-  }
-
-  async function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
+  function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    setErrorGeneral("");
-
-    const erroresDetectados = validarCliente({ razonSocial, nombreContacto, correo, telefono, direccion });
-    setErrores(erroresDetectados);
-    if (Object.keys(erroresDetectados).length > 0) {
-      return;
-    }
-
-    setEstaEnviando(true);
-
-    let correoParaGuardar: string | null = correo;
-    if (!correo.trim()) {
-      correoParaGuardar = null;
-    }
-
-    let telefonoParaGuardar: string | null = telefono;
-    if (!telefono.trim()) {
-      telefonoParaGuardar = null;
-    }
-
-    let direccionParaGuardar: string | null = direccion;
-    if (!direccion.trim()) {
-      direccionParaGuardar = null;
-    }
-
-    let observacionesParaGuardar: string | null = observaciones;
-    if (!observaciones.trim()) {
-      observacionesParaGuardar = null;
-    }
-
-    const clienteParaGuardar: CrearClienteInput = {
+    const datos: CrearClienteInput = {
       razonSocial,
       nombreContacto,
-      correo: correoParaGuardar,
-      telefono: telefonoParaGuardar,
-      direccion: direccionParaGuardar,
-      observaciones: observacionesParaGuardar,
+      correo: nullSiVacio(correo),
+      telefono: nullSiVacio(telefono),
+      direccion: nullSiVacio(direccion),
+      observaciones: nullSiVacio(observaciones),
     };
-
-    try {
-      await alEnviar(clienteParaGuardar);
-      enrutador.push("/clientes");
-    } catch (error) {
-      if (error instanceof Error) {
-        setErrorGeneral(error.message);
-      } else {
-        setErrorGeneral("No se pudo guardar la información del cliente.");
-      }
-    } finally {
-      setEstaEnviando(false);
-    }
+    enviar(datos);
   }
 
   let mensajeError = null;
   if (errorGeneral) {
-    mensajeError = <p className="form-error-banner">{errorGeneral}</p>;
+    mensajeError = <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p>;
   }
 
   let textoBoton = etiquetaConfirmacion;
@@ -159,7 +103,7 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
   }
 
   return (
-    <form noValidate onSubmit={enviarFormulario}>
+    <form noValidate aria-busy={estaEnviando} onSubmit={enviarFormulario}>
       {mensajeError}
 
       <div className="form-grid">
@@ -169,7 +113,7 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
             aria-describedby={errores.razonSocial ? "razonSocial-error" : undefined}
             aria-invalid={errores.razonSocial ? true : undefined}
             id="razonSocial"
-            onChange={cambiarRazonSocial}
+            onChange={(evento) => setRazonSocial(evento.target.value)}
             required
             value={razonSocial}
           />
@@ -182,7 +126,7 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
             aria-describedby={errores.nombreContacto ? "nombreContacto-error" : undefined}
             aria-invalid={errores.nombreContacto ? true : undefined}
             id="nombreContacto"
-            onChange={cambiarNombreContacto}
+            onChange={(evento) => setNombreContacto(evento.target.value)}
             required
             value={nombreContacto}
           />
@@ -195,7 +139,7 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
             aria-describedby={errores.correo ? "correo-error" : undefined}
             aria-invalid={errores.correo ? true : undefined}
             id="correo"
-            onChange={cambiarCorreo}
+            onChange={(evento) => setCorreo(evento.target.value)}
             type="email"
             value={correo}
           />
@@ -209,7 +153,7 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
             aria-invalid={errores.telefono ? true : undefined}
             id="telefono"
             inputMode="numeric"
-            onChange={cambiarTelefono}
+            onChange={(evento) => setTelefono(evento.target.value)}
             type="tel"
             value={telefono}
           />
@@ -223,7 +167,7 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
             aria-describedby={errores.direccion ? "direccion-error" : undefined}
             aria-invalid={errores.direccion ? true : undefined}
             id="direccion"
-            onChange={cambiarDireccion}
+            onChange={(evento) => setDireccion(evento.target.value)}
             value={direccion}
           />
           {mostrarError("direccion", errores.direccion)}
@@ -231,13 +175,19 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
 
       <div className="form-field form-field-full">
         <label htmlFor="observaciones">Observaciones adicionales (opcional)</label>
-        <textarea id="observaciones" onChange={cambiarObservaciones} rows={4} value={observaciones} />
+        <textarea id="observaciones" onChange={(evento) => setObservaciones(evento.target.value)} rows={4} value={observaciones} />
       </div>
 
       <div className="form-actions">
-        <Link className="secondary-button" href="/clientes">
-          Cancelar
-        </Link>
+        {alCancelar ? (
+          <button className="secondary-button" onClick={alCancelar} type="button">
+            Cancelar
+          </button>
+        ) : (
+          <Link className="secondary-button" href="/clientes">
+            Cancelar
+          </Link>
+        )}
         <button className="primary-button" disabled={estaEnviando} type="submit">
           {textoBoton}
         </button>

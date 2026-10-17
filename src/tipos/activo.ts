@@ -3,9 +3,11 @@ export type EstadoActivo = "activo" | "inactivo";
 export type Activo = {
   id: number;
   clienteId: number;
+  nombreCliente?: string | null;
   numSerie: string;
   descripcion: string | null;
   modeloMaquinaId: number;
+  nombreModeloMaquina?: string | null;
   anioFabricacion: number | null;
   nombre: string | null;
   ubicacion: string | null;
@@ -39,4 +41,9 @@ export type FiltrosActivos = {
   modeloMaquinaId: string;
   estado: string;
   pagina: number;
+};
+
+/** Datos que envía el formulario: en el alta el estado es siempre `activo` y la acción lo ignora. */
+export type GuardarActivoInput = CrearActivoInput & {
+  estado: EstadoActivo;
 };

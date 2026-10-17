@@ -1,78 +1,14 @@
-"use client";
+import { AltaActivo } from "@/componentes/alta-activo";
+import { listarClientesServidor } from "@/servicios/servidor/clientes";
+import { listarModelosMaquinaServidor } from "@/servicios/servidor/modelos-maquina";
 
-import { useEffect, useState } from "react";
-import { FormularioActivo } from "@/componentes/formulario-activo";
-import { crearActivo } from "@/servicios/servicio-activos";
-import { listarClientes } from "@/servicios/servicio-clientes";
-import { listarModelosMaquina } from "@/servicios/servicio-modelos-maquina";
-import type { Cliente } from "@/tipos/cliente";
-import type { ModeloMaquina } from "@/tipos/modelo-maquina";
-
-export default function PaginaNuevoActivo() {
-  const [clientes, setClientes] = useState<Cliente[] | null>(null);
-  const [modelosMaquina, setModelosMaquina] = useState<ModeloMaquina[] | null>(null);
-  const [errorCarga, setErrorCarga] = useState("");
-
-  useEffect(() => {
-    async function cargarDatosFormulario() {
-      try {
-        const clientesObtenidos = await listarClientes();
-        const modelosObtenidos = await listarModelosMaquina();
-        setClientes(clientesObtenidos);
-        setModelosMaquina(modelosObtenidos);
-      } catch {
-        setErrorCarga("No se pudieron obtener los datos necesarios para registrar el activo.");
-      }
-    }
-
-    cargarDatosFormulario();
-  }, []);
-
-  let tieneClienteActivo = false;
-  if (clientes !== null) {
-    for (const cliente of clientes) {
-      if (cliente.estado === "activo") {
-        tieneClienteActivo = true;
-      }
-    }
-  }
-
-  let tieneModeloActivo = false;
-  if (modelosMaquina !== null) {
-    for (const modeloMaquina of modelosMaquina) {
-      if (modeloMaquina.estado === "activo") {
-        tieneModeloActivo = true;
-      }
-    }
-  }
-
-  let contenidoFormulario = null;
-  if ((clientes === null || modelosMaquina === null) && !errorCarga) {
-    contenidoFormulario = <p className="empty-state">Cargando datos del activo…</p>;
-  }
-
-  if (errorCarga) {
-    contenidoFormulario = <p className="form-error-banner">{errorCarga}</p>;
-  }
-
-  if (clientes !== null && !tieneClienteActivo) {
-    contenidoFormulario = <p className="empty-state">Primero se debe registrar un cliente activo.</p>;
-  }
-
-  if (modelosMaquina !== null && !tieneModeloActivo) {
-    contenidoFormulario = <p className="empty-state">Primero se debe registrar un modelo de máquina activo.</p>;
-  }
-
-  if (clientes !== null && tieneClienteActivo && modelosMaquina !== null && tieneModeloActivo) {
-    contenidoFormulario = (
-      <FormularioActivo
-        alEnviar={crearActivo}
-        clientes={clientes}
-        etiquetaConfirmacion="Confirmar registro"
-        modelosMaquina={modelosMaquina}
-      />
-    );
-  }
+export default async function PaginaNuevoActivo() {
+  const [clientes, modelosMaquina] = await Promise.all([
+    listarClientesServidor({ buscar: "", estado: "activo", pagina: 1 }).then((pagina) => pagina.elementos).catch(() => null),
+    listarModelosMaquinaServidor({ buscar: "", tipoMaquinaId: "", estado: "activo", pagina: 1 })
+      .then((pagina) => pagina.elementos)
+      .catch(() => null),
+  ]);
 
   return (
     <main className="page-content">
@@ -84,7 +20,7 @@ export default function PaginaNuevoActivo() {
       </header>
 
       <section className="panel form-panel">
-        {contenidoFormulario}
+        <AltaActivo clientes={clientes} modelosMaquina={modelosMaquina} />
       </section>
     </main>
   );

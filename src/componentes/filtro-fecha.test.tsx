@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { FiltroFecha } from "./filtro-fecha";
+import { FiltroFecha, rangoDeFechasInvalido } from "./filtro-fecha";
 
 function dibujar(fechaDesde = "", fechaHasta = "") {
   const alCambiar = vi.fn();
@@ -17,6 +17,12 @@ function dibujar(fechaDesde = "", fechaHasta = "") {
 }
 
 describe("FiltroFecha", () => {
+  it("solo rechaza rangos completos invertidos", () => {
+    expect(rangoDeFechasInvalido("2026-10-15", "2026-10-01")).toBe(true);
+    expect(rangoDeFechasInvalido("2026-10-01", "2026-10-15")).toBe(false);
+    expect(rangoDeFechasInvalido("2026-10-01", "2026-10-01")).toBe(false);
+    expect(rangoDeFechasInvalido("2026-10-01", "")).toBe(false);
+  });
   it("muestra un solo selector y envía desde y hasta iguales para un día fijo", () => {
     const alCambiar = dibujar();
 
@@ -53,5 +59,14 @@ describe("FiltroFecha", () => {
     fireEvent.click(screen.getByLabelText("Rango de fechas"));
 
     expect(alCambiar).toHaveBeenCalledWith("2026-10-01", "2026-10-01");
+  });
+
+  it("la casilla de rango es un interruptor accesible", () => {
+    dibujar();
+
+    const interruptor = screen.getByRole("switch", { name: "Rango de fechas" });
+    expect(interruptor).not.toBeChecked();
+    fireEvent.click(interruptor);
+    expect(interruptor).toBeChecked();
   });
 });

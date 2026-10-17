@@ -1,40 +1,10 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import { FormularioDocumentoTecnico } from "@/componentes/formulario-documento-tecnico";
-import { listarActivos } from "@/servicios/servicio-activos";
-import { crearDocumentoTecnico } from "@/servicios/servicio-documentos-tecnicos";
-import type { Activo } from "@/tipos/activo";
+import { listarActivosServidor } from "@/servicios/servidor/activos";
 
-export default function PaginaNuevoDocumentoTecnico() {
-  const [activos, setActivos] = useState<Activo[] | null>(null);
-  const [errorCarga, setErrorCarga] = useState("");
-
-  useEffect(() => {
-    async function cargarActivos() {
-      try {
-        const activosObtenidos = await listarActivos();
-        setActivos(activosObtenidos);
-      } catch {
-        setErrorCarga("No se pudo obtener el listado de activos.");
-      }
-    }
-
-    cargarActivos();
-  }, []);
-
-  let contenidoFormulario = null;
-  if (activos === null && !errorCarga) {
-    contenidoFormulario = <p className="empty-state">Cargando activos…</p>;
-  }
-
-  if (errorCarga) {
-    contenidoFormulario = <p className="form-error-banner">{errorCarga}</p>;
-  }
-
-  if (activos !== null) {
-    contenidoFormulario = <FormularioDocumentoTecnico activos={activos} alEnviar={crearDocumentoTecnico} />;
-  }
+export default async function PaginaNuevoDocumentoTecnico() {
+  const activos = await listarActivosServidor({ buscar: "", clienteId: "", modeloMaquinaId: "", estado: "activo", pagina: 1 })
+    .then((pagina) => pagina.elementos)
+    .catch(() => null);
 
   return (
     <main className="page-content">
@@ -46,7 +16,11 @@ export default function PaginaNuevoDocumentoTecnico() {
       </header>
 
       <section className="panel form-panel">
-        {contenidoFormulario}
+        {activos === null ? (
+          <p className="form-error-banner">No se pudo obtener el listado de activos.</p>
+        ) : (
+          <FormularioDocumentoTecnico activos={activos} />
+        )}
       </section>
     </main>
   );

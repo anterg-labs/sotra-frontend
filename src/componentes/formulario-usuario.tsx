@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { ActualizarUsuarioInput, CrearUsuarioInput, Rol, Usuario } from "@/tipos/usuario";
+import { validarUsuario, type ErroresUsuario } from "@/validaciones/usuario";
 
 type PropiedadesFormularioUsuario = {
   usuarioInicial?: ActualizarUsuarioInput;
@@ -17,10 +18,7 @@ type PropiedadesFormularioUsuario = {
 
 export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   const usuarioInicial = props.usuarioInicial;
-  let solicitarContrasena = props.solicitarContrasena;
-  if (solicitarContrasena === undefined) {
-    solicitarContrasena = false;
-  }
+  const solicitarContrasena = props.solicitarContrasena ?? false;
   const etiquetaConfirmacion = props.etiquetaConfirmacion;
   const rutaCancelar = props.rutaCancelar;
   const rutaExito = props.rutaExito;
@@ -48,6 +46,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   const [contrasena, setContrasena] = useState("");
   const [idsRolSeleccionados, setIdsRolSeleccionados] = useState<number[]>(idsRolIniciales);
   const [errorGeneral, setErrorGeneral] = useState("");
+  const [errores, setErrores] = useState<ErroresUsuario>({});
   const [estaEnviando, setEstaEnviando] = useState(false);
 
   function cambiarNombre(evento: React.ChangeEvent<HTMLInputElement>) {
@@ -93,6 +92,16 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   async function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     setErrorGeneral("");
+
+    const erroresDetectados = validarUsuario(
+      { nombre, apellido, correo, telefono, contrasena },
+      { exigirContrasena: solicitarContrasena },
+    );
+    setErrores(erroresDetectados);
+    if (Object.keys(erroresDetectados).length > 0) {
+      return;
+    }
+
     setEstaEnviando(true);
 
     const usuarioParaGuardar: CrearUsuarioInput = {
@@ -118,6 +127,15 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
     }
   }
 
+  function mostrarError(campo: string, mensaje?: string) {
+    if (!mensaje) return null;
+    return (
+      <p className="field-error" id={campo + "-error"} role="alert">
+        {mensaje}
+      </p>
+    );
+  }
+
   let mensajeError = null;
   if (errorGeneral) {
     mensajeError = <p className="form-error-banner">{errorGeneral}</p>;
@@ -131,11 +149,14 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
         <input
           id="contrasena"
           maxLength={255}
+          aria-describedby={errores.contrasena ? "contrasena-error" : undefined}
+          aria-invalid={errores.contrasena ? true : undefined}
           onChange={cambiarContrasena}
           required
           type="password"
           value={contrasena}
         />
+        {mostrarError("contrasena", errores.contrasena)}
       </div>
     );
   }
@@ -167,28 +188,65 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   }
 
   return (
-    <form onSubmit={enviarFormulario}>
+    <form noValidate onSubmit={enviarFormulario}>
       {mensajeError}
 
       <div className="form-grid">
         <div className="form-field">
           <label htmlFor="nombre">Nombre</label>
-          <input id="nombre" maxLength={100} onChange={cambiarNombre} required type="text" value={nombre} />
+          <input
+            aria-describedby={errores.nombre ? "nombre-error" : undefined}
+            aria-invalid={errores.nombre ? true : undefined}
+            id="nombre"
+            onChange={cambiarNombre}
+            required
+            type="text"
+            value={nombre}
+          />
+          {mostrarError("nombre", errores.nombre)}
         </div>
 
         <div className="form-field">
           <label htmlFor="apellido">Apellido</label>
-          <input id="apellido" maxLength={100} onChange={cambiarApellido} required type="text" value={apellido} />
+          <input
+            aria-describedby={errores.apellido ? "apellido-error" : undefined}
+            aria-invalid={errores.apellido ? true : undefined}
+            id="apellido"
+            onChange={cambiarApellido}
+            required
+            type="text"
+            value={apellido}
+          />
+          {mostrarError("apellido", errores.apellido)}
         </div>
 
         <div className="form-field">
           <label htmlFor="correo">Correo electrónico</label>
-          <input id="correo" maxLength={254} onChange={cambiarCorreo} required type="email" value={correo} />
+          <input
+            aria-describedby={errores.correo ? "correo-error" : undefined}
+            aria-invalid={errores.correo ? true : undefined}
+            id="correo"
+            onChange={cambiarCorreo}
+            required
+            type="email"
+            value={correo}
+          />
+          {mostrarError("correo", errores.correo)}
         </div>
 
         <div className="form-field">
           <label htmlFor="telefono">Número de teléfono</label>
-          <input id="telefono" maxLength={30} onChange={cambiarTelefono} required type="tel" value={telefono} />
+          <input
+            aria-describedby={errores.telefono ? "telefono-error" : undefined}
+            aria-invalid={errores.telefono ? true : undefined}
+            id="telefono"
+            inputMode="numeric"
+            onChange={cambiarTelefono}
+            required
+            type="tel"
+            value={telefono}
+          />
+          {mostrarError("telefono", errores.telefono)}
         </div>
 
         {campoContrasena}

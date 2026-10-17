@@ -1,3 +1,5 @@
+import { Combobox } from "@/componentes/combobox";
+import { listarTecnicosPaginados } from "@/servicios/servicio-ordenes-trabajo";
 import type { Usuario } from "@/tipos/usuario";
 
 type PropiedadesCamposGeneralesOrdenTrabajo = {
@@ -11,10 +13,6 @@ type PropiedadesCamposGeneralesOrdenTrabajo = {
 };
 
 export function CamposGeneralesOrdenTrabajo(props: PropiedadesCamposGeneralesOrdenTrabajo) {
-  function cambiarTecnico(evento: React.ChangeEvent<HTMLSelectElement>) {
-    props.alCambiarTecnico(evento.target.value);
-  }
-
   function cambiarTipo(evento: React.ChangeEvent<HTMLSelectElement>) {
     props.alCambiarTipo(evento.target.value);
   }
@@ -42,15 +40,21 @@ export function CamposGeneralesOrdenTrabajo(props: PropiedadesCamposGeneralesOrd
         </select>
       </div>
 
-      <div className="form-field">
-        <label htmlFor="tecnicoId">Técnico responsable (opcional)</label>
-        <select id="tecnicoId" onChange={cambiarTecnico} value={props.tecnicoId}>
-          <option value="">Sin técnico asignado</option>
-          {props.tecnicos.map((tecnico) => (
-            <option key={tecnico.id} value={tecnico.id}>{tecnico.nombre + " " + tecnico.apellido}</option>
-          ))}
-        </select>
-      </div>
+      <Combobox
+        alCambiar={props.alCambiarTecnico}
+        buscarOpciones={async (consulta) => {
+          const tecnicos = await listarTecnicosPaginados(consulta);
+          return tecnicos.map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }));
+        }}
+        etiqueta="Técnico responsable (opcional)"
+        id="tecnicoId"
+        opciones={props.tecnicos.map((tecnico) => ({
+          valor: String(tecnico.id),
+          etiqueta: tecnico.nombre + " " + tecnico.apellido,
+        }))}
+        textoVacio="Sin técnico asignado"
+        valor={props.tecnicoId}
+      />
     </>
   );
 }

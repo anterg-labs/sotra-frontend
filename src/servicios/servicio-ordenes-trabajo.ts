@@ -7,7 +7,7 @@ import {
   apiObtenerOrdenTrabajo,
   apiSolicitarSugerenciaOrdenTrabajo,
 } from "@/servicios/api/api-ordenes-trabajo";
-import { listarUsuarios } from "@/servicios/servicio-usuarios";
+import { listarRoles, listarUsuarios, listarUsuariosPaginados } from "@/servicios/servicio-usuarios";
 import type {
   ActualizarOrdenTrabajoInput,
   CrearOrdenTrabajoInput,
@@ -27,22 +27,18 @@ const etiquetasEstado = {
   cancelada: "Cancelada",
 };
 
+export function obtenerErroresOrdenTrabajo(input: CrearOrdenTrabajoInput) {
+  const errores: Partial<Record<"clienteId" | "activoId" | "descripcion" | "fechaPrevistaEjecucion", string>> = {};
+  if (input.clienteId <= 0) errores.clienteId = "El cliente es obligatorio.";
+  if (input.activoId <= 0) errores.activoId = "El activo es obligatorio.";
+  if (!input.descripcion.trim()) errores.descripcion = "La descripción de la tarea es obligatoria.";
+  if (!input.fechaPrevistaEjecucion) errores.fechaPrevistaEjecucion = "La fecha prevista de ejecución es obligatoria.";
+  return errores;
+}
+
 function validarOrdenTrabajo(input: CrearOrdenTrabajoInput) {
-  if (input.clienteId <= 0) {
-    throw new Error("El cliente es obligatorio.");
-  }
-
-  if (input.activoId <= 0) {
-    throw new Error("El activo es obligatorio.");
-  }
-
-  if (!input.descripcion.trim()) {
-    throw new Error("La descripción de la tarea es obligatoria.");
-  }
-
-  if (!input.fechaPrevistaEjecucion) {
-    throw new Error("La fecha prevista de ejecución es obligatoria.");
-  }
+  const primerError = Object.values(obtenerErroresOrdenTrabajo(input))[0];
+  if (primerError) throw new Error(primerError);
 }
 
 export function obtenerEtiquetaEstadoOrdenTrabajo(estado: EstadoOrdenTrabajo) {
@@ -74,6 +70,26 @@ export async function listarTecnicos() {
   return tecnicos;
 }
 
+let promesaIdRolTecnico: Promise<number | null> | null = null;
+
+function obtenerIdRolTecnico() {
+  promesaIdRolTecnico ??= listarRoles()
+    .then((roles) => roles.find((rol) => rol.nombre === "Técnico")?.id ?? null)
+    .catch((error: unknown) => {
+      promesaIdRolTecnico = null;
+      throw error;
+    });
+  return promesaIdRolTecnico;
+}
+
+export async function listarTecnicosPaginados(buscar = "") {
+  const rolTecnicoId = await obtenerIdRolTecnico();
+  if (rolTecnicoId === null) return [];
+
+  const pagina = await listarUsuariosPaginados({ buscar, rolId: String(rolTecnicoId), estado: "activo", pagina: 1 });
+  return pagina.elementos;
+}
+
 export async function listarOrdenesTrabajo(filtros: FiltrosOrdenesTrabajo) {
   return apiListarOrdenesTrabajo(filtros);
 }
@@ -87,9 +103,14 @@ export async function crearOrdenTrabajo(input: CrearOrdenTrabajoInput) {
   return apiCrearOrdenTrabajo(input);
 }
 
-export async function actualizarOrdenTrabajo(ordenTrabajoId: number, input: ActualizarOrdenTrabajoInput) {
+/** `versionLeida` es la `version` de la orden al abrir la edición: si otra persona la cambió, la API responde 412. */
+export async function actualizarOrdenTrabajo(
+  ordenTrabajoId: number,
+  input: ActualizarOrdenTrabajoInput,
+  versionLeida?: string,
+) {
   validarOrdenTrabajo(input);
-  return apiActualizarOrdenTrabajo(ordenTrabajoId, input);
+  return apiActualizarOrdenTrabajo(ordenTrabajoId, input, versionLeida);
 }
 
 export function crearSesionDeSugerencias() {

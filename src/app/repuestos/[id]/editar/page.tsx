@@ -1,56 +1,19 @@
-"use client";
-
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { FormularioRepuesto } from "@/componentes/formulario-repuesto";
-import { actualizarRepuesto, obtenerDetalleRepuesto } from "@/servicios/servicio-repuestos";
-import type { CrearRepuestoInput, Repuesto } from "@/tipos/repuesto";
+import { obtenerRepuestoServidor } from "@/servicios/servidor/repuestos";
+import type { Repuesto } from "@/tipos/repuesto";
+import { actualizarRepuestoAccion } from "../../acciones";
 
-export default function PaginaEditarRepuesto() {
-  const parametros = useParams<{ id: string }>();
-  const repuestoId = Number(parametros.id);
-  const [repuesto, setRepuesto] = useState<Repuesto | null>(null);
-  const [errorCarga, setErrorCarga] = useState("");
-
-  useEffect(() => {
-    async function cargarRepuesto() {
-      try {
-        const repuestoObtenido = await obtenerDetalleRepuesto(repuestoId);
-        setRepuesto(repuestoObtenido);
-      } catch {
-        setErrorCarga("No se pudo obtener la información del repuesto solicitado.");
-      }
-    }
-
-    cargarRepuesto();
-  }, [repuestoId]);
-
-  function guardarRepuesto(camposRepuesto: CrearRepuestoInput) {
-    return actualizarRepuesto(repuestoId, camposRepuesto);
+async function cargarRepuesto(repuestoId: number): Promise<Repuesto | null> {
+  if (!Number.isInteger(repuestoId) || repuestoId <= 0) return null;
+  try {
+    return await obtenerRepuestoServidor(repuestoId);
+  } catch {
+    return null;
   }
+}
 
-  let mensajeError = null;
-  if (errorCarga) {
-    mensajeError = <p className="form-error-banner">{errorCarga}</p>;
-  }
-
-  let mensajeCargando = null;
-  if (repuesto === null && !errorCarga) {
-    mensajeCargando = <p className="empty-state">Cargando información del repuesto…</p>;
-  }
-
-  let formulario = null;
-  if (repuesto !== null) {
-    formulario = (
-      <section className="panel form-panel">
-        <FormularioRepuesto
-          alEnviar={guardarRepuesto}
-          etiquetaConfirmacion="Confirmar modificación"
-          repuestoInicial={repuesto}
-        />
-      </section>
-    );
-  }
+export default async function PaginaEditarRepuesto(props: { params: Promise<{ id: string }> }) {
+  const repuesto = await cargarRepuesto(Number((await props.params).id));
 
   return (
     <main className="page-content">
@@ -61,9 +24,17 @@ export default function PaginaEditarRepuesto() {
         </div>
       </header>
 
-      {mensajeError}
-      {mensajeCargando}
-      {formulario}
+      {repuesto ? (
+        <section className="panel form-panel">
+          <FormularioRepuesto
+            accion={actualizarRepuestoAccion.bind(null, repuesto.id)}
+            etiquetaConfirmacion="Confirmar modificación"
+            repuestoInicial={repuesto}
+          />
+        </section>
+      ) : (
+        <p className="form-error-banner">No se pudo obtener la información del repuesto solicitado.</p>
+      )}
     </main>
   );
 }

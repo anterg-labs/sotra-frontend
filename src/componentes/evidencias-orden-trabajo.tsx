@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   crearEvidencia,
   listarEvidencias,
   obtenerEtiquetaTipoEvidencia,
+  obtenerErroresEvidencia,
   obtenerFechaDeHoy,
   obtenerUrlArchivoEvidencia,
 } from "@/servicios/servicio-evidencias";
@@ -25,6 +26,8 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
   const [archivo, setArchivo] = useState<File | null>(null);
   const [estaEnviando, setEstaEnviando] = useState(false);
   const [errorFormulario, setErrorFormulario] = useState("");
+  const [errores, setErrores] = useState<ReturnType<typeof obtenerErroresEvidencia>>({});
+  const referenciaErrorFormulario = useRef<HTMLParagraphElement>(null);
   const [mensajeExito, setMensajeExito] = useState("");
 
   useEffect(() => {
@@ -48,6 +51,7 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
   function cerrarFormulario() {
     setMostrarFormulario(false);
     setErrorFormulario("");
+    setErrores({});
   }
 
   function cambiarTipo(evento: React.ChangeEvent<HTMLSelectElement>) {
@@ -73,20 +77,25 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
   async function registrarEvidencia(evento: React.FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     setErrorFormulario("");
-    setEstaEnviando(true);
 
     let archivoParaEnviar = archivo;
     if (tipo === "observacion") {
       archivoParaEnviar = null;
     }
 
+    const datos = { tipo, observacion, fechaRegistro, archivo: archivoParaEnviar };
+    const erroresDetectados = obtenerErroresEvidencia(datos);
+    setErrores(erroresDetectados);
+    const primerCampo = Object.keys(erroresDetectados)[0];
+    if (primerCampo) {
+      const idCampo = { tipo: "tipoEvidencia", fechaRegistro: "fechaRegistroEvidencia", archivo: "archivoEvidencia", observacion: "observacionEvidencia" }[primerCampo];
+      if (idCampo) document.getElementById(idCampo)?.focus();
+      return;
+    }
+    setEstaEnviando(true);
+
     try {
-      const evidenciaCreada = await crearEvidencia(props.ordenTrabajoId, {
-        tipo: tipo,
-        observacion: observacion,
-        fechaRegistro: fechaRegistro,
-        archivo: archivoParaEnviar,
-      });
+      const evidenciaCreada = await crearEvidencia(props.ordenTrabajoId, datos);
 
       const evidenciasActualizadas: Evidencia[] = [];
       if (evidencias !== null) {
@@ -109,6 +118,7 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
         mensaje = error.message;
       }
       setErrorFormulario(mensaje);
+      window.requestAnimationFrame(() => referenciaErrorFormulario.current?.focus());
     } finally {
       setEstaEnviando(false);
     }
@@ -116,7 +126,7 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
 
   let mensajeError = null;
   if (errorCarga) {
-    mensajeError = <p className="form-error-banner">{errorCarga}</p>;
+    mensajeError = <p className="form-error-banner" role="alert">{errorCarga}</p>;
   }
 
   let avisoExito = null;
@@ -153,10 +163,10 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
           const fechaVisible = partesFecha[2] + "/" + partesFecha[1] + "/" + partesFecha[0];
 
           return (
-            <li className="rounded-lg border u-borde p-4 text-sm" key={evidencia.id}>
+            <li className="min-w-0 rounded-lg border u-borde p-4 text-sm" key={evidencia.id}>
               <strong>{obtenerEtiquetaTipoEvidencia(evidencia.tipo)}</strong>
               <span className="ml-2 text-xs texto-tenue">{fechaVisible}</span>
-              <p className="mt-1 whitespace-pre-wrap">{evidencia.observacion}</p>
+              <p className="mt-1 break-words whitespace-pre-wrap">{evidencia.observacion}</p>
               {enlaceArchivo}
             </li>
           );
@@ -178,7 +188,7 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
   if (props.permiteRegistrar && mostrarFormulario) {
     let mensajeErrorFormulario = null;
     if (errorFormulario) {
-      mensajeErrorFormulario = <p className="form-error-banner">{errorFormulario}</p>;
+      mensajeErrorFormulario = <p className="form-error-banner" ref={referenciaErrorFormulario} role="alert" tabIndex={-1}>{errorFormulario}</p>;
     }
 
     let campoArchivo = null;
@@ -189,10 +199,25 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
       }
 
       campoArchivo = (
-        <div className="form-field">
-          <label htmlFor="archivoEvidencia">Archivo adjunto</label>
-          <input accept={tiposAceptados} id="archivoEvidencia" onChange={cambiarArchivo} type="file" />
-          <span className="text-xs texto-tenue">JPG o PNG para fotos; PDF, JPG o PNG para documentos. Hasta 10 MB.</span>
+        <div className="form-field campo-archivo-evidencia">
+          <span id="etiquetaArchivoEvidencia">Archivo adjunto</span>
+          <input
+            accept={tiposAceptados}
+            aria-labelledby="etiquetaArchivoEvidencia"
+            aria-describedby={errores.archivo ? "archivoEvidencia-error" : undefined}
+            aria-invalid={errores.archivo ? true : undefined}
+            capture={tipo === "foto" ? "environment" : undefined}
+            className="entrada-archivo-evidencia"
+            id="archivoEvidencia"
+            onChange={cambiarArchivo}
+            type="file"
+          />
+          <label className="secondary-button selector-archivo-evidencia" htmlFor="archivoEvidencia">Elegir archivo o tomar foto</label>
+          <span className="nombre-archivo-evidencia" aria-live="polite">
+            {archivo?.name ?? "Ningún archivo seleccionado"}
+          </span>
+          <span className="break-words text-xs texto-tenue">JPG o PNG para fotos; PDF, JPG o PNG para documentos. Hasta 10 MB.</span>
+          {errores.archivo ? <p className="field-error" id="archivoEvidencia-error" role="alert">{errores.archivo}</p> : null}
         </div>
       );
     }
@@ -203,20 +228,22 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
     }
 
     formulario = (
-      <form className="mb-6 rounded-lg border u-borde p-4" onSubmit={registrarEvidencia}>
-        {mensajeErrorFormulario}
+      <form className="formulario-evidencia mb-6 min-w-0 max-w-full rounded-lg border u-borde p-4" noValidate onSubmit={registrarEvidencia}>
         <div className="form-grid">
           <div className="form-field">
             <label htmlFor="tipoEvidencia">Tipo de evidencia</label>
-            <select id="tipoEvidencia" onChange={cambiarTipo} value={tipo}>
+            <select aria-describedby={errores.tipo ? "tipoEvidencia-error" : undefined} aria-invalid={errores.tipo ? true : undefined} id="tipoEvidencia" onChange={cambiarTipo} value={tipo}>
               <option value="foto">Foto</option>
               <option value="documento">Documento</option>
               <option value="observacion">Observación</option>
             </select>
+            {errores.tipo ? <p className="field-error" id="tipoEvidencia-error" role="alert">{errores.tipo}</p> : null}
           </div>
           <div className="form-field">
             <label htmlFor="fechaRegistroEvidencia">Fecha de registro</label>
             <input
+              aria-describedby={errores.fechaRegistro ? "fechaRegistroEvidencia-error" : undefined}
+              aria-invalid={errores.fechaRegistro ? true : undefined}
               id="fechaRegistroEvidencia"
               max={obtenerFechaDeHoy()}
               onChange={cambiarFechaRegistro}
@@ -224,13 +251,16 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
               type="date"
               value={fechaRegistro}
             />
+            {errores.fechaRegistro ? <p className="field-error" id="fechaRegistroEvidencia-error" role="alert">{errores.fechaRegistro}</p> : null}
           </div>
           {campoArchivo}
         </div>
         <div className="form-field form-field-full">
           <label htmlFor="observacionEvidencia">Observación o descripción</label>
-          <textarea id="observacionEvidencia" onChange={cambiarObservacion} rows={3} value={observacion} />
+          <textarea aria-describedby={errores.observacion ? "observacionEvidencia-error" : undefined} aria-invalid={errores.observacion ? true : undefined} id="observacionEvidencia" onChange={cambiarObservacion} rows={3} value={observacion} />
+          {errores.observacion ? <p className="field-error" id="observacionEvidencia-error" role="alert">{errores.observacion}</p> : null}
         </div>
+        {mensajeErrorFormulario}
         <div className="form-actions">
           <button className="secondary-button" onClick={cerrarFormulario} type="button">
             Cancelar
@@ -244,8 +274,8 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
   }
 
   return (
-    <section className="panel detail-panel">
-      <div className="mb-4 flex items-center justify-between gap-4">
+    <section className="panel detail-panel min-w-0">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
         <h2>Evidencias</h2>
         {botonRegistrar}
       </div>

@@ -1,0 +1,101 @@
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { MiTrabajo } from "./mi-trabajo";
+import PaginaMiTrabajo from "./page";
+
+const replace = vi.hoisted(() => vi.fn());
+const listarOrdenesTrabajoServidor = vi.hoisted(() => vi.fn());
+const listarTecnicosServidor = vi.hoisted(() => vi.fn());
+const obtenerUsuarioServidor = vi.hoisted(() => vi.fn());
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
+vi.mock("@/servicios/servidor/ordenes-trabajo", () => ({ listarOrdenesTrabajoServidor, listarTecnicosServidor }));
+vi.mock("@/servicios/servidor/usuarios", () => ({ obtenerUsuarioServidor }));
+
+function orden(id: number, estado: string, prioridad: string, fecha: string) {
+  return { id, nombreCliente: "ANTER-G", nombreActivo: "Activo " + id, prioridad, estado, fechaPrevistaEjecucion: fecha };
+}
+
+function pagina(elementos: unknown[]) {
+  return { elementos, pagina: 1, tamanoPagina: 20, totalElementos: elementos.length, totalPaginas: 1 };
+}
+
+const tecnico = { id: 25, nombre: "Roberto", apellido: "Pérez" };
+
+beforeEach(() => {
+  [replace, listarOrdenesTrabajoServidor, listarTecnicosServidor, obtenerUsuarioServidor].forEach((f) => f.mockReset());
+  listarTecnicosServidor.mockResolvedValue([tecnico]);
+  listarOrdenesTrabajoServidor.mockImplementation(async (filtros: { estado: string }) => {
+    if (filtros.estado === "asignada") return pagina([orden(1, "asignada", "baja", "2026-11-01")]);
+    if (filtros.estado === "en_ejecucion") return pagina([orden(2, "en_ejecucion", "alta", "2026-12-01"), orden(3, "en_ejecucion", "alta", "2026-11-15")]);
+    return pagina([orden(4, "pausada", "media", "2026-11-05")]);
+  });
+});
+
+describe("Mi trabajo (Server Component)", () => {
+  it("pide elegir un técnico antes de mostrar órdenes y no consulta órdenes", async () => {
+    render(await PaginaMiTrabajo({ searchParams: Promise.resolve({}) }));
+    expect(screen.getByText("Elegí un técnico para ver sus órdenes.")).toBeInTheDocument();
+    expect(listarOrdenesTrabajoServidor).not.toHaveBeenCalled();
+  });
+
+  it("lista las órdenes abiertas del técnico ordenadas por prioridad y fecha prevista", async () => {
+    render(await PaginaMiTrabajo({ searchParams: Promise.resolve({ tecnicoId: "25" }) }));
+    const enlaces = screen.getAllByRole("link");
+    expect(enlaces.map((enlace) => enlace.getAttribute("href"))).toEqual(["/tecnico/3", "/tecnico/2", "/tecnico/4", "/tecnico/1"]);
+    expect(listarOrdenesTrabajoServidor).toHaveBeenCalledWith(expect.objectContaining({ tecnicoId: "25", estado: "pausada" }));
+    expect(listarOrdenesTrabajoServidor).toHaveBeenCalledTimes(3);
+    expect(screen.getByRole("combobox", { name: "Técnico" })).toHaveValue("Roberto Pérez");
+  });
+
+  it("completa el técnico elegido si no está en la primera página y descarta ids inválidos", async () => {
+    obtenerUsuarioServidor.mockResolvedValue({ id: 90, nombre: "Lucía", apellido: "Díaz" });
+    render(await PaginaMiTrabajo({ searchParams: Promise.resolve({ tecnicoId: "90" }) }));
+    expect(obtenerUsuarioServidor).toHaveBeenCalledWith(90);
+    expect(screen.getByRole("combobox", { name: "Técnico" })).toHaveValue("Lucía Díaz");
+
+    listarOrdenesTrabajoServidor.mockClear();
+    render(await PaginaMiTrabajo({ searchParams: Promise.resolve({ tecnicoId: "x;1" }) }));
+    expect(listarOrdenesTrabajoServidor).not.toHaveBeenCalled();
+  });
+
+  it("muestra un error con consejo si falla la carga de órdenes, y otro si falla la lista de técnicos", async () => {
+    listarOrdenesTrabajoServidor.mockRejectedValue(new Error("red"));
+    const { unmount } = render(await PaginaMiTrabajo({ searchParams: Promise.resolve({ tecnicoId: "25" }) }));
+    expect(screen.getByRole("alert")).toHaveTextContent("Revisá tu conexión");
+    unmount();
+
+    listarTecnicosServidor.mockRejectedValue(new Error("x"));
+    render(await PaginaMiTrabajo({ searchParams: Promise.resolve({}) }));
+    expect(screen.getByRole("alert")).toHaveTextContent("No se pudo obtener la lista de técnicos.");
+  });
+});
+
+describe("Mi trabajo (isla)", () => {
+  const ordenes = [orden(3, "en_ejecucion", "alta", "2026-11-15"), orden(2, "en_ejecucion", "alta", "2026-12-01"), orden(4, "pausada", "media", "2026-11-05"), orden(1, "asignada", "baja", "2026-11-01")];
+
+  it("filtra por estado con los chips (con contadores) y busca por número", async () => {
+    render(<MiTrabajo error="" ordenes={ordenes as never} tecnicoId="25" tecnicos={[{ valor: "25", etiqueta: "Roberto Pérez" }]} />);
+    const chipPausadas = screen.getByRole("button", { name: /Pausadas/ });
+    expect(within(chipPausadas).getByText("1")).toBeInTheDocument();
+    fireEvent.click(chipPausadas);
+    expect(screen.getAllByRole("link")).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole("button", { name: /Todas/ }));
+    fireEvent.change(screen.getByLabelText("Buscar por número de orden"), { target: { value: "2" } });
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
+    expect(screen.getByRole("link")).toHaveAttribute("href", "/tecnico/2");
+  });
+
+  it("al elegir un técnico escribe la URL; sin técnico la quita", () => {
+    render(<MiTrabajo error="" ordenes={null} tecnicoId="" tecnicos={[{ valor: "25", etiqueta: "Roberto Pérez" }]} />);
+    fireEvent.focus(screen.getByRole("combobox", { name: "Técnico" }));
+    fireEvent.click(screen.getByRole("option", { name: "Roberto Pérez" }));
+    expect(replace).toHaveBeenLastCalledWith("/tecnico?tecnicoId=25");
+  });
+
+  it("muestra el vacío cuando el filtro no tiene órdenes", () => {
+    render(<MiTrabajo error="" ordenes={[]} tecnicoId="25" tecnicos={[]} />);
+    expect(screen.getByText("No tenés órdenes pendientes con este filtro.")).toBeInTheDocument();
+  });
+});

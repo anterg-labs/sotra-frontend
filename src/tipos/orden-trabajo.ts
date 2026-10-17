@@ -54,6 +54,7 @@ export type OrdenTrabajo = {
   repuestos: RepuestoDeOrden[];
   estadosSiguientes: EstadoOrdenTrabajo[];
   historialEstados: HistorialEstadoOrdenTrabajo[];
+  version: string;
 };
 
 export type CrearOrdenTrabajoInput = {

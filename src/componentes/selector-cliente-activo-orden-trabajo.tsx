@@ -1,3 +1,6 @@
+import { Combobox, type OpcionCombobox } from "@/componentes/combobox";
+import { listarActivosPaginados } from "@/servicios/servicio-activos";
+import { listarClientesPaginados } from "@/servicios/servicio-clientes";
 import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
 
@@ -7,19 +10,13 @@ type PropiedadesSelectorClienteActivoOrdenTrabajo = {
   clienteId: string;
   activoId: string;
   activoIdInicial: string;
+  errores?: { clienteId?: string; activoId?: string };
   alCambiarCliente: (clienteId: string) => void;
   alCambiarActivo: (activoId: string) => void;
+  alRegistrarCliente: () => void;
 };
 
 export function SelectorClienteActivoOrdenTrabajo(props: PropiedadesSelectorClienteActivoOrdenTrabajo) {
-  function cambiarCliente(evento: React.ChangeEvent<HTMLSelectElement>) {
-    props.alCambiarCliente(evento.target.value);
-  }
-
-  function cambiarActivo(evento: React.ChangeEvent<HTMLSelectElement>) {
-    props.alCambiarActivo(evento.target.value);
-  }
-
   function obtenerNombreVisibleDeActivo(activo: Activo) {
     if (activo.nombre !== null && activo.nombre.trim() !== "") {
       return activo.nombre;
@@ -37,34 +34,59 @@ export function SelectorClienteActivoOrdenTrabajo(props: PropiedadesSelectorClie
     }
   }
 
-  let avisoSinActivos = null;
-  if (props.clienteId !== "" && activosDelCliente.length === 0) {
-    avisoSinActivos = (
-      <p className="field-error">Este cliente no tiene activos disponibles. Registrá uno en la sección Activos.</p>
-    );
+  async function buscarClientes(consulta: string): Promise<OpcionCombobox[]> {
+    const pagina = await listarClientesPaginados({ buscar: consulta, estado: "activo", pagina: 1 });
+    return pagina.elementos.map((cliente) => ({ valor: String(cliente.id), etiqueta: cliente.razonSocial }));
+  }
+
+  async function buscarActivos(consulta: string): Promise<OpcionCombobox[]> {
+    const pagina = await listarActivosPaginados({
+      buscar: consulta,
+      clienteId: props.clienteId,
+      modeloMaquinaId: "",
+      estado: "activo",
+      pagina: 1,
+    });
+    return pagina.elementos.map((activo) => ({ valor: String(activo.id), etiqueta: obtenerNombreVisibleDeActivo(activo) }));
   }
 
   return (
     <>
-      <div className="form-field">
-        <label htmlFor="clienteId">Cliente</label>
-        <select id="clienteId" onChange={cambiarCliente} required value={props.clienteId}>
-          <option disabled value="">Seleccioná un cliente</option>
-          {props.clientes.map((cliente) => (
-            <option key={cliente.id} value={cliente.id}>{cliente.razonSocial}</option>
-          ))}
-        </select>
+      <div className="flex min-w-0 flex-wrap items-end gap-2">
+        <div className="min-w-0 flex-[1_1_180px]">
+          <Combobox
+            alCambiar={props.alCambiarCliente}
+            buscarOpciones={buscarClientes}
+            etiqueta="Cliente"
+            id="clienteId"
+            idError={props.errores?.clienteId ? "clienteId-error" : undefined}
+            opciones={props.clientes.map((cliente) => ({ valor: String(cliente.id), etiqueta: cliente.razonSocial }))}
+            requerido
+            tieneError={Boolean(props.errores?.clienteId)}
+            textoVacio="Seleccioná un cliente"
+            valor={props.clienteId}
+          />
+          {props.errores?.clienteId ? <p className="field-error" id="clienteId-error" role="alert">{props.errores.clienteId}</p> : null}
+        </div>
+        <button className="secondary-button" onClick={props.alRegistrarCliente} type="button">Nuevo cliente</button>
       </div>
 
-      <div className="form-field">
-        <label htmlFor="activoId">Activo</label>
-        <select id="activoId" onChange={cambiarActivo} required value={props.activoId}>
-          <option disabled value="">Seleccioná un activo</option>
-          {activosDelCliente.map((activo) => (
-            <option key={activo.id} value={activo.id}>{obtenerNombreVisibleDeActivo(activo)}</option>
-          ))}
-        </select>
-        {avisoSinActivos}
+      <div className="min-w-0">
+        <Combobox
+          alCambiar={props.alCambiarActivo}
+          buscarOpciones={buscarActivos}
+          deshabilitado={props.clienteId === ""}
+          etiqueta="Activo"
+          id="activoId"
+          idError={props.errores?.activoId ? "activoId-error" : undefined}
+          opciones={activosDelCliente.map((activo) => ({ valor: String(activo.id), etiqueta: obtenerNombreVisibleDeActivo(activo) }))}
+          requerido
+          tieneError={Boolean(props.errores?.activoId)}
+          textoVacio="Seleccioná un activo"
+          valor={props.activoId}
+        />
+        {props.errores?.activoId ? <p className="field-error" id="activoId-error" role="alert">{props.errores.activoId}</p> : null}
+        {props.clienteId !== "" ? <p className="field-hint">Escribí para buscar entre los activos del cliente.</p> : null}
       </div>
     </>
   );

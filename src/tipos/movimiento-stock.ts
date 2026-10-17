@@ -35,3 +35,16 @@ export type IngresoStockInput = {
   ubicacion: string;
   observaciones: string;
 };
+
+export type EgresoStockInput = {
+  cantidad: number;
+  motivo: string;
+  ubicacion?: string;
+  observaciones?: string;
+};
+
+export type AjusteStockInput = {
+  cantidadReal: number;
+  motivo: string;
+  observaciones?: string;
+};

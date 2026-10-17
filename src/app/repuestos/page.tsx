@@ -1,346 +1,39 @@
-"use client";
-
+import { anticiparConsulta } from "@/servicios/servidor/consulta-anticipada";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
-import { desactivarRepuesto, listarRepuestosPaginados, tieneBajoStock } from "@/servicios/servicio-repuestos";
-import type { FiltrosRepuestos, Repuesto } from "@/tipos/repuesto";
-import { IconoLapiz, IconoOjo, IconoPapelera } from "@/componentes/iconos";
+import { Suspense } from "react";
+import { EsqueletoListado } from "@/componentes/listado/esqueleto-listado";
+import { ProveedorNavegacionListado, ZonaListado } from "@/componentes/listado/navegacion-listado";
+import type { ParametrosBusqueda } from "@/componentes/listado/url-listado";
+import { listarRepuestosServidor, obtenerAlertasStockServidor } from "@/servicios/servidor/repuestos";
+import type { AlertasStock, Repuesto } from "@/tipos/repuesto";
+import { AltaRepuesto } from "./alta-repuesto";
+import { AlertaStock } from "./alerta-stock";
+import { BarraFiltrosRepuestos } from "./barra-filtros-repuestos";
+import { aFiltrosApiRepuestos, leerFiltrosRepuestos } from "./filtros";
+import { ListadoRepuestos } from "./listado-repuestos";
 
-const filtrosVacios: FiltrosRepuestos = {
-  buscar: "",
-  estado: "",
-  ubicacion: "",
-  bajoStock: false,
-  pagina: 1,
-};
+const ETIQUETA_CARGA = "Cargando repuestos…";
 
-const filtrosAlerta: FiltrosRepuestos = {
-  buscar: "",
-  estado: "activo",
-  ubicacion: "",
-  bajoStock: true,
-  pagina: 1,
-};
-
-export default function PaginaRepuestos() {
-  const [repuestos, setRepuestos] = useState<Repuesto[] | null>(null);
-  const [repuestosConAlerta, setRepuestosConAlerta] = useState<Repuesto[]>([]);
-  const [errorCarga, setErrorCarga] = useState("");
-  const [repuestoDesactivandoId, setRepuestoDesactivandoId] = useState<number | null>(null);
-  const [repuestoPendienteDesactivacion, setRepuestoPendienteDesactivacion] = useState<Repuesto | null>(null);
-  const [paginaActual, setPaginaActual] = useState(1);
-  const [totalPaginas, setTotalPaginas] = useState(1);
-  const [totalElementos, setTotalElementos] = useState(0);
-  const [filtrosAplicados, setFiltrosAplicados] = useState<FiltrosRepuestos>(filtrosVacios);
-  const [buscar, setBuscar] = useState("");
-  const [estadoFiltro, setEstadoFiltro] = useState("");
-  const [ubicacionFiltro, setUbicacionFiltro] = useState("");
-  const [soloBajoStock, setSoloBajoStock] = useState(false);
-
-  useEffect(() => {
-    async function cargarRepuestos() {
-      try {
-        const paginaObtenida = await listarRepuestosPaginados(filtrosVacios);
-        setRepuestos(paginaObtenida.elementos);
-        setPaginaActual(paginaObtenida.pagina);
-        setTotalPaginas(paginaObtenida.totalPaginas);
-        setTotalElementos(paginaObtenida.totalElementos);
-
-        const paginaAlerta = await listarRepuestosPaginados(filtrosAlerta);
-        setRepuestosConAlerta(paginaAlerta.elementos);
-      } catch {
-        setErrorCarga("No se pudo obtener el listado de repuestos.");
-      }
-    }
-
-    cargarRepuestos();
-  }, []);
-
-  async function cargarPagina(filtros: FiltrosRepuestos) {
-    setRepuestos(null);
-    setErrorCarga("");
-    setFiltrosAplicados(filtros);
-
-    try {
-      const paginaObtenida = await listarRepuestosPaginados(filtros);
-      setRepuestos(paginaObtenida.elementos);
-      setPaginaActual(paginaObtenida.pagina);
-      setTotalPaginas(paginaObtenida.totalPaginas);
-      setTotalElementos(paginaObtenida.totalElementos);
-
-      const paginaAlerta = await listarRepuestosPaginados(filtrosAlerta);
-      setRepuestosConAlerta(paginaAlerta.elementos);
-    } catch {
-      setErrorCarga("No se pudo obtener el listado de repuestos.");
-    }
+/** Contadores y repuestos críticos; si fallan, el listado sigue funcionando sin el aviso. */
+async function cargarAlertas(): Promise<{ alertas: AlertasStock | null; repuestos: Repuesto[] }> {
+  try {
+    const [alertas, pagina] = await Promise.all([
+      obtenerAlertasStockServidor(),
+      listarRepuestosServidor({
+        buscar: "", estado: "activo", ubicacion: "", bajoStock: true, estadoStock: "", orden: "criticidad", pagina: 1,
+      }),
+    ]);
+    return { alertas, repuestos: pagina.elementos };
+  } catch {
+    return { alertas: null, repuestos: [] };
   }
+}
 
-  function aplicarFiltros(evento: React.FormEvent<HTMLFormElement>) {
-    evento.preventDefault();
-
-    const filtros: FiltrosRepuestos = {
-      buscar: buscar,
-      estado: estadoFiltro,
-      ubicacion: ubicacionFiltro,
-      bajoStock: soloBajoStock,
-      pagina: 1,
-    };
-    cargarPagina(filtros);
-  }
-
-  function limpiarFiltros() {
-    setBuscar("");
-    setEstadoFiltro("");
-    setUbicacionFiltro("");
-    setSoloBajoStock(false);
-    cargarPagina(filtrosVacios);
-  }
-
-  function irAPagina(numeroPagina: number) {
-    const filtros: FiltrosRepuestos = {
-      buscar: filtrosAplicados.buscar,
-      estado: filtrosAplicados.estado,
-      ubicacion: filtrosAplicados.ubicacion,
-      bajoStock: filtrosAplicados.bajoStock,
-      pagina: numeroPagina,
-    };
-    cargarPagina(filtros);
-  }
-
-  function irAPaginaAnterior() {
-    irAPagina(paginaActual - 1);
-  }
-
-  function irAPaginaSiguiente() {
-    irAPagina(paginaActual + 1);
-  }
-
-  function cambiarBuscar(evento: React.ChangeEvent<HTMLInputElement>) {
-    setBuscar(evento.target.value);
-  }
-
-  function cambiarEstadoFiltro(evento: React.ChangeEvent<HTMLSelectElement>) {
-    setEstadoFiltro(evento.target.value);
-  }
-
-  function cambiarUbicacionFiltro(evento: React.ChangeEvent<HTMLInputElement>) {
-    setUbicacionFiltro(evento.target.value);
-  }
-
-  function cambiarSoloBajoStock(evento: React.ChangeEvent<HTMLInputElement>) {
-    setSoloBajoStock(evento.target.checked);
-  }
-
-  function pedirBajaRepuesto(repuesto: Repuesto) {
-    setRepuestoPendienteDesactivacion(repuesto);
-  }
-
-  function cancelarBaja() {
-    setRepuestoPendienteDesactivacion(null);
-  }
-
-  async function confirmarDesactivacion() {
-    if (!repuestoPendienteDesactivacion) {
-      return;
-    }
-
-    const repuestoId = repuestoPendienteDesactivacion.id;
-    setRepuestoDesactivandoId(repuestoId);
-
-    try {
-      await desactivarRepuesto(repuestoId);
-      setRepuestoPendienteDesactivacion(null);
-      await cargarPagina(filtrosAplicados);
-    } catch {
-      setErrorCarga("No se pudo dar de baja el repuesto seleccionado.");
-    } finally {
-      setRepuestoDesactivandoId(null);
-    }
-  }
-
-  let alertaStock = null;
-  if (repuestosConAlerta.length > 0) {
-    alertaStock = (
-      <section aria-label="Alerta de stock insuficiente" className="mb-6 rounded-xl border u-borde-peligro u-fondo-peligro p-5">
-        <h2 className="u-texto-peligro">{"Stock insuficiente (" + repuestosConAlerta.length + ")"}</h2>
-        <p className="mb-3 mt-1 text-sm u-texto-peligro">
-          Estos repuestos tienen una cantidad igual o menor a su stock mínimo.
-        </p>
-        <div className="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Código</th>
-                <th>Nombre</th>
-                <th>Cantidad</th>
-                <th>Mínima</th>
-                <th>Ubicación</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {repuestosConAlerta.map((repuesto) => (
-                <tr key={repuesto.id}>
-                  <td><strong>{repuesto.codigo}</strong></td>
-                  <td>{repuesto.nombre}</td>
-                  <td>{repuesto.cantidad}</td>
-                  <td>{repuesto.cantidadMinima}</td>
-                  <td>{repuesto.ubicacion}</td>
-                  <td><span className="status status-activo">Activo</span></td>
-                  <td>
-                    <Link aria-label="Ver detalle o registrar ingreso" className="boton-icono" href={"/repuestos/" + repuesto.id} title="Ver detalle o registrar ingreso">
-                      <IconoOjo />
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    );
-  }
-
-  let mensajeError = null;
-  if (errorCarga) {
-    mensajeError = <p className="form-error-banner">{errorCarga}</p>;
-  }
-
-  let mensajeCargando = null;
-  if (repuestos === null && !errorCarga) {
-    mensajeCargando = <p className="empty-state">Cargando repuestos…</p>;
-  }
-
-  let mensajeSinResultados = null;
-  if (repuestos !== null && repuestos.length === 0) {
-    mensajeSinResultados = <p className="empty-state">No se encontraron repuestos con los filtros aplicados.</p>;
-  }
-
-  let tablaRepuestos = null;
-  if (repuestos !== null && repuestos.length > 0) {
-    tablaRepuestos = (
-      <div className="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Nombre</th>
-              <th>Marca</th>
-              <th>Ubicación</th>
-              <th>Cantidad</th>
-              <th>Mínima</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {repuestos.map((repuesto) => {
-              let claseEstado = "status status-inactivo";
-              let textoEstado = "Inactivo";
-              if (repuesto.estado === "activo") {
-                claseEstado = "status status-activo";
-                textoEstado = "Activo";
-              }
-
-              let etiquetaBajoStock = null;
-              if (tieneBajoStock(repuesto)) {
-                etiquetaBajoStock = <span className="status prioridad-alta">Bajo stock</span>;
-              }
-
-              let botonBaja = null;
-              if (repuesto.estado === "activo") {
-                botonBaja = (
-                  <button
-                    aria-label="Dar de baja"
-                    className="boton-icono boton-icono-peligro"
-                    disabled={repuestoDesactivandoId === repuesto.id}
-                    onClick={() => pedirBajaRepuesto(repuesto)}
-                    title="Dar de baja"
-                    type="button"
-                  >
-                    <IconoPapelera />
-                  </button>
-                );
-              }
-
-              return (
-                <tr key={repuesto.id}>
-                  <td><strong>{repuesto.codigo}</strong></td>
-                  <td>{repuesto.nombre}</td>
-                  <td>{repuesto.marca}</td>
-                  <td>{repuesto.ubicacion}</td>
-                  <td>
-                    {repuesto.cantidad}
-                    {etiquetaBajoStock}
-                  </td>
-                  <td>{repuesto.cantidadMinima}</td>
-                  <td>
-                    <span className={claseEstado}>{textoEstado}</span>
-                  </td>
-                  <td>
-                    <div className="table-actions">
-                      <Link
-                        aria-label="Ver detalle"
-                        className="boton-icono"
-                        href={"/repuestos/" + repuesto.id}
-                        title="Ver detalle"
-                      >
-                        <IconoOjo />
-                      </Link>
-                      <Link
-                        aria-label="Modificar repuesto"
-                        className="boton-icono"
-                        href={"/repuestos/" + repuesto.id + "/editar"}
-                        title="Modificar repuesto"
-                      >
-                        <IconoLapiz />
-                      </Link>
-                      {botonBaja}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    );
-  }
-
-  let paginacion = null;
-  if (totalPaginas > 1) {
-    paginacion = (
-      <div className="pagination">
-        <button disabled={paginaActual <= 1} onClick={irAPaginaAnterior} type="button">
-          Anterior
-        </button>
-        <span>{"Página " + paginaActual + " de " + totalPaginas + " (" + totalElementos + " repuestos)"}</span>
-        <button disabled={paginaActual >= totalPaginas} onClick={irAPaginaSiguiente} type="button">
-          Siguiente
-        </button>
-      </div>
-    );
-  }
-
-  let modalBaja = null;
-  if (repuestoPendienteDesactivacion) {
-    modalBaja = (
-      <ModalConfirmacion
-        descripcion={
-          "¿Confirmás la baja de " +
-          repuestoPendienteDesactivacion.nombre +
-          "? El repuesto no se elimina, pero ya no se podrá asociar a nuevas órdenes de trabajo."
-        }
-        estaConfirmando={repuestoDesactivandoId === repuestoPendienteDesactivacion.id}
-        etiquetaConfirmar="Dar de baja"
-        onCancelar={cancelarBaja}
-        onConfirmar={confirmarDesactivacion}
-        titulo="Dar de baja repuesto"
-      />
-    );
-  }
+export default async function PaginaRepuestos(props: { searchParams: Promise<ParametrosBusqueda> }) {
+  const filtros = leerFiltrosRepuestos(await props.searchParams);
+  const consulta = anticiparConsulta(listarRepuestosServidor(aFiltrosApiRepuestos(filtros)));
+  const clave = [filtros.buscar, filtros.estado, filtros.ubicacion, filtros.stock, filtros.pagina].join("|");
+  const { alertas, repuestos } = await cargarAlertas();
 
   return (
     <main className="page-content">
@@ -352,62 +45,23 @@ export default function PaginaRepuestos() {
           <Link className="secondary-button" href="/repuestos/movimientos">
             Movimientos de stock
           </Link>
-          <Link className="primary-button" href="/repuestos/nuevo">
-            Registrar repuesto
-          </Link>
+          <AltaRepuesto />
         </div>
       </header>
 
-      {alertaStock}
+      <ProveedorNavegacionListado etiquetaCarga={ETIQUETA_CARGA}>
+        {alertas !== null ? <AlertaStock alertas={alertas} repuestos={repuestos} /> : null}
 
-      <form aria-label="Búsqueda y filtros" className="barra-filtros" onSubmit={aplicarFiltros}>
-        <div className="form-field campo-busqueda">
-          <label htmlFor="buscarRepuesto">Buscar</label>
-          <input
-            id="buscarRepuesto"
-            onChange={cambiarBuscar}
-            placeholder="Código, nombre, marca o descripción"
-            type="text"
-            value={buscar}
-          />
-        </div>
-        <div className="form-field">
-          <label htmlFor="ubicacionRepuestoFiltro">Ubicación</label>
-          <input id="ubicacionRepuestoFiltro" onChange={cambiarUbicacionFiltro} type="text" value={ubicacionFiltro} />
-        </div>
-        <div className="form-field">
-          <label htmlFor="estadoRepuestoFiltro">Estado</label>
-          <select id="estadoRepuestoFiltro" onChange={cambiarEstadoFiltro} value={estadoFiltro}>
-            <option value="">Todos los estados</option>
-            <option value="activo">Activo</option>
-            <option value="inactivo">Inactivo</option>
-          </select>
-        </div>
-        <div className="form-field campo-casilla">
-          <label className="flex items-center gap-2" htmlFor="soloBajoStock">
-            <input checked={soloBajoStock} id="soloBajoStock" onChange={cambiarSoloBajoStock} type="checkbox" />
-            Solo con stock insuficiente
-          </label>
-        </div>
-        <div className="barra-filtros-acciones">
-          <button className="secondary-button" onClick={limpiarFiltros} type="button">
-            Limpiar filtros
-          </button>
-          <button className="primary-button" type="submit">
-            Aplicar filtros
-          </button>
-        </div>
-      </form>
+        <BarraFiltrosRepuestos alertas={alertas} filtros={filtros} />
 
-      <section className="panel">
-        {mensajeError}
-        {mensajeCargando}
-        {mensajeSinResultados}
-        {tablaRepuestos}
-        {paginacion}
-      </section>
-
-      {modalBaja}
+        <section className="panel">
+          <ZonaListado>
+            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />} key={clave}>
+              <ListadoRepuestos consulta={consulta} filtros={filtros} />
+            </Suspense>
+          </ZonaListado>
+        </section>
+      </ProveedorNavegacionListado>
     </main>
   );
 }

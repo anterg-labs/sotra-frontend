@@ -1,5 +1,13 @@
 export type EstadoRepuesto = "activo" | "inactivo";
 
+export type EstadoStock = "normal" | "bajo" | "sin_stock";
+
+export type AlertasStock = {
+  bajo: number;
+  sinStock: number;
+  total: number;
+};
+
 export type Repuesto = {
   id: number;
   codigo: string;
@@ -10,6 +18,7 @@ export type Repuesto = {
   cantidad: number;
   cantidadMinima: number;
   estado: EstadoRepuesto;
+  estadoStock: EstadoStock;
 };
 
 export type CrearRepuestoInput = {
@@ -29,5 +38,7 @@ export type FiltrosRepuestos = {
   estado: string;
   ubicacion: string;
   bajoStock: boolean;
+  estadoStock?: EstadoStock | "";
+  orden?: "criticidad";
   pagina: number;
 };

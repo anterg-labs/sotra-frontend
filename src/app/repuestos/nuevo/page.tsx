@@ -1,7 +1,5 @@
-"use client";
-
 import { FormularioRepuesto } from "@/componentes/formulario-repuesto";
-import { crearRepuesto } from "@/servicios/servicio-repuestos";
+import { crearRepuestoAccion } from "../acciones";
 
 export default function PaginaNuevoRepuesto() {
   return (
@@ -14,7 +12,7 @@ export default function PaginaNuevoRepuesto() {
       </header>
 
       <section className="panel form-panel">
-        <FormularioRepuesto alEnviar={crearRepuesto} etiquetaConfirmacion="Confirmar registro" />
+        <FormularioRepuesto accion={crearRepuestoAccion} etiquetaConfirmacion="Confirmar registro" />
       </section>
     </main>
   );

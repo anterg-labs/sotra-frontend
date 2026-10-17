@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { obtenerIndicadores, obtenerUrlReportePdf } from "@/servicios/servicio-reportes";
+import { obtenerIndicadores, obtenerUrlReporteCsv, obtenerUrlReportePdf } from "@/servicios/servicio-reportes";
 
 describe("servicio-reportes", () => {
   beforeEach(() => {
@@ -83,6 +83,22 @@ describe("servicio-reportes", () => {
 
     expect(url).toBe(
       "http://localhost:4000/api/v1/reportes/ordenes-trabajo/pdf?fechaDesde=2026-01-01&clienteId=4&prioridad=alta",
+    );
+  });
+
+  it("arma la dirección del reporte en CSV con los mismos filtros", () => {
+    const filtros = {
+      fechaDesde: "",
+      fechaHasta: "2026-12-31",
+      tecnicoId: "",
+      clienteId: "",
+      activoId: "",
+      estado: "cerrada",
+      tipo: "",
+    };
+
+    expect(obtenerUrlReporteCsv("indicadores", filtros, "")).toBe(
+      "http://localhost:4000/api/v1/reportes/indicadores/csv?fechaHasta=2026-12-31&estado=cerrada",
     );
   });
 });

@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useAvisos } from "@/componentes/avisos";
+import { FormularioCliente } from "@/componentes/formulario-cliente";
+import { Modal } from "@/componentes/modal";
 import { CamposEstadoFechasOrdenTrabajo } from "@/componentes/campos-estado-fechas-orden-trabajo";
 import { CamposGeneralesOrdenTrabajo } from "@/componentes/campos-generales-orden-trabajo";
 import { SelectorClienteActivoOrdenTrabajo } from "@/componentes/selector-cliente-activo-orden-trabajo";
@@ -13,9 +16,11 @@ import {
   crearSesionDeSugerencias,
   estadoNecesitaMotivo,
   leerSugerenciasTemporales,
+  obtenerErroresOrdenTrabajo,
 } from "@/servicios/servicio-ordenes-trabajo";
 import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
+import { crearClienteAccion } from "@/app/clientes/acciones";
 import type {
   CrearOrdenTrabajoInput,
   EstadoOrdenTrabajo,
@@ -106,6 +111,19 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
   const [idsRepuestos, setIdsRepuestos] = useState(idsRepuestosIniciales);
   const [estaEnviando, setEstaEnviando] = useState(false);
   const [errorGeneral, setErrorGeneral] = useState("");
+  const [errores, setErrores] = useState<ReturnType<typeof obtenerErroresOrdenTrabajo> & { motivoEstado?: string }>({});
+  const referenciaErrorGeneral = useRef<HTMLParagraphElement>(null);
+  const [estaAltaClienteAbierta, setEstaAltaClienteAbierta] = useState(false);
+  const [clientesAgregados, setClientesAgregados] = useState<Cliente[]>([]);
+  const { mostrarAviso } = useAvisos();
+
+  function guardarClienteNuevo(cliente: Cliente) {
+    setClientesAgregados((actuales) => [...actuales, cliente]);
+    setClienteId(String(cliente.id));
+    setActivoId("");
+    setEstaAltaClienteAbierta(false);
+    mostrarAviso("exito", "Cliente registrado y seleccionado.");
+  }
 
   function cambiarCliente(clienteIdNuevo: string) {
     setClienteId(clienteIdNuevo);
@@ -126,7 +144,6 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
 
   async function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    setEstaEnviando(true);
     setErrorGeneral("");
 
     let tecnicoIdParaGuardar: number | null = null;
@@ -150,6 +167,18 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
       sesion: sesionSugerencias,
     };
 
+    const erroresDetectados: typeof errores = obtenerErroresOrdenTrabajo(ordenParaGuardar);
+    if (estadoNecesitaMotivo(estadoInicial, estado) && !motivoEstado.trim()) {
+      erroresDetectados.motivoEstado = "Indicá el motivo del cambio de estado.";
+    }
+    setErrores(erroresDetectados);
+    const primerCampo = Object.keys(erroresDetectados)[0];
+    if (primerCampo) {
+      document.getElementById(primerCampo)?.focus();
+      return;
+    }
+    setEstaEnviando(true);
+
     try {
       await alEnviar(ordenParaGuardar);
       borrarSugerenciasTemporales(claveSugerenciasTemporales);
@@ -160,6 +189,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
       } else {
         setErrorGeneral("No se pudo guardar la orden de trabajo.");
       }
+      window.requestAnimationFrame(() => referenciaErrorGeneral.current?.focus());
     } finally {
       setEstaEnviando(false);
     }
@@ -167,7 +197,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
 
   let mensajeError = null;
   if (errorGeneral) {
-    mensajeError = <p className="form-error-banner">{errorGeneral}</p>;
+    mensajeError = <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p>;
   }
 
   let textoBoton = etiquetaConfirmacion;
@@ -181,8 +211,8 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
   }
 
   return (
-    <form onSubmit={enviarFormulario}>
-      {mensajeError}
+    <>
+    <form noValidate onSubmit={enviarFormulario}>
 
       <div className="form-grid">
         <SelectorClienteActivoOrdenTrabajo
@@ -191,8 +221,10 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
           activos={props.activos}
           alCambiarActivo={setActivoId}
           alCambiarCliente={cambiarCliente}
+          alRegistrarCliente={() => setEstaAltaClienteAbierta(true)}
           clienteId={clienteId}
-          clientes={props.clientes}
+          clientes={[...props.clientes, ...clientesAgregados]}
+          errores={{ clienteId: errores.clienteId, activoId: errores.activoId }}
         />
 
         <CamposGeneralesOrdenTrabajo
@@ -213,6 +245,8 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
           estadosDisponibles={estadosDisponibles}
           fechaPrevistaEjecucion={fechaPrevistaEjecucion}
           motivoEstado={motivoEstado}
+          errorFechaPrevista={errores.fechaPrevistaEjecucion}
+          errorMotivo={errores.motivoEstado}
           necesitaMotivo={estadoNecesitaMotivo(estadoInicial, estado)}
           permiteCambiarEstado={permiteCambiarEstado}
         />
@@ -220,7 +254,8 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
 
       <div className="form-field form-field-full">
         <label htmlFor="descripcion">Descripción de la tarea</label>
-        <textarea id="descripcion" onChange={cambiarDescripcion} required rows={4} value={descripcion} />
+        <textarea aria-describedby={errores.descripcion ? "descripcion-error" : undefined} aria-invalid={errores.descripcion ? true : undefined} id="descripcion" onChange={cambiarDescripcion} required rows={4} value={descripcion} />
+        {errores.descripcion ? <p className="field-error" id="descripcion-error" role="alert">{errores.descripcion}</p> : null}
       </div>
 
       <div className="form-field form-field-full">
@@ -235,13 +270,14 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
       />
 
       <SugerenciasOrdenTrabajo
-        alCambiarErrorGeneral={setErrorGeneral}
         alCambiarSugerencias={setSugerencias}
         claveSugerenciasTemporales={claveSugerenciasTemporales}
         descripcion={descripcion}
         sesion={sesionSugerencias}
         sugerencias={sugerencias}
       />
+
+      {mensajeError}
 
       <div className="form-actions">
         <Link className="secondary-button" href="/ordenes-trabajo" onClick={descartarSugerenciasTemporales}>
@@ -252,5 +288,11 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
         </button>
       </div>
     </form>
+    <Modal alCerrar={() => setEstaAltaClienteAbierta(false)} estaAbierto={estaAltaClienteAbierta} titulo="Registrar nuevo cliente">
+      <div className="form-panel">
+        <FormularioCliente alCancelar={() => setEstaAltaClienteAbierta(false)} accion={crearClienteAccion} alGuardar={guardarClienteNuevo} etiquetaConfirmacion="Registrar cliente" />
+      </div>
+    </Modal>
+    </>
   );
 }

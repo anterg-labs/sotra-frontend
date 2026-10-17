@@ -1,63 +1,25 @@
-"use client";
+import { listarActivosServidor } from "@/servicios/servidor/activos";
+import { listarClientesServidor } from "@/servicios/servidor/clientes";
+import { listarTecnicosServidor } from "@/servicios/servidor/ordenes-trabajo";
+import { listarRepuestosServidor } from "@/servicios/servidor/repuestos";
+import { FormularioNuevaOrden } from "../formularios-orden";
 
-import { useEffect, useState } from "react";
-import { FormularioOrdenTrabajo } from "@/componentes/formulario-orden-trabajo";
-import { listarActivos } from "@/servicios/servicio-activos";
-import { listarClientes } from "@/servicios/servicio-clientes";
-import { crearOrdenTrabajo, listarTecnicos } from "@/servicios/servicio-ordenes-trabajo";
-import { listarRepuestos } from "@/servicios/servicio-repuestos";
-import type { Activo } from "@/tipos/activo";
-import type { Cliente } from "@/tipos/cliente";
-import type { Repuesto } from "@/tipos/repuesto";
-import type { Usuario } from "@/tipos/usuario";
-
-export default function PaginaNuevaOrdenTrabajo() {
-  const [clientes, setClientes] = useState<Cliente[] | null>(null);
-  const [activos, setActivos] = useState<Activo[] | null>(null);
-  const [tecnicos, setTecnicos] = useState<Usuario[] | null>(null);
-  const [repuestos, setRepuestos] = useState<Repuesto[]>([]);
-  const [errorCarga, setErrorCarga] = useState("");
-
-  useEffect(() => {
-    async function cargarDatosFormulario() {
-      try {
-        const clientesObtenidos = await listarClientes();
-        const activosObtenidos = await listarActivos();
-        const tecnicosObtenidos = await listarTecnicos();
-        const repuestosObtenidos = await listarRepuestos();
-        setClientes(clientesObtenidos);
-        setActivos(activosObtenidos);
-        setTecnicos(tecnicosObtenidos);
-        setRepuestos(repuestosObtenidos);
-      } catch {
-        setErrorCarga("No se pudieron obtener los datos necesarios para crear la orden.");
-      }
-    }
-
-    cargarDatosFormulario();
-  }, []);
-
-  let contenidoFormulario = null;
-  if ((clientes === null || activos === null || tecnicos === null) && !errorCarga) {
-    contenidoFormulario = <p className="empty-state">Cargando datos…</p>;
+async function cargarDatos() {
+  try {
+    const [clientes, activos, tecnicos, repuestos] = await Promise.all([
+      listarClientesServidor({ buscar: "", estado: "activo", pagina: 1 }),
+      listarActivosServidor({ buscar: "", clienteId: "", modeloMaquinaId: "", estado: "activo", pagina: 1 }),
+      listarTecnicosServidor(),
+      listarRepuestosServidor({ buscar: "", estado: "activo", ubicacion: "", bajoStock: false, pagina: 1 }),
+    ]);
+    return { clientes: clientes.elementos, activos: activos.elementos, tecnicos, repuestos: repuestos.elementos };
+  } catch {
+    return null;
   }
+}
 
-  if (errorCarga) {
-    contenidoFormulario = <p className="form-error-banner">{errorCarga}</p>;
-  }
-
-  if (clientes !== null && activos !== null && tecnicos !== null) {
-    contenidoFormulario = (
-      <FormularioOrdenTrabajo
-        activos={activos}
-        alEnviar={crearOrdenTrabajo}
-        clientes={clientes}
-        etiquetaConfirmacion="Confirmar creación"
-        repuestos={repuestos}
-        tecnicos={tecnicos}
-      />
-    );
-  }
+export default async function PaginaNuevaOrdenTrabajo() {
+  const datos = await cargarDatos();
 
   return (
     <main className="page-content">
@@ -69,7 +31,11 @@ export default function PaginaNuevaOrdenTrabajo() {
       </header>
 
       <section className="panel form-panel">
-        {contenidoFormulario}
+        {datos === null ? (
+          <p className="form-error-banner">No se pudieron obtener los datos necesarios para crear la orden.</p>
+        ) : (
+          <FormularioNuevaOrden {...datos} />
+        )}
       </section>
     </main>
   );

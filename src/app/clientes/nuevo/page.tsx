@@ -1,7 +1,5 @@
-"use client";
-
 import { FormularioCliente } from "@/componentes/formulario-cliente";
-import { crearCliente } from "@/servicios/servicio-clientes";
+import { crearClienteAccion } from "../acciones";
 
 export default function PaginaNuevoCliente() {
   return (
@@ -14,7 +12,7 @@ export default function PaginaNuevoCliente() {
       </header>
 
       <section className="panel form-panel">
-        <FormularioCliente alEnviar={crearCliente} etiquetaConfirmacion="Confirmar registro" />
+        <FormularioCliente accion={crearClienteAccion} etiquetaConfirmacion="Confirmar registro" />
       </section>
     </main>
   );

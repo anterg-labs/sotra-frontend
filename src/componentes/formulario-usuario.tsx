@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAvisos } from "@/componentes/avisos";
+import { useFormularioAccion } from "@/componentes/use-formulario-accion";
+import type { ResultadoGuardar } from "@/tipos/resultado-accion";
 import type { ActualizarUsuarioInput, CrearUsuarioInput, Rol, Usuario } from "@/tipos/usuario";
-import { validarUsuario, type ErroresUsuario } from "@/validaciones/usuario";
+import { validarUsuario } from "@/validaciones/usuario";
 
 type PropiedadesFormularioUsuario = {
   usuarioInicial?: ActualizarUsuarioInput;
@@ -13,118 +16,43 @@ type PropiedadesFormularioUsuario = {
   rutaCancelar: string;
   rutaExito: string;
   roles?: Rol[];
-  alEnviar: (usuario: CrearUsuarioInput) => Promise<Usuario>;
+  /** Server Action que guarda el usuario (alta o modificación). */
+  accion: (usuario: CrearUsuarioInput) => Promise<ResultadoGuardar<Usuario>>;
+  /** Si se informa, el formulario no navega: avisa al guardar (por ejemplo, para cerrar un modal). */
+  alGuardar?: (resultado: Usuario) => void;
+  alCancelar?: () => void;
 };
 
 export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
-  const usuarioInicial = props.usuarioInicial;
+  const { usuarioInicial, roles, accion, alGuardar, alCancelar, etiquetaConfirmacion, rutaCancelar, rutaExito } = props;
   const solicitarContrasena = props.solicitarContrasena ?? false;
-  const etiquetaConfirmacion = props.etiquetaConfirmacion;
-  const rutaCancelar = props.rutaCancelar;
-  const rutaExito = props.rutaExito;
-  const roles = props.roles;
-  const alEnviar = props.alEnviar;
-
-  let nombreInicial = "";
-  let apellidoInicial = "";
-  let correoInicial = "";
-  let telefonoInicial = "";
-  let idsRolIniciales: number[] = [];
-  if (usuarioInicial) {
-    nombreInicial = usuarioInicial.nombre;
-    apellidoInicial = usuarioInicial.apellido;
-    correoInicial = usuarioInicial.correo;
-    telefonoInicial = usuarioInicial.telefono;
-    idsRolIniciales = usuarioInicial.idsRol;
-  }
 
   const enrutador = useRouter();
-  const [nombre, setNombre] = useState(nombreInicial);
-  const [apellido, setApellido] = useState(apellidoInicial);
-  const [correo, setCorreo] = useState(correoInicial);
-  const [telefono, setTelefono] = useState(telefonoInicial);
+  const { mostrarAviso } = useAvisos();
+  const [nombre, setNombre] = useState(usuarioInicial?.nombre ?? "");
+  const [apellido, setApellido] = useState(usuarioInicial?.apellido ?? "");
+  const [correo, setCorreo] = useState(usuarioInicial?.correo ?? "");
+  const [telefono, setTelefono] = useState(usuarioInicial?.telefono ?? "");
   const [contrasena, setContrasena] = useState("");
-  const [idsRolSeleccionados, setIdsRolSeleccionados] = useState<number[]>(idsRolIniciales);
-  const [errorGeneral, setErrorGeneral] = useState("");
-  const [errores, setErrores] = useState<ErroresUsuario>({});
-  const [estaEnviando, setEstaEnviando] = useState(false);
+  const [idsRolSeleccionados, setIdsRolSeleccionados] = useState<number[]>(usuarioInicial?.idsRol ?? []);
 
-  function cambiarNombre(evento: React.ChangeEvent<HTMLInputElement>) {
-    setNombre(evento.target.value);
-  }
-
-  function cambiarApellido(evento: React.ChangeEvent<HTMLInputElement>) {
-    setApellido(evento.target.value);
-  }
-
-  function cambiarCorreo(evento: React.ChangeEvent<HTMLInputElement>) {
-    setCorreo(evento.target.value);
-  }
-
-  function cambiarTelefono(evento: React.ChangeEvent<HTMLInputElement>) {
-    setTelefono(evento.target.value);
-  }
-
-  function cambiarContrasena(evento: React.ChangeEvent<HTMLInputElement>) {
-    setContrasena(evento.target.value);
-  }
-
-  function cambiarRol(evento: React.ChangeEvent<HTMLInputElement>) {
-    const rolIdCambiado = Number(evento.target.value);
-    const nuevosIdsRol: number[] = [];
-
-    if (evento.target.checked) {
-      for (const rolIdSeleccionado of idsRolSeleccionados) {
-        nuevosIdsRol.push(rolIdSeleccionado);
-      }
-      nuevosIdsRol.push(rolIdCambiado);
-    } else {
-      for (const rolIdSeleccionado of idsRolSeleccionados) {
-        if (rolIdSeleccionado !== rolIdCambiado) {
-          nuevosIdsRol.push(rolIdSeleccionado);
-        }
-      }
-    }
-
-    setIdsRolSeleccionados(nuevosIdsRol);
-  }
-
-  async function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
-    evento.preventDefault();
-    setErrorGeneral("");
-
-    const erroresDetectados = validarUsuario(
-      { nombre, apellido, correo, telefono, contrasena },
-      { exigirContrasena: solicitarContrasena },
-    );
-    setErrores(erroresDetectados);
-    if (Object.keys(erroresDetectados).length > 0) {
-      return;
-    }
-
-    setEstaEnviando(true);
-
-    const usuarioParaGuardar: CrearUsuarioInput = {
-      nombre,
-      apellido,
-      correo,
-      telefono,
-      idsRol: idsRolSeleccionados,
-      contrasena,
-    };
-
-    try {
-      await alEnviar(usuarioParaGuardar);
-      enrutador.push(rutaExito);
-    } catch (error) {
-      if (error instanceof Error) {
-        setErrorGeneral(error.message);
+  const { errores, errorGeneral, estaEnviando, enviar, referenciaErrorGeneral } = useFormularioAccion({
+    validar: (datos: CrearUsuarioInput) => validarUsuario(datos, { exigirContrasena: solicitarContrasena }),
+    accion,
+    alExito: (usuario: Usuario) => {
+      if (alGuardar) {
+        alGuardar(usuario);
       } else {
-        setErrorGeneral("No se pudo guardar la información del usuario.");
+        mostrarAviso("exito", usuarioInicial ? "Usuario actualizado." : "Usuario creado.");
+        enrutador.push(rutaExito);
       }
-    } finally {
-      setEstaEnviando(false);
-    }
+    },
+    mensajeGeneral: "No se pudo guardar la información del usuario.",
+  });
+
+  function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    enviar({ nombre, apellido, correo, telefono, idsRol: idsRolSeleccionados, contrasena });
   }
 
   function mostrarError(campo: string, mensaje?: string) {
@@ -138,20 +66,20 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
 
   let mensajeError = null;
   if (errorGeneral) {
-    mensajeError = <p className="form-error-banner">{errorGeneral}</p>;
+    mensajeError = <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p>;
   }
 
   let campoContrasena = null;
   if (solicitarContrasena) {
     campoContrasena = (
-      <div className="form-field">
+      <div className="form-field campo-contrasena-usuario">
         <label htmlFor="contrasena">Contraseña</label>
         <input
           id="contrasena"
           maxLength={255}
           aria-describedby={errores.contrasena ? "contrasena-error" : undefined}
           aria-invalid={errores.contrasena ? true : undefined}
-          onChange={cambiarContrasena}
+          onChange={(evento) => setContrasena(evento.target.value)}
           required
           type="password"
           value={contrasena}
@@ -164,21 +92,24 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   let campoRol = null;
   if (roles) {
     campoRol = (
-      <div className="form-field">
-        <label>Roles</label>
-        {roles.map((rol) => (
-          <div key={rol.id}>
-            <input
-              checked={idsRolSeleccionados.includes(rol.id)}
-              id={"rol-" + rol.id}
-              onChange={cambiarRol}
-              type="checkbox"
-              value={rol.id}
-            />
-            <label htmlFor={"rol-" + rol.id}> {rol.nombre}</label>
-          </div>
-        ))}
-      </div>
+      <fieldset className="roles-usuario" id="roles">
+        <legend>Roles</legend>
+        <div className="roles-usuario-opciones">
+          {roles.map((rol) => (
+            <label className="rol-usuario-opcion" key={rol.id}>
+              <input
+                checked={idsRolSeleccionados.includes(rol.id)}
+                onChange={(evento) => {
+                  const estaMarcado = evento.target.checked;
+                  setIdsRolSeleccionados((actuales) => estaMarcado ? [...actuales, rol.id] : actuales.filter((id) => id !== rol.id));
+                }}
+                type="checkbox"
+              />
+              <span>{rol.nombre}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
     );
   }
 
@@ -188,7 +119,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   }
 
   return (
-    <form noValidate onSubmit={enviarFormulario}>
+    <form aria-busy={estaEnviando} noValidate onSubmit={enviarFormulario}>
       {mensajeError}
 
       <div className="form-grid">
@@ -198,7 +129,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
             aria-describedby={errores.nombre ? "nombre-error" : undefined}
             aria-invalid={errores.nombre ? true : undefined}
             id="nombre"
-            onChange={cambiarNombre}
+            onChange={(evento) => setNombre(evento.target.value)}
             required
             type="text"
             value={nombre}
@@ -212,7 +143,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
             aria-describedby={errores.apellido ? "apellido-error" : undefined}
             aria-invalid={errores.apellido ? true : undefined}
             id="apellido"
-            onChange={cambiarApellido}
+            onChange={(evento) => setApellido(evento.target.value)}
             required
             type="text"
             value={apellido}
@@ -226,7 +157,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
             aria-describedby={errores.correo ? "correo-error" : undefined}
             aria-invalid={errores.correo ? true : undefined}
             id="correo"
-            onChange={cambiarCorreo}
+            onChange={(evento) => setCorreo(evento.target.value)}
             required
             type="email"
             value={correo}
@@ -241,7 +172,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
             aria-invalid={errores.telefono ? true : undefined}
             id="telefono"
             inputMode="numeric"
-            onChange={cambiarTelefono}
+            onChange={(evento) => setTelefono(evento.target.value)}
             required
             type="tel"
             value={telefono}
@@ -255,9 +186,15 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
       </div>
 
       <div className="form-actions">
-        <Link className="secondary-button" href={rutaCancelar}>
-          Cancelar
-        </Link>
+        {alCancelar ? (
+          <button className="secondary-button" onClick={alCancelar} type="button">
+            Cancelar
+          </button>
+        ) : (
+          <Link className="secondary-button" href={rutaCancelar}>
+            Cancelar
+          </Link>
+        )}
         <button className="primary-button" disabled={estaEnviando} type="submit">
           {textoBoton}
         </button>

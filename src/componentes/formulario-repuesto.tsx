@@ -3,169 +3,155 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useFormularioAccion } from "@/componentes/use-formulario-accion";
+import type { ResultadoGuardar } from "@/tipos/resultado-accion";
 import type { CrearRepuestoInput, Repuesto } from "@/tipos/repuesto";
+import { obtenerErroresRepuesto } from "@/validaciones/repuesto";
 
 type PropiedadesFormularioRepuesto = {
   repuestoInicial?: Repuesto;
   etiquetaConfirmacion: string;
-  alEnviar: (repuesto: CrearRepuestoInput) => Promise<Repuesto>;
+  /** Server Action que guarda el repuesto (alta o modificación). */
+  accion: (repuesto: CrearRepuestoInput) => Promise<ResultadoGuardar<Repuesto>>;
+  /** Si se informa, el formulario no navega: avisa al guardar (por ejemplo, para cerrar un modal). */
+  alGuardar?: (resultado: Repuesto) => void;
+  alCancelar?: () => void;
 };
 
-export function FormularioRepuesto(props: PropiedadesFormularioRepuesto) {
-  const repuestoInicial = props.repuestoInicial;
-  const etiquetaConfirmacion = props.etiquetaConfirmacion;
-  const alEnviar = props.alEnviar;
+function numeroODesconocido(texto: string) {
+  return texto.trim() === "" ? Number.NaN : Number(texto);
+}
 
-  let codigoInicial = "";
-  let nombreInicial = "";
-  let descripcionInicial = "";
-  let marcaInicial = "";
-  let ubicacionInicial = "";
-  let cantidadInicial = "0";
-  let cantidadMinimaInicial = "0";
-  if (repuestoInicial) {
-    codigoInicial = repuestoInicial.codigo;
-    nombreInicial = repuestoInicial.nombre;
-    descripcionInicial = repuestoInicial.descripcion;
-    marcaInicial = repuestoInicial.marca;
-    ubicacionInicial = repuestoInicial.ubicacion;
-    cantidadInicial = String(repuestoInicial.cantidad);
-    cantidadMinimaInicial = String(repuestoInicial.cantidadMinima);
-  }
+export function FormularioRepuesto(props: PropiedadesFormularioRepuesto) {
+  const { repuestoInicial, etiquetaConfirmacion, accion, alGuardar, alCancelar } = props;
 
   const enrutador = useRouter();
-  const [codigo, setCodigo] = useState(codigoInicial);
-  const [nombre, setNombre] = useState(nombreInicial);
-  const [descripcion, setDescripcion] = useState(descripcionInicial);
-  const [marca, setMarca] = useState(marcaInicial);
-  const [ubicacion, setUbicacion] = useState(ubicacionInicial);
-  const [cantidad, setCantidad] = useState(cantidadInicial);
-  const [cantidadMinima, setCantidadMinima] = useState(cantidadMinimaInicial);
-  const [estaEnviando, setEstaEnviando] = useState(false);
-  const [errorGeneral, setErrorGeneral] = useState("");
+  const [codigo, setCodigo] = useState(repuestoInicial?.codigo ?? "");
+  const [nombre, setNombre] = useState(repuestoInicial?.nombre ?? "");
+  const [descripcion, setDescripcion] = useState(repuestoInicial?.descripcion ?? "");
+  const [marca, setMarca] = useState(repuestoInicial?.marca ?? "");
+  const [ubicacion, setUbicacion] = useState(repuestoInicial?.ubicacion ?? "");
+  const [cantidad, setCantidad] = useState(String(repuestoInicial?.cantidad ?? 0));
+  const [cantidadMinima, setCantidadMinima] = useState(String(repuestoInicial?.cantidadMinima ?? 0));
 
-  function cambiarCodigo(evento: React.ChangeEvent<HTMLInputElement>) {
-    setCodigo(evento.target.value);
-  }
+  const { errores, errorGeneral, estaEnviando, enviar, referenciaErrorGeneral } = useFormularioAccion({
+    validar: obtenerErroresRepuesto,
+    accion,
+    alExito: (repuesto: Repuesto) => {
+      if (alGuardar) {
+        alGuardar(repuesto);
+      } else {
+        enrutador.push("/repuestos");
+      }
+    },
+    mensajeGeneral: "No se pudo guardar el repuesto.",
+  });
 
-  function cambiarNombre(evento: React.ChangeEvent<HTMLInputElement>) {
-    setNombre(evento.target.value);
-  }
-
-  function cambiarDescripcion(evento: React.ChangeEvent<HTMLTextAreaElement>) {
-    setDescripcion(evento.target.value);
-  }
-
-  function cambiarMarca(evento: React.ChangeEvent<HTMLInputElement>) {
-    setMarca(evento.target.value);
-  }
-
-  function cambiarUbicacion(evento: React.ChangeEvent<HTMLInputElement>) {
-    setUbicacion(evento.target.value);
-  }
-
-  function cambiarCantidad(evento: React.ChangeEvent<HTMLInputElement>) {
-    setCantidad(evento.target.value);
-  }
-
-  function cambiarCantidadMinima(evento: React.ChangeEvent<HTMLInputElement>) {
-    setCantidadMinima(evento.target.value);
-  }
-
-  async function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
+  function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    setEstaEnviando(true);
-    setErrorGeneral("");
-
-    const repuestoParaGuardar: CrearRepuestoInput = {
+    enviar({
       codigo,
       nombre,
       descripcion,
       marca,
       ubicacion,
-      cantidad: Number(cantidad),
-      cantidadMinima: Number(cantidadMinima),
-    };
-
-    try {
-      await alEnviar(repuestoParaGuardar);
-      enrutador.push("/repuestos");
-    } catch (error) {
-      if (error instanceof Error) {
-        setErrorGeneral(error.message);
-      } else {
-        setErrorGeneral("No se pudo guardar el repuesto.");
-      }
-    } finally {
-      setEstaEnviando(false);
-    }
+      cantidad: numeroODesconocido(cantidad),
+      cantidadMinima: numeroODesconocido(cantidadMinima),
+    });
   }
 
-  let mensajeError = null;
-  if (errorGeneral) {
-    mensajeError = <p className="form-error-banner">{errorGeneral}</p>;
+  function mostrarError(campo: string) {
+    const mensaje = errores[campo];
+    return mensaje ? <p className="field-error" id={`${campo}-error`} role="alert">{mensaje}</p> : null;
   }
 
-  let textoBoton = etiquetaConfirmacion;
-  if (estaEnviando) {
-    textoBoton = "Guardando…";
+  function atributosDeCampo(campo: string) {
+    return { "aria-describedby": errores[campo] ? `${campo}-error` : undefined, "aria-invalid": errores[campo] ? true : undefined };
   }
 
   return (
-    <form onSubmit={enviarFormulario}>
-      {mensajeError}
+    <form aria-busy={estaEnviando} noValidate onSubmit={enviarFormulario}>
+      {errorGeneral ? (
+        <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p>
+      ) : null}
 
       <div className="form-grid">
         <div className="form-field">
           <label htmlFor="codigo">Código</label>
-          <input id="codigo" maxLength={50} onChange={cambiarCodigo} required value={codigo} />
+          <input {...atributosDeCampo("codigo")} id="codigo" onChange={(evento) => setCodigo(evento.target.value)} required value={codigo} />
+          {mostrarError("codigo")}
         </div>
 
         <div className="form-field">
           <label htmlFor="nombre">Nombre del repuesto</label>
-          <input id="nombre" maxLength={120} onChange={cambiarNombre} required value={nombre} />
+          <input {...atributosDeCampo("nombre")} id="nombre" onChange={(evento) => setNombre(evento.target.value)} required value={nombre} />
+          {mostrarError("nombre")}
         </div>
 
         <div className="form-field">
           <label htmlFor="marca">Marca (opcional)</label>
-          <input id="marca" maxLength={100} onChange={cambiarMarca} value={marca} />
+          <input {...atributosDeCampo("marca")} id="marca" onChange={(evento) => setMarca(evento.target.value)} value={marca} />
+          {mostrarError("marca")}
         </div>
 
         <div className="form-field">
           <label htmlFor="ubicacion">Ubicación (opcional)</label>
-          <input id="ubicacion" maxLength={120} onChange={cambiarUbicacion} value={ubicacion} />
+          <input {...atributosDeCampo("ubicacion")} id="ubicacion" onChange={(evento) => setUbicacion(evento.target.value)} value={ubicacion} />
+          {mostrarError("ubicacion")}
         </div>
 
         <div className="form-field">
           <label htmlFor="cantidad">Cantidad en stock</label>
-          <input id="cantidad" min={0} onChange={cambiarCantidad} required step={1} type="number" value={cantidad} />
+          <input
+            {...atributosDeCampo("cantidad")}
+            id="cantidad"
+            min={0}
+            onChange={(evento) => setCantidad(evento.target.value)}
+            readOnly={repuestoInicial !== undefined}
+            required
+            step={1}
+            type="number"
+            value={cantidad}
+          />
+          {repuestoInicial !== undefined ? (
+            <p className="field-hint">Para cambiar el stock registrá un ingreso, un egreso o un ajuste desde el detalle del repuesto.</p>
+          ) : null}
+          {mostrarError("cantidad")}
         </div>
 
         <div className="form-field">
           <label htmlFor="cantidadMinima">Cantidad mínima</label>
           <input
+            {...atributosDeCampo("cantidadMinima")}
             id="cantidadMinima"
             min={0}
-            onChange={cambiarCantidadMinima}
+            onChange={(evento) => setCantidadMinima(evento.target.value)}
             required
             step={1}
             type="number"
             value={cantidadMinima}
           />
+          {mostrarError("cantidadMinima")}
         </div>
       </div>
 
       <div className="form-field form-field-full">
         <label htmlFor="descripcion">Descripción (opcional)</label>
-        <textarea id="descripcion" onChange={cambiarDescripcion} rows={3} value={descripcion} />
+        <textarea id="descripcion" onChange={(evento) => setDescripcion(evento.target.value)} rows={3} value={descripcion} />
       </div>
 
       <div className="form-actions">
-        <Link className="secondary-button" href="/repuestos">
-          Cancelar
-        </Link>
+        {alCancelar ? (
+          <button className="secondary-button" onClick={alCancelar} type="button">
+            Cancelar
+          </button>
+        ) : (
+          <Link className="secondary-button" href="/repuestos">
+            Cancelar
+          </Link>
+        )}
         <button className="primary-button" disabled={estaEnviando} type="submit">
-          {textoBoton}
+          {estaEnviando ? "Guardando…" : etiquetaConfirmacion}
         </button>
       </div>
     </form>

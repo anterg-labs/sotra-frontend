@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { desactivarCliente, listarClientes, obtenerDetalleCliente } from "@/servicios/servicio-clientes";
+import { listarClientesPaginados, obtenerDetalleCliente } from "@/servicios/servicio-clientes";
 
 describe("servicio-clientes", () => {
   beforeEach(() => {
@@ -22,36 +22,18 @@ describe("servicio-clientes", () => {
 
     vi.stubGlobal(
       "fetch",
-      vi.fn(async (entrada: string | URL | Request, opciones?: RequestInit) => {
+      vi.fn(async (entrada: string | URL | Request) => {
         const url = String(entrada);
 
         if (url.endsWith("/clientes/9999")) {
           return new Response(null, { status: 404 });
         }
 
-        if (opciones && opciones.method === "PATCH") {
-          const clienteDesactivado = {
-            ...clientesSimulados[0],
-            estado: "inactivo",
-          };
-
-          return new Response(JSON.stringify(clienteDesactivado), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          });
+        if (url.endsWith("/clientes/1")) {
+          return Response.json(clientesSimulados[0]);
         }
 
-        const paginaSimulada = {
-          elementos: clientesSimulados,
-          pagina: 1,
-          tamanoPagina: 100,
-          totalElementos: 1,
-          totalPaginas: 1,
-        };
-        return new Response(JSON.stringify(paginaSimulada), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
+        return Response.json({ elementos: clientesSimulados, pagina: 1, tamanoPagina: 20, totalElementos: 1, totalPaginas: 1 });
       }),
     );
   });
@@ -61,20 +43,20 @@ describe("servicio-clientes", () => {
     vi.unstubAllGlobals();
   });
 
-  it("obtiene el listado de clientes", async () => {
-    const respuesta = await listarClientes();
+  it("obtiene el listado paginado de clientes", async () => {
+    const respuesta = await listarClientesPaginados({ buscar: "", estado: "", pagina: 1 });
 
-    expect(respuesta).toHaveLength(1);
-    expect(respuesta[0].razonSocial).toBe("Vialidad Norte");
+    expect(respuesta.elementos).toHaveLength(1);
+    expect(respuesta.elementos[0].razonSocial).toBe("Vialidad Norte");
+  });
+
+  it("obtiene el detalle de un cliente", async () => {
+    const cliente = await obtenerDetalleCliente(1);
+
+    expect(cliente.razonSocial).toBe("Vialidad Norte");
   });
 
   it("devuelve un error cuando el cliente no existe", async () => {
     await expect(obtenerDetalleCliente(9999)).rejects.toThrow("No se pudo obtener el cliente solicitado.");
-  });
-
-  it("da de baja un cliente sin eliminarlo", async () => {
-    const cliente = await desactivarCliente(1);
-
-    expect(cliente.estado).toBe("inactivo");
   });
 });

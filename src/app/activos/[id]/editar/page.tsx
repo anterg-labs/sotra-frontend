@@ -1,95 +1,39 @@
-"use client";
-
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { FormularioActivo } from "@/componentes/formulario-activo";
-import { actualizarActivo, obtenerDetalleActivo } from "@/servicios/servicio-activos";
-import { listarClientes } from "@/servicios/servicio-clientes";
-import { listarModelosMaquina } from "@/servicios/servicio-modelos-maquina";
-import type { Activo, ActualizarActivoInput, CrearActivoInput, EstadoActivo } from "@/tipos/activo";
+import { obtenerActivoServidor } from "@/servicios/servidor/activos";
+import { listarClientesServidor, obtenerClienteServidor } from "@/servicios/servidor/clientes";
+import { listarModelosMaquinaServidor, obtenerModeloMaquinaServidor } from "@/servicios/servidor/modelos-maquina";
+import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
 import type { ModeloMaquina } from "@/tipos/modelo-maquina";
+import { actualizarActivoAccion } from "../../acciones";
 
-export default function PaginaEditarActivo() {
-  const parametros = useParams<{ id: string }>();
-  const activoId = Number(parametros.id);
-  const [activo, setActivo] = useState<Activo | null>(null);
-  const [clientes, setClientes] = useState<Cliente[] | null>(null);
-  const [modelosMaquina, setModelosMaquina] = useState<ModeloMaquina[] | null>(null);
-  const [errorCarga, setErrorCarga] = useState("");
-  const [estaActivo, setEstaActivo] = useState(false);
+type DatosEdicion = { activo: Activo; clientes: Cliente[]; modelosMaquina: ModeloMaquina[] };
 
-  useEffect(() => {
-    async function cargarDatosFormulario() {
-      try {
-        const activoObtenido = await obtenerDetalleActivo(activoId);
-        const clientesObtenidos = await listarClientes();
-        const modelosObtenidos = await listarModelosMaquina();
-        setActivo(activoObtenido);
-        setEstaActivo(activoObtenido.estado === "activo");
-        setClientes(clientesObtenidos);
-        setModelosMaquina(modelosObtenidos);
-      } catch {
-        setErrorCarga("No se pudo obtener la información del activo solicitado.");
-      }
-    }
-
-    cargarDatosFormulario();
-  }, [activoId]);
-
-  function cambiarEstaActivo(evento: React.ChangeEvent<HTMLInputElement>) {
-    setEstaActivo(evento.target.checked);
-  }
-
-  function guardarActivo(camposActivo: CrearActivoInput) {
-    let estado: EstadoActivo = "inactivo";
-    if (estaActivo) {
-      estado = "activo";
-    }
-
-    const activoParaGuardar: ActualizarActivoInput = {
-      clienteId: camposActivo.clienteId,
-      numSerie: camposActivo.numSerie,
-      descripcion: camposActivo.descripcion,
-      modeloMaquinaId: camposActivo.modeloMaquinaId,
-      anioFabricacion: camposActivo.anioFabricacion,
-      nombre: camposActivo.nombre,
-      ubicacion: camposActivo.ubicacion,
-      estado: estado,
+/** El cliente y el modelo actuales van primero, aunque estén inactivos, seguidos de los activos. */
+async function cargarDatos(activoId: number): Promise<DatosEdicion | null> {
+  if (!Number.isInteger(activoId) || activoId <= 0) return null;
+  try {
+    const [activo, paginaClientes, paginaModelos] = await Promise.all([
+      obtenerActivoServidor(activoId),
+      listarClientesServidor({ buscar: "", estado: "activo", pagina: 1 }),
+      listarModelosMaquinaServidor({ buscar: "", tipoMaquinaId: "", estado: "activo", pagina: 1 }),
+    ]);
+    const [clienteActual, modeloActual] = await Promise.all([
+      obtenerClienteServidor(activo.clienteId),
+      obtenerModeloMaquinaServidor(activo.modeloMaquinaId),
+    ]);
+    return {
+      activo,
+      clientes: [clienteActual, ...paginaClientes.elementos.filter((cliente) => cliente.id !== clienteActual.id)],
+      modelosMaquina: [modeloActual, ...paginaModelos.elementos.filter((modelo) => modelo.id !== modeloActual.id)],
     };
-
-    return actualizarActivo(activoId, activoParaGuardar);
+  } catch {
+    return null;
   }
+}
 
-  let mensajeError = null;
-  if (errorCarga) {
-    mensajeError = <p className="form-error-banner">{errorCarga}</p>;
-  }
-
-  let mensajeCargando = null;
-  if ((!activo || !clientes || !modelosMaquina) && !errorCarga) {
-    mensajeCargando = <p className="empty-state">Cargando información del activo…</p>;
-  }
-
-  let formulario = null;
-  if (activo && clientes && modelosMaquina) {
-    formulario = (
-      <section className="panel form-panel">
-        <div className="form-field mb-4">
-          <label htmlFor="estaActivo">
-            <input checked={estaActivo} id="estaActivo" onChange={cambiarEstaActivo} type="checkbox" /> Activo
-          </label>
-        </div>
-        <FormularioActivo
-          activoInicial={activo}
-          alEnviar={guardarActivo}
-          clientes={clientes}
-          etiquetaConfirmacion="Confirmar modificación"
-          modelosMaquina={modelosMaquina}
-        />
-      </section>
-    );
-  }
+export default async function PaginaEditarActivo(props: { params: Promise<{ id: string }> }) {
+  const datos = await cargarDatos(Number((await props.params).id));
 
   return (
     <main className="page-content">
@@ -100,9 +44,19 @@ export default function PaginaEditarActivo() {
         </div>
       </header>
 
-      {mensajeError}
-      {mensajeCargando}
-      {formulario}
+      {datos ? (
+        <section className="panel form-panel">
+          <FormularioActivo
+            accion={actualizarActivoAccion.bind(null, datos.activo.id)}
+            activoInicial={datos.activo}
+            clientes={datos.clientes}
+            etiquetaConfirmacion="Confirmar modificación"
+            modelosMaquina={datos.modelosMaquina}
+          />
+        </section>
+      ) : (
+        <p className="form-error-banner">No se pudo obtener la información del activo solicitado.</p>
+      )}
     </main>
   );
 }

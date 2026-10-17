@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  actualizarOrdenTrabajo,
   asignarTecnicoOrdenTrabajo,
   borrarSugerenciasTemporales,
   cambiarEstadoOrdenTrabajo,
@@ -104,6 +105,31 @@ describe("servicio-ordenes-trabajo", () => {
       "http://localhost:4000/api/v1/ordenes-trabajo?buscar=aceite&clienteId=1&estado=creada&prioridad=alta&pagina=2",
       { cache: "no-store" },
     );
+  });
+
+  it("envía la versión leída en If-Match al modificar una orden y lo omite si no hay versión", async () => {
+    const campos = {
+      clienteId: 1,
+      activoId: 2,
+      tecnicoId: null,
+      tipo: "preventivo" as const,
+      prioridad: "alta" as const,
+      descripcion: "Cambiar aceite del motor",
+      observaciones: "",
+      fechaPrevistaEjecucion: "2026-10-01",
+      sugerencias: [],
+      repuestosIds: [],
+      estado: "creada" as const,
+      motivoEstado: "",
+      sesion: "",
+    };
+
+    await actualizarOrdenTrabajo(1, campos, "a1b2c3");
+    await actualizarOrdenTrabajo(1, campos);
+
+    const [primera, segunda] = vi.mocked(fetch).mock.calls;
+    expect((primera[1]?.headers as Record<string, string>)["If-Match"]).toBe('"a1b2c3"');
+    expect((segunda[1]?.headers as Record<string, string>)["If-Match"]).toBeUndefined();
   });
 
   it("no permite crear una orden sin descripción", async () => {

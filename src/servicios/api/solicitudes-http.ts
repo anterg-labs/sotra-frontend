@@ -8,15 +8,39 @@ export function obtenerUrlBaseApi(): string {
   return urlBaseApi.replace(/\/$/, "");
 }
 
-async function leerMensajeDelServidor(respuesta: Response) {
+/**
+ * URL base de la API para código que corre en el servidor de Next (Server Components y Server Actions).
+ * Dentro de Docker el servidor de Next no llega a la API por la URL pública que usa el navegador
+ * (`API_URL`, por ejemplo `localhost:8081`), así que `API_URL_INTERNA` apunta a la dirección alcanzable
+ * desde el contenedor. Si no está definida se usa `API_URL`.
+ */
+export function obtenerUrlBaseApiServidor(): string {
+  const urlBaseApi = process.env.API_URL_INTERNA || process.env.API_URL;
+
+  if (!urlBaseApi) {
+    throw new Error("La URL de la API no está configurada.");
+  }
+
+  return urlBaseApi.replace(/\/$/, "");
+}
+
+export class ErrorDeApi extends Error {
+  constructor(mensaje: string, public readonly codigo: string | null, public readonly estadoHttp: number) {
+    super(mensaje);
+    this.name = "ErrorDeApi";
+  }
+}
+
+export async function leerErrorDelServidor(respuesta: Response, mensajePredeterminado: string) {
   try {
-    const cuerpo = await respuesta.json();
-    if (typeof cuerpo.mensaje === "string") {
-      return cuerpo.mensaje;
-    }
-    return "";
+    const cuerpo: unknown = await respuesta.json();
+    if (typeof cuerpo !== "object" || cuerpo === null) return new ErrorDeApi(mensajePredeterminado, null, respuesta.status);
+    const datos = cuerpo as Record<string, unknown>;
+    const mensaje = typeof datos.mensaje === "string" && datos.mensaje !== "" ? datos.mensaje : mensajePredeterminado;
+    const codigo = typeof datos.codigo === "string" ? datos.codigo : null;
+    return new ErrorDeApi(mensaje, codigo, respuesta.status);
   } catch {
-    return "";
+    return new ErrorDeApi(mensajePredeterminado, null, respuesta.status);
   }
 }
 
@@ -25,12 +49,7 @@ export async function enviarPedidoApi(ruta: string, opciones: RequestInit, mensa
   const respuesta = await fetch(urlBaseApi + ruta, opciones);
 
   if (!respuesta.ok) {
-    const mensajeDelServidor = await leerMensajeDelServidor(respuesta);
-    if (mensajeDelServidor !== "") {
-      throw new Error(mensajeDelServidor);
-    }
-
-    throw new Error(mensajeError);
+    throw await leerErrorDelServidor(respuesta, mensajeError);
   }
 
   return respuesta;

@@ -1,62 +1,19 @@
-"use client";
-
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { FormularioCliente } from "@/componentes/formulario-cliente";
-import { actualizarCliente, obtenerDetalleCliente } from "@/servicios/servicio-clientes";
-import type { Cliente, CrearClienteInput } from "@/tipos/cliente";
+import { obtenerClienteServidor } from "@/servicios/servidor/clientes";
+import { actualizarClienteAccion } from "../../acciones";
 
-export default function PaginaEditarCliente() {
-  const parametros = useParams<{ id: string }>();
-  const clienteId = Number(parametros.id);
-  const [cliente, setCliente] = useState<Cliente | null>(null);
-  const [errorCarga, setErrorCarga] = useState("");
+const MENSAJE_ERROR = "No se pudo obtener la información del cliente solicitado.";
 
-  useEffect(() => {
-    async function cargarCliente() {
-      try {
-        const clienteObtenido = await obtenerDetalleCliente(clienteId);
-        setCliente(clienteObtenido);
-      } catch {
-        setErrorCarga("No se pudo obtener la información del cliente solicitado.");
-      }
+export default async function PaginaEditarCliente(props: { params: Promise<{ id: string }> }) {
+  const clienteId = Number((await props.params).id);
+
+  let cliente = null;
+  if (Number.isInteger(clienteId) && clienteId > 0) {
+    try {
+      cliente = await obtenerClienteServidor(clienteId);
+    } catch {
+      cliente = null;
     }
-
-    cargarCliente();
-  }, [clienteId]);
-
-  function guardarCliente(camposCliente: CrearClienteInput) {
-    return actualizarCliente(clienteId, camposCliente);
-  }
-
-  let mensajeError = null;
-  if (errorCarga) {
-    mensajeError = <p className="form-error-banner">{errorCarga}</p>;
-  }
-
-  let mensajeCargando = null;
-  if (!cliente && !errorCarga) {
-    mensajeCargando = <p className="empty-state">Cargando información del cliente…</p>;
-  }
-
-  let formulario = null;
-  if (cliente) {
-    formulario = (
-      <section className="panel form-panel">
-        <FormularioCliente
-          alEnviar={guardarCliente}
-          clienteInicial={{
-            razonSocial: cliente.razonSocial,
-            nombreContacto: cliente.nombreContacto,
-            correo: cliente.correo,
-            telefono: cliente.telefono,
-            direccion: cliente.direccion,
-            observaciones: cliente.observaciones,
-          }}
-          etiquetaConfirmacion="Confirmar modificación"
-        />
-      </section>
-    );
   }
 
   return (
@@ -68,9 +25,24 @@ export default function PaginaEditarCliente() {
         </div>
       </header>
 
-      {mensajeError}
-      {mensajeCargando}
-      {formulario}
+      {cliente ? (
+        <section className="panel form-panel">
+          <FormularioCliente
+            accion={actualizarClienteAccion.bind(null, cliente.id)}
+            clienteInicial={{
+              razonSocial: cliente.razonSocial,
+              nombreContacto: cliente.nombreContacto,
+              correo: cliente.correo,
+              telefono: cliente.telefono,
+              direccion: cliente.direccion,
+              observaciones: cliente.observaciones,
+            }}
+            etiquetaConfirmacion="Confirmar modificación"
+          />
+        </section>
+      ) : (
+        <p className="form-error-banner">{MENSAJE_ERROR}</p>
+      )}
     </main>
   );
 }

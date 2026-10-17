@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   guardarSugerenciasTemporales,
   solicitarSugerenciaOrdenTrabajo,
@@ -11,12 +11,13 @@ type PropiedadesSugerenciasOrdenTrabajo = {
   sugerencias: string[];
   claveSugerenciasTemporales: string;
   alCambiarSugerencias: (sugerencias: string[]) => void;
-  alCambiarErrorGeneral: (mensaje: string) => void;
 };
 
 export function SugerenciasOrdenTrabajo(props: PropiedadesSugerenciasOrdenTrabajo) {
   const [cantidadSolicitudes, setCantidadSolicitudes] = useState(props.sugerencias.length);
   const [estaSolicitandoSugerencia, setEstaSolicitandoSugerencia] = useState(false);
+  const [errorSugerencia, setErrorSugerencia] = useState("");
+  const referenciaError = useRef<HTMLParagraphElement>(null);
 
   function actualizarSugerencias(nuevasSugerencias: string[]) {
     props.alCambiarSugerencias(nuevasSugerencias);
@@ -39,15 +40,16 @@ export function SugerenciasOrdenTrabajo(props: PropiedadesSugerenciasOrdenTrabaj
 
   function mostrarErrorSugerencia(error: unknown) {
     if (error instanceof Error) {
-      props.alCambiarErrorGeneral(error.message);
+      setErrorSugerencia(error.message);
     } else {
-      props.alCambiarErrorGeneral("No se pudo obtener la sugerencia.");
+      setErrorSugerencia("No se pudo obtener la sugerencia.");
     }
+    window.requestAnimationFrame(() => referenciaError.current?.focus());
   }
 
   async function pedirSugerencia() {
     setEstaSolicitandoSugerencia(true);
-    props.alCambiarErrorGeneral("");
+    setErrorSugerencia("");
 
     try {
       const textoObtenido = await obtenerTextoSugerencia();
@@ -66,7 +68,7 @@ export function SugerenciasOrdenTrabajo(props: PropiedadesSugerenciasOrdenTrabaj
 
   async function volverAPedirSugerencia(indiceSugerencia: number) {
     setEstaSolicitandoSugerencia(true);
-    props.alCambiarErrorGeneral("");
+    setErrorSugerencia("");
 
     try {
       const textoObtenido = await obtenerTextoSugerencia();
@@ -139,6 +141,7 @@ export function SugerenciasOrdenTrabajo(props: PropiedadesSugerenciasOrdenTrabaj
           </button>
         </div>
         {mensajeBuscandoSugerencia}
+        {errorSugerencia ? <p className="field-error" ref={referenciaError} role="alert" tabIndex={-1}>{errorSugerencia}</p> : null}
       </div>
 
       {props.sugerencias.map((textoSugerencia, indice) => (

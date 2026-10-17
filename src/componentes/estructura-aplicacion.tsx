@@ -3,50 +3,219 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { cerrarSesion, obtenerUsuarioEnSesion } from "@/servicios/servicio-sesion";
 import { MenuUsuario } from "@/componentes/menu-usuario";
+import { IndicadorNavegacion } from "@/componentes/indicador-navegacion";
+import { BotonTerminos } from "@/componentes/terminos/modal-terminos";
+import { EstructuraTecnico } from "@/componentes/estructura-tecnico";
+import { useAlertasStock } from "@/hooks/use-alertas-stock";
 import { obtenerVersionSistema } from "@/servicios/servicio-version";
-import versionFrontend from "../../version.json";
+import {
+  IconoActivos,
+  IconoClientes,
+  IconoConfiguracion,
+  IconoDocumentacion,
+  IconoHamburguesa,
+  IconoOrdenesTrabajo,
+  IconoReportes,
+  IconoRepuestos,
+  IconoUsuarios,
+} from "@/componentes/iconos";
 
-const enlacesNavegacion = [
-  { ruta: "/ordenes-trabajo", etiqueta: "Órdenes de trabajo", simbolo: "OT" },
-  { ruta: "/clientes", etiqueta: "Clientes", simbolo: "CL" },
-  { ruta: "/activos", etiqueta: "Activos", simbolo: "AC" },
-  { ruta: "/repuestos", etiqueta: "Repuestos", simbolo: "RE" },
-  { ruta: "/documentacion-tecnica", etiqueta: "Documentación técnica", simbolo: "DT" },
-  { ruta: "/usuarios", etiqueta: "Usuarios", simbolo: "US" },
-  { ruta: "/reportes", etiqueta: "Reportes", simbolo: "RP" },
+type Submenu = {
+  ruta: string;
+  etiqueta: string;
+  esActivo: (ruta: string) => boolean;
+};
+
+type ElementoMenu = {
+  ruta: string;
+  etiqueta: string;
+  icono: React.ReactNode;
+  submenus?: Submenu[];
+};
+
+const elementosMenu: ElementoMenu[] = [
+  { ruta: "/ordenes-trabajo", etiqueta: "Órdenes de trabajo", icono: <IconoOrdenesTrabajo /> },
+  { ruta: "/clientes", etiqueta: "Clientes", icono: <IconoClientes /> },
+  {
+    ruta: "/activos",
+    etiqueta: "Activos",
+    icono: <IconoActivos />,
+    submenus: [
+      {
+        ruta: "/activos",
+        etiqueta: "Activos",
+        esActivo: (ruta) => ruta === "/activos" || /^\/activos\/(?:\d|nuevo)/.test(ruta),
+      },
+      {
+        ruta: "/activos/modelos",
+        etiqueta: "Modelos de máquina",
+        esActivo: (ruta) => ruta.startsWith("/activos/modelos"),
+      },
+      {
+        ruta: "/activos/tipos",
+        etiqueta: "Tipos de máquina",
+        esActivo: (ruta) => ruta.startsWith("/activos/tipos"),
+      },
+    ],
+  },
+  {
+    ruta: "/repuestos",
+    etiqueta: "Repuestos",
+    icono: <IconoRepuestos />,
+    submenus: [
+      {
+        ruta: "/repuestos",
+        etiqueta: "Repuestos",
+        esActivo: (ruta) => ruta.startsWith("/repuestos") && !ruta.startsWith("/repuestos/movimientos"),
+      },
+      {
+        ruta: "/repuestos/movimientos",
+        etiqueta: "Movimientos de stock",
+        esActivo: (ruta) => ruta.startsWith("/repuestos/movimientos"),
+      },
+    ],
+  },
+  { ruta: "/documentacion-tecnica", etiqueta: "Documentación técnica", icono: <IconoDocumentacion /> },
+  { ruta: "/usuarios", etiqueta: "Usuarios", icono: <IconoUsuarios /> },
+  { ruta: "/reportes", etiqueta: "Reportes", icono: <IconoReportes /> },
+  {
+    ruta: "/configuracion",
+    etiqueta: "Configuración",
+    icono: <IconoConfiguracion />,
+    submenus: [
+      {
+        ruta: "/configuracion/terminos",
+        etiqueta: "Términos y condiciones",
+        esActivo: (ruta) => ruta.startsWith("/configuracion/terminos"),
+      },
+    ],
+  },
 ];
+
+type MenuLateralProps = {
+  alElegirOpcion: () => void;
+};
+
+function MenuLateral(props: MenuLateralProps) {
+  const rutaActual = usePathname();
+  const alertasStock = useAlertasStock();
+
+  return (
+    <>
+      <nav aria-label="Navegación principal" className="app-menu">
+        {elementosMenu.map((elemento) => {
+          const estaActivo = rutaActual.startsWith(elemento.ruta);
+          return (
+            <div key={elemento.ruta}>
+              <Link
+                aria-current={estaActivo && !elemento.submenus ? "page" : undefined}
+                aria-expanded={elemento.submenus ? estaActivo : undefined}
+                aria-controls={elemento.submenus && estaActivo ? `submenu-${elemento.ruta.slice(1)}` : undefined}
+                className="app-menu-enlace"
+                href={elemento.ruta}
+                onClick={props.alElegirOpcion}
+                title={elemento.etiqueta}
+              >
+                {elemento.icono}
+                <span className="app-menu-texto">{elemento.etiqueta}</span>
+                <IndicadorNavegacion destino={elemento.etiqueta} />
+                {elemento.ruta === "/repuestos" && alertasStock && alertasStock.total > 0 ? (
+                  <span className="insignia-menu" title={alertasStock.total + " repuestos con alerta de stock"}>
+                    <span aria-hidden="true">{alertasStock.total > 99 ? "99+" : alertasStock.total}</span>
+                    <span className="sr-only">{alertasStock.total + " repuestos con alerta de stock"}</span>
+                  </span>
+                ) : null}
+              </Link>
+              {elemento.submenus && estaActivo ? (
+                <div className="app-submenu" id={`submenu-${elemento.ruta.slice(1)}`}>
+                  {elemento.submenus.map((submenu) => (
+                    <Link
+                      aria-current={submenu.esActivo(rutaActual) ? "page" : undefined}
+                      className="app-menu-enlace"
+                      href={submenu.ruta}
+                      key={submenu.ruta}
+                      onClick={props.alElegirOpcion}
+                    >
+                      <span className="app-menu-texto">{submenu.etiqueta}</span>
+                      <IndicadorNavegacion destino={submenu.etiqueta} />
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </nav>
+
+    </>
+  );
+}
 
 type EstructuraAplicacionProps = {
   children: React.ReactNode;
 };
 
-export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
+function EstructuraEscritorio(props: EstructuraAplicacionProps) {
   const children = props.children;
-  const rutaActual = usePathname();
+  const referenciaEstructura = useRef<HTMLDivElement>(null);
+  const referenciaPie = useRef<HTMLElement>(null);
   const [estaMenuAbierto, setEstaMenuAbierto] = useState(false);
-  const [versionBackend, setVersionBackend] = useState("Cargando...");
+  const [estaMenuRetraido, setEstaMenuRetraido] = useState(false);
+  const [versionBackend, setVersionBackend] = useState("…");
   const enrutador = useRouter();
   const usuarioEnSesion = obtenerUsuarioEnSesion();
+
+  useLayoutEffect(() => {
+    const estructura = referenciaEstructura.current;
+    const pie = referenciaPie.current;
+    if (!estructura || !pie) return;
+    const ajustarAlturaDelPie = () => {
+      const altura = pie.getBoundingClientRect().height;
+      if (altura > 0) estructura.style.setProperty("--pie-alto", altura + "px");
+    };
+    ajustarAlturaDelPie();
+    if (typeof ResizeObserver === "undefined") return;
+    const observador = new ResizeObserver(ajustarAlturaDelPie);
+    observador.observe(pie);
+    return () => observador.disconnect();
+  }, []);
 
   useEffect(() => {
     async function cargarVersionBackend() {
       try {
-        const versionObtenida = await obtenerVersionSistema();
-        setVersionBackend(versionObtenida);
+        setVersionBackend(await obtenerVersionSistema());
       } catch {
-        setVersionBackend("No disponible");
+        setVersionBackend("no disponible");
       }
     }
 
     cargarVersionBackend();
   }, []);
 
+  useEffect(() => {
+    function cerrarConEscape(evento: KeyboardEvent) {
+      if (evento.key === "Escape") {
+        setEstaMenuAbierto(false);
+        setEstaMenuRetraido(true);
+      }
+    }
+
+    document.addEventListener("keydown", cerrarConEscape);
+    return () => document.removeEventListener("keydown", cerrarConEscape);
+  }, []);
+
   async function salirDeLaSesion() {
+    setEstaMenuAbierto(false);
     await cerrarSesion();
     enrutador.push("/login");
+  }
+
+  function retraerMenu() {
+    setEstaMenuAbierto(false);
+    setEstaMenuRetraido(true);
   }
 
   const fechaActual = new Date().toLocaleDateString("es-UY", {
@@ -56,52 +225,20 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
     year: "numeric",
   });
 
-  let textoUsuario = "Usuario no logueado";
-  if (usuarioEnSesion !== null) {
-    textoUsuario = usuarioEnSesion.nombre + " " + usuarioEnSesion.apellido;
-  }
-
-  if (rutaActual === "/login" || rutaActual.startsWith("/login/")) {
-    return <>{children}</>;
-  }
-
-  function cerrarMenu() {
-    setEstaMenuAbierto(false);
-  }
-
-  function abrirMenu() {
-    setEstaMenuAbierto(true);
-  }
-
-  let claseBarraLateral =
-    "group fixed left-0 top-0 z-30 flex h-screen w-64 flex-col overflow-hidden border-r border-[#3c3c3c] bg-[#252526] text-[#cccccc] transition-all duration-200 md:w-[72px] md:translate-x-0 md:hover:w-64 md:hover:shadow-xl md:has-[:focus-visible]:w-64 md:has-[:focus-visible]:shadow-xl";
-  if (estaMenuAbierto) {
-    claseBarraLateral = claseBarraLateral + " translate-x-0";
-  } else {
-    claseBarraLateral = claseBarraLateral + " -translate-x-full";
-  }
-
-  let fondoOscuro = null;
-  if (estaMenuAbierto) {
-    fondoOscuro = (
-      <button
-        aria-label="Cerrar menú"
-        className="fixed inset-0 z-20 bg-black/50 md:hidden"
-        onClick={cerrarMenu}
-        type="button"
-      />
-    );
-  }
 
   return (
-    <div className="min-h-screen">
-      <aside className={claseBarraLateral}>
-        <Link
-          className="flex h-20 items-center justify-center border-b border-[#3c3c3c] px-3"
-          href="/usuarios"
-          onClick={cerrarMenu}
-        >
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white">
+    <div className="min-h-screen" ref={referenciaEstructura}>
+      <aside
+        className="app-lateral"
+        data-abierto={estaMenuAbierto}
+        data-compacto={!estaMenuAbierto}
+        data-retraido={estaMenuRetraido}
+        id="menu-lateral"
+        onPointerEnter={() => setEstaMenuRetraido(false)}
+        onFocusCapture={() => setEstaMenuRetraido(false)}
+      >
+        <Link className="app-lateral-logo" href="/usuarios" onClick={retraerMenu}>
+          <span>
             <Image
               src="/images/logo-cvm.png"
               alt="Logo CVM"
@@ -112,69 +249,63 @@ export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
           </span>
         </Link>
 
-        <nav
-          aria-label="Navegación principal"
-          className="flex flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden px-3 py-4"
-        >
-          {enlacesNavegacion.map((enlace) => {
-            const estaActivo = rutaActual.startsWith(enlace.ruta);
-
-            let claseEnlace =
-              "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold text-[#cccccc] hover:bg-[#2a2d2e] hover:text-white";
-            if (estaActivo) {
-              claseEnlace = "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold bg-[#37373d] text-white";
-            }
-
-            return (
-              <Link
-                className={claseEnlace}
-                href={enlace.ruta}
-                key={enlace.ruta}
-                onClick={cerrarMenu}
-                title={enlace.etiqueta}
-              >
-                <span
-                  aria-hidden="true"
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-current text-xs font-bold"
-                >
-                  {enlace.simbolo}
-                </span>
-                <span className="whitespace-nowrap transition-opacity duration-200 md:opacity-0 md:group-hover:opacity-100 md:group-has-[:focus-visible]:opacity-100">
-                  {enlace.etiqueta}
-                </span>
-              </Link>
-            );
-          })}
-        </nav>
-
+        <Suspense fallback={null}>
+          <MenuLateral
+            alElegirOpcion={retraerMenu}
+          />
+        </Suspense>
       </aside>
 
-      {fondoOscuro}
+      {estaMenuAbierto ? (
+        <button
+          aria-label="Cerrar menú"
+          className="app-fondo-oscuro"
+          onClick={() => setEstaMenuAbierto(false)}
+          type="button"
+        />
+      ) : null}
 
-      <div className="flex min-h-screen flex-col md:ml-[72px]">
-        <header className="sticky top-0 z-10 flex h-16 items-center border-b border-gray-200 bg-white px-4 md:h-20 md:px-8">
+      <div className="app-principal">
+        <header className="app-cabecera">
           <button
-            aria-label="Abrir menú"
-            className="mr-3 flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-slate-50 text-lg text-slate-800 md:hidden"
-            onClick={abrirMenu}
+            aria-controls="menu-lateral"
+            aria-expanded={estaMenuAbierto}
+            aria-label={estaMenuAbierto ? "Cerrar menú" : "Abrir menú"}
+            className="app-boton-menu"
+            onClick={() => setEstaMenuAbierto((abierto) => !abierto)}
             type="button"
           >
-            ☰
+            <IconoHamburguesa />
           </button>
-          <div className="flex-1 text-sm font-semibold text-gray-500 first-letter:uppercase" suppressHydrationWarning>
+          <div className="app-cabecera-fecha" suppressHydrationWarning>
             {fechaActual}
           </div>
-          <MenuUsuario alCerrarSesion={salirDeLaSesion} usuario={usuarioEnSesion} />
+          <MenuUsuario usuario={usuarioEnSesion} alCerrarSesion={salirDeLaSesion} />
         </header>
-        <div className="flex-1 pb-24 md:pb-16">{children}</div>
-        <footer className="fixed bottom-0 left-0 right-0 z-20 flex min-h-16 flex-col items-center justify-center gap-1 bg-black px-4 py-2 text-center text-xs font-bold text-gray-300 md:left-[72px] md:min-h-14 md:flex-row md:justify-between md:px-8 md:text-sm">
-          <span>{textoUsuario}</span>
-          <div className="md:text-right">
-            <p>Copyright © 2026 | AnterG Labs | Sotra App</p>
-            <p>{"Frontend: " + versionFrontend.version + " | Backend: " + versionBackend}</p>
+        <div className="app-contenido">{children}</div>
+        <footer className="app-pie" ref={referenciaPie}>
+          <div className="app-pie-enlaces"><BotonTerminos /></div>
+          <div className="app-pie-derecha">
+            <div className="app-pie-linea">
+              <span>© 2026 AnterG Labs · Sotra App</span>
+              <span className="app-pie-version">{"Versión " + versionBackend}</span>
+            </div>
           </div>
         </footer>
       </div>
     </div>
   );
+}
+
+/** Elige la estructura según la zona: el técnico usa una pensada para el celular y el resto, la de escritorio. */
+export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
+  const rutaActual = usePathname();
+  if (rutaActual === "/login" || rutaActual.startsWith("/login/")) {
+    return <>{props.children}</>;
+  }
+  if (rutaActual === "/tecnico" || rutaActual.startsWith("/tecnico/")) {
+    return <EstructuraTecnico>{props.children}</EstructuraTecnico>;
+  }
+
+  return <EstructuraEscritorio>{props.children}</EstructuraEscritorio>;
 }

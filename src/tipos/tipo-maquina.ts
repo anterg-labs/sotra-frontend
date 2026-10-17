@@ -20,3 +20,9 @@ export type FiltrosTiposMaquina = {
   estado: string;
   pagina: number;
 };
+
+/** Datos que envía el formulario: en el alta el estado es siempre `activo` y la acción lo ignora. */
+export type GuardarTipoMaquinaInput = {
+  nombre: string;
+  estado: EstadoTipoMaquina;
+};

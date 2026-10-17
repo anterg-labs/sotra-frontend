@@ -1,6 +1,6 @@
-import { crearOpcionesJson, leerDatosApi, leerPagina, leerTodasLasPaginas } from "@/servicios/api/solicitudes-http";
+import { leerDatosApi, leerPagina, leerTodasLasPaginas } from "@/servicios/api/solicitudes-http";
 import type { Pagina } from "@/tipos/pagina";
-import type { ActualizarUsuarioInput, CrearUsuarioInput, FiltrosUsuarios, Rol, Usuario } from "@/tipos/usuario";
+import type { FiltrosUsuarios, Rol, Usuario } from "@/tipos/usuario";
 
 export async function apiListarUsuarios() {
   const usuarios = await leerTodasLasPaginas("/api/v1/usuarios", "No se pudo obtener el listado de usuarios.");
@@ -33,22 +33,4 @@ export async function apiListarRoles() {
 export async function apiObtenerUsuario(usuarioId: number) {
   const usuario = await leerDatosApi("/api/v1/usuarios/" + usuarioId, { cache: "no-store" }, "No se pudo obtener el usuario solicitado.");
   return usuario as Usuario;
-}
-
-export async function apiCrearUsuario(usuario: CrearUsuarioInput) {
-  const opciones = crearOpcionesJson("POST", usuario);
-  const usuarioCreado = await leerDatosApi("/api/v1/usuarios", opciones, "No se pudo crear el usuario.");
-  return usuarioCreado as Usuario;
-}
-
-export async function apiActualizarUsuario(usuarioId: number, usuario: ActualizarUsuarioInput) {
-  const opciones = crearOpcionesJson("PUT", usuario);
-  const usuarioActualizado = await leerDatosApi("/api/v1/usuarios/" + usuarioId, opciones, "No se pudo actualizar el usuario.");
-  return usuarioActualizado as Usuario;
-}
-
-export async function apiDesactivarUsuario(usuarioId: number) {
-  const opciones = crearOpcionesJson("PATCH", { estado: "inactivo" });
-  const usuarioActualizado = await leerDatosApi("/api/v1/usuarios/" + usuarioId, opciones, "No se pudo desactivar el usuario.");
-  return usuarioActualizado as Usuario;
 }

@@ -9,3 +9,6 @@ coverage/
 /comando-dev.txt
 /endpoints.md
 *.txt
+# Playwright
+/test-results/
+/playwright-report/

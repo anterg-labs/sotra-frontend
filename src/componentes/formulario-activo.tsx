@@ -3,202 +3,124 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { Activo, CrearActivoInput } from "@/tipos/activo";
+import { Combobox } from "@/componentes/combobox";
+import { InterruptorActivo } from "@/componentes/listado/interruptor-activo";
+import { useFormularioAccion } from "@/componentes/use-formulario-accion";
+import { listarClientesPaginados } from "@/servicios/servicio-clientes";
+import { listarModelosMaquinaPaginados } from "@/servicios/servicio-modelos-maquina";
+import type { Activo, GuardarActivoInput } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
 import type { ModeloMaquina } from "@/tipos/modelo-maquina";
-import { validarActivo, type ErroresActivo } from "@/validaciones/activo";
+import type { ResultadoGuardar } from "@/tipos/resultado-accion";
+import { validarActivo } from "@/validaciones/activo";
 
 type PropiedadesFormularioActivo = {
   activoInicial?: Activo;
   clientes: Cliente[];
   modelosMaquina: ModeloMaquina[];
   etiquetaConfirmacion: string;
-  alEnviar: (activo: CrearActivoInput) => Promise<Activo>;
+  /** Server Action que guarda el activo (alta o modificación). */
+  accion: (activo: GuardarActivoInput) => Promise<ResultadoGuardar<Activo>>;
+  /** Si se informa, el formulario no navega: avisa al guardar (por ejemplo, para cerrar un modal). */
+  alGuardar?: (resultado: Activo) => void;
+  alCancelar?: () => void;
 };
 
-export function FormularioActivo(props: PropiedadesFormularioActivo) {
-  const activoInicial = props.activoInicial;
-  const clientes = props.clientes;
-  const modelosMaquina = props.modelosMaquina;
-  const etiquetaConfirmacion = props.etiquetaConfirmacion;
-  const alEnviar = props.alEnviar;
+/** El campo del número de serie se llama `numSerie` en el contrato y `numeroSerie` en el formulario. */
+function idDelCampo(campo: string) {
+  return campo === "numSerie" ? "numeroSerie" : campo;
+}
 
-  let nombreInicial = "";
-  let numSerieInicial = "";
-  let descripcionInicial = "";
-  let clienteIdInicial = "";
-  let modeloMaquinaIdInicial = "";
-  let anioFabricacionInicial = "";
-  let ubicacionInicial = "";
-  if (activoInicial) {
-    if (activoInicial.nombre !== null) {
-      nombreInicial = activoInicial.nombre;
-    }
-    numSerieInicial = activoInicial.numSerie;
-    if (activoInicial.descripcion !== null) {
-      descripcionInicial = activoInicial.descripcion;
-    }
-    clienteIdInicial = String(activoInicial.clienteId);
-    modeloMaquinaIdInicial = String(activoInicial.modeloMaquinaId);
-    if (activoInicial.anioFabricacion !== null) {
-      anioFabricacionInicial = String(activoInicial.anioFabricacion);
-    }
-    if (activoInicial.ubicacion !== null) {
-      ubicacionInicial = activoInicial.ubicacion;
-    }
-  }
+function textoOpcional(valor: string) {
+  return valor.trim() === "" ? null : valor;
+}
+
+export function FormularioActivo(props: PropiedadesFormularioActivo) {
+  const { activoInicial, clientes, modelosMaquina, etiquetaConfirmacion, accion, alGuardar, alCancelar } = props;
+  const clienteIdInicial = activoInicial ? String(activoInicial.clienteId) : "";
+  const modeloMaquinaIdInicial = activoInicial ? String(activoInicial.modeloMaquinaId) : "";
 
   const enrutador = useRouter();
-  const [nombre, setNombre] = useState(nombreInicial);
-  const [numSerie, setNumSerie] = useState(numSerieInicial);
-  const [descripcion, setDescripcion] = useState(descripcionInicial);
+  const [nombre, setNombre] = useState(activoInicial?.nombre ?? "");
+  const [numSerie, setNumSerie] = useState(activoInicial?.numSerie ?? "");
+  const [descripcion, setDescripcion] = useState(activoInicial?.descripcion ?? "");
   const [clienteId, setClienteId] = useState(clienteIdInicial);
   const [modeloMaquinaId, setModeloMaquinaId] = useState(modeloMaquinaIdInicial);
-  const [anioFabricacion, setAnioFabricacion] = useState(anioFabricacionInicial);
-  const [ubicacion, setUbicacion] = useState(ubicacionInicial);
-  const [estaEnviando, setEstaEnviando] = useState(false);
-  const [errorGeneral, setErrorGeneral] = useState("");
-  const [errores, setErrores] = useState<ErroresActivo>({});
+  const [anioFabricacion, setAnioFabricacion] = useState(
+    activoInicial?.anioFabricacion !== null && activoInicial?.anioFabricacion !== undefined ? String(activoInicial.anioFabricacion) : "",
+  );
+  const [ubicacion, setUbicacion] = useState(activoInicial?.ubicacion ?? "");
+  const [estaActivo, setEstaActivo] = useState((activoInicial?.estado ?? "activo") === "activo");
 
-  function mostrarError(campo: string, mensaje?: string) {
+  const { errores, errorGeneral, estaEnviando, enviar, referenciaErrorGeneral } = useFormularioAccion({
+    validar: (datos: GuardarActivoInput) =>
+      validarActivo({
+        nombre: datos.nombre ?? "",
+        numSerie: datos.numSerie,
+        clienteId: datos.clienteId > 0 ? String(datos.clienteId) : "",
+        modeloMaquinaId: datos.modeloMaquinaId > 0 ? String(datos.modeloMaquinaId) : "",
+        anioFabricacion: datos.anioFabricacion === null ? "" : String(datos.anioFabricacion),
+        ubicacion: datos.ubicacion ?? "",
+      }),
+    accion,
+    alExito: (activo: Activo) => {
+      if (alGuardar) {
+        alGuardar(activo);
+      } else {
+        enrutador.push("/activos");
+      }
+    },
+    idCampo: idDelCampo,
+    mensajeGeneral: "No se pudo guardar la información del activo.",
+  });
+
+  function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    enviar({
+      clienteId: Number(clienteId),
+      numSerie,
+      descripcion: textoOpcional(descripcion),
+      modeloMaquinaId: Number(modeloMaquinaId),
+      anioFabricacion: anioFabricacion ? Number(anioFabricacion) : null,
+      nombre: textoOpcional(nombre),
+      ubicacion: textoOpcional(ubicacion),
+      estado: estaActivo ? "activo" : "inactivo",
+    });
+  }
+
+  function mostrarError(idCampo: string, mensaje?: string) {
     if (!mensaje) return null;
     return (
-      <p className="field-error" id={campo + "-error"} role="alert">
+      <p className="field-error" id={idCampo + "-error"} role="alert">
         {mensaje}
       </p>
     );
   }
 
-  function atributosDeCampo(campo: keyof ErroresActivo, idCampo: string) {
+  function atributosDeCampo(campo: string, idCampo: string) {
     return {
       "aria-describedby": errores[campo] ? idCampo + "-error" : undefined,
       "aria-invalid": errores[campo] ? true : undefined,
     };
   }
 
-  function cambiarNombre(evento: React.ChangeEvent<HTMLInputElement>) {
-    setNombre(evento.target.value);
-  }
-
-  function cambiarNumeroSerie(evento: React.ChangeEvent<HTMLInputElement>) {
-    setNumSerie(evento.target.value);
-  }
-
-  function cambiarDescripcion(evento: React.ChangeEvent<HTMLTextAreaElement>) {
-    setDescripcion(evento.target.value);
-  }
-
-  function cambiarCliente(evento: React.ChangeEvent<HTMLSelectElement>) {
-    setClienteId(evento.target.value);
-  }
-
-  function cambiarModeloMaquina(evento: React.ChangeEvent<HTMLSelectElement>) {
-    setModeloMaquinaId(evento.target.value);
-  }
-
-  function cambiarAnioFabricacion(evento: React.ChangeEvent<HTMLInputElement>) {
-    setAnioFabricacion(evento.target.value);
-  }
-
-  function cambiarUbicacion(evento: React.ChangeEvent<HTMLInputElement>) {
-    setUbicacion(evento.target.value);
-  }
-
-  async function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
-    evento.preventDefault();
-    setErrorGeneral("");
-
-    const erroresDetectados = validarActivo({
-      nombre,
-      numSerie,
-      clienteId,
-      modeloMaquinaId,
-      anioFabricacion,
-      ubicacion,
-    });
-    setErrores(erroresDetectados);
-    if (Object.keys(erroresDetectados).length > 0) {
-      return;
-    }
-
-    setEstaEnviando(true);
-
-    let nombreParaGuardar: string | null = nombre;
-    if (!nombre.trim()) {
-      nombreParaGuardar = null;
-    }
-
-    let descripcionParaGuardar: string | null = descripcion;
-    if (!descripcion.trim()) {
-      descripcionParaGuardar = null;
-    }
-
-    let anioFabricacionParaGuardar: number | null = null;
-    if (anioFabricacion) {
-      anioFabricacionParaGuardar = Number(anioFabricacion);
-    }
-
-    let ubicacionParaGuardar: string | null = ubicacion;
-    if (!ubicacion.trim()) {
-      ubicacionParaGuardar = null;
-    }
-
-    const activoParaGuardar: CrearActivoInput = {
-      clienteId: Number(clienteId),
-      numSerie,
-      descripcion: descripcionParaGuardar,
-      modeloMaquinaId: Number(modeloMaquinaId),
-      anioFabricacion: anioFabricacionParaGuardar,
-      nombre: nombreParaGuardar,
-      ubicacion: ubicacionParaGuardar,
-    };
-
-    try {
-      await alEnviar(activoParaGuardar);
-      enrutador.push("/activos");
-    } catch (error) {
-      if (error instanceof Error) {
-        setErrorGeneral(error.message);
-      } else {
-        setErrorGeneral("No se pudo guardar la información del activo.");
-      }
-    } finally {
-      setEstaEnviando(false);
-    }
-  }
-
-  let mensajeError = null;
-  if (errorGeneral) {
-    mensajeError = <p className="form-error-banner">{errorGeneral}</p>;
-  }
-
-  let textoBoton = etiquetaConfirmacion;
-  if (estaEnviando) {
-    textoBoton = "Guardando…";
-  }
-
-  const clientesDisponibles: Cliente[] = [];
-  for (const cliente of clientes) {
-    if (cliente.estado === "activo" || String(cliente.id) === clienteIdInicial) {
-      clientesDisponibles.push(cliente);
-    }
-  }
-
-  const modelosDisponibles: ModeloMaquina[] = [];
-  for (const modeloMaquina of modelosMaquina) {
-    if (modeloMaquina.estado === "activo" || String(modeloMaquina.id) === modeloMaquinaIdInicial) {
-      modelosDisponibles.push(modeloMaquina);
-    }
-  }
+  const clientesDisponibles = clientes.filter((cliente) => cliente.estado === "activo" || String(cliente.id) === clienteIdInicial);
+  const modelosDisponibles = modelosMaquina.filter(
+    (modelo) => modelo.estado === "activo" || String(modelo.id) === modeloMaquinaIdInicial,
+  );
 
   return (
-    <form noValidate onSubmit={enviarFormulario}>
-      {mensajeError}
+    <form aria-busy={estaEnviando} noValidate onSubmit={enviarFormulario}>
+      {activoInicial ? <InterruptorActivo alCambiar={setEstaActivo} estaActivo={estaActivo} /> : null}
+
+      {errorGeneral ? (
+        <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p>
+      ) : null}
 
       <div className="form-grid">
         <div className="form-field">
           <label htmlFor="nombre">Nombre del activo (opcional)</label>
-          <input {...atributosDeCampo("nombre", "nombre")} id="nombre" onChange={cambiarNombre} value={nombre} />
+          <input {...atributosDeCampo("nombre", "nombre")} id="nombre" onChange={(evento) => setNombre(evento.target.value)} value={nombre} />
           {mostrarError("nombre", errores.nombre)}
         </div>
 
@@ -207,38 +129,46 @@ export function FormularioActivo(props: PropiedadesFormularioActivo) {
           <input
             {...atributosDeCampo("numSerie", "numeroSerie")}
             id="numeroSerie"
-            onChange={cambiarNumeroSerie}
+            onChange={(evento) => setNumSerie(evento.target.value)}
             required
             value={numSerie}
           />
           {mostrarError("numeroSerie", errores.numSerie)}
         </div>
 
-        <div className="form-field">
-          <label htmlFor="clienteId">Cliente asociado</label>
-          <select {...atributosDeCampo("clienteId", "clienteId")} id="clienteId" onChange={cambiarCliente} required value={clienteId}>
-            <option disabled value="">Seleccioná un cliente</option>
-            {clientesDisponibles.map((cliente) => (
-              <option key={cliente.id} value={cliente.id}>{cliente.razonSocial}</option>
-            ))}
-          </select>
+        <div>
+          <Combobox
+            alCambiar={setClienteId}
+            buscarOpciones={async (consulta) => {
+              const pagina = await listarClientesPaginados({ buscar: consulta, estado: "activo", pagina: 1 });
+              return pagina.elementos.map((cliente) => ({ valor: String(cliente.id), etiqueta: cliente.razonSocial }));
+            }}
+            etiqueta="Cliente asociado"
+            id="clienteId"
+            idError={errores.clienteId ? "clienteId-error" : undefined}
+            opciones={clientesDisponibles.map((cliente) => ({ valor: String(cliente.id), etiqueta: cliente.razonSocial }))}
+            requerido
+            tieneError={Boolean(errores.clienteId)}
+            valor={clienteId}
+          />
           {mostrarError("clienteId", errores.clienteId)}
         </div>
 
-        <div className="form-field">
-          <label htmlFor="modeloMaquinaId">Modelo de máquina</label>
-          <select
-            {...atributosDeCampo("modeloMaquinaId", "modeloMaquinaId")}
+        <div>
+          <Combobox
+            alCambiar={setModeloMaquinaId}
+            buscarOpciones={async (consulta) => {
+              const pagina = await listarModelosMaquinaPaginados({ buscar: consulta, tipoMaquinaId: "", estado: "activo", pagina: 1 });
+              return pagina.elementos.map((modelo) => ({ valor: String(modelo.id), etiqueta: modelo.nombre }));
+            }}
+            etiqueta="Modelo de máquina"
             id="modeloMaquinaId"
-            onChange={cambiarModeloMaquina}
-            required
-            value={modeloMaquinaId}
-          >
-            <option disabled value="">Seleccioná un modelo</option>
-            {modelosDisponibles.map((modeloMaquina) => (
-              <option key={modeloMaquina.id} value={modeloMaquina.id}>{modeloMaquina.nombre}</option>
-            ))}
-          </select>
+            idError={errores.modeloMaquinaId ? "modeloMaquinaId-error" : undefined}
+            opciones={modelosDisponibles.map((modelo) => ({ valor: String(modelo.id), etiqueta: modelo.nombre }))}
+            requerido
+            tieneError={Boolean(errores.modeloMaquinaId)}
+            valor={modeloMaquinaId}
+          />
           {mostrarError("modeloMaquinaId", errores.modeloMaquinaId)}
         </div>
 
@@ -247,7 +177,7 @@ export function FormularioActivo(props: PropiedadesFormularioActivo) {
           <input
             {...atributosDeCampo("anioFabricacion", "anioFabricacion")}
             id="anioFabricacion"
-            onChange={cambiarAnioFabricacion}
+            onChange={(evento) => setAnioFabricacion(evento.target.value)}
             type="number"
             value={anioFabricacion}
           />
@@ -256,22 +186,33 @@ export function FormularioActivo(props: PropiedadesFormularioActivo) {
 
         <div className="form-field">
           <label htmlFor="ubicacion">Ubicación (opcional)</label>
-          <input {...atributosDeCampo("ubicacion", "ubicacion")} id="ubicacion" onChange={cambiarUbicacion} value={ubicacion} />
+          <input
+            {...atributosDeCampo("ubicacion", "ubicacion")}
+            id="ubicacion"
+            onChange={(evento) => setUbicacion(evento.target.value)}
+            value={ubicacion}
+          />
           {mostrarError("ubicacion", errores.ubicacion)}
         </div>
       </div>
 
       <div className="form-field form-field-full">
         <label htmlFor="descripcion">Descripción u observaciones técnicas (opcional)</label>
-        <textarea id="descripcion" onChange={cambiarDescripcion} rows={4} value={descripcion} />
+        <textarea id="descripcion" onChange={(evento) => setDescripcion(evento.target.value)} rows={4} value={descripcion} />
       </div>
 
       <div className="form-actions">
-        <Link className="secondary-button" href="/activos">
-          Cancelar
-        </Link>
+        {alCancelar ? (
+          <button className="secondary-button" onClick={alCancelar} type="button">
+            Cancelar
+          </button>
+        ) : (
+          <Link className="secondary-button" href="/activos">
+            Cancelar
+          </Link>
+        )}
         <button className="primary-button" disabled={estaEnviando} type="submit">
-          {textoBoton}
+          {estaEnviando ? "Guardando…" : etiquetaConfirmacion}
         </button>
       </div>
     </form>

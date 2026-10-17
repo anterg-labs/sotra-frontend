@@ -8,6 +8,8 @@ type PropiedadesCamposEstadoFechasOrdenTrabajo = {
   necesitaMotivo: boolean;
   motivoEstado: string;
   fechaPrevistaEjecucion: string;
+  errorFechaPrevista?: string;
+  errorMotivo?: string;
   alCambiarEstado: (estado: string) => void;
   alCambiarMotivo: (motivoEstado: string) => void;
   alCambiarFechaPrevista: (fechaPrevistaEjecucion: string) => void;
@@ -47,7 +49,8 @@ export function CamposEstadoFechasOrdenTrabajo(props: PropiedadesCamposEstadoFec
     campoMotivo = (
       <div className="form-field form-field-full">
         <label htmlFor="motivoEstado">Motivo del cambio de estado</label>
-        <textarea id="motivoEstado" onChange={cambiarMotivo} required rows={2} value={props.motivoEstado} />
+        <textarea aria-describedby={props.errorMotivo ? "motivoEstado-error" : undefined} aria-invalid={props.errorMotivo ? true : undefined} id="motivoEstado" onChange={cambiarMotivo} required rows={2} value={props.motivoEstado} />
+        {props.errorMotivo ? <p className="field-error" id="motivoEstado-error" role="alert">{props.errorMotivo}</p> : null}
       </div>
     );
   }
@@ -57,12 +60,15 @@ export function CamposEstadoFechasOrdenTrabajo(props: PropiedadesCamposEstadoFec
       <div className="form-field">
         <label htmlFor="fechaPrevistaEjecucion">Fecha prevista de ejecución</label>
         <input
+          aria-describedby={props.errorFechaPrevista ? "fechaPrevistaEjecucion-error" : undefined}
+          aria-invalid={props.errorFechaPrevista ? true : undefined}
           id="fechaPrevistaEjecucion"
           onChange={cambiarFechaPrevista}
           required
           type="date"
           value={props.fechaPrevistaEjecucion}
         />
+        {props.errorFechaPrevista ? <p className="field-error" id="fechaPrevistaEjecucion-error" role="alert">{props.errorFechaPrevista}</p> : null}
       </div>
 
       {campoEstado}

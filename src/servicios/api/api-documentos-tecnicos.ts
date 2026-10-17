@@ -1,30 +1,5 @@
-import { enviarPedidoApi, leerDatosApi, leerPagina, leerTodasLasPaginas, obtenerUrlBaseApi } from "@/servicios/api/solicitudes-http";
-import type { DocumentoTecnico, FiltrosDocumentosTecnicos } from "@/tipos/documento-tecnico";
-import type { Pagina } from "@/tipos/pagina";
-
-export async function apiListarDocumentosTecnicos() {
-  const documentos = await leerTodasLasPaginas("/api/v1/documentos-tecnicos", "No se pudo obtener el listado de documentos técnicos.");
-  return documentos as DocumentoTecnico[];
-}
-
-export async function apiListarDocumentosTecnicosPaginados(filtros: FiltrosDocumentosTecnicos) {
-  const parametros = new URLSearchParams();
-  if (filtros.buscar.trim() !== "") {
-    parametros.append("buscar", filtros.buscar.trim());
-  }
-  if (filtros.activoId !== "") {
-    parametros.append("activoId", filtros.activoId);
-  }
-  parametros.append("pagina", String(filtros.pagina));
-
-  const pagina = await leerPagina("/api/v1/documentos-tecnicos", parametros, "No se pudo obtener el listado de documentos técnicos.");
-  return pagina as Pagina<DocumentoTecnico>;
-}
-
-export async function apiObtenerDocumentoTecnico(documentoId: number) {
-  const documento = await leerDatosApi("/api/v1/documentos-tecnicos/" + documentoId, { cache: "no-store" }, "No se pudo obtener el documento técnico solicitado.");
-  return documento as DocumentoTecnico;
-}
+import { leerDatosApi, obtenerUrlBaseApi } from "@/servicios/api/solicitudes-http";
+import type { DocumentoTecnico } from "@/tipos/documento-tecnico";
 
 export async function apiCrearDocumentoTecnico(archivo: File, activoId: number | null, usaSugerenciasIA: boolean) {
   const datosFormulario = new FormData();
@@ -39,11 +14,8 @@ export async function apiCrearDocumentoTecnico(archivo: File, activoId: number |
   return documentoCreado as DocumentoTecnico;
 }
 
+/** Enlace público de descarga: lo abre el navegador, por eso usa `API_URL` y no la URL interna. */
 export function apiObtenerUrlDescargaDocumentoTecnico(documentoId: number) {
   const urlBaseApi = obtenerUrlBaseApi();
   return urlBaseApi + "/api/v1/documentos-tecnicos/" + documentoId + "/archivo";
-}
-
-export async function apiEliminarDocumentoTecnico(documentoId: number) {
-  await enviarPedidoApi("/api/v1/documentos-tecnicos/" + documentoId, { method: "DELETE" }, "No se pudo eliminar el documento técnico.");
 }

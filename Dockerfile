@@ -39,6 +39,9 @@ RUN npm run build
 
 FROM dhi.io/node:26-alpine-sfw-dev AS runner
 
+# Apply available Alpine security updates to runtime packages.
+RUN apk upgrade --no-cache expat
+
 # Set working directory
 WORKDIR /app
 

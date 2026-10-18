@@ -39,6 +39,9 @@ RUN npm run build
 
 FROM dhi.io/node:26-alpine-sfw-dev AS runner
 
+# Keep runtime packages at or above the versions that fix current HIGH findings.
+RUN apk add --no-cache 'libexpat>=2.9.0-r0' 'pcre2>=10.49-r0'
+
 # Set working directory
 WORKDIR /app
 

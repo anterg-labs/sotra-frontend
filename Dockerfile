@@ -46,6 +46,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+# Se define al ejecutar el contenedor (variable de entorno), no al construir la imagen.
+ENV API_URL_INTERNA=""
 
 # Copy production assets
 COPY --from=builder --chown=node:node /app/public ./public

@@ -7,7 +7,8 @@ import {
   apiObtenerOrdenTrabajo,
   apiSolicitarSugerenciaOrdenTrabajo,
 } from "@/servicios/api/api-ordenes-trabajo";
-import { listarRoles, listarUsuarios, listarUsuariosPaginados } from "@/servicios/servicio-usuarios";
+import { apiListarTecnicos } from "@/servicios/api/api-usuarios";
+import { listarUsuarios } from "@/servicios/servicio-usuarios";
 import type {
   ActualizarOrdenTrabajoInput,
   CrearOrdenTrabajoInput,
@@ -70,24 +71,12 @@ export async function listarTecnicos() {
   return tecnicos;
 }
 
-let promesaIdRolTecnico: Promise<number | null> | null = null;
-
-function obtenerIdRolTecnico() {
-  promesaIdRolTecnico ??= listarRoles()
-    .then((roles) => roles.find((rol) => rol.nombre === "Técnico")?.id ?? null)
-    .catch((error: unknown) => {
-      promesaIdRolTecnico = null;
-      throw error;
-    });
-  return promesaIdRolTecnico;
-}
-
+/**
+ * Técnicos activos para los selectores (asignar, filtrar). Se filtran por el nombre del rol porque `/api/v1/roles`
+ * es solo del administrador y el jefe también asigna técnicos (`/api/v1/usuarios` sí lo puede listar).
+ */
 export async function listarTecnicosPaginados(buscar = "") {
-  const rolTecnicoId = await obtenerIdRolTecnico();
-  if (rolTecnicoId === null) return [];
-
-  const pagina = await listarUsuariosPaginados({ buscar, rolId: String(rolTecnicoId), estado: "activo", pagina: 1 });
-  return pagina.elementos;
+  return apiListarTecnicos(buscar);
 }
 
 export async function listarOrdenesTrabajo(filtros: FiltrosOrdenesTrabajo) {

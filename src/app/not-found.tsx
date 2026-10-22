@@ -7,7 +7,7 @@ export default function PaginaNoEncontrada() {
         <p className="eyebrow">Error 404</p>
         <h1>No encontramos esta página</h1>
         <p>La dirección no existe o el contenido fue movido. Volvé al inicio para seguir trabajando.</p>
-        <Link className="primary-button" href="/reportes">
+        <Link className="primary-button" href="/">
           Ir al inicio
         </Link>
       </section>

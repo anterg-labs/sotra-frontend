@@ -1,16 +1,19 @@
 import "server-only";
+import { unstable_rethrow } from "next/navigation";
 import { ErrorDeApi } from "@/servicios/api/solicitudes-http";
 import type { ResultadoCambiarEstado, ResultadoGuardar } from "@/tipos/resultado-accion";
 
 /**
  * Traduce un error de la API al resultado de una Server Action: un código conocido (por ejemplo `CORREO_DUPLICADO`)
  * se asigna al campo del formulario; otros errores de la API, al mensaje general; lo inesperado, al mensaje genérico.
+ * La redirección al login (sesión vencida) no es un error: se deja pasar.
  */
 export function resultadoFallido<T>(
   error: unknown,
   campoPorCodigo: Record<string, string>,
   mensajeGeneral: string,
 ): ResultadoGuardar<T> {
+  unstable_rethrow(error);
   if (error instanceof ErrorDeApi) {
     const campo = campoPorCodigo[error.codigo ?? ""];
     if (campo) return { exito: false, errores: { [campo]: error.message }, mensaje: "" };
@@ -49,7 +52,9 @@ export async function ejecutarCambioEstado(
     await llamada(id, estado);
     alExito();
     return { exito: true };
-  } catch {
+  } catch (error) {
+    unstable_rethrow(error);
+    if (error instanceof ErrorDeApi && error.estadoHttp === 403) return { exito: false, mensaje: error.message };
     return { exito: false, mensaje };
   }
 }

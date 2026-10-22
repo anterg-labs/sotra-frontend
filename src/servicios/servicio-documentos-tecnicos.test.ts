@@ -22,7 +22,7 @@ describe("servicio-documentos-tecnicos", () => {
 
     expect(documento.id).toBe(1);
     const [url, opciones] = fetchSimulado.mock.calls[0];
-    expect(url).toBe("http://localhost:4000/api/v1/documentos-tecnicos");
+    expect(url).toBe("/api/v1/documentos-tecnicos");
     expect(opciones.method).toBe("POST");
     expect((opciones.body as FormData).get("activoId")).toBe("3");
   });

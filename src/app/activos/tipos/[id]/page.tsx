@@ -4,6 +4,7 @@ import { listarModelosMaquinaServidor } from "@/servicios/servidor/modelos-maqui
 import { obtenerTipoMaquinaServidor } from "@/servicios/servidor/tipos-maquina";
 import type { ModeloMaquina } from "@/tipos/modelo-maquina";
 import type { TipoMaquina } from "@/tipos/tipo-maquina";
+import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
 
 type DatosTipo = { tipoMaquina: TipoMaquina; modelos: ModeloMaquina[]; totalModelos: number };
 
@@ -49,9 +50,11 @@ export default async function PaginaDetalleTipoMaquina(props: { params: Promise<
               </div>
             </dl>
             <div className="form-actions">
-              <Link className="primary-button" href={"/activos/tipos/" + datos.tipoMaquina.id + "/editar"}>
-                Modificar
-              </Link>
+              <SiTienePermiso permiso="tipo_maquina.gestionar">
+                <Link className="primary-button" href={"/activos/tipos/" + datos.tipoMaquina.id + "/editar"}>
+                  Modificar
+                </Link>
+              </SiTienePermiso>
             </div>
           </section>
 

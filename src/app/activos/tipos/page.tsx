@@ -6,6 +6,7 @@ import { AltaTipo } from "./alta-tipo";
 import { BarraFiltrosTipos } from "./barra-filtros-tipos";
 import { leerFiltrosTipos } from "./filtros";
 import { ListadoTipos } from "./listado-tipos";
+import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
 
 const ETIQUETA_CARGA = "Cargando tipos de máquina…";
 
@@ -23,7 +24,9 @@ export default async function PaginaTiposMaquina(props: { searchParams: Promise<
           <div>
             <h2>Tipos de máquina</h2>
           </div>
-          <AltaTipo />
+          <SiTienePermiso permiso="tipo_maquina.gestionar">
+            <AltaTipo />
+          </SiTienePermiso>
         </header>
 
         <ProveedorNavegacionListado etiquetaCarga={ETIQUETA_CARGA}>

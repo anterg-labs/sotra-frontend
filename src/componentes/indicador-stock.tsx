@@ -12,6 +12,8 @@ type PropiedadesInsigniaStock = {
 
 /** Insignia del estado de stock: ícono y texto además del color, para no depender solo de él. */
 export function InsigniaStock({ estadoStock }: PropiedadesInsigniaStock) {
+  // Una API que no informa `estadoStock` no debe tirar abajo la pantalla: sin el dato no se muestra la insignia.
+  if (!(estadoStock in textos)) return null;
   const { clase, simbolo, texto } = textos[estadoStock];
   return (
     <span className={"insignia-stock " + clase}>

@@ -10,6 +10,14 @@ services:
     environment:
       # Dirección de la API alcanzable desde el contenedor (la usa el servidor de Next, no el navegador).
       API_URL_INTERNA: ${API_URL_INTERNA:-}
+      # Sesión con Keycloak (Auth.js): se leen al ejecutar, no al construir.
+      AUTH_SECRET: ${AUTH_SECRET:-}
+      AUTH_URL: ${AUTH_URL:-http://localhost}
+      KEYCLOAK_EMISOR: ${KEYCLOAK_EMISOR:-http://localhost:9080/realms/sotra}
+      KEYCLOAK_URL_INTERNA: ${KEYCLOAK_URL_INTERNA:-}
+      KEYCLOAK_CLIENTE: ${KEYCLOAK_CLIENTE:-sotra-frontend}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "80:3000" # mantuve tu puerto 3100
 

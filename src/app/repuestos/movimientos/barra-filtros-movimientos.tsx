@@ -17,7 +17,13 @@ const VACIOS: ValoresMovimientos = { buscar: "", repuestoId: "", tipo: "", fecha
  * Filtros del listado en vivo: el texto (búsqueda y ubicación) espera un instante y lo demás aplica al instante.
  * Con un rango de fechas invertido no se consulta: el error queda junto al campo y el foco en la fecha final.
  */
-export function BarraFiltrosMovimientos(props: { filtros: FiltrosMovimientosStock; repuestos: Repuesto[]; usuarios: Usuario[] }) {
+export function BarraFiltrosMovimientos(props: {
+  filtros: FiltrosMovimientosStock;
+  repuestos: Repuesto[];
+  usuarios: Usuario[];
+  /** Sin permiso para listar usuarios (pañolero) no se muestra el filtro por usuario responsable. */
+  puedeFiltrarPorUsuario?: boolean;
+}) {
   const { filtros } = props;
   const { valores, cambiar, aplicarAhora, limpiar, estaPendiente } = useFiltrosEnVivo<ValoresMovimientos>({
     inicial: {
@@ -76,18 +82,20 @@ export function BarraFiltrosMovimientos(props: { filtros: FiltrosMovimientosStoc
           <option value="ajuste">Ajuste</option>
         </select>
       </div>
-      <Combobox
-        alCambiar={(usuarioId) => cambiar({ usuarioId })}
-        buscarOpciones={async (consulta) => {
-          const pagina = await listarUsuariosPaginados({ buscar: consulta, rolId: "", estado: "", pagina: 1 });
-          return pagina.elementos.map((usuario) => ({ valor: String(usuario.id), etiqueta: `${usuario.nombre} ${usuario.apellido}` }));
-        }}
-        etiqueta="Usuario responsable"
-        id="usuarioMovimiento"
-        opciones={props.usuarios.map((usuario) => ({ valor: String(usuario.id), etiqueta: `${usuario.nombre} ${usuario.apellido}` }))}
-        textoVacio="Todos los usuarios"
-        valor={valores.usuarioId}
-      />
+      {props.puedeFiltrarPorUsuario ?? true ? (
+        <Combobox
+          alCambiar={(usuarioId) => cambiar({ usuarioId })}
+          buscarOpciones={async (consulta) => {
+            const pagina = await listarUsuariosPaginados({ buscar: consulta, rolId: "", estado: "", pagina: 1 });
+            return pagina.elementos.map((usuario) => ({ valor: String(usuario.id), etiqueta: `${usuario.nombre} ${usuario.apellido}` }));
+          }}
+          etiqueta="Usuario responsable"
+          id="usuarioMovimiento"
+          opciones={props.usuarios.map((usuario) => ({ valor: String(usuario.id), etiqueta: `${usuario.nombre} ${usuario.apellido}` }))}
+          textoVacio="Todos los usuarios"
+          valor={valores.usuarioId}
+        />
+      ) : null}
       <div className="form-field">
         <label htmlFor="ubicacionMovimiento">Ubicación o depósito</label>
         <input

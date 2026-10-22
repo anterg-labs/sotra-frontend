@@ -18,7 +18,7 @@ export default function PaginaError({ reset }: PropiedadesPaginaError) {
           <button className="primary-button" onClick={reset} type="button">
             Reintentar
           </button>
-          <Link className="secondary-button" href="/reportes">
+          <Link className="secondary-button" href="/">
             Ir al inicio
           </Link>
         </div>

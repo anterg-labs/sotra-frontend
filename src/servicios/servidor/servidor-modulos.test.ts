@@ -119,16 +119,13 @@ describe("servicios de servidor de documentos, activos y órdenes", () => {
     expect(rutas()[1]).toEqual(["GET", "/api/v1/ordenes-trabajo/11"]);
 
     fetchSimulado.mockReset();
-    fetchSimulado.mockImplementation(async (url: string) =>
-      String(url).endsWith("/roles") ? Response.json([{ id: 1, nombre: "Admin" }, { id: 4, nombre: "Técnico" }]) : Response.json({ elementos: [{ id: 7 }] }),
+    const usuario = (id: number, rol: string, estado = "activo") => ({ id, estado, roles: [{ id: 9, nombre: rol, activo: true }] });
+    fetchSimulado.mockImplementation(async () =>
+      Response.json({ elementos: [usuario(7, "Técnico"), usuario(8, "Administrador"), usuario(9, "Técnico", "inactivo")] }),
     );
-    expect(await listarTecnicosServidor("tom")).toEqual([{ id: 7 }]);
-    expect(rutas()[1][1]).toBe("/api/v1/usuarios?buscar=tom&rolId=4&estado=activo&direccionOrden=desc&pagina=1");
-
-    fetchSimulado.mockReset();
-    fetchSimulado.mockImplementation(async () => Response.json([{ id: 1, nombre: "Admin" }]));
-    expect(await listarTecnicosServidor()).toEqual([]);
-    expect(fetchSimulado).toHaveBeenCalledTimes(1);
+    expect((await listarTecnicosServidor("tom")).map((tecnico) => tecnico.id)).toEqual([7]);
+    // Sin /api/v1/roles (solo del administrador): el jefe también asigna técnicos.
+    expect(rutas()).toEqual([["GET", "/api/v1/usuarios?buscar=tom&estado=activo&pagina=1&tamanoPagina=100"]]);
   });
 });
 

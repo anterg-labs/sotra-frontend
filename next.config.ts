@@ -1,17 +1,18 @@
 import type { NextConfig } from "next";
 
-const origenApi = process.env.API_URL ? new URL(process.env.API_URL).origin : null;
+// El navegador ya no llama a la API (pasa por `/api/v1` del mismo origen); sí navega a Keycloak al iniciar y cerrar sesión.
+const origenKeycloak = process.env.KEYCLOAK_EMISOR ? new URL(process.env.KEYCLOAK_EMISOR).origin : null;
 const politicaContenido = [
   "default-src 'self'",
   "base-uri 'self'",
   "object-src 'none'",
   "frame-ancestors 'none'",
-  "form-action 'self'",
+  `form-action 'self'${origenKeycloak ? ` ${origenKeycloak}` : ""}`,
   "script-src 'self'",
   "style-src 'self'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
-  `connect-src 'self'${origenApi ? ` ${origenApi}` : ""}`,
+  "connect-src 'self'",
 ].join("; ");
 
 const nextConfig: NextConfig = {
@@ -21,8 +22,9 @@ const nextConfig: NextConfig = {
   // Conserva las rutas compiladas al recorrer toda la aplicación en desarrollo.
   onDemandEntries: { maxInactiveAge: 10 * 60 * 1000, pagesBufferLength: 64 },
   poweredByHeader: false,
-  async redirects() {
-    return [{ source: "/", destination: "/reportes", permanent: false }];
+  experimental: {
+    // Las subidas pasan por el proxy (sesión) camino a `/api/v1`: los documentos técnicos admiten hasta 50 MB en la API.
+    proxyClientMaxBodySize: "51mb",
   },
   async headers() {
     return [

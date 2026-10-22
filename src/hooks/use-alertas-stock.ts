@@ -12,11 +12,15 @@ export function avisarStockActualizado() {
   window.dispatchEvent(new Event(EVENTO_STOCK_ACTUALIZADO));
 }
 
-/** Contadores de alertas de stock; se actualizan cada minuto y después de cada movimiento de stock. */
-export function useAlertasStock() {
+/**
+ * Contadores de alertas de stock; se actualizan cada minuto y después de cada movimiento de stock.
+ * Con `habilitado` en `false` (el rol no ve repuestos) no se consulta: la API respondería 403.
+ */
+export function useAlertasStock(habilitado = true) {
   const [alertas, setAlertas] = useState<AlertasStock | null>(null);
 
   useEffect(() => {
+    if (!habilitado) return;
     let estaMontado = true;
 
     async function consultar() {
@@ -37,7 +41,7 @@ export function useAlertasStock() {
       window.clearInterval(temporizador);
       window.removeEventListener(EVENTO_STOCK_ACTUALIZADO, consultar);
     };
-  }, []);
+  }, [habilitado]);
 
-  return alertas;
+  return habilitado ? alertas : null;
 }

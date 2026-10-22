@@ -3,6 +3,7 @@ import Link from "next/link";
 import { IconoLapiz, IconoOjo } from "@/componentes/iconos";
 import { InformarResultados } from "@/componentes/listado/navegacion-listado";
 import { PaginacionListado } from "@/componentes/listado/paginacion-listado";
+import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import { listarOrdenesTrabajoServidor } from "@/servicios/servidor/ordenes-trabajo";
 import { formatearFechaPrevista, obtenerEtiquetaEstadoOrdenTrabajo } from "@/servicios/servicio-ordenes-trabajo";
 import type { FiltrosOrdenesTrabajo } from "@/tipos/orden-trabajo";
@@ -81,14 +82,16 @@ export async function ListadoOrdenes(props: { filtros: FiltrosOrdenesTrabajo; co
                       <IconoOjo />
                     </Link>
                     {orden.estado !== "cerrada" ? (
-                      <Link
-                        aria-label="Modificar orden"
-                        className="boton-icono"
-                        href={"/ordenes-trabajo/" + orden.id + "/editar"}
-                        title="Modificar orden"
-                      >
-                        <IconoLapiz />
-                      </Link>
+                      <SiTienePermiso permiso="ot.editar">
+                        <Link
+                          aria-label="Modificar orden"
+                          className="boton-icono"
+                          href={"/ordenes-trabajo/" + orden.id + "/editar"}
+                          title="Modificar orden"
+                        >
+                          <IconoLapiz />
+                        </Link>
+                      </SiTienePermiso>
                     ) : null}
                   </div>
                 </td>

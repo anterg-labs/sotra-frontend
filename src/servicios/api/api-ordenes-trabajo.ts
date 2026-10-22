@@ -1,5 +1,12 @@
 import { construirConsultaOrdenes } from "@/servicios/api/consultas-ordenes";
-import { crearOpcionesJson, leerDatosApi, obtenerUrlBaseApi } from "@/servicios/api/solicitudes-http";
+import {
+  crearOpcionesJson,
+  leerDatosApi,
+  MENSAJE_SESION_VENCIDA,
+  MENSAJE_SIN_PERMISO,
+  obtenerUrlBaseApi,
+  volverAIniciarSesion,
+} from "@/servicios/api/solicitudes-http";
 import type {
   ActualizarOrdenTrabajoInput,
   CrearOrdenTrabajoInput,
@@ -58,6 +65,13 @@ export async function apiSolicitarSugerenciaOrdenTrabajo(datosOrden: SolicitarSu
   const urlBaseApi = obtenerUrlBaseApi();
   const opciones = crearOpcionesJson("POST", datosOrden);
   const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo/sugerencia", opciones);
+  if (respuesta.status === 401) {
+    volverAIniciarSesion();
+    throw new Error(MENSAJE_SESION_VENCIDA);
+  }
+  if (respuesta.status === 403) {
+    throw new Error(MENSAJE_SIN_PERMISO);
+  }
   if (respuesta.status === 422) {
     throw new Error("El sistema no encontró información suficiente en la documentación técnica para esta tarea.");
   }

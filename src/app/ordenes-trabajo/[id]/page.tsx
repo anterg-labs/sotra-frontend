@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { obtenerOrdenTrabajoServidor, listarTecnicosServidor } from "@/servicios/servidor/ordenes-trabajo";
-import { obtenerUsuarioServidor } from "@/servicios/servidor/usuarios";
+import { conTecnicoDeLaOrden, obtenerOrdenTrabajoServidor, listarTecnicosServidor } from "@/servicios/servidor/ordenes-trabajo";
+import { tienePermisoServidor } from "@/servicios/servidor/sesion";
 import type { OrdenTrabajo } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
 import { DetalleOrdenTrabajo } from "./detalle-orden";
@@ -14,14 +14,10 @@ async function cargarOrden(ordenTrabajoId: number): Promise<OrdenTrabajo | null>
   }
 }
 
-/** Técnicos para asignar: el técnico actual de la orden va primero aunque ya no esté activo. */
+/** Técnicos para asignar, con el técnico actual de la orden primero. */
 async function cargarTecnicos(orden: OrdenTrabajo): Promise<Usuario[] | null> {
   try {
-    const [tecnicos, actual] = await Promise.all([
-      listarTecnicosServidor(),
-      orden.tecnicoId === null ? Promise.resolve(null) : obtenerUsuarioServidor(orden.tecnicoId),
-    ]);
-    return actual ? [actual, ...tecnicos.filter((tecnico) => tecnico.id !== actual.id)] : tecnicos;
+    return conTecnicoDeLaOrden(orden, await listarTecnicosServidor());
   } catch {
     return null;
   }
@@ -46,6 +42,6 @@ export default async function PaginaDetalleOrdenTrabajo(props: { params: Promise
     );
   }
 
-  const tecnicos = await cargarTecnicos(orden);
+  const tecnicos = (await tienePermisoServidor("ot.asignar_tecnico")) ? await cargarTecnicos(orden) : [];
   return <DetalleOrdenTrabajo huboErrorTecnicos={tecnicos === null} ordenInicial={orden} tecnicosIniciales={tecnicos ?? []} />;
 }

@@ -10,6 +10,9 @@ import { construirUrlOrdenes, leerFiltrosOrdenes } from "./filtros";
 import { ListadoOrdenes } from "./listado-ordenes";
 import NuevaOrden from "./nuevo/page";
 import PaginaOrdenes from "./page";
+import { ProveedorSesion } from "@/componentes/sesion/contexto-sesion";
+import { usuarioDePruebas } from "@/pruebas/sesion-de-pruebas";
+import { tienePermisoServidor } from "@/servicios/servidor/sesion";
 
 const push = vi.hoisted(() => vi.fn());
 const replace = vi.hoisted(() => vi.fn());
@@ -51,7 +54,8 @@ vi.mock("@/servicios/servicio-ordenes-trabajo", async (importarOriginal) => ({
 }));
 vi.mock("@/servicios/servicio-clientes", () => ({ listarClientesPaginados: s.listarClientesPaginados }));
 vi.mock("@/servicios/servicio-activos", () => ({ listarActivosPaginados: s.listarActivosPaginados }));
-vi.mock("@/servicios/servidor/ordenes-trabajo", () => ({
+vi.mock("@/servicios/servidor/ordenes-trabajo", async (importarReal) => ({
+  conTecnicoDeLaOrden: (await importarReal<typeof import("@/servicios/servidor/ordenes-trabajo")>()).conTecnicoDeLaOrden,
   listarOrdenesTrabajoServidor: s.listarOrdenesTrabajoServidor,
   obtenerOrdenTrabajoServidor: s.obtenerOrdenTrabajoServidor,
   listarTecnicosServidor: s.listarTecnicosServidor,
@@ -450,5 +454,36 @@ describe("edición y alta de orden de trabajo (páginas)", () => {
     s.listarClientesServidor.mockRejectedValue(new Error("x"));
     render(await NuevaOrden());
     expect(screen.getByText("No se pudieron obtener los datos necesarios para crear la orden.")).toBeInTheDocument();
+  });
+});
+
+describe("órdenes según el rol", () => {
+  it("el técnico ve el detalle, cambia el estado y carga evidencias, pero no asigna técnico ni modifica", async () => {
+    vi.mocked(tienePermisoServidor).mockImplementation(async (permiso) => permiso !== "ot.asignar_tecnico");
+    s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11, { tecnicoId: 30, nombreTecnico: "Técnico Prueba", estado: "asignada", estadosSiguientes: ["en_ejecucion"] }));
+    render(<ProveedorSesion usuario={usuarioDePruebas(["tecnico"])}>{await DetalleOrden(parametros("11"))}</ProveedorSesion>);
+
+    expect(s.listarTecnicosServidor).not.toHaveBeenCalled();
+    expect(screen.queryByRole("combobox", { name: "Asignar o modificar técnico" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Modificar" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Actualizar estado")).toBeInTheDocument();
+    expect(screen.queryByText("No se pudo obtener el listado de técnicos.")).not.toBeInTheDocument();
+  });
+
+  it("el pañolero solo consulta: sin cambio de estado; y el listado no ofrece «Crear orden» ni modificar", async () => {
+    vi.mocked(tienePermisoServidor).mockResolvedValue(false);
+    s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11));
+    render(<ProveedorSesion usuario={usuarioDePruebas(["panolero"])}>{await DetalleOrden(parametros("11"))}</ProveedorSesion>);
+    expect(screen.queryByLabelText("Actualizar estado")).not.toBeInTheDocument();
+    expect(screen.getByText("Estado actual: Creada.")).toBeInTheDocument();
+  });
+
+  it("sin permiso de reportes ni de usuarios, el listado no pide el resumen ni los técnicos", async () => {
+    vi.mocked(tienePermisoServidor).mockResolvedValue(false);
+    render(<ProveedorSesion usuario={usuarioDePruebas(["panolero"])}>{await PaginaOrdenes({ searchParams: Promise.resolve({}) })}</ProveedorSesion>);
+    expect(s.obtenerIndicadoresServidor).not.toHaveBeenCalled();
+    expect(s.listarTecnicosServidor).not.toHaveBeenCalled();
+    expect(screen.queryByRole("link", { name: "Crear orden" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: "Técnico" })).not.toBeInTheDocument();
   });
 });

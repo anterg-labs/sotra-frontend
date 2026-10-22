@@ -361,7 +361,7 @@ describe("EstructuraTecnico", () => {
     expect(within(navegacion).getByRole("link", { name: "Repuestos" })).toHaveAttribute("aria-current", "page");
     expect(within(navegacion).getByRole("link", { name: "Mi trabajo" })).not.toHaveAttribute("aria-current");
     expect(screen.getByText("contenido")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Escritorio" })).toHaveAttribute("href", "/reportes");
+    expect(screen.getByRole("link", { name: "Escritorio" })).toHaveAttribute("href", "/ordenes-trabajo");
   });
 
   it("'Mi trabajo' y 'Activos' se activan por su prefijo de ruta", () => {

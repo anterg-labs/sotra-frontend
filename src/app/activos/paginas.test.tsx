@@ -111,7 +111,7 @@ describe("detalle de activo (Server Component)", () => {
     expect(screen.getByRole("link", { name: "Excavadora" })).toHaveAttribute("href", "/activos/tipos/3");
     expect(screen.getAllByText("Sin dato")).toHaveLength(2);
     expect(screen.getByText("Sin descripción")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "manual.pdf" })).toHaveAttribute("href", "http://api.test/api/v1/documentos-tecnicos/4/archivo");
+    expect(screen.getByRole("link", { name: "manual.pdf" })).toHaveAttribute("href", "/api/v1/documentos-tecnicos/4/archivo");
     expect(screen.getByLabelText("Historial de órdenes de trabajo")).toHaveAttribute("data-activo", "5");
     expect(screen.getByRole("link", { name: "Modificar" })).toHaveAttribute("href", "/activos/5/editar");
   });

@@ -1,5 +1,5 @@
 import "server-only";
-import { leerJsonServidor, opcionesJsonServidor } from "@/servicios/servidor/cliente-http-servidor";
+import { leerJsonServidor, opcionesJsonServidor, solicitarApiServidor } from "@/servicios/servidor/cliente-http-servidor";
 import type { Pagina } from "@/tipos/pagina";
 import type { ActualizarUsuarioInput, CrearUsuarioInput, EstadoUsuario, FiltrosUsuarios, Rol, Usuario } from "@/tipos/usuario";
 
@@ -30,6 +30,15 @@ export function actualizarUsuarioServidor(usuarioId: number, usuario: Actualizar
     "/api/v1/usuarios/" + usuarioId,
     "No se pudo actualizar el usuario.",
     opcionesJsonServidor("PUT", usuario),
+  );
+}
+
+/** `POST /usuarios/{id}/restablecer-contrasena`: responde 204 sin cuerpo. */
+export async function restablecerContrasenaServidor(usuarioId: number) {
+  await solicitarApiServidor(
+    "/api/v1/usuarios/" + usuarioId + "/restablecer-contrasena",
+    { method: "POST" },
+    "No se pudo enviar el correo para restablecer la contraseña.",
   );
 }
 

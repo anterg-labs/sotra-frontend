@@ -42,7 +42,7 @@ describe("servicio-evidencias", () => {
     const evidencias = await listarEvidencias(7);
 
     expect(evidencias[0].observacion).toBe("Se cambió el filtro");
-    expect(fetch).toHaveBeenCalledWith("http://localhost:4000/api/v1/ordenes-trabajo/7/evidencias", { cache: "no-store" });
+    expect(fetch).toHaveBeenCalledWith("/api/v1/ordenes-trabajo/7/evidencias", { cache: "no-store" });
   });
 
   it("no registra una observación vacía", async () => {
@@ -68,6 +68,6 @@ describe("servicio-evidencias", () => {
   });
 
   it("arma la dirección de descarga del archivo", () => {
-    expect(obtenerUrlArchivoEvidencia(7, 3)).toBe("http://localhost:4000/api/v1/ordenes-trabajo/7/evidencias/3/archivo");
+    expect(obtenerUrlArchivoEvidencia(7, 3)).toBe("/api/v1/ordenes-trabajo/7/evidencias/3/archivo");
   });
 });

@@ -1,17 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ErrorDeApi } from "@/servicios/api/solicitudes-http";
-import { actualizarUsuarioAccion, cambiarEstadoUsuarioAccion, crearUsuarioAccion } from "./acciones";
+import { actualizarUsuarioAccion, cambiarEstadoUsuarioAccion, crearUsuarioAccion, restablecerContrasenaAccion } from "./acciones";
 
 const revalidatePath = vi.hoisted(() => vi.fn());
 const s = vi.hoisted(() => ({
   crearUsuarioServidor: vi.fn(),
   actualizarUsuarioServidor: vi.fn(),
   cambiarEstadoUsuarioServidor: vi.fn(),
+  restablecerContrasenaServidor: vi.fn(),
 }));
 vi.mock("next/cache", () => ({ revalidatePath }));
 vi.mock("@/servicios/servidor/usuarios", () => s);
 
-const datos = { nombre: "Ana", apellido: "Pérez", correo: "ana@sotra.com", telefono: "099111222", idsRol: [1, 2], contrasena: "Clave.Segura1" };
+const datos = { nombre: "Ana", apellido: "Pérez", correo: "ana@sotra.com", telefono: "099111222", idsRol: [1, 2] };
 const guardado = { id: 7, ...datos, roles: [], estado: "activo", fechaIngreso: "2026-01-01" };
 
 beforeEach(() => {
@@ -27,9 +28,9 @@ describe("acciones de alta y modificación de usuarios", () => {
     expect(revalidatePath).toHaveBeenCalledWith("/usuarios", "layout");
   });
 
-  it("valida en el servidor (incluida la contraseña en el alta) sin llamar a la API", async () => {
-    const resultado = await crearUsuarioAccion({ ...datos, nombre: " ", telefono: "abc", contrasena: "corta" });
-    expect(resultado).toMatchObject({ exito: false, errores: { nombre: expect.any(String), telefono: expect.any(String), contrasena: expect.any(String) } });
+  it("valida en el servidor sin llamar a la API", async () => {
+    const resultado = await crearUsuarioAccion({ ...datos, nombre: " ", telefono: "abc" });
+    expect(resultado).toMatchObject({ exito: false, errores: { nombre: expect.any(String), telefono: expect.any(String) } });
     expect(s.crearUsuarioServidor).not.toHaveBeenCalled();
   });
 
@@ -65,7 +66,7 @@ describe("acciones de alta y modificación de usuarios", () => {
 
   it("modifica conservando el estado y la fecha de ingreso, sin exigir contraseña", async () => {
     s.actualizarUsuarioServidor.mockResolvedValue(guardado);
-    await expect(actualizarUsuarioAccion(7, "activo", "2026-02-03", { ...datos, contrasena: "" })).resolves.toMatchObject({ exito: true });
+    await expect(actualizarUsuarioAccion(7, "activo", "2026-02-03", datos)).resolves.toMatchObject({ exito: true });
     expect(s.actualizarUsuarioServidor).toHaveBeenCalledWith(7, {
       nombre: "Ana", apellido: "Pérez", correo: "ana@sotra.com", telefono: "099111222", idsRol: [1, 2],
       estado: "activo", fechaIngreso: "2026-02-03",
@@ -89,5 +90,27 @@ describe("acción de baja de usuarios", () => {
     });
     await expect(cambiarEstadoUsuarioAccion(0, "inactivo")).resolves.toMatchObject({ exito: false });
     expect(s.cambiarEstadoUsuarioServidor).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("restablecer contraseña", () => {
+  it("con 204 informa el éxito", async () => {
+    s.restablecerContrasenaServidor.mockResolvedValue(undefined);
+    await expect(restablecerContrasenaAccion(7)).resolves.toEqual({ exito: true });
+    expect(s.restablecerContrasenaServidor).toHaveBeenCalledWith(7);
+  });
+
+  it.each([
+    [409, "USUARIO_SIN_ACCESO", "El usuario no tiene acceso al sistema: no está registrado en Keycloak."],
+    [409, "USUARIO_INACTIVO", "El usuario está dado de baja."],
+    [502, "KEYCLOAK_NO_DISPONIBLE", "No se pudo conectar con Keycloak."],
+  ])("con %i %s muestra el mensaje de la API", async (estado, codigo, mensaje) => {
+    s.restablecerContrasenaServidor.mockRejectedValue(new ErrorDeApi(mensaje, codigo, estado));
+    await expect(restablecerContrasenaAccion(25)).resolves.toEqual({ exito: false, mensaje });
+  });
+
+  it("no llama a la API con un id inválido", async () => {
+    await expect(restablecerContrasenaAccion(0)).resolves.toMatchObject({ exito: false });
+    expect(s.restablecerContrasenaServidor).not.toHaveBeenCalled();
   });
 });

@@ -11,6 +11,7 @@ import type { Activo } from "@/tipos/activo";
 import { BarraFiltrosDocumentos } from "./barra-filtros-documentos";
 import { leerFiltrosDocumentos } from "./filtros";
 import { ListadoDocumentos } from "./listado-documentos";
+import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
 
 const ETIQUETA_CARGA = "Cargando documentos técnicos…";
 
@@ -29,9 +30,11 @@ export default async function PaginaDocumentacionTecnica(props: { searchParams: 
         <div>
           <h1>Documentación técnica</h1>
         </div>
-        <Link className="primary-button" href="/documentacion-tecnica/nuevo">
-          Cargar documento
-        </Link>
+        <SiTienePermiso permiso="documento.gestionar">
+          <Link className="primary-button" href="/documentacion-tecnica/nuevo">
+            Cargar documento
+          </Link>
+        </SiTienePermiso>
       </header>
 
       <ProveedorNavegacionListado etiquetaCarga={ETIQUETA_CARGA}>

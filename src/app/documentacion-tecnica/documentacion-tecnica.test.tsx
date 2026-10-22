@@ -75,7 +75,7 @@ describe("listado de documentación técnica (Server Component)", () => {
     expect(within(filas[1]).getByText("manual-1.pdf")).toBeInTheDocument();
     expect(within(filas[1]).getByText("Retro 2")).toBeInTheDocument();
     expect(within(filas[1]).getByText("Sí")).toBeInTheDocument();
-    expect(within(filas[1]).getByRole("link", { name: "Descargar PDF" })).toHaveAttribute("href", "http://api.test/api/v1/documentos-tecnicos/1/archivo");
+    expect(within(filas[1]).getByRole("link", { name: "Descargar PDF" })).toHaveAttribute("href", "/api/v1/documentos-tecnicos/1/archivo");
     expect(within(filas[2]).getByText("Sin activo")).toBeInTheDocument();
     expect(within(filas[2]).getByText("No")).toBeInTheDocument();
   });
@@ -162,7 +162,7 @@ describe("detalle de documento técnico (Server Component)", () => {
     expect(screen.getByRole("heading", { level: 1, name: "manual-4.pdf" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Retro 2" })).toHaveAttribute("href", "/activos/2");
     expect(screen.getByText("Se usa para sugerencias de IA (12 fragmentos procesados)")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Descargar PDF" })).toHaveAttribute("href", "http://api.test/api/v1/documentos-tecnicos/4/archivo");
+    expect(screen.getByRole("link", { name: "Descargar PDF" })).toHaveAttribute("href", "/api/v1/documentos-tecnicos/4/archivo");
   });
 
   it("muestra los casos sin activo, sin IA o con nombre faltante, y el error de carga", async () => {

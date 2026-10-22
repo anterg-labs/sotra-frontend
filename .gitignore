@@ -12,3 +12,5 @@ coverage/
 # Playwright
 /test-results/
 /playwright-report/
+# Sesión de Keycloak que guardan las pruebas de extremo a extremo
+/e2e/.auth/

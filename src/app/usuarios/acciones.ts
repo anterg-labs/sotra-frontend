@@ -1,11 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { ejecutarCambioEstado, esEstadoValido, resultadoFallido } from "@/servicios/servidor/resultado-accion";
+import { ejecutarCambioEstado, esEstadoValido, esIdValido, resultadoFallido } from "@/servicios/servidor/resultado-accion";
 import {
   actualizarUsuarioServidor,
   cambiarEstadoUsuarioServidor,
   crearUsuarioServidor,
+  restablecerContrasenaServidor,
 } from "@/servicios/servidor/usuarios";
 import type { ResultadoCambiarEstado, ResultadoGuardar } from "@/tipos/resultado-accion";
 import type { CrearUsuarioInput, EstadoUsuario, Usuario } from "@/tipos/usuario";
@@ -18,30 +19,28 @@ const campoPorCodigoDuplicado = { TELEFONO_DUPLICADO: "telefono", CORREO_DUPLICA
 /** Una Server Action es un endpoint público: la entrada se revisa como si viniera de cualquier cliente. */
 function leerEntrada(datos: unknown): CrearUsuarioInput | null {
   if (typeof datos !== "object" || datos === null) return null;
-  const { nombre, apellido, correo, telefono, contrasena, idsRol } = datos as Record<string, unknown>;
+  const { nombre, apellido, correo, telefono, idsRol } = datos as Record<string, unknown>;
   if (
     typeof nombre !== "string" ||
     typeof apellido !== "string" ||
     typeof correo !== "string" ||
     typeof telefono !== "string" ||
-    !(contrasena === undefined || typeof contrasena === "string") ||
     !Array.isArray(idsRol) ||
     !idsRol.every((id) => Number.isInteger(id) && id > 0)
   ) {
     return null;
   }
-  return { nombre, apellido, correo, telefono, contrasena: contrasena ?? "", idsRol: idsRol as number[] };
+  return { nombre, apellido, correo, telefono, idsRol: idsRol as number[] };
 }
 
 async function guardarUsuario(
   datos: unknown,
-  exigirContrasena: boolean,
   guardar: (usuario: CrearUsuarioInput) => Promise<Usuario>,
 ): Promise<ResultadoGuardar<Usuario>> {
   const entrada = leerEntrada(datos);
   if (!entrada) return { exito: false, errores: {}, mensaje: MENSAJE_GENERAL };
 
-  const errores = validarUsuario(entrada, { exigirContrasena });
+  const errores = validarUsuario(entrada);
   if (Object.keys(errores).length > 0) return { exito: false, errores, mensaje: "" };
   if (entrada.idsRol.length === 0) return { exito: false, errores: {}, mensaje: "Debe seleccionar al menos un rol." };
 
@@ -55,7 +54,7 @@ async function guardarUsuario(
 }
 
 export async function crearUsuarioAccion(datos: CrearUsuarioInput) {
-  return guardarUsuario(datos, true, crearUsuarioServidor);
+  return guardarUsuario(datos, crearUsuarioServidor);
 }
 
 /** El estado y la fecha de ingreso actuales viajan ligados (`bind`) desde la página de edición. */
@@ -68,7 +67,7 @@ export async function actualizarUsuarioAccion(
   if (!esEstadoValido(estado) || typeof fechaIngreso !== "string") {
     return { exito: false, errores: {}, mensaje: MENSAJE_GENERAL } satisfies ResultadoGuardar<Usuario>;
   }
-  return guardarUsuario(datos, false, (usuario) =>
+  return guardarUsuario(datos, (usuario) =>
     actualizarUsuarioServidor(usuarioId, {
       nombre: usuario.nombre,
       apellido: usuario.apellido,
@@ -79,6 +78,23 @@ export async function actualizarUsuarioAccion(
       fechaIngreso,
     }),
   );
+}
+
+const MENSAJE_RESTABLECER = "No se pudo enviar el correo para restablecer la contraseña.";
+
+/**
+ * Reenvía al usuario el correo de Keycloak para elegir una contraseña nueva. La API responde 409 con
+ * `USUARIO_SIN_ACCESO` (cargado antes de Keycloak) o `USUARIO_INACTIVO`, y 502 si Keycloak no responde: se muestra su mensaje.
+ */
+export async function restablecerContrasenaAccion(usuarioId: number): Promise<ResultadoCambiarEstado> {
+  if (!esIdValido(usuarioId)) return { exito: false, mensaje: MENSAJE_RESTABLECER };
+  try {
+    await restablecerContrasenaServidor(usuarioId);
+    return { exito: true };
+  } catch (error) {
+    const resultado = resultadoFallido<never>(error, {}, MENSAJE_RESTABLECER);
+    return { exito: false, mensaje: resultado.exito ? MENSAJE_RESTABLECER : resultado.mensaje };
+  }
 }
 
 export async function cambiarEstadoUsuarioAccion(usuarioId: number, estado: EstadoUsuario): Promise<ResultadoCambiarEstado> {

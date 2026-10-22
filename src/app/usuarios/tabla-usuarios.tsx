@@ -7,6 +7,8 @@ import { EstadoRegistro } from "@/componentes/listado/estado-registro";
 import { useUltimoCreado } from "@/componentes/listado/ultimo-creado";
 import { useCambioEstado } from "@/componentes/listado/use-cambio-estado";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
+import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
+import { esUsuarioAdministrador } from "@/seguridad/permisos";
 import type { UsuarioListado } from "@/tipos/usuario";
 import { cambiarEstadoUsuarioAccion } from "./acciones";
 
@@ -31,6 +33,8 @@ export function TablaUsuarios(props: { usuarios: UsuarioListado[] }) {
   const [usuarioPendienteBaja, setUsuarioPendienteBaja] = useState<UsuarioListado | null>(null);
   const { enProcesoId, error, ejecutar } = useCambioEstado(cambiarEstadoUsuarioAccion, () => setUsuarioPendienteBaja(null));
   const nuevoId = useUltimoCreado("usuarios");
+  // El jefe ve a los administradores, pero no los modifica ni los da de baja.
+  const puedeGestionarAdministradores = useTienePermiso("usuario.gestionar_administradores");
 
   return (
     <>
@@ -49,6 +53,7 @@ export function TablaUsuarios(props: { usuarios: UsuarioListado[] }) {
           <tbody>
             {props.usuarios.map((usuario) => {
               const estaOcupado = enProcesoId === usuario.id;
+              const puedeModificar = puedeGestionarAdministradores || !esUsuarioAdministrador(usuario);
               return (
                 <tr
                   aria-busy={estaOcupado || undefined}
@@ -66,15 +71,17 @@ export function TablaUsuarios(props: { usuarios: UsuarioListado[] }) {
                       <Link aria-label="Ver detalle" className="boton-icono" href={"/usuarios/" + usuario.id} title="Ver detalle">
                         <IconoOjo />
                       </Link>
-                      <Link
-                        aria-label="Modificar usuario"
-                        className="boton-icono"
-                        href={"/usuarios/" + usuario.id + "/editar"}
-                        title="Modificar usuario"
-                      >
-                        <IconoLapiz />
-                      </Link>
-                      {usuario.estado === "activo" ? (
+                      {puedeModificar ? (
+                        <Link
+                          aria-label="Modificar usuario"
+                          className="boton-icono"
+                          href={"/usuarios/" + usuario.id + "/editar"}
+                          title="Modificar usuario"
+                        >
+                          <IconoLapiz />
+                        </Link>
+                      ) : null}
+                      {puedeModificar && usuario.estado === "activo" ? (
                         <button
                           aria-label="Dar de baja"
                           className="boton-icono boton-icono-peligro"

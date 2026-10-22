@@ -5,6 +5,7 @@ import { useState } from "react";
 import { IconoDescarga, IconoOjo, IconoPapelera } from "@/componentes/iconos";
 import { useCambioEstado } from "@/componentes/listado/use-cambio-estado";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
+import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import { apiObtenerUrlDescargaDocumentoTecnico } from "@/servicios/api/api-documentos-tecnicos";
 import type { DocumentoTecnico } from "@/tipos/documento-tecnico";
 import { eliminarDocumentoTecnicoAccion } from "./acciones";
@@ -12,6 +13,7 @@ import { formatearFechaCorta } from "@/utilidades/fechas";
 
 /** Tabla del listado: recibe los documentos ya cargados en el servidor y maneja la eliminación con confirmación. */
 export function TablaDocumentos(props: { documentos: DocumentoTecnico[] }) {
+  const puedeGestionar = useTienePermiso("documento.gestionar");
   const [documentoPendiente, setDocumentoPendiente] = useState<DocumentoTecnico | null>(null);
   const { enProcesoId, error, ejecutar } = useCambioEstado(
     (id) => eliminarDocumentoTecnicoAccion(id),
@@ -63,16 +65,18 @@ export function TablaDocumentos(props: { documentos: DocumentoTecnico[] }) {
                       >
                         <IconoDescarga />
                       </a>
-                      <button
-                        aria-label="Eliminar documento"
-                        className="boton-icono boton-icono-peligro"
-                        disabled={estaOcupado}
-                        onClick={() => setDocumentoPendiente(documento)}
-                        title="Eliminar documento"
-                        type="button"
-                      >
-                        <IconoPapelera />
-                      </button>
+                      {puedeGestionar ? (
+                        <button
+                          aria-label="Eliminar documento"
+                          className="boton-icono boton-icono-peligro"
+                          disabled={estaOcupado}
+                          onClick={() => setDocumentoPendiente(documento)}
+                          title="Eliminar documento"
+                          type="button"
+                        >
+                          <IconoPapelera />
+                        </button>
+                      ) : null}
                     </div>
                   </td>
                 </tr>

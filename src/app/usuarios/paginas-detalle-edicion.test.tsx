@@ -3,6 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import EditarUsuario from "./[id]/editar/page";
 import DetalleUsuario from "./[id]/page";
 import NuevoUsuario from "./nuevo/page";
+import { TablaUsuarios } from "./tabla-usuarios";
+import { ProveedorSesion } from "@/componentes/sesion/contexto-sesion";
+import { usuarioDePruebas } from "@/pruebas/sesion-de-pruebas";
+import { tienePermisoServidor } from "@/servicios/servidor/sesion";
 
 const s = vi.hoisted(() => ({
   obtenerUsuarioServidor: vi.fn(),
@@ -22,7 +26,12 @@ vi.mock("@/servicios/servidor/usuarios", () => ({
   listarRolesServidor: s.listarRolesServidor,
 }));
 vi.mock("@/servicios/servidor/terminos", () => ({ obtenerEstadoTerminosServidor: s.obtenerEstadoTerminosServidor }));
-vi.mock("./acciones", () => ({ actualizarUsuarioAccion: s.actualizarUsuarioAccion, crearUsuarioAccion: s.crearUsuarioAccion }));
+vi.mock("./acciones", () => ({
+  actualizarUsuarioAccion: s.actualizarUsuarioAccion,
+  crearUsuarioAccion: s.crearUsuarioAccion,
+  cambiarEstadoUsuarioAccion: vi.fn(),
+  restablecerContrasenaAccion: vi.fn(),
+}));
 
 const usuario = {
   id: 5, nombre: "Ana", apellido: "Pérez", correo: "ana@sotra.com", telefono: "099111222",
@@ -118,9 +127,9 @@ describe("edición y alta de usuario", () => {
     expect(screen.queryByRole("button", { name: "Confirmar modificación" })).not.toBeInTheDocument();
   });
 
-  it("la página de alta carga los roles en el servidor y exige contraseña", async () => {
+  it("la página de alta carga los roles en el servidor y no pide contraseña", async () => {
     render(await NuevoUsuario());
-    expect(screen.getByLabelText("Contraseña")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Contraseña")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Confirmar creación" }));
     expect(await screen.findAllByRole("alert")).not.toHaveLength(0);
     expect(s.crearUsuarioAccion).not.toHaveBeenCalled();
@@ -130,5 +139,50 @@ describe("edición y alta de usuario", () => {
     s.listarRolesServidor.mockRejectedValue(new Error("x"));
     render(await NuevoUsuario());
     expect(screen.getByText("No se pudo obtener el listado de roles.")).toBeInTheDocument();
+  });
+});
+
+describe("el jefe de mantenimiento gestiona usuarios, salvo administradores", () => {
+  const administrador = { ...usuario, id: 35, nombre: "Admin", roles: [{ id: 9, nombre: "Administrador", activo: true }] };
+  const rolesConAdministrador = [{ id: 9, nombre: "Administrador" }, { id: 1, nombre: "Técnico" }, { id: 4, nombre: "Pañolero" }];
+
+  beforeEach(() => {
+    vi.mocked(tienePermisoServidor).mockImplementation(async (permiso) => permiso !== "usuario.gestionar_administradores");
+    s.listarRolesServidor.mockResolvedValue(rolesConAdministrador);
+  });
+
+  it("el alta no ofrece el rol Administrador", async () => {
+    render(await NuevoUsuario());
+    expect(screen.queryByRole("checkbox", { name: "Administrador" })).not.toBeInTheDocument();
+    expect(screen.getByRole("checkbox", { name: "Técnico" })).toBeInTheDocument();
+  });
+
+  it("modifica a un técnico, pero sin poder darle el rol Administrador", async () => {
+    s.obtenerUsuarioServidor.mockResolvedValue(usuario);
+    render(await EditarUsuario(parametros("5")));
+    expect(screen.getByRole("button", { name: "Confirmar modificación" })).toBeInTheDocument();
+    expect(screen.queryByRole("checkbox", { name: "Administrador" })).not.toBeInTheDocument();
+  });
+
+  it("no puede modificar a un administrador: ni la edición ni los botones del detalle", async () => {
+    s.obtenerUsuarioServidor.mockResolvedValue(administrador);
+    const { unmount } = render(await EditarUsuario(parametros("35")));
+    expect(screen.getByText("Solo un administrador puede modificar a un administrador.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Confirmar modificación" })).not.toBeInTheDocument();
+    unmount();
+
+    render(await DetalleUsuario(parametros("35")));
+    expect(screen.queryByRole("link", { name: "Modificar" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Restablecer contraseña" })).not.toBeInTheDocument();
+  });
+
+  it("en el listado, los administradores no tienen modificar ni dar de baja", () => {
+    render(
+      <ProveedorSesion usuario={usuarioDePruebas(["jefe_mantenimiento"])}>
+        <TablaUsuarios usuarios={[usuario, administrador] as never} />
+      </ProveedorSesion>,
+    );
+    expect(screen.getAllByRole("link", { name: "Modificar usuario" })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "Dar de baja" })).toHaveLength(1);
   });
 });

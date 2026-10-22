@@ -2,17 +2,22 @@ import { listarActivosServidor } from "@/servicios/servidor/activos";
 import { listarClientesServidor } from "@/servicios/servidor/clientes";
 import { listarTecnicosServidor } from "@/servicios/servidor/ordenes-trabajo";
 import { listarRepuestosServidor } from "@/servicios/servidor/repuestos";
+import { tienePermisoServidor } from "@/servicios/servidor/sesion";
 import { FormularioNuevaOrden } from "../formularios-orden";
 
+/** Los repuestos solo se cargan si el rol los puede ver (el jefe no): sin la lista, la orden se crea sin repuestos. */
 async function cargarDatos() {
   try {
+    const puedeVerRepuestos = await tienePermisoServidor("stock.consultar");
     const [clientes, activos, tecnicos, repuestos] = await Promise.all([
       listarClientesServidor({ buscar: "", estado: "activo", pagina: 1 }),
       listarActivosServidor({ buscar: "", clienteId: "", modeloMaquinaId: "", estado: "activo", pagina: 1 }),
       listarTecnicosServidor(),
-      listarRepuestosServidor({ buscar: "", estado: "activo", ubicacion: "", bajoStock: false, pagina: 1 }),
+      puedeVerRepuestos
+        ? listarRepuestosServidor({ buscar: "", estado: "activo", ubicacion: "", bajoStock: false, pagina: 1 })
+        : Promise.resolve(null),
     ]);
-    return { clientes: clientes.elementos, activos: activos.elementos, tecnicos, repuestos: repuestos.elementos };
+    return { clientes: clientes.elementos, activos: activos.elementos, tecnicos, repuestos: repuestos?.elementos ?? [] };
   } catch {
     return null;
   }

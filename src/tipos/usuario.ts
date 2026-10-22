@@ -32,7 +32,6 @@ export type CrearUsuarioInput = {
   correo: string;
   telefono: string;
   idsRol: number[];
-  contrasena: string;
 };
 
 export type ActualizarUsuarioInput = {

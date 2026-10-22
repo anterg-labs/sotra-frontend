@@ -6,6 +6,7 @@ import { AltaCliente } from "./alta-cliente";
 import { BarraFiltrosClientes } from "./barra-filtros-clientes";
 import { leerFiltrosClientes } from "./filtros";
 import { ListadoClientes } from "./listado-clientes";
+import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
 
 const ETIQUETA_CARGA = "Cargando clientes…";
 
@@ -19,7 +20,9 @@ export default async function PaginaClientes(props: { searchParams: Promise<Para
         <div>
           <h1>Gestión de clientes</h1>
         </div>
-        <AltaCliente />
+        <SiTienePermiso permiso="cliente.gestionar">
+          <AltaCliente />
+        </SiTienePermiso>
       </header>
 
       <ProveedorNavegacionListado etiquetaCarga={ETIQUETA_CARGA}>

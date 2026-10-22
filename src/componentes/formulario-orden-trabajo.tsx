@@ -11,6 +11,7 @@ import { CamposGeneralesOrdenTrabajo } from "@/componentes/campos-generales-orde
 import { SelectorClienteActivoOrdenTrabajo } from "@/componentes/selector-cliente-activo-orden-trabajo";
 import { SelectorRepuestosOrdenTrabajo } from "@/componentes/selector-repuestos-orden-trabajo";
 import { SugerenciasOrdenTrabajo } from "@/componentes/sugerencias-orden-trabajo";
+import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import {
   borrarSugerenciasTemporales,
   crearSesionDeSugerencias,
@@ -108,6 +109,8 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
   const [observaciones, setObservaciones] = useState(observacionesInicial);
   const [fechaPrevistaEjecucion, setFechaPrevistaEjecucion] = useState(fechaPrevistaInicial);
   const [sugerencias, setSugerencias] = useState(sugerenciasIniciales);
+  // El jefe crea y edita órdenes pero no ve repuestos (la API le responde 403): conserva los que ya tenía la orden.
+  const puedeVerRepuestos = useTienePermiso("stock.consultar");
   const [idsRepuestos, setIdsRepuestos] = useState(idsRepuestosIniciales);
   const [estaEnviando, setEstaEnviando] = useState(false);
   const [errorGeneral, setErrorGeneral] = useState("");
@@ -263,11 +266,22 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
         <textarea id="observaciones" onChange={cambiarObservaciones} rows={3} value={observaciones} />
       </div>
 
-      <SelectorRepuestosOrdenTrabajo
-        alCambiarIdsRepuestos={setIdsRepuestos}
-        idsRepuestos={idsRepuestos}
-        repuestos={props.repuestos}
-      />
+      {puedeVerRepuestos ? (
+        <SelectorRepuestosOrdenTrabajo
+          alCambiarIdsRepuestos={setIdsRepuestos}
+          idsRepuestos={idsRepuestos}
+          repuestos={props.repuestos}
+        />
+      ) : ordenInicial && ordenInicial.repuestos.length > 0 ? (
+        <div className="form-field form-field-full">
+          <span>Repuestos</span>
+          <ul>
+            {ordenInicial.repuestos.map((repuesto) => (
+              <li key={repuesto.id}>{repuesto.codigo + " - " + repuesto.nombre}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       <SugerenciasOrdenTrabajo
         alCambiarSugerencias={setSugerencias}

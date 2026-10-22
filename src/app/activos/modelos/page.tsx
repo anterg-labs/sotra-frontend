@@ -10,6 +10,7 @@ import { AltaModelo } from "./alta-modelo";
 import { BarraFiltrosModelos } from "./barra-filtros-modelos";
 import { leerFiltrosModelos } from "./filtros";
 import { ListadoModelos } from "./listado-modelos";
+import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
 
 const ETIQUETA_CARGA = "Cargando modelos de máquina…";
 
@@ -43,7 +44,9 @@ export default async function PaginaModelosMaquina(props: { searchParams: Promis
           <div>
             <h2>Modelos de máquina</h2>
           </div>
-          <AltaModelo tiposMaquina={tiposAlta} />
+          <SiTienePermiso permiso="modelo.crear">
+            <AltaModelo tiposMaquina={tiposAlta} />
+          </SiTienePermiso>
         </header>
 
         <ProveedorNavegacionListado etiquetaCarga={ETIQUETA_CARGA}>

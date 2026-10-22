@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { BotonTerminos, EVENTO_TERMINOS_PUBLICADOS } from "./modal-terminos";
 import { CLAVE_ACEPTACION_TERMINOS, guardarAceptacion } from "@/utilidades/aceptacion-terminos";
 
@@ -22,6 +22,12 @@ async function aceptar() {
   fireEvent.click(screen.getByRole("button", { name: "Aceptar" }));
   await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
 }
+
+// El modal carga la lectura con `next/dynamic`: se precarga una vez para que la primera prueba que abre el diálogo
+// no pague la transformación del módulo (con la suite completa en paralelo superaba los 5 s).
+beforeAll(async () => {
+  await import("./lectura-terminos");
+}, 30_000);
 
 beforeEach(() => {
   window.localStorage.clear();

@@ -165,7 +165,7 @@ describe("tabla de usuarios (baja)", () => {
 
 describe("alta de usuario en modal", () => {
   it("abre el formulario y, al guardar, cierra, resalta y avisa", async () => {
-    crearUsuarioAccion.mockResolvedValue({ exito: true, registro: usuario(9, ["Técnico"]) });
+    crearUsuarioAccion.mockResolvedValue({ exito: true, registro: { ...usuario(9, ["Técnico"]), correoDeContrasenaEnviado: true } });
     render(<AltaUsuarioModal roles={roles} />);
     fireEvent.click(screen.getByRole("button", { name: "Crear nuevo usuario" }));
     const dialogo = await screen.findByRole("dialog", { name: "Crear nuevo usuario" });

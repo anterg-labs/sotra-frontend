@@ -33,9 +33,9 @@ export async function ListadoTipos(props: { filtros: FiltrosTiposMaquina }) {
   return (
     <>
       <InformarResultados total={pagina.totalElementos} />
-      <TablaTipos tipos={pagina.elementos} />
+      <TablaTipos tipos={pagina.elementos} filtros={filtros} />
       <PaginacionListado
-        filtros={{ buscar: filtros.buscar, estado: filtros.estado }}
+        filtros={{ buscar: filtros.buscar, estado: filtros.estado, ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden }}
         pagina={pagina.pagina}
         plural="tipos"
         ruta={RUTA_TIPOS}

@@ -1,5 +1,8 @@
 "use client";
 
+import { EncabezadoOrdenable } from "@/componentes/listado/encabezado-ordenable";
+import { construirUrlTipos } from "./filtros";
+
 import Link from "next/link";
 import { useState } from "react";
 import { IconoLapiz, IconoOjo, IconoPapelera } from "@/componentes/iconos";
@@ -8,11 +11,20 @@ import { useUltimoCreado } from "@/componentes/listado/ultimo-creado";
 import { useCambioEstado } from "@/componentes/listado/use-cambio-estado";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
 import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
-import type { TipoMaquina } from "@/tipos/tipo-maquina";
+import type { TipoMaquina, FiltrosTiposMaquina } from "@/tipos/tipo-maquina";
 import { cambiarEstadoTipoMaquinaAccion } from "./acciones";
 
 /** Tabla del listado: recibe los tipos ya cargados en el servidor y maneja la baja con confirmación. */
-export function TablaTipos(props: { tipos: TipoMaquina[] }) {
+export function TablaTipos(props: { tipos: TipoMaquina[]; filtros?: FiltrosTiposMaquina }) {
+  const { filtros } = props;
+  const columna = (clave: string, etiqueta: string) => (
+    <EncabezadoOrdenable
+      columna={clave}
+      construirUrl={(orden) => construirUrlTipos({ ...filtros, ...orden, pagina: 1 } as FiltrosTiposMaquina)}
+      etiqueta={etiqueta}
+      orden={filtros}
+    />
+  );
   const puedeGestionar = useTienePermiso("tipo_maquina.gestionar");
   const [tipoPendienteBaja, setTipoPendienteBaja] = useState<TipoMaquina | null>(null);
   const { enProcesoId, error, ejecutar } = useCambioEstado(cambiarEstadoTipoMaquinaAccion, () => setTipoPendienteBaja(null));
@@ -25,8 +37,8 @@ export function TablaTipos(props: { tipos: TipoMaquina[] }) {
         <table>
           <thead>
             <tr>
-              <th>Nombre</th>
-              <th>Estado</th>
+              {columna("nombre", "Nombre")}
+              {columna("estado", "Estado")}
               <th>Acciones</th>
             </tr>
           </thead>

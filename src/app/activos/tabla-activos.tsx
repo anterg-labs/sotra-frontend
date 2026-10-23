@@ -1,5 +1,8 @@
 "use client";
 
+import { EncabezadoOrdenable } from "@/componentes/listado/encabezado-ordenable";
+import { construirUrlActivos } from "./filtros";
+
 import Link from "next/link";
 import { useState } from "react";
 import { IconoLapiz, IconoOjo, IconoPapelera } from "@/componentes/iconos";
@@ -8,11 +11,20 @@ import { useUltimoCreado } from "@/componentes/listado/ultimo-creado";
 import { useCambioEstado } from "@/componentes/listado/use-cambio-estado";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
 import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
-import type { Activo } from "@/tipos/activo";
+import type { Activo, FiltrosActivos } from "@/tipos/activo";
 import { cambiarEstadoActivoAccion } from "./acciones";
 
 /** Tabla del listado: recibe los activos ya cargados en el servidor y maneja la baja con confirmación. */
-export function TablaActivos(props: { activos: Activo[] }) {
+export function TablaActivos(props: { activos: Activo[]; filtros?: FiltrosActivos }) {
+  const { filtros } = props;
+  const columna = (clave: string, etiqueta: string) => (
+    <EncabezadoOrdenable
+      columna={clave}
+      construirUrl={(orden) => construirUrlActivos({ ...filtros, ...orden, pagina: 1 } as FiltrosActivos)}
+      etiqueta={etiqueta}
+      orden={filtros}
+    />
+  );
   const puedeGestionar = useTienePermiso("activo.editar");
   const [activoPendienteBaja, setActivoPendienteBaja] = useState<Activo | null>(null);
   const { enProcesoId, error, ejecutar } = useCambioEstado(cambiarEstadoActivoAccion, () => setActivoPendienteBaja(null));
@@ -25,11 +37,11 @@ export function TablaActivos(props: { activos: Activo[] }) {
         <table>
           <thead>
             <tr>
-              <th>Nombre</th>
-              <th>Número de serie</th>
-              <th>Cliente</th>
-              <th>Modelo</th>
-              <th>Estado</th>
+              {columna("nombre", "Nombre")}
+              {columna("numSerie", "Número de serie")}
+              {columna("nombreCliente", "Cliente")}
+              {columna("nombreModeloMaquina", "Modelo")}
+              {columna("estado", "Estado")}
               <th>Acciones</th>
             </tr>
           </thead>

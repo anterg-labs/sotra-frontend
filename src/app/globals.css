@@ -120,6 +120,30 @@ th {
   text-transform: uppercase;
 }
 
+.encabezado-ordenable {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.encabezado-ordenable:hover:not(:disabled) { color: var(--texto); }
+.encabezado-ordenable:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 3px;
+  border-radius: var(--radio-s);
+}
+.encabezado-ordenable .indicador-orden { font-size: 10px; opacity: 0.55; }
+th[aria-sort="ascending"] .indicador-orden,
+th[aria-sort="descending"] .indicador-orden { opacity: 1; color: var(--acento); }
+
 tbody tr:hover td {
   background: var(--superficie-suave);
 }

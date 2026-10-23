@@ -42,6 +42,7 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
       buscar: filtros.buscar, clienteId: filtros.clienteId, activoId: filtros.activoId, tecnicoId: filtros.tecnicoId,
       estado: filtros.estado, prioridad: filtros.prioridad, tipo: filtros.tipo, fechaDesde: filtros.fechaDesde,
       fechaHasta: filtros.fechaHasta, conSugerencias: filtros.conSugerencias,
+      ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden,
     },
     construirUrl: (v) => construirUrlOrdenes({ ...v, pagina: 1 }),
     sonValidos: (v) => !rangoDeFechasInvalido(v.fechaDesde, v.fechaHasta),

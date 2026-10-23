@@ -7,13 +7,13 @@ import type { FiltrosModelosMaquina } from "@/tipos/modelo-maquina";
 import type { TipoMaquina } from "@/tipos/tipo-maquina";
 import { construirUrlModelos } from "./filtros";
 
-type ValoresModelos = Pick<FiltrosModelosMaquina, "buscar" | "tipoMaquinaId" | "estado">;
+type ValoresModelos = Pick<FiltrosModelosMaquina, "buscar" | "tipoMaquinaId" | "estado" | "ordenarPor" | "direccionOrden">;
 const VACIOS: ValoresModelos = { buscar: "", tipoMaquinaId: "", estado: "" };
 
 /** Filtros del listado en vivo: el texto espera un instante; el tipo y el estado aplican al instante. */
 export function BarraFiltrosModelos(props: { filtros: FiltrosModelosMaquina; tiposMaquina: TipoMaquina[] }) {
   const { valores, cambiar, aplicarAhora, limpiar, estaPendiente } = useFiltrosEnVivo<ValoresModelos>({
-    inicial: { buscar: props.filtros.buscar, tipoMaquinaId: props.filtros.tipoMaquinaId, estado: props.filtros.estado },
+    inicial: { buscar: props.filtros.buscar, tipoMaquinaId: props.filtros.tipoMaquinaId, estado: props.filtros.estado, ordenarPor: props.filtros.ordenarPor, direccionOrden: props.filtros.direccionOrden },
     construirUrl: (v) => construirUrlModelos({ ...v, pagina: 1 }),
   });
 

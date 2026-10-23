@@ -1,5 +1,8 @@
 "use client";
 
+import { EncabezadoOrdenable } from "@/componentes/listado/encabezado-ordenable";
+import { construirUrlUsuarios } from "./filtros";
+
 import Link from "next/link";
 import { useState } from "react";
 import { IconoLapiz, IconoOjo, IconoPapelera } from "@/componentes/iconos";
@@ -9,7 +12,7 @@ import { useCambioEstado } from "@/componentes/listado/use-cambio-estado";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
 import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import { esUsuarioAdministrador } from "@/seguridad/permisos";
-import type { UsuarioListado } from "@/tipos/usuario";
+import type { UsuarioListado, FiltrosUsuarios } from "@/tipos/usuario";
 import { cambiarEstadoUsuarioAccion } from "./acciones";
 
 function CeldaRoles(props: { roles: UsuarioListado["roles"] }) {
@@ -29,7 +32,16 @@ function CeldaRoles(props: { roles: UsuarioListado["roles"] }) {
 }
 
 /** Tabla del listado: recibe los usuarios ya cargados en el servidor y maneja la baja con confirmación. */
-export function TablaUsuarios(props: { usuarios: UsuarioListado[] }) {
+export function TablaUsuarios(props: { usuarios: UsuarioListado[]; filtros?: FiltrosUsuarios }) {
+  const { filtros } = props;
+  const columna = (clave: string, etiqueta: string) => (
+    <EncabezadoOrdenable
+      columna={clave}
+      construirUrl={(orden) => construirUrlUsuarios({ ...filtros, ...orden, pagina: 1 } as FiltrosUsuarios)}
+      etiqueta={etiqueta}
+      orden={filtros}
+    />
+  );
   const [usuarioPendienteBaja, setUsuarioPendienteBaja] = useState<UsuarioListado | null>(null);
   const { enProcesoId, error, ejecutar } = useCambioEstado(cambiarEstadoUsuarioAccion, () => setUsuarioPendienteBaja(null));
   const nuevoId = useUltimoCreado("usuarios");
@@ -43,10 +55,10 @@ export function TablaUsuarios(props: { usuarios: UsuarioListado[] }) {
         <table>
           <thead>
             <tr>
-              <th>Nombre y apellido</th>
-              <th>Correo electrónico</th>
-              <th>Roles asignados</th>
-              <th>Estado</th>
+              {columna("nombre", "Nombre y apellido")}
+              {columna("correo", "Correo electrónico")}
+              {columna("roles", "Roles asignados")}
+              {columna("estado", "Estado")}
               <th>Acciones</th>
             </tr>
           </thead>

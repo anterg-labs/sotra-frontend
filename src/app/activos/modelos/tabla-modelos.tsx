@@ -1,5 +1,8 @@
 "use client";
 
+import { EncabezadoOrdenable } from "@/componentes/listado/encabezado-ordenable";
+import { construirUrlModelos } from "./filtros";
+
 import Link from "next/link";
 import { useState } from "react";
 import { IconoLapiz, IconoOjo, IconoPapelera } from "@/componentes/iconos";
@@ -8,11 +11,20 @@ import { useUltimoCreado } from "@/componentes/listado/ultimo-creado";
 import { useCambioEstado } from "@/componentes/listado/use-cambio-estado";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
 import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
-import type { ModeloMaquina } from "@/tipos/modelo-maquina";
+import type { ModeloMaquina, FiltrosModelosMaquina } from "@/tipos/modelo-maquina";
 import { cambiarEstadoModeloMaquinaAccion } from "./acciones";
 
 /** Tabla del listado: recibe los modelos ya cargados en el servidor y maneja la baja con confirmación. */
-export function TablaModelos(props: { modelos: ModeloMaquina[] }) {
+export function TablaModelos(props: { modelos: ModeloMaquina[]; filtros?: FiltrosModelosMaquina }) {
+  const { filtros } = props;
+  const columna = (clave: string, etiqueta: string) => (
+    <EncabezadoOrdenable
+      columna={clave}
+      construirUrl={(orden) => construirUrlModelos({ ...filtros, ...orden, pagina: 1 } as FiltrosModelosMaquina)}
+      etiqueta={etiqueta}
+      orden={filtros}
+    />
+  );
   const puedeGestionar = useTienePermiso("modelo.editar");
   const [modeloPendienteBaja, setModeloPendienteBaja] = useState<ModeloMaquina | null>(null);
   const { enProcesoId, error, ejecutar } = useCambioEstado(cambiarEstadoModeloMaquinaAccion, () => setModeloPendienteBaja(null));
@@ -25,10 +37,10 @@ export function TablaModelos(props: { modelos: ModeloMaquina[] }) {
         <table>
           <thead>
             <tr>
-              <th>Nombre</th>
-              <th>Tipo</th>
-              <th>Descripción</th>
-              <th>Estado</th>
+              {columna("nombre", "Nombre")}
+              {columna("nombreTipoMaquina", "Tipo")}
+              {columna("descripcion", "Descripción")}
+              {columna("estado", "Estado")}
               <th>Acciones</th>
             </tr>
           </thead>

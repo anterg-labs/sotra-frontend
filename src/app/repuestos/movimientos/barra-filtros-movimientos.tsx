@@ -34,6 +34,8 @@ export function BarraFiltrosMovimientos(props: {
       fechaHasta: filtros.fechaHasta,
       ubicacion: filtros.ubicacion,
       usuarioId: filtros.usuarioId,
+      ordenarPor: filtros.ordenarPor,
+      direccionOrden: filtros.direccionOrden,
     },
     construirUrl: (v) => construirUrlMovimientos({ ...v, pagina: 1 }),
     sonValidos: (v) => !rangoDeFechasInvalido(v.fechaDesde, v.fechaHasta),

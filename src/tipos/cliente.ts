@@ -28,4 +28,6 @@ export type FiltrosClientes = {
   buscar: string;
   estado: string;
   pagina: number;
+  ordenarPor?: string;
+  direccionOrden?: "asc" | "desc" | "";
 };

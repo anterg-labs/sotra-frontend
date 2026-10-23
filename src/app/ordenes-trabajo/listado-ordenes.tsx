@@ -1,14 +1,10 @@
 import { anticiparConsulta, resolverConsulta, type ConsultaAnticipada } from "@/servicios/servidor/consulta-anticipada";
-import Link from "next/link";
-import { IconoLapiz, IconoOjo } from "@/componentes/iconos";
 import { InformarResultados } from "@/componentes/listado/navegacion-listado";
 import { PaginacionListado } from "@/componentes/listado/paginacion-listado";
-import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import { listarOrdenesTrabajoServidor } from "@/servicios/servidor/ordenes-trabajo";
-import { formatearFechaPrevista, obtenerEtiquetaEstadoOrdenTrabajo } from "@/servicios/servicio-ordenes-trabajo";
 import type { FiltrosOrdenesTrabajo } from "@/tipos/orden-trabajo";
 import { RUTA_ORDENES } from "./filtros";
-import { formatearFechaCorta } from "@/utilidades/fechas";
+import { TablaOrdenes } from "./tabla-ordenes";
 
 /** Trae la página de órdenes en el servidor; si falla, el mensaje queda en línea y los filtros siguen disponibles. */
 export async function ListadoOrdenes(props: { filtros: FiltrosOrdenesTrabajo; consulta?: ConsultaAnticipada<Awaited<ReturnType<typeof listarOrdenesTrabajoServidor>>> }) {
@@ -44,62 +40,7 @@ export async function ListadoOrdenes(props: { filtros: FiltrosOrdenesTrabajo; co
   return (
     <>
       <InformarResultados total={pagina.totalElementos} />
-      <div className="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>N°</th>
-              <th>Cliente</th>
-              <th>Activo</th>
-              <th>Tipo</th>
-              <th>Prioridad</th>
-              <th>Técnico</th>
-              <th>Estado</th>
-              <th>Fecha de creación</th>
-              <th>Fecha prevista</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pagina.elementos.map((orden) => (
-              <tr key={orden.id}>
-                <td><strong>{orden.id}</strong></td>
-                <td>{orden.nombreCliente}</td>
-                <td>{orden.nombreActivo}</td>
-                <td>{orden.tipo}</td>
-                <td>
-                  <span className={"status prioridad-" + orden.prioridad}>{orden.prioridad}</span>
-                </td>
-                <td>{orden.nombreTecnico ? orden.nombreTecnico : "Sin asignar"}</td>
-                <td>
-                  <span className={"status status-" + orden.estado}>{obtenerEtiquetaEstadoOrdenTrabajo(orden.estado)}</span>
-                </td>
-                <td>{formatearFechaCorta(orden.creadoEn)}</td>
-                <td>{formatearFechaPrevista(orden.fechaPrevistaEjecucion)}</td>
-                <td>
-                  <div className="table-actions">
-                    <Link aria-label="Ver detalle" className="boton-icono" href={"/ordenes-trabajo/" + orden.id} title="Ver detalle">
-                      <IconoOjo />
-                    </Link>
-                    {orden.estado !== "cerrada" ? (
-                      <SiTienePermiso permiso="ot.editar">
-                        <Link
-                          aria-label="Modificar orden"
-                          className="boton-icono"
-                          href={"/ordenes-trabajo/" + orden.id + "/editar"}
-                          title="Modificar orden"
-                        >
-                          <IconoLapiz />
-                        </Link>
-                      </SiTienePermiso>
-                    ) : null}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <TablaOrdenes filtros={filtros} ordenes={pagina.elementos} />
       <PaginacionListado
         filtros={filtrosSinPagina}
         pagina={pagina.pagina}

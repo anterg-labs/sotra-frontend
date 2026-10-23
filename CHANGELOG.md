@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.18 (2026-10-23)
+
+- Listados: se pueden ordenar las columnas de usuarios, clientes, máquinas, órdenes, repuestos y movimientos desde el encabezado, conservando filtros y paginación.
+
 ## Version 1.0.17 (2026-10-23)
 
 - Formularios: los campos opcionales vacíos de repuestos y órdenes se envían como nulos para que la API los procese correctamente.

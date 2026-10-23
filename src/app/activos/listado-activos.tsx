@@ -34,7 +34,7 @@ export async function ListadoActivos(props: { filtros: FiltrosActivos; consulta?
   return (
     <>
       <InformarResultados total={pagina.totalElementos} />
-      <TablaActivos activos={pagina.elementos} filtros={filtros} />
+      <TablaActivos activos={pagina.elementos} filtros={filtros} unaSolaPagina={pagina.totalPaginas <= 1} />
       <PaginacionListado
         filtros={{
           buscar: filtros.buscar,

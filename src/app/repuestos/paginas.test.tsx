@@ -133,9 +133,6 @@ describe("detalle de repuesto (Server Component + panel de stock)", () => {
 
     fireEvent.change(screen.getByLabelText("Cantidad a ingresar"), { target: { value: "5" } });
     fireEvent.click(screen.getByRole("button", { name: "Confirmar ingreso" }));
-    await waitFor(() => expect(screen.getByLabelText("Motivo del ingreso")).toHaveFocus());
-    fireEvent.change(screen.getByLabelText("Motivo del ingreso"), { target: { value: "Compra" } });
-    fireEvent.click(screen.getByRole("button", { name: "Confirmar ingreso" }));
     const alerta = await screen.findByText("No se pudo registrar el ingreso de stock.");
     await waitFor(() => expect(alerta).toHaveFocus());
   });
@@ -144,9 +141,8 @@ describe("detalle de repuesto (Server Component + panel de stock)", () => {
     a.registrarIngresoStockAccion.mockResolvedValue({ exito: true, registro: movimiento });
     render(await DetalleRepuesto(parametros("5", { ingresar: "1" })));
     fireEvent.change(screen.getByLabelText("Cantidad a ingresar"), { target: { value: "5" } });
-    fireEvent.change(screen.getByLabelText("Motivo del ingreso"), { target: { value: "Compra" } });
     fireEvent.click(screen.getByRole("button", { name: "Confirmar ingreso" }));
-    await waitFor(() => expect(a.registrarIngresoStockAccion).toHaveBeenCalledWith(5, expect.objectContaining({ cantidad: 5, motivo: "Compra", ubicacion: "A1" })));
+    await waitFor(() => expect(a.registrarIngresoStockAccion).toHaveBeenCalledWith(5, { cantidad: 5, observaciones: "" }));
     expect(await screen.findByText("Ingreso registrado correctamente. El stock se actualizó.")).toBeInTheDocument();
     expect(avisarStockActualizado).toHaveBeenCalled();
     expect(screen.queryByLabelText("Cantidad a ingresar")).not.toBeInTheDocument();

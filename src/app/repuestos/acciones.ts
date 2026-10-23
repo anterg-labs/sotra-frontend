@@ -127,14 +127,11 @@ async function registrarMovimiento(
 export async function registrarIngresoStockAccion(repuestoId: number, datos: IngresoStockInput) {
   const mensaje = "No se pudo registrar el ingreso de stock.";
   const d = leerDatos(datos);
-  if (!d || typeof d.cantidad !== "number" || typeof d.fecha !== "string" || typeof d.motivo !== "string" || typeof d.ubicacion !== "string") {
+  if (!d || typeof d.cantidad !== "number") {
     return { exito: false, errores: {}, mensaje } satisfies ResultadoGuardar<MovimientoStock>;
   }
   const ingreso: IngresoStockInput = {
     cantidad: d.cantidad,
-    fecha: d.fecha,
-    motivo: d.motivo,
-    ubicacion: d.ubicacion,
     observaciones: typeof d.observaciones === "string" ? d.observaciones : "",
   };
   return registrarMovimiento(repuestoId, obtenerErroresIngresoStock(ingreso), mensaje, () =>

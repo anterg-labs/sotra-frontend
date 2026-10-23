@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.21 (2026-10-23)
+
+- Stock: se puede ingresar stock desde el listado eligiendo repuesto y cantidad; la fecha y la ubicación se asignan automáticamente.
+
 ## Version 1.0.20 (2026-10-23)
 
 - Listados: los valores numéricos de clientes, órdenes, repuestos y movimientos se muestran centrados en su columna.

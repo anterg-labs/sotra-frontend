@@ -11,14 +11,10 @@ import { avisarStockActualizado } from "@/hooks/use-alertas-stock";
 import type { IngresoStockInput, MovimientoStock } from "@/tipos/movimiento-stock";
 import type { Repuesto } from "@/tipos/repuesto";
 import { obtenerErroresIngresoStock } from "@/validaciones/movimiento-stock";
-import { obtenerFechaDeHoy } from "@/validaciones/fecha";
 import { registrarIngresoStockAccion } from "../acciones";
 
 const idsCamposIngreso: Record<string, string> = {
   cantidad: "cantidadIngreso",
-  fecha: "fechaIngreso",
-  motivo: "motivoIngreso",
-  ubicacion: "ubicacionIngreso",
 };
 
 /**
@@ -32,9 +28,6 @@ export function PanelStock(props: { repuesto: Repuesto; abrirIngreso: boolean })
   const [accionStock, setAccionStock] = useState<"" | "egreso" | "ajuste">("");
   const [mensajeExito, setMensajeExito] = useState("");
   const [cantidad, setCantidad] = useState("");
-  const [fecha, setFecha] = useState(obtenerFechaDeHoy());
-  const [motivo, setMotivo] = useState("");
-  const [ubicacion, setUbicacion] = useState(repuesto.ubicacion);
   const [observaciones, setObservaciones] = useState("");
 
   const { errores, errorGeneral, estaEnviando, enviar, referenciaErrorGeneral } = useFormularioAccion({
@@ -42,8 +35,6 @@ export function PanelStock(props: { repuesto: Repuesto; abrirIngreso: boolean })
     accion: (datos: IngresoStockInput) => registrarIngresoStockAccion(repuesto.id, datos),
     alExito: () => {
       setCantidad("");
-      setFecha(obtenerFechaDeHoy());
-      setMotivo("");
       setObservaciones("");
       setMostrarFormulario(false);
       setMensajeExito("Ingreso registrado correctamente. El stock se actualizó.");
@@ -75,7 +66,7 @@ export function PanelStock(props: { repuesto: Repuesto; abrirIngreso: boolean })
 
   function confirmarIngreso(evento: React.FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    enviar({ cantidad: cantidad.trim() === "" ? Number.NaN : Number(cantidad), fecha, motivo, ubicacion, observaciones });
+    enviar({ cantidad: cantidad.trim() === "" ? Number.NaN : Number(cantidad), observaciones });
   }
 
   function campoConError(campo: string) {
@@ -183,22 +174,8 @@ export function PanelStock(props: { repuesto: Repuesto; abrirIngreso: boolean })
             <div className="form-field">
               <label htmlFor="cantidadIngreso">Cantidad a ingresar</label>
               <input {...campoConError("cantidad")} id="cantidadIngreso" min={1} onChange={(evento) => setCantidad(evento.target.value)} required step={1} type="number" value={cantidad} />
+              <p className="field-hint">La fecha y la hora las registra el sistema y el stock se suma al existente.</p>
               {mensajeDeCampo("cantidad")}
-            </div>
-            <div className="form-field">
-              <label htmlFor="fechaIngreso">Fecha del ingreso</label>
-              <input {...campoConError("fecha")} id="fechaIngreso" max={obtenerFechaDeHoy()} onChange={(evento) => setFecha(evento.target.value)} required type="date" value={fecha} />
-              {mensajeDeCampo("fecha")}
-            </div>
-            <div className="form-field">
-              <label htmlFor="motivoIngreso">Motivo del ingreso</label>
-              <input {...campoConError("motivo")} id="motivoIngreso" onChange={(evento) => setMotivo(evento.target.value)} placeholder="Por ejemplo: compra a proveedor" required type="text" value={motivo} />
-              {mensajeDeCampo("motivo")}
-            </div>
-            <div className="form-field">
-              <label htmlFor="ubicacionIngreso">Ubicación o depósito</label>
-              <input {...campoConError("ubicacion")} id="ubicacionIngreso" onChange={(evento) => setUbicacion(evento.target.value)} required type="text" value={ubicacion} />
-              {mensajeDeCampo("ubicacion")}
             </div>
           </div>
           <div className="form-field form-field-full">

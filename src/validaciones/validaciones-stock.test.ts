@@ -32,18 +32,13 @@ describe("validaciones de repuestos", () => {
 });
 
 describe("validaciones de movimientos de stock", () => {
-  const ingreso = { cantidad: 3, fecha: obtenerFechaDeHoy(), motivo: "Compra", ubicacion: "Pañol", observaciones: "" };
+  const ingreso = { cantidad: 3, observaciones: "" };
 
-  it("valida el ingreso: cantidad entera positiva, fecha no futura, motivo y ubicación", () => {
+  it("valida el ingreso: solo la cantidad entera positiva (la fecha la pone el sistema y no hay motivo ni ubicación)", () => {
     expect(obtenerErroresIngresoStock(ingreso)).toEqual({});
     expect(obtenerErroresIngresoStock({ ...ingreso, cantidad: 0 }).cantidad).toContain("mayor a cero");
     expect(obtenerErroresIngresoStock({ ...ingreso, cantidad: 1.5 }).cantidad).toBeDefined();
-    expect(obtenerErroresIngresoStock({ ...ingreso, fecha: "" }).fecha).toBe("Indicá la fecha del ingreso.");
-    expect(obtenerErroresIngresoStock({ ...ingreso, fecha: "2999-01-01" }).fecha).toContain("futura");
-    expect(obtenerErroresIngresoStock({ ...ingreso, motivo: " ", ubicacion: "" })).toMatchObject({
-      motivo: expect.any(String),
-      ubicacion: expect.any(String),
-    });
+    expect(obtenerErroresIngresoStock({ cantidad: Number.NaN })).toHaveProperty("cantidad");
   });
 
   it("valida el egreso contra el stock disponible", () => {

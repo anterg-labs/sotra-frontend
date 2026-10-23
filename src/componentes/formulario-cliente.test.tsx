@@ -11,8 +11,13 @@ vi.mock("@/componentes/avisos", () => ({ useAvisos: () => ({ mostrarAviso }) }))
 
 const clienteGuardado: Cliente = {
   id: 9, razonSocial: "Cliente prueba", nombreContacto: "Ana Pérez", correo: null, telefono: "99123456", direccion: null,
-  observaciones: null, cantidadActivosAsociados: 0, estado: "activo", creadoEn: "2026-01-01T00:00:00Z",
+  observaciones: null, cantidadActivosAsociados: 0, cantidadOrdenesAsociadas: 0, estado: "activo", creadoEn: "2026-01-01T00:00:00Z",
 };
+
+it("sugiere el formato del teléfono con un texto de ejemplo", () => {
+  render(<FormularioCliente accion={vi.fn()} etiquetaConfirmacion="Guardar" />);
+  expect(screen.getByLabelText("Número telefónico (opcional)")).toHaveAttribute("placeholder", "8 dígitos, por ejemplo 99123456");
+});
 
 function completar(telefono = "") {
   fireEvent.change(screen.getByLabelText("Nombre o razón social"), { target: { value: "Cliente prueba" } });

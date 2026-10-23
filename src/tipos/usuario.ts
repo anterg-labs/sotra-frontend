@@ -20,7 +20,7 @@ export type Usuario = {
   roles: RolDeUsuario[];
   estado: EstadoUsuario;
   fechaIngreso: string;
-  cantidadOrdenesAsignadas?: number;
+  cantidadOrdenesAsignadas: number;
   /** Solo en el alta: resultado del envío informado por Keycloak; ausente si no corresponde enviar. */
   correoDeContrasenaEnviado?: boolean | null;
 };

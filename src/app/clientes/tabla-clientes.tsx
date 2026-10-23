@@ -1,43 +1,61 @@
 "use client";
 
-import { EncabezadoOrdenable } from "@/componentes/listado/encabezado-ordenable";
-import { construirUrlClientes } from "./filtros";
-
 import Link from "next/link";
-import { useState } from "react";
 import { IconoLapiz, IconoOjo, IconoPapelera, IconoReactivar } from "@/componentes/iconos";
 import { EstadoRegistro } from "@/componentes/listado/estado-registro";
-import { useCambioEstado } from "@/componentes/listado/use-cambio-estado";
+import { useCambioEstadoConfirmado } from "@/componentes/listado/use-cambio-estado-confirmado";
 import { useUltimoCreado } from "@/componentes/listado/ultimo-creado";
-import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
-import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
+import { EncabezadoOrdenable } from "@/componentes/listado/encabezado-ordenable";
 import type { Cliente, FiltrosClientes } from "@/tipos/cliente";
+import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import { cambiarEstadoClienteAccion } from "./acciones";
+import { construirUrlClientes } from "./filtros";
+import { ContenedorTabla } from "@/componentes/contenedor-tabla";
+import { useFilasConOrdenInstantaneo } from "@/componentes/listado/orden-instantaneo";
+import type { ValorOrdenable } from "@/componentes/listado/orden-local";
 
 /**
  * Tabla del listado: recibe los clientes ya cargados en el servidor y maneja baja y reactivación.
  * La fila queda marcada como en proceso de inmediato (actualización optimista); el estado nuevo aparece cuando el servidor lo confirma.
  */
-export function TablaClientes(props: { clientes: Cliente[]; filtros?: FiltrosClientes }) {
+/** Cómo ordenar las filas que ya están en pantalla (misma clave que `ordenarPor` de la API). */
+const VALORES_ORDEN = {
+  razonSocial: (fila: Cliente): ValorOrdenable => fila.razonSocial,
+  nombreContacto: (fila: Cliente): ValorOrdenable => fila.nombreContacto,
+  correo: (fila: Cliente): ValorOrdenable => fila.correo,
+  telefono: (fila: Cliente): ValorOrdenable => fila.telefono,
+  cantidadActivosAsociados: (fila: Cliente): ValorOrdenable => fila.cantidadActivosAsociados,
+  cantidadOrdenesAsociadas: (fila: Cliente): ValorOrdenable => fila.cantidadOrdenesAsociadas,
+  estado: (fila: Cliente): ValorOrdenable => fila.estado === "activo",
+};
+
+export function TablaClientes(props: { clientes: Cliente[]; filtros: FiltrosClientes; unaSolaPagina?: boolean }) {
+  const puedeGestionar = useTienePermiso("cliente.gestionar");
   const { filtros } = props;
+  const clientes = useFilasConOrdenInstantaneo(props.clientes, VALORES_ORDEN, props.unaSolaPagina ?? false);
   const columna = (clave: string, etiqueta: string) => (
     <EncabezadoOrdenable
       columna={clave}
-      construirUrl={(orden) => construirUrlClientes({ ...filtros, ...orden, pagina: 1 } as FiltrosClientes)}
+      construirUrl={(orden) => construirUrlClientes({ ...filtros, ...orden, pagina: 1 })}
       etiqueta={etiqueta}
       orden={filtros}
     />
   );
-  const puedeGestionar = useTienePermiso("cliente.gestionar");
-  const { clientes } = props;
-  const [clientePendienteBaja, setClientePendienteBaja] = useState<Cliente | null>(null);
-  const { enProcesoId, error, ejecutar } = useCambioEstado(cambiarEstadoClienteAccion, () => setClientePendienteBaja(null));
+  const { enProcesoId, pedirBaja, pedirReactivacion, modales } = useCambioEstadoConfirmado<Cliente>(cambiarEstadoClienteAccion, {
+    mensajeBaja: "Cliente dado de baja.",
+    tituloBaja: "Dar de baja cliente",
+    descripcionBaja: (cliente) => "¿Confirmás la baja de " + cliente.razonSocial + "? El cliente quedará inactivo, pero sus datos seguirán disponibles.",
+    reactivacion: {
+      mensaje: "Cliente reactivado.",
+      titulo: "Reactivar cliente",
+      descripcion: (cliente) => "¿Confirmás la reactivación de " + cliente.razonSocial + "? El cliente volverá a estar activo.",
+    },
+  });
   const nuevoId = useUltimoCreado("clientes");
 
   return (
     <>
-      {error ? <p className="form-error-banner">{error}</p> : null}
-      <div className="table-container">
+      <ContenedorTabla etiqueta="Listado de clientes">
         <table>
           <thead>
             <tr>
@@ -46,6 +64,7 @@ export function TablaClientes(props: { clientes: Cliente[]; filtros?: FiltrosCli
               {columna("correo", "Correo electrónico")}
               {columna("telefono", "Teléfono")}
               {columna("cantidadActivosAsociados", "Activos asociados")}
+              {columna("cantidadOrdenesAsociadas", "Órdenes de trabajo")}
               {columna("estado", "Estado")}
               <th>Acciones</th>
             </tr>
@@ -65,6 +84,7 @@ export function TablaClientes(props: { clientes: Cliente[]; filtros?: FiltrosCli
                   <td>{cliente.correo}</td>
                   <td>{cliente.telefono}</td>
                   <td className="celda-numerica">{cliente.cantidadActivosAsociados}</td>
+                  <td className="celda-numerica">{cliente.cantidadOrdenesAsociadas}</td>
                   <td><EstadoRegistro estado={cliente.estado} /></td>
                   <td>
                     <div className="table-actions">
@@ -88,7 +108,7 @@ export function TablaClientes(props: { clientes: Cliente[]; filtros?: FiltrosCli
                             aria-label="Reactivar cliente"
                             className="boton-icono"
                             disabled={estaOcupado}
-                            onClick={() => ejecutar(cliente.id, "activo")}
+                            onClick={() => pedirReactivacion(cliente)}
                             title="Reactivar cliente"
                             type="button"
                           >
@@ -102,7 +122,7 @@ export function TablaClientes(props: { clientes: Cliente[]; filtros?: FiltrosCli
                             aria-label="Dar de baja"
                             className="boton-icono boton-icono-peligro"
                             disabled={estaOcupado}
-                            onClick={() => setClientePendienteBaja(cliente)}
+                            onClick={() => pedirBaja(cliente)}
                             title="Dar de baja"
                             type="button"
                           >
@@ -117,22 +137,9 @@ export function TablaClientes(props: { clientes: Cliente[]; filtros?: FiltrosCli
             })}
           </tbody>
         </table>
-      </div>
+      </ContenedorTabla>
 
-      {clientePendienteBaja ? (
-        <ModalConfirmacion
-          descripcion={
-            "¿Confirmás la baja de " +
-            clientePendienteBaja.razonSocial +
-            "? El cliente quedará inactivo, pero sus datos seguirán disponibles."
-          }
-          estaConfirmando={enProcesoId === clientePendienteBaja.id}
-          etiquetaConfirmar="Dar de baja"
-          onCancelar={() => setClientePendienteBaja(null)}
-          onConfirmar={() => ejecutar(clientePendienteBaja.id, "inactivo")}
-          titulo="Dar de baja cliente"
-        />
-      ) : null}
+      {modales}
     </>
   );
 }

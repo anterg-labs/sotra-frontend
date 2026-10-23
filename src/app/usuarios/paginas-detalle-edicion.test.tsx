@@ -1,3 +1,4 @@
+import { ProveedorNavegacionListado } from "@/componentes/listado/navegacion-listado";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import EditarUsuario from "./[id]/editar/page";
@@ -34,7 +35,7 @@ vi.mock("./acciones", () => ({
 }));
 
 const usuario = {
-  id: 5, nombre: "Ana", apellido: "Pérez", correo: "ana@sotra.com", telefono: "099111222",
+  id: 5, nombre: "Ana", apellido: "Pérez", correo: "ana@sotra.com", telefono: "99111222",
   roles: [{ id: 1, nombre: "Técnico", activo: true }, { id: 2, nombre: "Supervisor", activo: true }],
   estado: "activo", fechaIngreso: "2026-02-03",
 };
@@ -114,7 +115,7 @@ describe("edición y alta de usuario", () => {
     await waitFor(() =>
       expect(s.actualizarUsuarioAccion).toHaveBeenCalledWith(
         5, "activo", "2026-02-03",
-        expect.objectContaining({ nombre: "Anabel", apellido: "Pérez", correo: "ana@sotra.com", telefono: "099111222", idsRol: [1, 2] }),
+        expect.objectContaining({ nombre: "Anabel", apellido: "Pérez", correo: "ana@sotra.com", telefono: "99111222", idsRol: [1, 2] }),
       ),
     );
   });
@@ -157,6 +158,17 @@ describe("el jefe de mantenimiento gestiona usuarios, salvo administradores", ()
     expect(screen.getByRole("checkbox", { name: "Técnico" })).toBeInTheDocument();
   });
 
+  it("la modificación de un usuario activo ofrece reenviar el enlace de contraseña; la de uno inactivo, no", async () => {
+    s.obtenerUsuarioServidor.mockResolvedValue(usuario);
+    const { unmount } = render(await EditarUsuario(parametros("5")));
+    expect(screen.getByRole("button", { name: "Reenviar enlace de contraseña" })).toBeInTheDocument();
+    unmount();
+
+    s.obtenerUsuarioServidor.mockResolvedValue({ ...usuario, estado: "inactivo" });
+    render(await EditarUsuario(parametros("5")));
+    expect(screen.queryByRole("button", { name: "Reenviar enlace de contraseña" })).not.toBeInTheDocument();
+  });
+
   it("modifica a un técnico, pero sin poder darle el rol Administrador", async () => {
     s.obtenerUsuarioServidor.mockResolvedValue(usuario);
     render(await EditarUsuario(parametros("5")));
@@ -173,13 +185,15 @@ describe("el jefe de mantenimiento gestiona usuarios, salvo administradores", ()
 
     render(await DetalleUsuario(parametros("35")));
     expect(screen.queryByRole("link", { name: "Modificar" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Restablecer contraseña" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Reenviar enlace de contraseña" })).not.toBeInTheDocument();
   });
 
   it("en el listado, los administradores no tienen modificar ni dar de baja", () => {
     render(
       <ProveedorSesion usuario={usuarioDePruebas(["jefe_mantenimiento"])}>
-        <TablaUsuarios usuarios={[usuario, administrador] as never} />
+        <ProveedorNavegacionListado etiquetaCarga="Cargando usuarios…">
+          <TablaUsuarios filtros={{ buscar: "", rolId: "", estado: "", pagina: 1 }} usuarios={[usuario, administrador] as never} />
+        </ProveedorNavegacionListado>
       </ProveedorSesion>,
     );
     expect(screen.getAllByRole("link", { name: "Modificar usuario" })).toHaveLength(1);

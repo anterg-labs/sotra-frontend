@@ -1,46 +1,86 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { IconoDescarga, IconoOjo, IconoPapelera } from "@/componentes/iconos";
-import { useCambioEstado } from "@/componentes/listado/use-cambio-estado";
-import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
+import { EncabezadoOrdenable } from "@/componentes/listado/encabezado-ordenable";
+import { useCambioEstadoConfirmado } from "@/componentes/listado/use-cambio-estado-confirmado";
 import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import { apiObtenerUrlDescargaDocumentoTecnico } from "@/servicios/api/api-documentos-tecnicos";
-import type { DocumentoTecnico } from "@/tipos/documento-tecnico";
+import { obtenerEtiquetaTipoDocumento, type DocumentoTecnico, type FiltrosDocumentosTecnicos } from "@/tipos/documento-tecnico";
 import { eliminarDocumentoTecnicoAccion } from "./acciones";
+import { construirUrlDocumentos } from "./filtros";
 import { formatearFechaCorta } from "@/utilidades/fechas";
+import { ContenedorTabla } from "@/componentes/contenedor-tabla";
+import { useFilasConOrdenInstantaneo } from "@/componentes/listado/orden-instantaneo";
+import type { ValorOrdenable } from "@/componentes/listado/orden-local";
+
+function descripcionDeAsociacion(documento: DocumentoTecnico) {
+  const partes = [documento.nombreActivo, documento.nombreModelo].filter((parte): parte is string => Boolean(parte));
+  return partes.length > 0 ? partes.join(" · ") : "General";
+}
+
+/** Cómo ordenar las filas que ya están en pantalla (misma clave que `ordenarPor` de la API). */
+const VALORES_ORDEN = {
+  titulo: (fila: DocumentoTecnico): ValorOrdenable => fila.titulo,
+  tipo: (fila: DocumentoTecnico): ValorOrdenable => fila.tipo,
+  vigente: (fila: DocumentoTecnico): ValorOrdenable => fila.vigente,
+  nombreAsociado: (fila: DocumentoTecnico): ValorOrdenable => fila.nombreActivo ?? fila.nombreModelo,
+  usaSugerenciasIA: (fila: DocumentoTecnico): ValorOrdenable => fila.usaSugerenciasIA,
+  creadoEn: (fila: DocumentoTecnico): ValorOrdenable => Date.parse(fila.creadoEn),
+};
 
 /** Tabla del listado: recibe los documentos ya cargados en el servidor y maneja la eliminación con confirmación. */
-export function TablaDocumentos(props: { documentos: DocumentoTecnico[] }) {
+export function TablaDocumentos(props: { documentos: DocumentoTecnico[]; filtros: FiltrosDocumentosTecnicos; unaSolaPagina?: boolean }) {
+  const documentos = useFilasConOrdenInstantaneo(props.documentos, VALORES_ORDEN, props.unaSolaPagina ?? false);
   const puedeGestionar = useTienePermiso("documento.gestionar");
-  const [documentoPendiente, setDocumentoPendiente] = useState<DocumentoTecnico | null>(null);
-  const { enProcesoId, error, ejecutar } = useCambioEstado(
-    (id) => eliminarDocumentoTecnicoAccion(id),
-    () => setDocumentoPendiente(null),
+  const { filtros } = props;
+  const columna = (clave: string, etiqueta: string) => (
+    <EncabezadoOrdenable
+      columna={clave}
+      construirUrl={(orden) => construirUrlDocumentos({ ...filtros, ...orden, pagina: 1 })}
+      etiqueta={etiqueta}
+      orden={filtros}
+    />
   );
+  const { enProcesoId, pedirBaja, modales } = useCambioEstadoConfirmado<DocumentoTecnico>((id) => eliminarDocumentoTecnicoAccion(id), {
+    mensajeBaja: "Documento eliminado.",
+    tituloBaja: "Eliminar documento",
+    etiquetaBaja: "Eliminar",
+    descripcionBaja: (documento) =>
+      "¿Confirmás la eliminación de " + documento.titulo + "? Si se usa para sugerencias de IA, también se borrarán sus fragmentos y embeddings.",
+  });
 
   return (
     <>
-      {error ? <p className="form-error-banner">{error}</p> : null}
-      <div className="table-container">
+      <ContenedorTabla etiqueta="Listado de documentación">
         <table>
           <thead>
             <tr>
-              <th>Archivo</th>
-              <th>Activo asociado</th>
-              <th>Sugerencias de IA</th>
-              <th>Fecha de carga</th>
+              {columna("titulo", "Documento")}
+              {columna("tipo", "Tipo")}
+              {columna("vigente", "Vigencia")}
+              {columna("nombreAsociado", "Asociado a")}
+              {columna("usaSugerenciasIA", "Sugerencias de IA")}
+              {columna("creadoEn", "Fecha de carga")}
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {props.documentos.map((documento) => {
+            {documentos.map((documento) => {
               const estaOcupado = enProcesoId === documento.id;
               return (
                 <tr aria-busy={estaOcupado || undefined} className={estaOcupado ? "opacity-60" : undefined} key={documento.id}>
-                  <td><strong>{documento.nombreArchivo}</strong></td>
-                  <td>{documento.nombreActivo ? documento.nombreActivo : "Sin activo"}</td>
+                  <td>
+                    <strong>{documento.titulo}</strong>
+                    {documento.titulo !== documento.nombreArchivo ? <span>{documento.nombreArchivo}</span> : null}
+                  </td>
+                  <td>{obtenerEtiquetaTipoDocumento(documento.tipo)}</td>
+                  <td>
+                    <span className={documento.vigente ? "status status-activo" : "status status-inactivo"}>
+                      {documento.vigente ? "Vigente" : "Obsoleto"}
+                    </span>
+                  </td>
+                  <td>{descripcionDeAsociacion(documento)}</td>
                   <td>
                     <span className={documento.usaSugerenciasIA ? "status status-activo" : "status status-inactivo"}>
                       {documento.usaSugerenciasIA ? "Sí" : "No"}
@@ -70,7 +110,7 @@ export function TablaDocumentos(props: { documentos: DocumentoTecnico[] }) {
                           aria-label="Eliminar documento"
                           className="boton-icono boton-icono-peligro"
                           disabled={estaOcupado}
-                          onClick={() => setDocumentoPendiente(documento)}
+                          onClick={() => pedirBaja(documento)}
                           title="Eliminar documento"
                           type="button"
                         >
@@ -84,22 +124,9 @@ export function TablaDocumentos(props: { documentos: DocumentoTecnico[] }) {
             })}
           </tbody>
         </table>
-      </div>
+      </ContenedorTabla>
 
-      {documentoPendiente ? (
-        <ModalConfirmacion
-          descripcion={
-            "¿Confirmás la eliminación de " +
-            documentoPendiente.nombreArchivo +
-            "? Si se usa para sugerencias de IA, también se borrarán sus fragmentos y embeddings."
-          }
-          estaConfirmando={enProcesoId === documentoPendiente.id}
-          etiquetaConfirmar="Eliminar"
-          onCancelar={() => setDocumentoPendiente(null)}
-          onConfirmar={() => ejecutar(documentoPendiente.id, "inactivo")}
-          titulo="Eliminar documento técnico"
-        />
-      ) : null}
+      {modales}
     </>
   );
 }

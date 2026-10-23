@@ -73,7 +73,7 @@ describe("servicios de servidor de repuestos y movimientos de stock", () => {
       buscar: "x", repuestoId: "3", tipo: "egreso", fechaDesde: "2026-01-01", fechaHasta: "2026-02-01", ubicacion: "Pañol", usuarioId: "9", pagina: "2",
     });
     await obtenerMovimientoStockServidor(5);
-    await registrarIngresoStockServidor(1, { cantidad: 1, fecha: "2026-01-01", motivo: "x", ubicacion: "y", observaciones: "" });
+    await registrarIngresoStockServidor(1, { cantidad: 1, observaciones: "" });
     await registrarEgresoStockServidor(1, { cantidad: 1, motivo: "x" });
     await registrarAjusteStockServidor(1, { cantidadReal: 1, motivo: "x" });
     expect(rutas().slice(1)).toEqual([

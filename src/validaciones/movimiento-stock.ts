@@ -1,5 +1,4 @@
 import type { AjusteStockInput, EgresoStockInput, IngresoStockInput } from "@/tipos/movimiento-stock";
-import { obtenerFechaDeHoy } from "./fecha";
 
 const etiquetasTipoMovimiento: Record<string, string> = {
   ingreso: "Ingreso",
@@ -12,25 +11,10 @@ export function obtenerEtiquetaTipoMovimiento(tipo: string) {
 }
 
 export function obtenerErroresIngresoStock(ingreso: IngresoStockInput) {
-  const errores: Partial<Record<"cantidad" | "fecha" | "motivo" | "ubicacion", string>> = {};
+  const errores: Partial<Record<"cantidad", string>> = {};
   if (!Number.isInteger(ingreso.cantidad) || ingreso.cantidad <= 0) {
     errores.cantidad = "La cantidad a ingresar debe ser un número entero mayor a cero.";
   }
-
-  if (ingreso.fecha === "") {
-    errores.fecha = "Indicá la fecha del ingreso.";
-  } else if (ingreso.fecha > obtenerFechaDeHoy()) {
-    errores.fecha = "La fecha del ingreso no puede ser futura.";
-  }
-
-  if (ingreso.motivo.trim() === "") {
-    errores.motivo = "Indicá el motivo del ingreso.";
-  }
-
-  if (ingreso.ubicacion.trim() === "") {
-    errores.ubicacion = "Indicá la ubicación o depósito.";
-  }
-
   return errores;
 }
 

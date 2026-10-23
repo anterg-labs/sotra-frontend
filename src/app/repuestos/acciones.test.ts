@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ErrorDeApi } from "@/servicios/api/solicitudes-http";
-import { obtenerFechaDeHoy } from "@/validaciones/fecha";
 import {
   actualizarRepuestoAccion,
   actualizarStockMinimoAccion,
@@ -89,21 +88,20 @@ describe("acciones de repuestos", () => {
 });
 
 describe("acciones de movimientos de stock", () => {
-  const hoy = obtenerFechaDeHoy();
 
   it("registra un ingreso válido y revalida", async () => {
     m.registrarIngresoStockServidor.mockResolvedValue(movimiento);
-    const ingreso = { cantidad: 4, fecha: hoy, motivo: "Compra", ubicacion: "A1", observaciones: "" };
+    const ingreso = { cantidad: 4, observaciones: "" };
     await expect(registrarIngresoStockAccion(5, ingreso)).resolves.toEqual({ exito: true, registro: movimiento });
     expect(m.registrarIngresoStockServidor).toHaveBeenCalledWith(5, ingreso);
     expect(revalidatePath).toHaveBeenCalledWith("/repuestos", "layout");
   });
 
   it("valida el ingreso por campo y rechaza datos mal formados", async () => {
-    const resultado = await registrarIngresoStockAccion(5, { cantidad: 0, fecha: "", motivo: " ", ubicacion: "", observaciones: "" });
-    expect(resultado).toMatchObject({ exito: false, errores: { cantidad: expect.any(String), fecha: expect.any(String), motivo: expect.any(String), ubicacion: expect.any(String) } });
+    const resultado = await registrarIngresoStockAccion(5, { cantidad: 0, observaciones: "" });
+    expect(resultado).toMatchObject({ exito: false, errores: { cantidad: expect.any(String) } });
     await expect(registrarIngresoStockAccion(5, { cantidad: "1" } as never)).resolves.toMatchObject({ exito: false });
-    await expect(registrarIngresoStockAccion(0, { cantidad: 1, fecha: hoy, motivo: "x", ubicacion: "y", observaciones: "" })).resolves.toMatchObject({ exito: false });
+    await expect(registrarIngresoStockAccion(0, { cantidad: 1, observaciones: "" })).resolves.toMatchObject({ exito: false });
     expect(m.registrarIngresoStockServidor).not.toHaveBeenCalled();
   });
 

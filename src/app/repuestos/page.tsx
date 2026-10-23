@@ -7,6 +7,7 @@ import type { ParametrosBusqueda } from "@/componentes/listado/url-listado";
 import { listarRepuestosServidor, obtenerAlertasStockServidor } from "@/servicios/servidor/repuestos";
 import type { AlertasStock, Repuesto } from "@/tipos/repuesto";
 import { AltaRepuesto } from "./alta-repuesto";
+import { IngresoRapidoStock } from "./ingreso-rapido-stock";
 import { AlertaStock } from "./alerta-stock";
 import { BarraFiltrosRepuestos } from "./barra-filtros-repuestos";
 import { aFiltrosApiRepuestos, leerFiltrosRepuestos } from "./filtros";
@@ -45,6 +46,7 @@ export default async function PaginaRepuestos(props: { searchParams: Promise<Par
           <Link className="secondary-button" href="/repuestos/movimientos">
             Movimientos de stock
           </Link>
+          <IngresoRapidoStock />
           <AltaRepuesto />
         </div>
       </header>

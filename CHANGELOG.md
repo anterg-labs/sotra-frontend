@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.24 (2026-10-23)
+
+- Búsquedas: los selectores esperan el resultado remoto, descartan respuestas anteriores y avisan cuando falla la carga de opciones.
+
 ## Version 1.0.23 (2026-10-23)
 
 - Navegación: se agrega una pantalla de inicio con accesos y órdenes recientes, se organiza el menú lateral y el pie muestra las versiones del frontend y la API.

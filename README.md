@@ -2,7 +2,7 @@
 
 ## Corrección de integración con Keycloak
 
-La versión 1.0.13 actualiza Next.js y `eslint-config-next` a 16.4.1 y fija ambas versiones en `package.json` y el lockfile. Corrige el bloqueo de seguridad que Trivy detectó sobre Next.js 16.3.8; los controles del CI siguen habilitados.
+Desde 1.0.13, Next.js y `eslint-config-next` están fijados en 16.4.1 para corregir el bloqueo de seguridad que Trivy detectó sobre Next.js 16.3.8. La versión 1.0.14 completa el lockfile con las dependencias necesarias para Linux y CI. Se regeneró sin reutilizar `node_modules`, con npm 11.19.0, y se comprobó mediante `npm ci --dry-run --ignore-scripts --os=linux --cpu=x64`. Los controles del CI siguen habilitados.
 
 Desde 1.0.12, el proxy conserva la sesión de Auth.js y agrega una CSP efectiva con un nonce nuevo por solicitud. También cubre `/login`, sus errores, `/logout` y `/sin-conexion`, sin exigirles sesión. El origen de Keycloak está permitido para completar las redirecciones de login y logout. El layout usa renderizado por solicitud para conservar el nonce; se retira la política anterior de solo reporte y se mantienen las demás cabeceras y protecciones de la imagen Docker. La prueba del reenvío multipart corre en Node, que implementa los flujos de archivos usados por el Route Handler.
 

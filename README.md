@@ -135,7 +135,7 @@ docker compose --profile tools run --rm sotra-frontend-lint
 docker exec sotra-frontend-dev npm run test:run
 ```
 
-La imagen de desarrollo usa Node 26 con su Web Storage experimental desactivada para que las pruebas usen `localStorage` de jsdom. El navegador conserva su propio almacenamiento local.
+La imagen de desarrollo usa Node 26.12.1 con su Web Storage experimental desactivada para que las pruebas usen `localStorage` de jsdom. El `Dockerfile` de producción usa la misma versión corregida; `.nvmrc` fija Node 24.22.1 para CI y ejecución directa. Estas versiones corrigen CVE-2026-111497. Al actualizarlas, reconstruir la imagen, recrear el contenedor y verificar `node -v` dentro de él. El navegador conserva su propio almacenamiento local.
 
 ## Detener
 

@@ -1,4 +1,4 @@
-FROM dhi.io/node:26-alpine-sfw-dev AS dependencies
+FROM dhi.io/node:26.12.1-alpine-sfw-dev AS dependencies
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/root/.npm \
 # Stage 2: Build Next.js application in standalone mode
 # ============================================
 
-FROM dhi.io/node:26-alpine-sfw-dev AS builder
+FROM dhi.io/node:26.12.1-alpine-sfw-dev AS builder
 
 # Set working directory
 WORKDIR /app
@@ -37,7 +37,7 @@ RUN npm run build
 # Stage 3: Run Next.js application
 # ============================================
 
-FROM dhi.io/node:26-alpine-sfw-dev AS runner
+FROM dhi.io/node:26.12.1-alpine-sfw-dev AS runner
 
 # Keep runtime packages at or above the versions that fix current HIGH findings.
 RUN apk add --no-cache 'libexpat>=2.9.0-r0' 'pcre2>=10.49-r0'

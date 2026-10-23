@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.34 (2026-10-23)
+
+- Seguridad: se fijan Node.js 24.22.1 para CI y uso directo, y Node.js 26.12.1 para las imágenes Docker de desarrollo y producción, por CVE-2026-111497.
+
 ## Version 1.0.33 (2026-10-23)
 
 - Integración: se reúnen las correcciones del celular, el correo y los formularios con los cambios posteriores de listados, stock, documentos y navegación.

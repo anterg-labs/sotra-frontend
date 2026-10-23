@@ -1,5 +1,7 @@
 # sotra-frontend
 
+La versión 1.0.15 muestra en el alta de usuarios el resultado del correo informado por la API (`correoDeContrasenaEnviado`) y acepta teléfonos de ocho dígitos o nueve con cero inicial. El aviso de fallo indica cómo reenviar el enlace desde el detalle del usuario.
+
 ## Corrección de integración con Keycloak
 
 Desde 1.0.13, Next.js y `eslint-config-next` están fijados en 16.4.1 para corregir el bloqueo de seguridad que Trivy detectó sobre Next.js 16.3.8. La versión 1.0.14 completa el lockfile con las dependencias necesarias para Linux y CI. Se regeneró sin reutilizar `node_modules`, con npm 11.19.0, y se comprobó mediante `npm ci --dry-run --ignore-scripts --os=linux --cpu=x64`. Los controles del CI siguen habilitados.

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.17 (2026-10-23)
+
+- Formularios: los campos opcionales vacíos de repuestos y órdenes se envían como nulos para que la API los procese correctamente.
+
 ## Version 1.0.14 (2026-10-23)
 
 - Integración: se corrige el archivo de dependencias para que la instalación del frontend en Linux y en CI incluya todos los paquetes necesarios.

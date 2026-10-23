@@ -12,7 +12,7 @@ import type { FiltrosUsuarios } from "@/tipos/usuario";
 export const RUTA_USUARIOS = "/usuarios";
 
 /** Columnas por las que se puede ordenar; coinciden con las que acepta la API. */
-export const COLUMNAS_ORDENABLES_USUARIOS = ["nombre", "correo", "roles", "estado"] as const;
+export const COLUMNAS_ORDENABLES_USUARIOS = ["nombre", "correo", "roles", "cantidadOrdenesAsignadas", "estado"] as const;
 
 export function leerFiltrosUsuarios(parametros: ParametrosBusqueda): FiltrosUsuarios {
   return {

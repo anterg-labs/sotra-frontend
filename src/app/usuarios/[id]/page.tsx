@@ -86,7 +86,7 @@ export default async function PaginaDetalleUsuario(props: { params: Promise<{ id
             </dl>
             {puedeModificar ? (
               <div className="form-actions">
-                <BotonRestablecerContrasena correo={usuario.correo} usuarioId={usuario.id} />
+                {usuario.estado === "activo" ? <BotonRestablecerContrasena correo={usuario.correo} usuarioId={usuario.id} /> : null}
                 <Link className="primary-button" href={"/usuarios/" + usuario.id + "/editar"}>
                   Modificar
                 </Link>

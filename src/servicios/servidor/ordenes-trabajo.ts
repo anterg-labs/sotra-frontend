@@ -35,6 +35,7 @@ export function conTecnicoDeLaOrden(orden: OrdenTrabajo, tecnicos: Usuario[]): U
     roles: [],
     estado: "inactivo",
     fechaIngreso: "",
+    cantidadOrdenesAsignadas: 0,
   };
   return [actual, ...tecnicos.filter((tecnico) => tecnico.id !== actual.id)];
 }

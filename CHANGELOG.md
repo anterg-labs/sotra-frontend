@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.27 (2026-10-23)
+
+- Usuarios y clientes: los listados muestran y permiten ordenar por las órdenes asociadas; se mejoran las confirmaciones de baja y reactivación y los mensajes del alta de usuarios.
+
 ## Version 1.0.26 (2026-10-23)
 
 - Avisos: los resultados y errores aparecen arriba con colores y mensajes accesibles; los errores duran más y los diálogos de confirmación tienen títulos identificables.

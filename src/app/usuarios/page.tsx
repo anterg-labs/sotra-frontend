@@ -21,7 +21,6 @@ export default async function PaginaUsuarios(props: { searchParams: Promise<Para
     listarRolesServidor().catch(() => null),
     tienePermisoServidor("usuario.gestionar_administradores"),
   ]);
-  const clave = [filtros.buscar, filtros.rolId, filtros.estado, filtros.pagina].join("|");
 
   return (
     <main className="page-content">
@@ -39,7 +38,7 @@ export default async function PaginaUsuarios(props: { searchParams: Promise<Para
 
         <section className="panel">
           <ZonaListado>
-            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />} key={clave}>
+            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />}>
               <ListadoUsuarios consulta={consulta} filtros={filtros} />
             </Suspense>
           </ZonaListado>

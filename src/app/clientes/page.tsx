@@ -12,7 +12,6 @@ const ETIQUETA_CARGA = "Cargando clientes…";
 
 export default async function PaginaClientes(props: { searchParams: Promise<ParametrosBusqueda> }) {
   const filtros = leerFiltrosClientes(await props.searchParams);
-  const clave = [filtros.buscar, filtros.estado, filtros.pagina].join("|");
 
   return (
     <main className="page-content">
@@ -30,7 +29,7 @@ export default async function PaginaClientes(props: { searchParams: Promise<Para
 
         <section className="panel">
           <ZonaListado>
-            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />} key={clave}>
+            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />}>
               <ListadoClientes filtros={filtros} />
             </Suspense>
           </ZonaListado>

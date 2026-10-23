@@ -9,6 +9,7 @@ export type Cliente = {
   direccion: string | null;
   observaciones: string | null;
   cantidadActivosAsociados: number;
+  cantidadOrdenesAsociadas: number;
   estado: EstadoCliente;
   creadoEn: string;
 };

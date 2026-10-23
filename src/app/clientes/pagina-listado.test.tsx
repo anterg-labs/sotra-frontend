@@ -22,6 +22,6 @@ describe("página del listado (Server Component)", () => {
     expect(screen.getByLabelText("Estado")).toHaveValue("inactivo");
     expect(screen.getByRole("button", { name: "Registrar nuevo cliente" })).toBeInTheDocument();
     expect(await screen.findByText("Listado simulado")).toBeInTheDocument();
-    expect(listado).toHaveBeenCalledWith({ filtros: { buscar: "acme", estado: "inactivo", pagina: 2 } });
+    expect(listado).toHaveBeenCalledWith({ filtros: expect.objectContaining({ buscar: "acme", estado: "inactivo", pagina: 2 }) });
   });
 });

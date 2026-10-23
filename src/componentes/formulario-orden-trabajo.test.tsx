@@ -12,6 +12,7 @@ const clienteCreado: Cliente = {
   direccion: null,
   observaciones: null,
   cantidadActivosAsociados: 0,
+  cantidadOrdenesAsociadas: 0,
   estado: "activo",
   creadoEn: "2026-10-16T00:00:00Z",
 };

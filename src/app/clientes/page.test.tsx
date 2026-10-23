@@ -31,6 +31,7 @@ function cliente(id: number, estado: "activo" | "inactivo" = "activo") {
     direccion: null,
     observaciones: null,
     cantidadActivosAsociados: id,
+    cantidadOrdenesAsociadas: 0,
     estado,
     creadoEn: "2026-01-01T00:00:00Z",
   };
@@ -52,10 +53,19 @@ beforeEach(() => {
 });
 
 describe("filtros de la URL", () => {
+  it("muestra cero y el total de órdenes del cliente y permite ordenar por esa columna", () => {
+    render(conNavegacion(<TablaClientes filtros={filtrosVacios} clientes={[cliente(1), { ...cliente(2), cantidadOrdenesAsociadas: 4 }]} />));
+    const filas = screen.getAllByRole("row");
+    expect(within(filas[1]).getByRole("cell", { name: "0" })).toBeInTheDocument();
+    expect(within(filas[2]).getByRole("cell", { name: "4" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Órdenes de trabajo/ }));
+    expect(push).toHaveBeenLastCalledWith(expect.stringContaining("ordenarPor=cantidadOrdenesAsociadas"));
+    expect(leerFiltrosClientes({ ordenarPor: "cantidadOrdenesAsociadas" }).ordenarPor).toBe("cantidadOrdenesAsociadas");
+  });
   it("lee buscar, estado y página con valores seguros por defecto", () => {
-    expect(leerFiltrosClientes({})).toEqual(filtrosVacios);
-    expect(leerFiltrosClientes({ buscar: "acme", estado: "inactivo", pagina: "3" })).toEqual({ buscar: "acme", estado: "inactivo", pagina: 3 });
-    expect(leerFiltrosClientes({ buscar: ["a", "b"], estado: "otro", pagina: "-2" })).toEqual({ buscar: "a", estado: "", pagina: 1 });
+    expect(leerFiltrosClientes({})).toMatchObject(filtrosVacios);
+    expect(leerFiltrosClientes({ buscar: "acme", estado: "inactivo", pagina: "3" })).toMatchObject({ buscar: "acme", estado: "inactivo", pagina: 3 });
+    expect(leerFiltrosClientes({ buscar: ["a", "b"], estado: "otro", pagina: "-2" })).toMatchObject({ buscar: "a", estado: "", pagina: 1 });
     expect(leerFiltrosClientes({ pagina: "1.5" }).pagina).toBe(1);
     expect(leerFiltrosClientes({ pagina: "abc" }).pagina).toBe(1);
   });
@@ -160,7 +170,7 @@ describe("barra de filtros (en vivo)", () => {
 });
 
 describe("navegación del listado", () => {
-  it("conserva la tabla anterior mientras el servidor prepara la nueva página, sin desmontar la barra", async () => {
+  it("deja la tabla anterior a la vista mientras el servidor prepara la nueva página, sin desmontar la barra", async () => {
     let terminar: () => void = () => undefined;
     replace.mockImplementation(() => new Promise<void>((resolver) => { terminar = resolver; }));
     render(
@@ -190,7 +200,7 @@ describe("tabla de clientes (baja y reactivación)", () => {
 
   it("pide confirmación antes de dar de baja y llama a la acción", async () => {
     cambiarEstadoClienteAccion.mockResolvedValue({ exito: true });
-    render(<TablaClientes clientes={clientes} />);
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaClientes clientes={clientes} filtros={{ buscar: "", estado: "", pagina: 1 }} /></ProveedorNavegacionListado>);
     fireEvent.click(screen.getByRole("button", { name: "Dar de baja" }));
 
     const dialogo = screen.getByRole("dialog", { name: "Dar de baja cliente" });
@@ -205,7 +215,7 @@ describe("tabla de clientes (baja y reactivación)", () => {
   it("marca la fila en proceso de inmediato (optimista) y muestra el estado nuevo recién cuando el servidor responde", async () => {
     let resolver: (r: { exito: true }) => void = () => undefined;
     cambiarEstadoClienteAccion.mockReturnValue(new Promise((resolve) => { resolver = resolve; }));
-    render(<TablaClientes clientes={clientes} />);
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaClientes clientes={clientes} filtros={{ buscar: "", estado: "", pagina: 1 }} /></ProveedorNavegacionListado>);
     fireEvent.click(screen.getByRole("button", { name: "Dar de baja" }));
     fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Dar de baja" }));
 
@@ -217,7 +227,7 @@ describe("tabla de clientes (baja y reactivación)", () => {
   });
 
   it("cancelar la baja no llama a la acción", () => {
-    render(<TablaClientes clientes={clientes} />);
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaClientes clientes={clientes} filtros={{ buscar: "", estado: "", pagina: 1 }} /></ProveedorNavegacionListado>);
     fireEvent.click(screen.getByRole("button", { name: "Dar de baja" }));
     fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -228,25 +238,38 @@ describe("tabla de clientes (baja y reactivación)", () => {
     cambiarEstadoClienteAccion
       .mockResolvedValueOnce({ exito: false, mensaje: "No se pudo dar de baja al cliente seleccionado." })
       .mockResolvedValueOnce({ exito: false, mensaje: "No se pudo reactivar al cliente seleccionado." });
-    render(<TablaClientes clientes={clientes} />);
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaClientes clientes={clientes} filtros={{ buscar: "", estado: "", pagina: 1 }} /></ProveedorNavegacionListado>);
     fireEvent.click(screen.getByRole("button", { name: "Dar de baja" }));
     fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Dar de baja" }));
-    expect(await screen.findByText("No se pudo dar de baja al cliente seleccionado.")).toBeInTheDocument();
+    await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("error", "No se pudo dar de baja al cliente seleccionado."));
     await waitFor(() => expect(within(screen.getAllByRole("row")[1]).getByText("Activo")).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole("button", { name: "Reactivar cliente" }));
-    expect(await screen.findByText("No se pudo reactivar al cliente seleccionado.")).toBeInTheDocument();
+    fireEvent.click(within(await screen.findByRole("dialog", { name: "Reactivar cliente" })).getByRole("button", { name: "Reactivar" }));
+    await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("error", "No se pudo reactivar al cliente seleccionado."));
   });
 
-  it("reactiva un cliente inactivo", async () => {
+  it("pide confirmación antes de reactivar un cliente inactivo y luego avisa", async () => {
     cambiarEstadoClienteAccion.mockResolvedValue({ exito: true });
-    render(<TablaClientes clientes={clientes} />);
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaClientes clientes={clientes} filtros={{ buscar: "", estado: "", pagina: 1 }} /></ProveedorNavegacionListado>);
     fireEvent.click(screen.getByRole("button", { name: "Reactivar cliente" }));
+    const dialogo = screen.getByRole("dialog", { name: "Reactivar cliente" });
+    expect(cambiarEstadoClienteAccion).not.toHaveBeenCalled();
+    fireEvent.click(within(dialogo).getByRole("button", { name: "Reactivar" }));
     await waitFor(() => expect(cambiarEstadoClienteAccion).toHaveBeenCalledWith(2, "activo"));
+    await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("exito", "Cliente reactivado."));
+  });
+
+  it("cancelar la reactivación no llama a la acción", () => {
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaClientes clientes={clientes} filtros={{ buscar: "", estado: "", pagina: 1 }} /></ProveedorNavegacionListado>);
+    fireEvent.click(screen.getByRole("button", { name: "Reactivar cliente" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+    expect(cambiarEstadoClienteAccion).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("resalta la fila del cliente recién registrado", () => {
-    render(<TablaClientes clientes={clientes} />);
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaClientes clientes={clientes} filtros={{ buscar: "", estado: "", pagina: 1 }} /></ProveedorNavegacionListado>);
     act(() => marcarCreado("clientes", 2));
     expect(screen.getAllByRole("row")[2]).toHaveClass("fila-nueva");
     expect(screen.getAllByRole("row")[1]).not.toHaveClass("fila-nueva");

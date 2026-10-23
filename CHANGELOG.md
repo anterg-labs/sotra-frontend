@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.29 (2026-10-23)
+
+- Tablas: el detalle de repuestos y los reportes permiten ordenar los movimientos, las órdenes y los grupos de datos; el detalle enlaza al historial completo.
+
 ## Version 1.0.28 (2026-10-23)
 
 - Órdenes de trabajo: las órdenes asociadas se ordenan y paginan sin vaciar la tabla durante la carga; al asignar técnico se evita elegir al ya asignado.

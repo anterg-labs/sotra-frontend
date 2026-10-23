@@ -40,9 +40,9 @@ async function guardarUsuario(
   const entrada = leerEntrada(datos);
   if (!entrada) return { exito: false, errores: {}, mensaje: MENSAJE_GENERAL };
 
-  const errores = validarUsuario(entrada);
+  const errores: Record<string, string> = { ...validarUsuario(entrada) };
+  if (entrada.idsRol.length === 0) errores.idsRol = "Debe seleccionar al menos un rol.";
   if (Object.keys(errores).length > 0) return { exito: false, errores, mensaje: "" };
-  if (entrada.idsRol.length === 0) return { exito: false, errores: {}, mensaje: "Debe seleccionar al menos un rol." };
 
   try {
     const registro = await guardar(entrada);

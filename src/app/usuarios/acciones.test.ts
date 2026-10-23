@@ -12,7 +12,7 @@ const s = vi.hoisted(() => ({
 vi.mock("next/cache", () => ({ revalidatePath }));
 vi.mock("@/servicios/servidor/usuarios", () => s);
 
-const datos = { nombre: "Ana", apellido: "Pérez", correo: "ana@sotra.com", telefono: "099111222", idsRol: [1, 2] };
+const datos = { nombre: "Ana", apellido: "Pérez", correo: "ana@sotra.com", telefono: "99111222", idsRol: [1, 2] };
 const guardado = { id: 7, ...datos, roles: [], estado: "activo", fechaIngreso: "2026-01-01" };
 
 beforeEach(() => {
@@ -28,6 +28,13 @@ describe("acciones de alta y modificación de usuarios", () => {
     expect(revalidatePath).toHaveBeenCalledWith("/usuarios", "layout");
   });
 
+  it.each([true, false, null, undefined])("conserva el resultado de correo %s al devolver el alta", async (correoDeContrasenaEnviado) => {
+    const registro = { ...guardado, correoDeContrasenaEnviado };
+    s.crearUsuarioServidor.mockResolvedValue(registro);
+    await expect(crearUsuarioAccion(datos)).resolves.toEqual({ exito: true, registro });
+    expect(s.crearUsuarioServidor).toHaveBeenCalledTimes(1);
+  });
+
   it("valida en el servidor sin llamar a la API", async () => {
     const resultado = await crearUsuarioAccion({ ...datos, nombre: " ", telefono: "abc" });
     expect(resultado).toMatchObject({ exito: false, errores: { nombre: expect.any(String), telefono: expect.any(String) } });
@@ -36,8 +43,14 @@ describe("acciones de alta y modificación de usuarios", () => {
 
   it("exige al menos un rol", async () => {
     await expect(crearUsuarioAccion({ ...datos, idsRol: [] })).resolves.toEqual({
-      exito: false, errores: {}, mensaje: "Debe seleccionar al menos un rol.",
+      exito: false, errores: { idsRol: "Debe seleccionar al menos un rol." }, mensaje: "",
     });
+    expect(s.crearUsuarioServidor).not.toHaveBeenCalled();
+  });
+
+  it("informa juntos los errores de los campos y la falta de rol", async () => {
+    const resultado = await crearUsuarioAccion({ ...datos, telefono: "9912345", idsRol: [] });
+    expect(resultado).toMatchObject({ exito: false, errores: { telefono: "El campo teléfono debe tener 8 dígitos (o 9 si empieza con 0).", idsRol: "Debe seleccionar al menos un rol." } });
     expect(s.crearUsuarioServidor).not.toHaveBeenCalled();
   });
 
@@ -68,7 +81,7 @@ describe("acciones de alta y modificación de usuarios", () => {
     s.actualizarUsuarioServidor.mockResolvedValue(guardado);
     await expect(actualizarUsuarioAccion(7, "activo", "2026-02-03", datos)).resolves.toMatchObject({ exito: true });
     expect(s.actualizarUsuarioServidor).toHaveBeenCalledWith(7, {
-      nombre: "Ana", apellido: "Pérez", correo: "ana@sotra.com", telefono: "099111222", idsRol: [1, 2],
+      nombre: "Ana", apellido: "Pérez", correo: "ana@sotra.com", telefono: "99111222", idsRol: [1, 2],
       estado: "activo", fechaIngreso: "2026-02-03",
     });
     await expect(actualizarUsuarioAccion(7, "borrado" as never, "2026-02-03", datos)).resolves.toMatchObject({ exito: false });
@@ -104,6 +117,7 @@ describe("restablecer contraseña", () => {
     [409, "USUARIO_SIN_ACCESO", "El usuario no tiene acceso al sistema: no está registrado en Keycloak."],
     [409, "USUARIO_INACTIVO", "El usuario está dado de baja."],
     [502, "KEYCLOAK_NO_DISPONIBLE", "No se pudo conectar con Keycloak."],
+    [502, "CORREO_NO_ENVIADO", "No se pudo enviar el correo."],
   ])("con %i %s muestra el mensaje de la API", async (estado, codigo, mensaje) => {
     s.restablecerContrasenaServidor.mockRejectedValue(new ErrorDeApi(mensaje, codigo, estado));
     await expect(restablecerContrasenaAccion(25)).resolves.toEqual({ exito: false, mensaje });

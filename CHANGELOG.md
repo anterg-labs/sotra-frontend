@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.20 (2026-10-23)
+
+- Listados: los valores numéricos de clientes, órdenes, repuestos y movimientos se muestran centrados en su columna.
+
 ## Version 1.0.19 (2026-10-23)
 
 - Listados: se conserva visible la tabla anterior mientras se cargan filtros, orden o paginación, evitando el parpadeo.

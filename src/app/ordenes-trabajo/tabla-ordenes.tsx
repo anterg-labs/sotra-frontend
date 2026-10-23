@@ -37,7 +37,7 @@ export function TablaOrdenes(props: { ordenes: OrdenTrabajo[]; filtros: FiltrosO
         <tbody>
           {ordenes.map((orden) => (
             <tr key={orden.id}>
-              <td><strong>{orden.id}</strong></td>
+              <td className="celda-numerica"><strong>{orden.id}</strong></td>
               <td>{orden.nombreCliente}</td>
               <td>{orden.nombreActivo}</td>
               <td>{orden.tipo}</td>

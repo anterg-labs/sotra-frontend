@@ -64,7 +64,7 @@ export function TablaClientes(props: { clientes: Cliente[]; filtros?: FiltrosCli
                   <td>{cliente.nombreContacto}</td>
                   <td>{cliente.correo}</td>
                   <td>{cliente.telefono}</td>
-                  <td>{cliente.cantidadActivosAsociados}</td>
+                  <td className="celda-numerica">{cliente.cantidadActivosAsociados}</td>
                   <td><EstadoRegistro estado={cliente.estado} /></td>
                   <td>
                     <div className="table-actions">

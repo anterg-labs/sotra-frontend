@@ -39,7 +39,7 @@ export function TablaMovimientos(props: { movimientos: MovimientoStock[]; filtro
               <td><strong>{movimiento.codigoRepuesto}</strong></td>
               <td>{movimiento.nombreRepuesto}</td>
               <td>{obtenerEtiquetaTipoMovimiento(movimiento.tipo)}</td>
-              <td>{movimiento.cantidad}</td>
+              <td className="celda-numerica">{movimiento.cantidad}</td>
               <td>{movimiento.ubicacion}</td>
               <td>{movimiento.nombreUsuario ?? "Sin registrar"}</td>
               <td>{movimiento.motivo}</td>

@@ -7,7 +7,7 @@ export type OrdenLocal<C extends string> = { columna: C; direccion: DireccionLoc
 export type ValorOrdenable = string | number | boolean | null;
 
 const NOMBRES_ORDEN = { asc: "ascendente", desc: "descendente" } as const;
-const COMPARADOR_TEXTO = new Intl.Collator("es-UY", { numeric: false, sensitivity: "accent" });
+const COMPARADOR_TEXTO = new Intl.Collator("es-UY", { numeric: true, sensitivity: "accent" });
 
 function comparar(a: ValorOrdenable, b: ValorOrdenable) {
   if (typeof a === "number" && typeof b === "number") return a - b;

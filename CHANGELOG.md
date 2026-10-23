@@ -2,7 +2,7 @@
 
 ## Version 1.0.36 (2026-10-23)
 
-- Listados: la ordenación inmediata de texto usa español de Uruguay y el mismo criterio de mayúsculas y tildes que la API.
+- Listados: la ordenación local de texto usa español de Uruguay sin separar mayúsculas; conserva el orden natural de números dentro del texto.
 
 ## Version 1.0.35 (2026-10-23)
 

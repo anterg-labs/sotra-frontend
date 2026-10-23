@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.25 (2026-10-23)
+
+- Desarrollo: el caché de compilación local persiste al recrear contenedores y se pueden precalentar las pantallas con una cuenta de prueba. Se amplía la prueba de ingreso rápido de stock.
+
 ## Version 1.0.24 (2026-10-23)
 
 - Búsquedas: los selectores esperan el resultado remoto, descartan respuestas anteriores y avisan cuando falla la carga de opciones.

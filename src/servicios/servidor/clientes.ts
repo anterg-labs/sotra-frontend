@@ -1,4 +1,5 @@
 import "server-only";
+import { parametrosDeOrden } from "@/componentes/listado/url-listado";
 import { leerJsonServidor, opcionesJsonServidor } from "@/servicios/servidor/cliente-http-servidor";
 import type { ActualizarClienteInput, Cliente, CrearClienteInput, EstadoCliente, FiltrosClientes } from "@/tipos/cliente";
 import type { Pagina } from "@/tipos/pagina";
@@ -7,7 +8,7 @@ export function listarClientesServidor(filtros: FiltrosClientes) {
   const parametros = new URLSearchParams();
   if (filtros.buscar.trim() !== "") parametros.append("buscar", filtros.buscar.trim());
   if (filtros.estado !== "") parametros.append("estado", filtros.estado);
-  parametros.append("direccionOrden", "desc");
+  for (const [nombre, valor] of parametrosDeOrden(filtros, "desc")) parametros.append(nombre, valor);
   parametros.append("pagina", String(filtros.pagina));
   return leerJsonServidor<Pagina<Cliente>>("/api/v1/clientes?" + parametros.toString(), "No se pudo obtener el listado de clientes.");
 }

@@ -2148,7 +2148,7 @@ input[type="checkbox"][role="switch"]:disabled {
   line-height: 1.8;
   outline: none;
 }
-.editor-visual-contenido:focus { border-color: var(--borde-fuerte); box-shadow: 0 0 0 2px var(--superficie-suave); }
+.editor-visual-contenido:focus-visible { border-color: var(--acento); box-shadow: var(--anillo-foco); }
 .editor-visual-contenido[aria-invalid="true"] { border-color: var(--peligro-texto); }
 .editor-visual-contenido h2 { font-size: 25px; font-weight: 700; }
 .editor-visual-contenido h3 { font-size: 20px; font-weight: 650; }

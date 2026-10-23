@@ -11,6 +11,7 @@ import { useFormularioAccion } from "@/componentes/use-formulario-accion";
 import type { TerminosCondiciones } from "@/tipos/terminos";
 import { LARGO_MAXIMO_TEXTO, validarTerminos } from "@/validaciones/terminos";
 import { publicarTerminosAccion } from "./acciones";
+import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
 export function FormularioTerminos(props: { inicial: Pick<TerminosCondiciones, "texto"> | null }) {
   const { mostrarAviso } = useAvisos();
@@ -41,7 +42,7 @@ export function FormularioTerminos(props: { inicial: Pick<TerminosCondiciones, "
           <button className="secondary-button" onClick={() => setEstaVistaPreviaAbierta(true)} type="button">Vista previa</button>
         </div>
         <div className="terminos-campos-editor">
-          {errorGeneral ? <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p> : null}
+          {errorGeneral ? <AvisoEnLinea ref={referenciaErrorGeneral}>{errorGeneral}</AvisoEnLinea> : null}
           <div className="form-field">
             <label htmlFor="texto">Texto</label>
             <EditorMarkdown alCambiar={setTexto} describedBy={["texto-contador", errores.texto ? "texto-error" : ""].filter(Boolean).join(" ")} id="texto" tieneError={Boolean(errores.texto)} valor={texto} />

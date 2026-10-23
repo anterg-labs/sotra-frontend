@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import { Combobox } from "@/componentes/combobox";
 import { formatearFechaPrevista, listarTecnicosPaginados, obtenerEtiquetaEstadoOrdenTrabajo } from "@/servicios/servicio-ordenes-trabajo";
 import type { EstadoOrdenTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
+import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
 type FiltroEstado = "" | "asignada" | "en_ejecucion" | "pausada";
 
@@ -64,7 +65,7 @@ export function MiTrabajo(props: PropiedadesMiTrabajo) {
         </div>
       ) : null}
 
-      {error ? <p className="form-error-banner" role="alert">{error}</p> : null}
+      {error ? <AvisoEnLinea>{error}</AvisoEnLinea> : null}
 
       {tecnicoId === "" ? (
         <p className="empty-state">Elegí un técnico para ver sus órdenes.</p>

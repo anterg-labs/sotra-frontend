@@ -1,4 +1,5 @@
 import "server-only";
+import { parametrosDeOrden } from "@/componentes/listado/url-listado";
 import { leerJsonServidor, opcionesJsonServidor, solicitarApiServidor } from "@/servicios/servidor/cliente-http-servidor";
 import type { Pagina } from "@/tipos/pagina";
 import type { ActualizarUsuarioInput, CrearUsuarioInput, EstadoUsuario, FiltrosUsuarios, Rol, Usuario } from "@/tipos/usuario";
@@ -8,7 +9,7 @@ export function listarUsuariosServidor(filtros: FiltrosUsuarios) {
   if (filtros.buscar.trim() !== "") parametros.append("buscar", filtros.buscar.trim());
   if (filtros.rolId !== "") parametros.append("rolId", filtros.rolId);
   if (filtros.estado !== "") parametros.append("estado", filtros.estado);
-  parametros.append("direccionOrden", "desc");
+  for (const [nombre, valor] of parametrosDeOrden(filtros, "desc")) parametros.append(nombre, valor);
   parametros.append("pagina", String(filtros.pagina));
   return leerJsonServidor<Pagina<Usuario>>("/api/v1/usuarios?" + parametros.toString(), "No se pudo obtener el listado de usuarios.");
 }

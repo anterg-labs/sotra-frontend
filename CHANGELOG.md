@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.18 (2026-10-23)
+
+- Listados: se pueden ordenar las columnas de usuarios, clientes, máquinas, órdenes, repuestos y movimientos desde el encabezado, conservando filtros y paginación.
+
 ## Version 1.0.14 (2026-10-23)
 
 - Integración: se corrige el archivo de dependencias para que la instalación del frontend en Linux y en CI incluya todos los paquetes necesarios.

@@ -1,13 +1,18 @@
 import {
   construirUrlListado,
   leerIdFiltro,
+  leerOrden,
   leerPagina,
   primerValor,
+  siguienteOrden,
   type ParametrosBusqueda,
 } from "@/componentes/listado/url-listado";
 import type { FiltrosMovimientosStock } from "@/tipos/movimiento-stock";
 
 export const RUTA_MOVIMIENTOS = "/repuestos/movimientos";
+
+/** Columnas por las que se puede ordenar; coinciden con las que acepta la API. */
+export const COLUMNAS_ORDENABLES_MOVIMIENTOS = ["fecha", "codigoRepuesto", "nombreRepuesto", "tipo", "cantidad", "ubicacion", "nombreUsuario", "motivo"] as const;
 
 const PATRON_FECHA = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -27,9 +32,16 @@ export function leerFiltrosMovimientos(parametros: ParametrosBusqueda): FiltrosM
     ubicacion: primerValor(parametros.ubicacion),
     usuarioId: leerIdFiltro(parametros, "usuarioId"),
     pagina: leerPagina(parametros),
+    ...leerOrden(parametros, COLUMNAS_ORDENABLES_MOVIMIENTOS),
   };
 }
 
 export function construirUrlMovimientos(filtros: FiltrosMovimientosStock) {
   return construirUrlListado(RUTA_MOVIMIENTOS, filtros);
+}
+
+/** URL del listado al hacer clic en el título de una columna: aplica el orden siguiente y vuelve a la página 1. */
+export function urlOrdenMovimientos(filtros: FiltrosMovimientosStock, columna: string) {
+  const siguiente = siguienteOrden({ ordenarPor: filtros.ordenarPor ?? "", direccionOrden: filtros.direccionOrden ?? "" }, columna);
+  return construirUrlMovimientos({ ...filtros, ...siguiente, pagina: 1 });
 }

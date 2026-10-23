@@ -5,7 +5,7 @@ import { construirUrlListado } from "./url-listado";
 
 type PropiedadesPaginacion = {
   ruta: string;
-  filtros: Record<string, string>;
+  filtros: Record<string, string | undefined>;
   pagina: number;
   totalPaginas: number;
   totalElementos: number;

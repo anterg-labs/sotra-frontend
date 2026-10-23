@@ -26,6 +26,8 @@ export type FiltrosMovimientosStock = {
   ubicacion: string;
   usuarioId: string;
   pagina: number;
+  ordenarPor?: string;
+  direccionOrden?: "asc" | "desc" | "";
 };
 
 export type IngresoStockInput = {

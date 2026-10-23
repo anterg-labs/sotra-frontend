@@ -4,13 +4,13 @@ import { useFiltrosEnVivo } from "@/componentes/listado/use-filtros-en-vivo";
 import type { FiltrosUsuarios, Rol } from "@/tipos/usuario";
 import { construirUrlUsuarios } from "./filtros";
 
-type ValoresUsuarios = Pick<FiltrosUsuarios, "buscar" | "rolId" | "estado">;
+type ValoresUsuarios = Pick<FiltrosUsuarios, "buscar" | "rolId" | "estado" | "ordenarPor" | "direccionOrden">;
 const VACIOS: ValoresUsuarios = { buscar: "", rolId: "", estado: "" };
 
 /** Filtros del listado en vivo: el texto espera un instante y el rol y el estado aplican al instante. */
 export function BarraFiltrosUsuarios(props: { filtros: FiltrosUsuarios; roles: Rol[] }) {
   const { valores, cambiar, aplicarAhora, limpiar, estaPendiente } = useFiltrosEnVivo<ValoresUsuarios>({
-    inicial: { buscar: props.filtros.buscar, rolId: props.filtros.rolId, estado: props.filtros.estado },
+    inicial: { buscar: props.filtros.buscar, rolId: props.filtros.rolId, estado: props.filtros.estado, ordenarPor: props.filtros.ordenarPor, direccionOrden: props.filtros.direccionOrden },
     construirUrl: (v) => construirUrlUsuarios({ ...v, pagina: 1 }),
   });
 

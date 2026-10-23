@@ -1,5 +1,8 @@
 "use client";
 
+import { EncabezadoOrdenable } from "@/componentes/listado/encabezado-ordenable";
+import { construirUrlClientes } from "./filtros";
+
 import Link from "next/link";
 import { useState } from "react";
 import { IconoLapiz, IconoOjo, IconoPapelera, IconoReactivar } from "@/componentes/iconos";
@@ -8,14 +11,23 @@ import { useCambioEstado } from "@/componentes/listado/use-cambio-estado";
 import { useUltimoCreado } from "@/componentes/listado/ultimo-creado";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
 import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
-import type { Cliente } from "@/tipos/cliente";
+import type { Cliente, FiltrosClientes } from "@/tipos/cliente";
 import { cambiarEstadoClienteAccion } from "./acciones";
 
 /**
  * Tabla del listado: recibe los clientes ya cargados en el servidor y maneja baja y reactivación.
  * La fila queda marcada como en proceso de inmediato (actualización optimista); el estado nuevo aparece cuando el servidor lo confirma.
  */
-export function TablaClientes(props: { clientes: Cliente[] }) {
+export function TablaClientes(props: { clientes: Cliente[]; filtros?: FiltrosClientes }) {
+  const { filtros } = props;
+  const columna = (clave: string, etiqueta: string) => (
+    <EncabezadoOrdenable
+      columna={clave}
+      construirUrl={(orden) => construirUrlClientes({ ...filtros, ...orden, pagina: 1 } as FiltrosClientes)}
+      etiqueta={etiqueta}
+      orden={filtros}
+    />
+  );
   const puedeGestionar = useTienePermiso("cliente.gestionar");
   const { clientes } = props;
   const [clientePendienteBaja, setClientePendienteBaja] = useState<Cliente | null>(null);
@@ -29,12 +41,12 @@ export function TablaClientes(props: { clientes: Cliente[] }) {
         <table>
           <thead>
             <tr>
-              <th>Razón social</th>
-              <th>Contacto</th>
-              <th>Correo electrónico</th>
-              <th>Teléfono</th>
-              <th>Activos asociados</th>
-              <th>Estado</th>
+              {columna("razonSocial", "Razón social")}
+              {columna("nombreContacto", "Contacto")}
+              {columna("correo", "Correo electrónico")}
+              {columna("telefono", "Teléfono")}
+              {columna("cantidadActivosAsociados", "Activos asociados")}
+              {columna("estado", "Estado")}
               <th>Acciones</th>
             </tr>
           </thead>

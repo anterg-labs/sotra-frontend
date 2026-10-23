@@ -26,7 +26,7 @@ function contadorDelChip(valor: FiltroStock, alertas: AlertasStock | null) {
 export function BarraFiltrosRepuestos(props: { filtros: FiltrosUrlRepuestos; alertas: AlertasStock | null }) {
   const { filtros, alertas } = props;
   const { valores, cambiar, aplicarAhora, limpiar, estaPendiente } = useFiltrosEnVivo<ValoresRepuestos>({
-    inicial: { buscar: filtros.buscar, estado: filtros.estado, ubicacion: filtros.ubicacion, stock: filtros.stock },
+    inicial: { buscar: filtros.buscar, estado: filtros.estado, ubicacion: filtros.ubicacion, stock: filtros.stock, ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden },
     construirUrl: (v) => construirUrlRepuestos({ ...v, pagina: 1 }),
   });
 

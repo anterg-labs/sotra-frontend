@@ -1,3 +1,4 @@
+import { parametrosDeOrden } from "@/componentes/listado/url-listado";
 import { leerDatosApi, leerPagina, leerTodasLasPaginas } from "@/servicios/api/solicitudes-http";
 import type { Pagina } from "@/tipos/pagina";
 import type { FiltrosUsuarios, Rol, Usuario } from "@/tipos/usuario";
@@ -18,7 +19,7 @@ export async function apiListarUsuariosPaginados(filtros: FiltrosUsuarios) {
   if (filtros.estado !== "") {
     parametros.append("estado", filtros.estado);
   }
-  parametros.append("direccionOrden", "desc");
+  for (const [nombre, valor] of parametrosDeOrden(filtros, "desc")) parametros.append(nombre, valor);
   parametros.append("pagina", String(filtros.pagina));
 
   const pagina = await leerPagina("/api/v1/usuarios", parametros, "No se pudo obtener el listado de usuarios.");

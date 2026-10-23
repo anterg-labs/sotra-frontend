@@ -1,5 +1,8 @@
 "use client";
 
+import { EncabezadoOrdenable } from "@/componentes/listado/encabezado-ordenable";
+import { construirUrlRepuestos } from "./filtros";
+
 import Link from "next/link";
 import { useState } from "react";
 import { avisarStockActualizado } from "@/hooks/use-alertas-stock";
@@ -11,10 +14,20 @@ import { useUltimoCreado } from "@/componentes/listado/ultimo-creado";
 import { useCambioEstado } from "@/componentes/listado/use-cambio-estado";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
 import type { Repuesto } from "@/tipos/repuesto";
+import type { FiltrosUrlRepuestos } from "./filtros";
 import { cambiarEstadoRepuestoAccion } from "./acciones";
 
 /** Tabla del listado: recibe los repuestos ya cargados en el servidor y maneja baja y reactivación. */
-export function TablaRepuestos(props: { repuestos: Repuesto[] }) {
+export function TablaRepuestos(props: { repuestos: Repuesto[]; filtros?: FiltrosUrlRepuestos }) {
+  const { filtros } = props;
+  const columna = (clave: string, etiqueta: string) => (
+    <EncabezadoOrdenable
+      columna={clave}
+      construirUrl={(orden) => construirUrlRepuestos({ ...filtros, ...orden, pagina: 1 } as FiltrosUrlRepuestos)}
+      etiqueta={etiqueta}
+      orden={filtros}
+    />
+  );
   const { mostrarAviso } = useAvisos();
   const [repuestoPendienteBaja, setRepuestoPendienteBaja] = useState<Repuesto | null>(null);
 
@@ -32,13 +45,13 @@ export function TablaRepuestos(props: { repuestos: Repuesto[] }) {
         <table>
           <thead>
             <tr>
-              <th>Código</th>
-              <th>Nombre</th>
-              <th>Marca</th>
-              <th>Ubicación</th>
-              <th>Cantidad</th>
-              <th>Mínima</th>
-              <th>Estado</th>
+              {columna("codigo", "Código")}
+              {columna("nombre", "Nombre")}
+              {columna("marca", "Marca")}
+              {columna("ubicacion", "Ubicación")}
+              {columna("cantidad", "Cantidad")}
+              {columna("cantidadMinima", "Mínima")}
+              {columna("estado", "Estado")}
               <th>Acciones</th>
             </tr>
           </thead>

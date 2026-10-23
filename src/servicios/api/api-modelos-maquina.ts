@@ -1,3 +1,4 @@
+import { parametrosDeOrden } from "@/componentes/listado/url-listado";
 import { leerPagina } from "@/servicios/api/solicitudes-http";
 import type { FiltrosModelosMaquina, ModeloMaquina } from "@/tipos/modelo-maquina";
 import type { Pagina } from "@/tipos/pagina";
@@ -13,6 +14,7 @@ export async function apiListarModelosMaquinaPaginados(filtros: FiltrosModelosMa
   if (filtros.estado !== "") {
     parametros.append("estado", filtros.estado);
   }
+  for (const [nombre, valor] of parametrosDeOrden(filtros)) parametros.append(nombre, valor);
   parametros.append("pagina", String(filtros.pagina));
 
   const pagina = await leerPagina("/api/v1/modelos-maquina", parametros, "No se pudo obtener el listado de modelos de máquina.");

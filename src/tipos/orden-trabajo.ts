@@ -97,4 +97,6 @@ export type FiltrosOrdenesTrabajo = {
   fechaHasta: string;
   conSugerencias: boolean;
   pagina: number;
+  ordenarPor?: string;
+  direccionOrden?: "asc" | "desc" | "";
 };

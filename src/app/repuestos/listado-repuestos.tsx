@@ -37,9 +37,9 @@ export async function ListadoRepuestos(props: { filtros: FiltrosUrlRepuestos; co
   return (
     <>
       <InformarResultados total={pagina.totalElementos} />
-      <TablaRepuestos repuestos={pagina.elementos} />
+      <TablaRepuestos filtros={filtros} repuestos={pagina.elementos} />
       <PaginacionListado
-        filtros={{ buscar: filtros.buscar, estado: filtros.estado, ubicacion: filtros.ubicacion, stock: filtros.stock }}
+        filtros={{ buscar: filtros.buscar, estado: filtros.estado, ubicacion: filtros.ubicacion, stock: filtros.stock, ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden }}
         pagina={pagina.pagina}
         plural="repuestos"
         ruta={RUTA_REPUESTOS}

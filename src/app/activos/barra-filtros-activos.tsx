@@ -9,7 +9,7 @@ import type { Cliente } from "@/tipos/cliente";
 import type { ModeloMaquina } from "@/tipos/modelo-maquina";
 import { construirUrlActivos } from "./filtros";
 
-type ValoresActivos = Pick<FiltrosActivos, "buscar" | "clienteId" | "modeloMaquinaId" | "estado">;
+type ValoresActivos = Pick<FiltrosActivos, "buscar" | "clienteId" | "modeloMaquinaId" | "estado" | "ordenarPor" | "direccionOrden">;
 const VACIOS: ValoresActivos = { buscar: "", clienteId: "", modeloMaquinaId: "", estado: "" };
 
 /** Filtros del listado en vivo: el texto espera un instante; cliente, modelo y estado aplican al instante. */
@@ -19,8 +19,7 @@ export function BarraFiltrosActivos(props: { filtros: FiltrosActivos; clientes: 
       buscar: props.filtros.buscar,
       clienteId: props.filtros.clienteId,
       modeloMaquinaId: props.filtros.modeloMaquinaId,
-      estado: props.filtros.estado,
-    },
+      estado: props.filtros.estado, ordenarPor: props.filtros.ordenarPor, direccionOrden: props.filtros.direccionOrden },
     construirUrl: (v) => construirUrlActivos({ ...v, pagina: 1 }),
   });
 

@@ -49,4 +49,6 @@ export type FiltrosUsuarios = {
   rolId: string;
   estado: string;
   pagina: number;
+  ordenarPor?: string;
+  direccionOrden?: "asc" | "desc" | "";
 };

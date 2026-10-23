@@ -41,4 +41,6 @@ export type FiltrosRepuestos = {
   estadoStock?: EstadoStock | "";
   orden?: "criticidad";
   pagina: number;
+  ordenarPor?: string;
+  direccionOrden?: "asc" | "desc" | "";
 };

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useRef, useState, useTransition } from "react";
 import { EsqueletoListado } from "./esqueleto-listado";
+import { leerOrdenDeUrl, type OrdenListado } from "./url-listado";
 
 type ContextoNavegacion = {
   estaPendiente: boolean;
@@ -12,6 +13,7 @@ type ContextoNavegacion = {
   reemplazar: (url: string) => void;
   /** Última URL a la que se navegó desde esta pantalla (`null` si todavía no hubo ninguna). */
   ultimaUrl: () => string | null;
+  ordenPendiente: OrdenListado | null;
   informarTotal: (total: number | null) => void;
   etiquetaCarga: string;
 };
@@ -22,6 +24,10 @@ export function useNavegacionListado() {
   const contexto = useContext(Contexto);
   if (!contexto) throw new Error("Falta el ProveedorNavegacionListado.");
   return contexto;
+}
+
+export function useNavegacionListadoOpcional() {
+  return useContext(Contexto);
 }
 
 function textoDeResultados(total: number) {
@@ -39,19 +45,23 @@ export function ProveedorNavegacionListado(props: { etiquetaCarga: string; child
   const [estaPendiente, iniciarTransicion] = useTransition();
   const [total, setTotal] = useState<number | null>(null);
   const ultima = useRef<string | null>(null);
+  const [urlPendiente, setUrlPendiente] = useState<string | null>(null);
 
   const navegar = (url: string) => {
     ultima.current = url;
+    setUrlPendiente(url);
     iniciarTransicion(() => enrutador.push(url));
   };
   const reemplazar = (url: string) => {
     ultima.current = url;
+    setUrlPendiente(url);
     iniciarTransicion(() => enrutador.replace(url));
   };
+  const ordenPendiente = estaPendiente && urlPendiente !== null ? leerOrdenDeUrl(urlPendiente) : null;
 
   return (
     <Contexto.Provider
-      value={{ estaPendiente, navegar, reemplazar, ultimaUrl: () => ultima.current, informarTotal: setTotal, etiquetaCarga: props.etiquetaCarga }}
+      value={{ estaPendiente, navegar, reemplazar, ultimaUrl: () => ultima.current, ordenPendiente, informarTotal: setTotal, etiquetaCarga: props.etiquetaCarga }}
     >
       {props.children}
       <div aria-label="Resultados del listado" aria-live="polite" className="sr-only" role="status">

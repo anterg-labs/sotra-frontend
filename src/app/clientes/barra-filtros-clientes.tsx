@@ -4,13 +4,13 @@ import { useFiltrosEnVivo } from "@/componentes/listado/use-filtros-en-vivo";
 import type { FiltrosClientes } from "@/tipos/cliente";
 import { construirUrlClientes } from "./filtros";
 
-type ValoresClientes = Pick<FiltrosClientes, "buscar" | "estado">;
+type ValoresClientes = Pick<FiltrosClientes, "buscar" | "estado" | "ordenarPor" | "direccionOrden">;
 const VACIOS: ValoresClientes = { buscar: "", estado: "" };
 
 /** Filtros del listado en vivo: el texto espera un instante y el estado aplica al instante; ambos escriben la URL. */
 export function BarraFiltrosClientes(props: { filtros: FiltrosClientes }) {
   const { valores, cambiar, aplicarAhora, limpiar, estaPendiente } = useFiltrosEnVivo<ValoresClientes>({
-    inicial: { buscar: props.filtros.buscar, estado: props.filtros.estado },
+    inicial: { buscar: props.filtros.buscar, estado: props.filtros.estado, ordenarPor: props.filtros.ordenarPor, direccionOrden: props.filtros.direccionOrden },
     construirUrl: (v) => construirUrlClientes({ ...v, pagina: 1 }),
   });
 

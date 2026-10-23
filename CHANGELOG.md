@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.23 (2026-10-23)
+
+- Navegación: se agrega una pantalla de inicio con accesos y órdenes recientes, se organiza el menú lateral y el pie muestra las versiones del frontend y la API.
+
 ## Version 1.0.22 (2026-10-23)
 
 - Documentación: se pueden cargar, filtrar y editar documentos con título, tipo, descripción y asociación; también marcar su vigencia.

@@ -121,7 +121,7 @@ export function GraficoTendencia({ puntos, titulo, formatearPeriodo = formatearP
         <tbody>
           {puntos.map((punto) => (
             <tr key={punto.periodo}>
-              <td>{punto.periodo}</td><td>{punto.preventivas}</td><td>{punto.correctivas}</td><td>{punto.total}</td>
+              <td>{punto.periodo}</td><td className="celda-numerica">{punto.preventivas}</td><td className="celda-numerica">{punto.correctivas}</td><td className="celda-numerica">{punto.total}</td>
             </tr>
           ))}
         </tbody>

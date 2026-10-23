@@ -18,7 +18,7 @@ for (const ancho of [1366, 390]) {
       await page.getByRole("navigation", { name: "Navegación principal" }).getByRole("link", { name: "Clientes", exact: true }).click();
       const aviso = page.getByRole("status").filter({ hasText: "Abriendo Clientes…" });
       await expect(aviso).toBeVisible();
-      await expect(page.locator(".app-lateral")).toHaveAttribute("data-retraido", "true");
+      await expect(page.locator(".app-lateral")).toHaveAttribute("data-abierto", "false");
       if (ancho >= 600) await expect.poll(() => page.locator(".app-lateral").evaluate((elemento) => elemento.getBoundingClientRect().width)).toBe(72);
       await expect(page.getByRole("heading", { name: "Gestión de clientes", exact: true })).toHaveCount(0);
       if (ancho < 600) await expect(page.locator(".app-lateral")).toHaveAttribute("data-abierto", "false");

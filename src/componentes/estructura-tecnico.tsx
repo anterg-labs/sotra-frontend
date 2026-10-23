@@ -49,7 +49,7 @@ export function EstructuraTecnico({ children }: { children: React.ReactNode }) {
         )}
         <MenuUsuario alCerrarSesion={cerrarSesion} usuario={usuario} />
       </header>
-      <div className="tecnico-contenido">{children}</div>
+      <main className="tecnico-contenido">{children}</main>
       <footer className="app-pie"><BotonTerminos /></footer>
       <nav aria-label="Navegación del técnico" className="tecnico-barra">
         {enlaces.filter((enlace) => tienePermiso(roles, enlace.permiso)).map((enlace) => (

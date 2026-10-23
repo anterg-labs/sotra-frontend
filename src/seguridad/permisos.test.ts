@@ -100,8 +100,8 @@ describe("permisos por página", () => {
   });
 
   it("la página de inicio depende del rol", () => {
-    expect(paginaDeInicio(["administrador"])).toBe("/reportes");
-    expect(paginaDeInicio(["jefe_mantenimiento"])).toBe("/reportes");
+    expect(paginaDeInicio(["administrador"])).toBe("/inicio");
+    expect(paginaDeInicio(["jefe_mantenimiento"])).toBe("/inicio");
     expect(paginaDeInicio(["tecnico"])).toBe("/tecnico");
     expect(paginaDeInicio(["panolero"])).toBe("/repuestos");
   });

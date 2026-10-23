@@ -1,0 +1,92 @@
+import { render, screen, within } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { AlertasMaquinaria, Indicadores } from "@/tipos/reporte";
+import { armarAccesos } from "./accesos";
+import PaginaInicio from "./page";
+
+const servidor = vi.hoisted(() => ({
+  obtenerIndicadoresServidor: vi.fn(),
+  obtenerAlertasMaquinariaServidor: vi.fn(),
+}));
+vi.mock("@/servicios/servidor/reportes", () => servidor);
+
+const indicadores: Indicadores = {
+  totalOrdenes: 20,
+  ordenesPorEstado: [
+    { nombre: "creada", cantidad: 3 },
+    { nombre: "asignada", cantidad: 2 },
+    { nombre: "en_ejecucion", cantidad: 4 },
+    { nombre: "pausada", cantidad: 1 },
+    { nombre: "finalizada", cantidad: 5 },
+    { nombre: "cerrada", cantidad: 5 },
+  ],
+  ordenesPorPrioridad: [],
+  ordenesPorTipo: [],
+  ordenesPorTecnico: [],
+  activosConMasIntervenciones: [],
+  repuestosBajoStock: [{ id: 1, codigo: "R-1", nombre: "Filtro", cantidad: 0, cantidadMinima: 5, estadoStock: "sin_stock", estado: "activo" }],
+  promedioHorasHastaInicio: null,
+  promedioHorasHastaCierre: null,
+  ordenesAltaPrioridadPendientes: 2,
+  ordenesPendientesDeValidacion: 5,
+  ordenesRecientes: [],
+} as unknown as Indicadores;
+
+const alertas: AlertasMaquinaria = { total: 4, criticas: 1, alertas: [] };
+
+describe("accesos del inicio", () => {
+  it("cuenta como abiertas las órdenes que no están finalizadas, cerradas ni canceladas", () => {
+    const accesos = armarAccesos(indicadores, alertas);
+
+    expect(accesos.find((a) => a.etiqueta === "Órdenes abiertas")?.valor).toBe(10);
+    expect(accesos.find((a) => a.etiqueta === "Sin asignar")?.valor).toBe(3);
+    expect(accesos.find((a) => a.etiqueta === "En ejecución")?.valor).toBe(4);
+  });
+
+  it("enlaza cada acceso con su listado filtrado", () => {
+    const enlaces = Object.fromEntries(armarAccesos(indicadores, alertas).map((a) => [a.etiqueta, a.href]));
+
+    expect(enlaces["Prioridad alta pendientes"]).toBe("/ordenes-trabajo?prioridad=alta");
+    expect(enlaces["Pendientes de validación"]).toBe("/ordenes-trabajo?estado=finalizada");
+    expect(enlaces["Repuestos con bajo stock"]).toBe("/repuestos?stock=alerta");
+  });
+
+  it("si las alertas no se pueden leer, lo indica sin romper el resto", () => {
+    const acceso = armarAccesos(indicadores, null).find((a) => a.etiqueta === "Alertas de maquinaria");
+
+    expect(acceso?.valor).toBe("—");
+    expect(acceso?.detalle).toBe("No disponible por ahora");
+  });
+});
+
+describe("pantalla de inicio", () => {
+  beforeEach(() => {
+    servidor.obtenerIndicadoresServidor.mockReset().mockResolvedValue(indicadores);
+    servidor.obtenerAlertasMaquinariaServidor.mockReset().mockResolvedValue(alertas);
+  });
+
+  it("muestra los accesos directos y la acción de crear una orden", async () => {
+    render(await PaginaInicio());
+
+    const accesos = screen.getByRole("region", { name: "Accesos directos" });
+    expect(within(accesos).getByRole("link", { name: /Órdenes abiertas/ })).toHaveAttribute("href", "/ordenes-trabajo");
+    expect(within(accesos).getByRole("link", { name: /Alertas de maquinaria/ })).toHaveTextContent("1 críticas");
+    expect(screen.getByRole("link", { name: "Nueva orden de trabajo" })).toHaveAttribute("href", "/ordenes-trabajo/nuevo");
+  });
+
+  it("si fallan los indicadores muestra el error en línea", async () => {
+    servidor.obtenerIndicadoresServidor.mockRejectedValue(new Error("No se pudieron obtener los indicadores."));
+
+    render(await PaginaInicio());
+
+    expect(screen.getByRole("alert")).toHaveTextContent("No se pudieron obtener los indicadores.");
+  });
+
+  it("si fallan las alertas igual muestra el resto del inicio", async () => {
+    servidor.obtenerAlertasMaquinariaServidor.mockRejectedValue(new Error("falla"));
+
+    render(await PaginaInicio());
+
+    expect(screen.getByRole("link", { name: /Alertas de maquinaria/ })).toHaveTextContent("No disponible por ahora");
+  });
+});

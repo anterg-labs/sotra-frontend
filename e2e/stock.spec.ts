@@ -12,11 +12,27 @@ test("un repuesto bajo el mínimo muestra aviso e insignia, y al ingresar stock 
 
   await page.goto(`/repuestos/${repuesto.id}?ingresar=1`);
   await page.getByLabel("Cantidad a ingresar").fill("10");
-  await page.getByLabel("Motivo del ingreso").fill("Compra e2e");
   await page.getByRole("button", { name: "Confirmar ingreso" }).click();
 
   await expect(page.getByText("Ingreso registrado correctamente")).toBeVisible();
   await expect(page.locator(".insignia-stock").first()).toHaveText(/Stock normal/);
+});
+
+test("el ingreso directo desde el listado suma al stock y queda en el historial del repuesto", async ({ page, request }) => {
+  const repuesto = await crearRepuesto(request, 2, 5);
+
+  await page.goto("/repuestos");
+  await page.getByRole("button", { name: "Ingresar stock" }).click();
+  const dialogo = page.getByRole("dialog");
+  await dialogo.getByRole("combobox", { name: "Repuesto" }).fill(repuesto.codigo);
+  await page.getByRole("option", { name: new RegExp(repuesto.codigo) }).click();
+  await dialogo.getByLabel("Cantidad a ingresar").fill("6");
+  await dialogo.getByRole("button", { name: "Confirmar ingreso" }).click();
+  await expect(page.getByText(/Ingresaron 6 unidades/)).toBeVisible();
+
+  await page.goto(`/repuestos/${repuesto.id}`);
+  await expect(page.getByRole("heading", { name: "Historial de movimientos" })).toBeVisible();
+  await expect(page.getByRole("row", { name: /Ingreso.*2 → 8/ })).toBeVisible();
 });
 
 test("un egreso mayor al stock se rechaza junto al campo y uno válido descuenta", async ({ page, request }) => {

@@ -38,7 +38,8 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-      - /app/.next
+      # Caché de compilación de `next dev` con nombre: sobrevive a `up -V` y a recrear el contenedor (si no, cada ruta vuelve a tardar segundos).
+      - sotra_frontend_next:/app/.next
 
 # este es por su qures correr unicamente los unitest dentro del contendor y ta, solo hace eso
   sotra-frontend-test:
@@ -71,3 +72,6 @@ services:
       ]
     profiles:
       - tools
+
+volumes:
+  sotra_frontend_next:

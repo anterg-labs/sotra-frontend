@@ -1,20 +1,5 @@
 import type { NextConfig } from "next";
 
-// El navegador ya no llama a la API (pasa por `/api/v1` del mismo origen); sí navega a Keycloak al iniciar y cerrar sesión.
-const origenKeycloak = process.env.KEYCLOAK_EMISOR ? new URL(process.env.KEYCLOAK_EMISOR).origin : null;
-const politicaContenido = [
-  "default-src 'self'",
-  "base-uri 'self'",
-  "object-src 'none'",
-  "frame-ancestors 'none'",
-  `form-action 'self'${origenKeycloak ? ` ${origenKeycloak}` : ""}`,
-  "script-src 'self'",
-  "style-src 'self'",
-  "img-src 'self' data: blob:",
-  "font-src 'self'",
-  "connect-src 'self'",
-].join("; ");
-
 const nextConfig: NextConfig = {
   output: "standalone",
   reactCompiler: true,
@@ -39,7 +24,6 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: [
-          { key: "Content-Security-Policy-Report-Only", value: politicaContenido },
           { key: "X-Frame-Options", value: "DENY" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },

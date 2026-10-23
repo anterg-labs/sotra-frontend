@@ -1,5 +1,9 @@
 # sotra-frontend
 
+## Corrección de integración con Keycloak
+
+Desde 1.0.12, el proxy conserva la sesión de Auth.js y agrega una CSP efectiva con un nonce nuevo por solicitud. También cubre `/login`, sus errores, `/logout` y `/sin-conexion`, sin exigirles sesión. El origen de Keycloak está permitido para completar las redirecciones de login y logout. El layout usa renderizado por solicitud para conservar el nonce; se retira la política anterior de solo reporte y se mantienen las demás cabeceras y protecciones de la imagen Docker. La prueba del reenvío multipart corre en Node, que implementa los flujos de archivos usados por el Route Handler.
+
 Frontend de SOTRA. Usa la API que indica `API_URL` (en desarrollo, `http://localhost:8081`) e inicia sesión con Keycloak (`http://localhost:9080`, realm `sotra`). Necesita el backend y Keycloak levantados (`compose.yml` del backend).
 
 ## Requisitos

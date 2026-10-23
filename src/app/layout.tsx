@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { connection } from "next/server";
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 import { ProveedorDeAvisos } from "@/componentes/avisos";
@@ -32,6 +33,7 @@ type PropiedadesLayoutRaiz = {
  * si no está registrado en SOTRA o no tiene roles, se muestra «sin acceso» en lugar de la aplicación.
  */
 export default async function LayoutRaiz(props: PropiedadesLayoutRaiz) {
+  await connection();
   const sesion = await obtenerEstadoSesion();
   const modoVista = leerModoVista((await cookies()).get(COOKIE_VISTA)?.value);
 

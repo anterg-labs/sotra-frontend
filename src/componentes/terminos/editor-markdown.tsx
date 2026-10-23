@@ -8,6 +8,12 @@ import { validarDireccionEnlace } from "@/utilidades/markdown-editor";
 
 type PropiedadesEditor = { id: string; valor: string; alCambiar: (valor: string) => void; describedBy?: string; tieneError?: boolean };
 
+/** La política de contenido solo admite estilos con nonce: el editor lo toma del que Next aplica a sus propios scripts. */
+function leerNonce() {
+  if (typeof document === "undefined") return undefined;
+  return document.querySelector<HTMLScriptElement>("script[nonce]")?.nonce || undefined;
+}
+
 /** Edición visual; Markdown es únicamente el formato de persistencia, nunca la interfaz de escritura. */
 export function EditorMarkdown(props: PropiedadesEditor) {
   const [estaEditandoEnlace, setEstaEditandoEnlace] = useState(false);
@@ -15,6 +21,7 @@ export function EditorMarkdown(props: PropiedadesEditor) {
   const [errorEnlace, setErrorEnlace] = useState("");
   const editor = useEditor({
     immediatelyRender: false,
+    injectNonce: leerNonce(),
     extensions: [
       StarterKit.configure({
         heading: { levels: [2, 3] },

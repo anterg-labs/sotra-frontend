@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.32 (2026-10-23)
+
+- Listados: el orden elegido en clientes y usuarios llega a la API. Los formularios muestran avisos en línea y las observaciones vacías de las órdenes se envían como dato opcional.
+
 ## Version 1.0.31 (2026-10-23)
 
 - Órdenes y stock: los listados ordenan las filas visibles de inmediato, muestran el resultado de las acciones con claridad y actualizan los formularios de repuestos y movimientos.

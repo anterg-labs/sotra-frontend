@@ -1,10 +1,8 @@
 import { anticiparConsulta, resolverConsulta, type ConsultaAnticipada } from "@/servicios/servidor/consulta-anticipada";
 import Link from "next/link";
-import { IconoOjo } from "@/componentes/iconos";
-import { InsigniaStock } from "@/componentes/indicador-stock";
-import { obtenerEtiquetaEstadoOrdenTrabajo } from "@/servicios/servicio-ordenes-trabajo";
 import { obtenerIndicadoresServidor } from "@/servicios/servidor/reportes";
 import type { CantidadPorGrupo, FiltrosIndicadores } from "@/tipos/reporte";
+import { TablaCantidadesPorGrupo, TablaOrdenesResumen, TablaRepuestosBajoStock } from "@/componentes/tablas-ordenables";
 
 function formatearHoras(horas: number | null) {
   return horas === null ? "Sin datos" : horas + " h";
@@ -19,24 +17,7 @@ function TablaGrupos(props: { titulo: string; columna: string; grupos: CantidadP
       {props.grupos.length === 0 ? (
         <p className="empty-state">No hay datos registrados.</p>
       ) : (
-        <div className="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>{props.columna}</th>
-                <th>Cantidad</th>
-              </tr>
-            </thead>
-            <tbody>
-              {props.grupos.map((grupo) => (
-                <tr key={grupo.nombre}>
-                  <td>{grupo.nombre}</td>
-                  <td>{grupo.cantidad}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <TablaCantidadesPorGrupo columna={props.columna} grupos={props.grupos} titulo={props.titulo} />
       )}
     </section>
   );
@@ -87,38 +68,7 @@ export async function ResumenIndicadores(props: { filtros: FiltrosIndicadores; c
         {indicadores.ordenesRecientes.length === 0 ? (
           <p className="empty-state">No hay órdenes de trabajo registradas.</p>
         ) : (
-          <div className="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>N°</th>
-                  <th>Cliente</th>
-                  <th>Activo</th>
-                  <th>Técnico</th>
-                  <th>Prioridad</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {indicadores.ordenesRecientes.map((orden) => (
-                  <tr key={orden.id}>
-                    <td><strong>{orden.id}</strong></td>
-                    <td>{orden.nombreCliente}</td>
-                    <td>{orden.nombreActivo}</td>
-                    <td>{orden.nombreTecnico ?? "Sin asignar"}</td>
-                    <td>{orden.prioridad}</td>
-                    <td>{obtenerEtiquetaEstadoOrdenTrabajo(orden.estado)}</td>
-                    <td>
-                      <Link aria-label="Ver detalle" className="boton-icono" href={"/ordenes-trabajo/" + orden.id} title="Ver detalle">
-                        <IconoOjo />
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <TablaOrdenesResumen etiqueta="Órdenes recientes" ordenes={indicadores.ordenesRecientes} />
         )}
       </section>
       <TablaGrupos columna="Estado" grupos={indicadores.ordenesPorEstado} titulo="Órdenes por estado" />
@@ -134,36 +84,7 @@ export async function ResumenIndicadores(props: { filtros: FiltrosIndicadores; c
         {indicadores.repuestosBajoStock.length === 0 ? (
           <p className="empty-state">No hay repuestos con bajo stock.</p>
         ) : (
-          <div className="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Código</th>
-                  <th>Nombre</th>
-                  <th>Cantidad</th>
-                  <th>Mínima</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {indicadores.repuestosBajoStock.map((repuesto) => (
-                  <tr key={repuesto.id}>
-                    <td><strong>{repuesto.codigo}</strong></td>
-                    <td>{repuesto.nombre}</td>
-                    <td>{repuesto.cantidad}</td>
-                    <td>{repuesto.cantidadMinima}</td>
-                    <td><InsigniaStock estadoStock={repuesto.estadoStock} /></td>
-                    <td>
-                      <Link aria-label="Ver detalle" className="boton-icono" href={"/repuestos/" + repuesto.id} title="Ver detalle">
-                        <IconoOjo />
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <TablaRepuestosBajoStock repuestos={indicadores.repuestosBajoStock} />
         )}
       </section>
     </div>

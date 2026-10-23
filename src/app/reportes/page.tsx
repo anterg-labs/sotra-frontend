@@ -21,7 +21,6 @@ const ETIQUETA_CARGA = "Cargando indicadores…";
 export default async function PaginaReportes(props: { searchParams: Promise<ParametrosBusqueda> }) {
   const filtros = leerFiltrosReportes(await props.searchParams);
   const consulta = anticiparConsulta(obtenerIndicadoresServidor(filtros));
-  const clave = Object.values(filtros).join("|");
 
   const [tecnicos, clientes, activos] = await Promise.all([
     listarTecnicosServidor()
@@ -46,7 +45,7 @@ export default async function PaginaReportes(props: { searchParams: Promise<Para
       <ProveedorNavegacionListado etiquetaCarga={ETIQUETA_CARGA}>
         <TableroReportes activos={activos} clientes={clientes} filtros={filtros} tecnicos={tecnicos}>
           <ZonaListado>
-            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />} key={clave}>
+            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />}>
               <ResumenIndicadores consulta={consulta} filtros={filtros} />
             </Suspense>
           </ZonaListado>

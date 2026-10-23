@@ -13,6 +13,8 @@ import { AltaActivoModal } from "./alta-activo-modal";
 import { BarraFiltrosActivos } from "./barra-filtros-activos";
 import { leerFiltrosActivos } from "./filtros";
 import { ListadoActivos } from "./listado-activos";
+import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
+import { tienePermisoServidor } from "@/servicios/servidor/sesion";
 
 const ETIQUETA_CARGA = "Cargando activos…";
 
@@ -21,17 +23,25 @@ export default async function PaginaActivos(props: { searchParams: Promise<Param
   const consulta = anticiparConsulta(listarActivosServidor(filtros));
   const clave = [filtros.buscar, filtros.clienteId, filtros.modeloMaquinaId, filtros.estado, filtros.pagina].join("|");
 
+  // El pañolero ve activos pero no modelos; los datos del alta solo hacen falta si el rol puede crear.
+  const [puedeVerModelos, puedeCrear] = await Promise.all([tienePermisoServidor("modelo.consultar"), tienePermisoServidor("activo.crear")]);
   const [clientesFiltro, modelosFiltro, clientesAlta, modelosAlta] = await Promise.all([
     listarClientesServidor({ buscar: "", estado: "", pagina: 1 })
       .then((pagina) => conSeleccionado<Cliente>(pagina.elementos, filtros.clienteId, obtenerClienteServidor))
       .catch(() => [] as Cliente[]),
-    listarModelosMaquinaServidor({ buscar: "", tipoMaquinaId: "", estado: "", pagina: 1 })
-      .then((pagina) => conSeleccionado<ModeloMaquina>(pagina.elementos, filtros.modeloMaquinaId, obtenerModeloMaquinaServidor))
-      .catch(() => [] as ModeloMaquina[]),
-    listarClientesServidor({ buscar: "", estado: "activo", pagina: 1 }).then((pagina) => pagina.elementos).catch(() => null),
-    listarModelosMaquinaServidor({ buscar: "", tipoMaquinaId: "", estado: "activo", pagina: 1 })
-      .then((pagina) => pagina.elementos)
-      .catch(() => null),
+    puedeVerModelos
+      ? listarModelosMaquinaServidor({ buscar: "", tipoMaquinaId: "", estado: "", pagina: 1 })
+          .then((pagina) => conSeleccionado<ModeloMaquina>(pagina.elementos, filtros.modeloMaquinaId, obtenerModeloMaquinaServidor))
+          .catch(() => [] as ModeloMaquina[])
+      : ([] as ModeloMaquina[]),
+    puedeCrear
+      ? listarClientesServidor({ buscar: "", estado: "activo", pagina: 1 }).then((pagina) => pagina.elementos).catch(() => null)
+      : null,
+    puedeCrear
+      ? listarModelosMaquinaServidor({ buscar: "", tipoMaquinaId: "", estado: "activo", pagina: 1 })
+          .then((pagina) => pagina.elementos)
+          .catch(() => null)
+      : null,
   ]);
 
   return (
@@ -40,7 +50,9 @@ export default async function PaginaActivos(props: { searchParams: Promise<Param
         <div>
           <h1>Gestión de activos</h1>
         </div>
-        <AltaActivoModal clientes={clientesAlta} modelosMaquina={modelosAlta} />
+        <SiTienePermiso permiso="activo.crear">
+          <AltaActivoModal clientes={clientesAlta} modelosMaquina={modelosAlta} />
+        </SiTienePermiso>
       </header>
 
       <ProveedorNavegacionListado etiquetaCarga={ETIQUETA_CARGA}>

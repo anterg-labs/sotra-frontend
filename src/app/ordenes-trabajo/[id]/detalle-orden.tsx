@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { EvidenciasOrdenTrabajo } from "@/componentes/evidencias-orden-trabajo";
 import { Combobox } from "@/componentes/combobox";
+import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import {
   asignarTecnicoOrdenTrabajo,
   cambiarEstadoOrdenTrabajo,
@@ -27,7 +28,10 @@ type PropiedadesDetalleOrden = {
 export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
   const ordenTrabajoId = props.ordenInicial.id;
   const [orden, setOrden] = useState<OrdenTrabajo | null>(props.ordenInicial);
-  const errorCarga = props.huboErrorTecnicos ? "No se pudo obtener el listado de técnicos." : "";
+  const puedeEditar = useTienePermiso("ot.editar");
+  const puedeAsignarTecnico = useTienePermiso("ot.asignar_tecnico");
+  const puedeRegistrarAvance = useTienePermiso("ot.registrar_avance");
+  const errorCarga = puedeAsignarTecnico && props.huboErrorTecnicos ? "No se pudo obtener el listado de técnicos." : "";
   const tecnicos = props.tecnicosIniciales;
   const [tecnicoSeleccionadoId, setTecnicoSeleccionadoId] = useState(
     props.ordenInicial.tecnicoId === null ? "" : String(props.ordenInicial.tecnicoId),
@@ -142,7 +146,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
     const fechaCreacion = formatearFechaCorta(orden.creadoEn);
 
     let enlaceModificar = null;
-    if (orden.estado !== "cerrada") {
+    if (orden.estado !== "cerrada" && puedeEditar) {
       enlaceModificar = (
         <Link className="primary-button" href={"/ordenes-trabajo/" + orden.id + "/editar"}>
           Modificar
@@ -162,10 +166,12 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
       mensajeAccionExito = <p className="mb-4 rounded-lg u-fondo-exito p-3 text-sm">{mensajeExito}</p>;
     }
 
-    let seccionTecnico = (
+    let seccionTecnico: React.ReactNode = (
       <p className="empty-state">La orden está cerrada o cancelada y solo queda disponible para consulta.</p>
     );
-    if (!ordenEstaTerminada) {
+    if (!puedeAsignarTecnico) {
+      seccionTecnico = null;
+    } else if (!ordenEstaTerminada) {
       let textoBotonTecnico = "Confirmar técnico";
       if (estaGuardandoTecnico) {
         textoBotonTecnico = "Guardando…";
@@ -200,7 +206,9 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
     }
 
     let seccionEstado = <p className="empty-state">No hay cambios de estado disponibles para esta orden.</p>;
-    if (orden.estadosSiguientes.length > 0) {
+    if (!puedeRegistrarAvance) {
+      seccionEstado = <p className="empty-state">{"Estado actual: " + obtenerEtiquetaEstadoOrdenTrabajo(orden.estado) + "."}</p>;
+    } else if (orden.estadosSiguientes.length > 0) {
       let campoMotivo = null;
       if (estadoNecesitaMotivo(orden.estado, estadoSeleccionado)) {
         campoMotivo = (
@@ -308,7 +316,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
         <div className="form-actions">{enlaceModificar}</div>
       </section>
 
-      <EvidenciasOrdenTrabajo ordenTrabajoId={orden.id} permiteRegistrar={!ordenEstaTerminada} />
+      <EvidenciasOrdenTrabajo ordenTrabajoId={orden.id} permiteRegistrar={!ordenEstaTerminada && puedeRegistrarAvance} />
       </div>
 
       <div className="grid gap-6">

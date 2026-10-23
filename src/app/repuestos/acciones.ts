@@ -109,6 +109,7 @@ async function registrarMovimiento(
   errores: Record<string, string | undefined>,
   mensaje: string,
   registrar: () => Promise<MovimientoStock>,
+  campoPorCodigo: Record<string, string> = {},
 ): Promise<ResultadoGuardar<MovimientoStock>> {
   if (!esIdValido(repuestoId)) return { exito: false, errores: {}, mensaje };
   const conError = Object.fromEntries(Object.entries(errores).filter((par): par is [string, string] => Boolean(par[1])));
@@ -119,7 +120,7 @@ async function registrarMovimiento(
     revalidarRepuestos();
     return { exito: true, registro };
   } catch (excepcion) {
-    return resultadoFallido(excepcion, {}, mensaje);
+    return resultadoFallido(excepcion, campoPorCodigo, mensaje);
   }
 }
 
@@ -153,8 +154,12 @@ export async function registrarEgresoStockAccion(repuestoId: number, datos: Egre
     observaciones: typeof d.observaciones === "string" ? d.observaciones : "",
   };
   // El stock disponible lo valida la API; aquí solo la forma de los datos.
-  return registrarMovimiento(repuestoId, obtenerErroresEgresoStock(egreso, Number.MAX_SAFE_INTEGER), mensaje, () =>
-    registrarEgresoStockServidor(repuestoId, egreso),
+  return registrarMovimiento(
+    repuestoId,
+    obtenerErroresEgresoStock(egreso, Number.MAX_SAFE_INTEGER),
+    mensaje,
+    () => registrarEgresoStockServidor(repuestoId, egreso),
+    { STOCK_INSUFICIENTE: "cantidad", CANTIDAD_INVALIDA: "cantidad" },
   );
 }
 
@@ -169,7 +174,11 @@ export async function registrarAjusteStockAccion(repuestoId: number, datos: Ajus
     motivo: d.motivo,
     observaciones: typeof d.observaciones === "string" ? d.observaciones : "",
   };
-  return registrarMovimiento(repuestoId, obtenerErroresAjusteStock(ajuste), mensaje, () =>
-    registrarAjusteStockServidor(repuestoId, ajuste),
+  return registrarMovimiento(
+    repuestoId,
+    obtenerErroresAjusteStock(ajuste),
+    mensaje,
+    () => registrarAjusteStockServidor(repuestoId, ajuste),
+    { CANTIDAD_INVALIDA: "cantidadReal", SIN_DIFERENCIA: "cantidadReal" },
   );
 }

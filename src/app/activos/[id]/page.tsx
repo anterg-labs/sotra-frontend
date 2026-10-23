@@ -7,36 +7,41 @@ import { obtenerClienteServidor } from "@/servicios/servidor/clientes";
 import { obtenerModeloMaquinaServidor } from "@/servicios/servidor/modelos-maquina";
 import type { Activo } from "@/tipos/activo";
 import type { DocumentoTecnico } from "@/tipos/documento-tecnico";
+import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
+import { tienePermisoServidor } from "@/servicios/servidor/sesion";
 
 type DatosActivo = {
   activo: Activo;
   nombreCliente: string;
   nombreModelo: string;
-  tipoMaquina: { id: number; nombre: string };
+  /** `null` si el rol no ve modelos ni tipos de máquina (pañolero). */
+  tipoMaquina: { id: number; nombre: string } | null;
 };
 
+/** El pañolero ve activos pero no modelos: en ese caso el modelo sale del nombre que trae el activo. */
 async function cargarActivo(activoId: number): Promise<DatosActivo | null> {
   if (!Number.isInteger(activoId) || activoId <= 0) return null;
   try {
     const activo = await obtenerActivoServidor(activoId);
     const [cliente, modelo] = await Promise.all([
       obtenerClienteServidor(activo.clienteId),
-      obtenerModeloMaquinaServidor(activo.modeloMaquinaId),
+      (await tienePermisoServidor("modelo.consultar")) ? obtenerModeloMaquinaServidor(activo.modeloMaquinaId) : null,
     ]);
     return {
       activo,
       nombreCliente: cliente.razonSocial,
-      nombreModelo: modelo.nombre,
-      tipoMaquina: { id: modelo.tipoMaquinaId, nombre: modelo.nombreTipoMaquina ?? "Tipo " + modelo.tipoMaquinaId },
+      nombreModelo: modelo?.nombre ?? activo.nombreModeloMaquina ?? "Modelo " + activo.modeloMaquinaId,
+      tipoMaquina: modelo ? { id: modelo.tipoMaquinaId, nombre: modelo.nombreTipoMaquina ?? "Tipo " + modelo.tipoMaquinaId } : null,
     };
   } catch {
     return null;
   }
 }
 
-/** Si la documentación no se puede traer, el detalle igual se muestra con la lista vacía. */
+/** Si la documentación no se puede traer (o el rol no la ve), el detalle igual se muestra con la lista vacía. */
 async function cargarDocumentos(activoId: number): Promise<DocumentoTecnico[]> {
   if (!Number.isInteger(activoId) || activoId <= 0) return [];
+  if (!(await tienePermisoServidor("documento.consultar"))) return [];
   try {
     return (await listarDocumentosDeActivoServidor(activoId)).elementos;
   } catch {
@@ -78,13 +83,21 @@ export default async function PaginaDetalleActivo(props: { params: Promise<{ id:
                 <div>
                   <dt>Modelo</dt>
                   <dd>
-                    <Link className="text-link" href={"/activos/modelos/" + datos.activo.modeloMaquinaId}>{datos.nombreModelo}</Link>
+                    {datos.tipoMaquina ? (
+                      <Link className="text-link" href={"/activos/modelos/" + datos.activo.modeloMaquinaId}>{datos.nombreModelo}</Link>
+                    ) : (
+                      datos.nombreModelo
+                    )}
                   </dd>
                 </div>
                 <div>
                   <dt>Tipo de máquina</dt>
                   <dd>
-                    <Link className="text-link" href={"/activos/tipos/" + datos.tipoMaquina.id}>{datos.tipoMaquina.nombre}</Link>
+                    {datos.tipoMaquina ? (
+                      <Link className="text-link" href={"/activos/tipos/" + datos.tipoMaquina.id}>{datos.tipoMaquina.nombre}</Link>
+                    ) : (
+                      "No disponible"
+                    )}
                   </dd>
                 </div>
                 <div>
@@ -105,9 +118,11 @@ export default async function PaginaDetalleActivo(props: { params: Promise<{ id:
                 </div>
               </dl>
               <div className="form-actions">
-                <Link className="primary-button" href={"/activos/" + datos.activo.id + "/editar"}>
-                  Modificar
-                </Link>
+                <SiTienePermiso permiso="activo.editar">
+                  <Link className="primary-button" href={"/activos/" + datos.activo.id + "/editar"}>
+                    Modificar
+                  </Link>
+                </SiTienePermiso>
               </div>
             </section>
 

@@ -7,11 +7,13 @@ import { EstadoRegistro } from "@/componentes/listado/estado-registro";
 import { useUltimoCreado } from "@/componentes/listado/ultimo-creado";
 import { useCambioEstado } from "@/componentes/listado/use-cambio-estado";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
+import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import type { Activo } from "@/tipos/activo";
 import { cambiarEstadoActivoAccion } from "./acciones";
 
 /** Tabla del listado: recibe los activos ya cargados en el servidor y maneja la baja con confirmación. */
 export function TablaActivos(props: { activos: Activo[] }) {
+  const puedeGestionar = useTienePermiso("activo.editar");
   const [activoPendienteBaja, setActivoPendienteBaja] = useState<Activo | null>(null);
   const { enProcesoId, error, ejecutar } = useCambioEstado(cambiarEstadoActivoAccion, () => setActivoPendienteBaja(null));
   const nuevoId = useUltimoCreado("activos");
@@ -50,25 +52,29 @@ export function TablaActivos(props: { activos: Activo[] }) {
                       <Link aria-label="Ver detalle" className="boton-icono" href={"/activos/" + activo.id} title="Ver detalle">
                         <IconoOjo />
                       </Link>
-                      <Link
-                        aria-label="Modificar activo"
-                        className="boton-icono"
-                        href={"/activos/" + activo.id + "/editar"}
-                        title="Modificar activo"
-                      >
-                        <IconoLapiz />
-                      </Link>
-                      {activo.estado === "activo" ? (
-                        <button
-                          aria-label="Dar de baja"
-                          className="boton-icono boton-icono-peligro"
-                          disabled={estaOcupado}
-                          onClick={() => setActivoPendienteBaja(activo)}
-                          title="Dar de baja"
-                          type="button"
+                      {puedeGestionar ? (
+                        <Link
+                          aria-label="Modificar activo"
+                          className="boton-icono"
+                          href={"/activos/" + activo.id + "/editar"}
+                          title="Modificar activo"
                         >
-                          <IconoPapelera />
-                        </button>
+                          <IconoLapiz />
+                        </Link>
+                      ) : null}
+                      {activo.estado === "activo" ? (
+                        puedeGestionar ? (
+                          <button
+                            aria-label="Dar de baja"
+                            className="boton-icono boton-icono-peligro"
+                            disabled={estaOcupado}
+                            onClick={() => setActivoPendienteBaja(activo)}
+                            title="Dar de baja"
+                            type="button"
+                          >
+                            <IconoPapelera />
+                          </button>
+                        ) : null
                       ) : null}
                     </div>
                   </td>

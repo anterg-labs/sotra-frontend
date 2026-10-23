@@ -119,10 +119,10 @@ describe("acciones de movimientos de stock", () => {
     await expect(registrarAjusteStockAccion(5, { cantidadReal: -1, motivo: "" })).resolves.toMatchObject({ errores: { cantidadReal: expect.any(String), motivo: expect.any(String) } });
   });
 
-  it("devuelve el mensaje de la API cuando no hay stock suficiente", async () => {
-    m.registrarEgresoStockServidor.mockRejectedValue(new ErrorDeApi("No hay stock suficiente.", "STOCK_INSUFICIENTE", 409));
+  it("muestra junto a la cantidad el mensaje de la API cuando no hay stock suficiente", async () => {
+    m.registrarEgresoStockServidor.mockRejectedValue(new ErrorDeApi("No hay stock suficiente: disponible 3.", "STOCK_INSUFICIENTE", 409));
     await expect(registrarEgresoStockAccion(5, { cantidad: 99, motivo: "x" })).resolves.toEqual({
-      exito: false, errores: {}, mensaje: "No hay stock suficiente.",
+      exito: false, errores: { cantidad: "No hay stock suficiente: disponible 3." }, mensaje: "",
     });
     expect(revalidatePath).not.toHaveBeenCalled();
   });

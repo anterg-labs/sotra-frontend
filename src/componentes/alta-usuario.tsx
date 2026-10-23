@@ -30,7 +30,6 @@ export function AltaUsuario(props: PropiedadesAltaUsuario) {
       roles={props.roles}
       rutaCancelar="/usuarios"
       rutaExito="/usuarios"
-      solicitarContrasena
     />
   );
 }

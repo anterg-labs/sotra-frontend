@@ -1,8 +1,13 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 import { ProveedorDeAvisos } from "@/componentes/avisos";
 import { EstructuraAplicacion } from "@/componentes/estructura-aplicacion";
 import { RegistroServiceWorker } from "@/componentes/registro-service-worker";
+import { ProveedorSesion } from "@/componentes/sesion/contexto-sesion";
+import { PantallaSinAcceso } from "@/componentes/sesion/pantalla-sin-acceso";
+import { COOKIE_VISTA, leerModoVista } from "@/seguridad/vista";
+import { obtenerEstadoSesion } from "@/servicios/servidor/sesion";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,16 +27,30 @@ type PropiedadesLayoutRaiz = {
   children: ReactNode;
 };
 
-export default function LayoutRaiz(props: PropiedadesLayoutRaiz) {
-  const children = props.children;
+/**
+ * El proxy ya exigió la sesión (salvo en las páginas públicas, como «sin conexión»). Acá se pide el usuario a la API:
+ * si no está registrado en SOTRA o no tiene roles, se muestra «sin acceso» en lugar de la aplicación.
+ */
+export default async function LayoutRaiz(props: PropiedadesLayoutRaiz) {
+  const sesion = await obtenerEstadoSesion();
+  const modoVista = leerModoVista((await cookies()).get(COOKIE_VISTA)?.value);
+
+  let contenido: ReactNode;
+  if (sesion.estado === "sin-sesion") {
+    contenido = props.children;
+  } else if (sesion.estado === "con-acceso") {
+    contenido = <EstructuraAplicacion modoVista={modoVista}>{props.children}</EstructuraAplicacion>;
+  } else {
+    contenido = <PantallaSinAcceso correo={sesion.estado === "sin-acceso" ? sesion.usuario.correo : undefined} motivo={sesion.estado} />;
+  }
 
   return (
     <html lang="es">
       <body>
         <RegistroServiceWorker />
-        <ProveedorDeAvisos>
-          <EstructuraAplicacion>{children}</EstructuraAplicacion>
-        </ProveedorDeAvisos>
+        <ProveedorSesion usuario={sesion.estado === "con-acceso" ? sesion.usuario : null}>
+          <ProveedorDeAvisos>{contenido}</ProveedorDeAvisos>
+        </ProveedorSesion>
       </body>
     </html>
   );

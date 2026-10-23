@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { cerrarSesion, obtenerUsuarioEnSesion } from "@/servicios/servicio-sesion";
+import { cerrarSesion } from "@/servicios/servicio-sesion";
 import { MenuUsuario } from "@/componentes/menu-usuario";
+import { useUsuarioEnSesion } from "@/componentes/sesion/contexto-sesion";
+import { esSoloTecnico, tienePermiso, type Permiso } from "@/seguridad/permisos";
+import { urlCambioDeVista, type ModoVista } from "@/seguridad/vista";
 import { IndicadorNavegacion } from "@/componentes/indicador-navegacion";
 import { BotonTerminos } from "@/componentes/terminos/modal-terminos";
 import { EstructuraTecnico } from "@/componentes/estructura-tecnico";
@@ -26,37 +29,44 @@ import {
 type Submenu = {
   ruta: string;
   etiqueta: string;
+  permiso: Permiso;
   esActivo: (ruta: string) => boolean;
 };
 
 type ElementoMenu = {
   ruta: string;
   etiqueta: string;
+  permiso: Permiso;
   icono: React.ReactNode;
   submenus?: Submenu[];
 };
 
+/** Cada opción lleva el permiso que exige su página (la misma regla que aplica el proxy). */
 const elementosMenu: ElementoMenu[] = [
-  { ruta: "/ordenes-trabajo", etiqueta: "Órdenes de trabajo", icono: <IconoOrdenesTrabajo /> },
-  { ruta: "/clientes", etiqueta: "Clientes", icono: <IconoClientes /> },
+  { ruta: "/ordenes-trabajo", etiqueta: "Órdenes de trabajo", permiso: "ot.consultar", icono: <IconoOrdenesTrabajo /> },
+  { ruta: "/clientes", etiqueta: "Clientes", permiso: "cliente.consultar", icono: <IconoClientes /> },
   {
     ruta: "/activos",
     etiqueta: "Activos",
+    permiso: "activo.consultar",
     icono: <IconoActivos />,
     submenus: [
       {
         ruta: "/activos",
         etiqueta: "Activos",
+        permiso: "activo.consultar",
         esActivo: (ruta) => ruta === "/activos" || /^\/activos\/(?:\d|nuevo)/.test(ruta),
       },
       {
         ruta: "/activos/modelos",
         etiqueta: "Modelos de máquina",
+        permiso: "modelo.consultar",
         esActivo: (ruta) => ruta.startsWith("/activos/modelos"),
       },
       {
         ruta: "/activos/tipos",
         etiqueta: "Tipos de máquina",
+        permiso: "tipo_maquina.consultar",
         esActivo: (ruta) => ruta.startsWith("/activos/tipos"),
       },
     ],
@@ -64,36 +74,51 @@ const elementosMenu: ElementoMenu[] = [
   {
     ruta: "/repuestos",
     etiqueta: "Repuestos",
+    permiso: "stock.consultar",
     icono: <IconoRepuestos />,
     submenus: [
       {
         ruta: "/repuestos",
         etiqueta: "Repuestos",
+        permiso: "stock.consultar",
         esActivo: (ruta) => ruta.startsWith("/repuestos") && !ruta.startsWith("/repuestos/movimientos"),
       },
       {
         ruta: "/repuestos/movimientos",
         etiqueta: "Movimientos de stock",
+        permiso: "stock.consultar",
         esActivo: (ruta) => ruta.startsWith("/repuestos/movimientos"),
       },
     ],
   },
-  { ruta: "/documentacion-tecnica", etiqueta: "Documentación técnica", icono: <IconoDocumentacion /> },
-  { ruta: "/usuarios", etiqueta: "Usuarios", icono: <IconoUsuarios /> },
-  { ruta: "/reportes", etiqueta: "Reportes", icono: <IconoReportes /> },
+  { ruta: "/documentacion-tecnica", etiqueta: "Documentación técnica", permiso: "documento.consultar", icono: <IconoDocumentacion /> },
+  { ruta: "/usuarios", etiqueta: "Usuarios", permiso: "usuario.consultar", icono: <IconoUsuarios /> },
+  { ruta: "/reportes", etiqueta: "Reportes", permiso: "reporte.consultar", icono: <IconoReportes /> },
   {
     ruta: "/configuracion",
     etiqueta: "Configuración",
+    permiso: "configuracion.gestionar",
     icono: <IconoConfiguracion />,
     submenus: [
       {
         ruta: "/configuracion/terminos",
         etiqueta: "Términos y condiciones",
+        permiso: "configuracion.gestionar",
         esActivo: (ruta) => ruta.startsWith("/configuracion/terminos"),
       },
     ],
   },
 ];
+
+/** Opciones del menú que puede ver un usuario con estos roles, con solo los submenús que también puede ver. */
+export function filtrarMenuPorRoles(roles: readonly string[]): ElementoMenu[] {
+  return elementosMenu
+    .filter((elemento) => tienePermiso(roles, elemento.permiso))
+    .map((elemento) => {
+      const submenus = elemento.submenus?.filter((submenu) => tienePermiso(roles, submenu.permiso));
+      return { ...elemento, submenus: submenus && submenus.length > 0 ? submenus : undefined };
+    });
+}
 
 type MenuLateralProps = {
   alElegirOpcion: () => void;
@@ -101,12 +126,13 @@ type MenuLateralProps = {
 
 function MenuLateral(props: MenuLateralProps) {
   const rutaActual = usePathname();
-  const alertasStock = useAlertasStock();
+  const roles = useUsuarioEnSesion()?.roles ?? [];
+  const alertasStock = useAlertasStock(tienePermiso(roles, "stock.consultar"));
 
   return (
     <>
       <nav aria-label="Navegación principal" className="app-menu">
-        {elementosMenu.map((elemento) => {
+        {filtrarMenuPorRoles(roles).map((elemento) => {
           const estaActivo = rutaActual.startsWith(elemento.ruta);
           return (
             <div key={elemento.ruta}>
@@ -156,6 +182,8 @@ function MenuLateral(props: MenuLateralProps) {
 
 type EstructuraAplicacionProps = {
   children: React.ReactNode;
+  /** Vista elegida por el técnico (cookie `sotra-vista`); los demás roles no la usan. */
+  modoVista?: ModoVista;
 };
 
 function EstructuraEscritorio(props: EstructuraAplicacionProps) {
@@ -165,8 +193,9 @@ function EstructuraEscritorio(props: EstructuraAplicacionProps) {
   const [estaMenuAbierto, setEstaMenuAbierto] = useState(false);
   const [estaMenuRetraido, setEstaMenuRetraido] = useState(false);
   const [versionBackend, setVersionBackend] = useState("…");
-  const enrutador = useRouter();
-  const usuarioEnSesion = obtenerUsuarioEnSesion();
+  const usuarioEnSesion = useUsuarioEnSesion();
+  const rutaActual = usePathname();
+  const puedeVolverAVistaMovil = usuarioEnSesion !== null && esSoloTecnico(usuarioEnSesion.roles);
 
   useLayoutEffect(() => {
     const estructura = referenciaEstructura.current;
@@ -210,7 +239,6 @@ function EstructuraEscritorio(props: EstructuraAplicacionProps) {
   async function salirDeLaSesion() {
     setEstaMenuAbierto(false);
     await cerrarSesion();
-    enrutador.push("/login");
   }
 
   function retraerMenu() {
@@ -237,7 +265,7 @@ function EstructuraEscritorio(props: EstructuraAplicacionProps) {
         onPointerEnter={() => setEstaMenuRetraido(false)}
         onFocusCapture={() => setEstaMenuRetraido(false)}
       >
-        <Link className="app-lateral-logo" href="/usuarios" onClick={retraerMenu}>
+        <Link className="app-lateral-logo" href="/" onClick={retraerMenu}>
           <span>
             <Image
               src="/images/logo-cvm.png"
@@ -280,6 +308,11 @@ function EstructuraEscritorio(props: EstructuraAplicacionProps) {
           <div className="app-cabecera-fecha" suppressHydrationWarning>
             {fechaActual}
           </div>
+          {puedeVolverAVistaMovil ? (
+            <a className="text-link" href={urlCambioDeVista("movil", rutaActual)}>
+              Vista móvil
+            </a>
+          ) : null}
           <MenuUsuario usuario={usuarioEnSesion} alCerrarSesion={salirDeLaSesion} />
         </header>
         <div className="app-contenido">{children}</div>
@@ -297,11 +330,15 @@ function EstructuraEscritorio(props: EstructuraAplicacionProps) {
   );
 }
 
-/** Elige la estructura según la zona: el técnico usa una pensada para el celular y el resto, la de escritorio. */
+/**
+ * Elige la estructura: el técnico usa la pensada para el celular en todas sus secciones, salvo que haya elegido la vista
+ * de escritorio; los demás roles, la de escritorio, salvo en «Mi trabajo».
+ */
 export function EstructuraAplicacion(props: EstructuraAplicacionProps) {
   const rutaActual = usePathname();
-  if (rutaActual === "/login" || rutaActual.startsWith("/login/")) {
-    return <>{props.children}</>;
+  const usuario = useUsuarioEnSesion();
+  if (usuario && esSoloTecnico(usuario.roles) && props.modoVista !== "escritorio") {
+    return <EstructuraTecnico>{props.children}</EstructuraTecnico>;
   }
   if (rutaActual === "/tecnico" || rutaActual.startsWith("/tecnico/")) {
     return <EstructuraTecnico>{props.children}</EstructuraTecnico>;

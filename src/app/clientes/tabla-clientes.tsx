@@ -7,6 +7,7 @@ import { EstadoRegistro } from "@/componentes/listado/estado-registro";
 import { useCambioEstado } from "@/componentes/listado/use-cambio-estado";
 import { useUltimoCreado } from "@/componentes/listado/ultimo-creado";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
+import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import type { Cliente } from "@/tipos/cliente";
 import { cambiarEstadoClienteAccion } from "./acciones";
 
@@ -15,6 +16,7 @@ import { cambiarEstadoClienteAccion } from "./acciones";
  * La fila queda marcada como en proceso de inmediato (actualización optimista); el estado nuevo aparece cuando el servidor lo confirma.
  */
 export function TablaClientes(props: { clientes: Cliente[] }) {
+  const puedeGestionar = useTienePermiso("cliente.gestionar");
   const { clientes } = props;
   const [clientePendienteBaja, setClientePendienteBaja] = useState<Cliente | null>(null);
   const { enProcesoId, error, ejecutar } = useCambioEstado(cambiarEstadoClienteAccion, () => setClientePendienteBaja(null));
@@ -58,37 +60,43 @@ export function TablaClientes(props: { clientes: Cliente[] }) {
                         <IconoOjo />
                       </Link>
                       {estaActivo ? (
-                        <Link
-                          aria-label="Modificar cliente"
-                          className="boton-icono"
-                          href={"/clientes/" + cliente.id + "/editar"}
-                          title="Modificar cliente"
-                        >
-                          <IconoLapiz />
-                        </Link>
+                        puedeGestionar ? (
+                          <Link
+                            aria-label="Modificar cliente"
+                            className="boton-icono"
+                            href={"/clientes/" + cliente.id + "/editar"}
+                            title="Modificar cliente"
+                          >
+                            <IconoLapiz />
+                          </Link>
+                        ) : null
                       ) : (
-                        <button
-                          aria-label="Reactivar cliente"
-                          className="boton-icono"
-                          disabled={estaOcupado}
-                          onClick={() => ejecutar(cliente.id, "activo")}
-                          title="Reactivar cliente"
-                          type="button"
-                        >
-                          <IconoReactivar />
-                        </button>
+                        puedeGestionar ? (
+                          <button
+                            aria-label="Reactivar cliente"
+                            className="boton-icono"
+                            disabled={estaOcupado}
+                            onClick={() => ejecutar(cliente.id, "activo")}
+                            title="Reactivar cliente"
+                            type="button"
+                          >
+                            <IconoReactivar />
+                          </button>
+                        ) : null
                       )}
                       {estaActivo ? (
-                        <button
-                          aria-label="Dar de baja"
-                          className="boton-icono boton-icono-peligro"
-                          disabled={estaOcupado}
-                          onClick={() => setClientePendienteBaja(cliente)}
-                          title="Dar de baja"
-                          type="button"
-                        >
-                          <IconoPapelera />
-                        </button>
+                        puedeGestionar ? (
+                          <button
+                            aria-label="Dar de baja"
+                            className="boton-icono boton-icono-peligro"
+                            disabled={estaOcupado}
+                            onClick={() => setClientePendienteBaja(cliente)}
+                            title="Dar de baja"
+                            type="button"
+                          >
+                            <IconoPapelera />
+                          </button>
+                        ) : null
                       ) : null}
                     </div>
                   </td>

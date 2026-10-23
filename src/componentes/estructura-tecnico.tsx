@@ -3,34 +3,56 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IconoActivos, IconoOrdenesTrabajo, IconoRepuestos } from "@/componentes/iconos";
+import { IconoActivos, IconoClientes, IconoDocumentacion, IconoOrdenesTrabajo, IconoRepuestos } from "@/componentes/iconos";
 import { BotonTerminos } from "@/componentes/terminos/modal-terminos";
 import { IndicadorNavegacion } from "@/componentes/indicador-navegacion";
+import { MenuUsuario } from "@/componentes/menu-usuario";
+import { useUsuarioEnSesion } from "@/componentes/sesion/contexto-sesion";
+import { esSoloTecnico, tienePermiso, type Permiso } from "@/seguridad/permisos";
+import { urlCambioDeVista } from "@/seguridad/vista";
+import { cerrarSesion } from "@/servicios/servicio-sesion";
 
-const enlaces = [
-  { ruta: "/tecnico", etiqueta: "Mi trabajo", icono: <IconoOrdenesTrabajo />, esActivo: (ruta: string) => ruta === "/tecnico" || ruta.startsWith("/tecnico/") },
-  { ruta: "/activos", etiqueta: "Activos", icono: <IconoActivos />, esActivo: (ruta: string) => ruta.startsWith("/activos") },
-  { ruta: "/repuestos", etiqueta: "Repuestos", icono: <IconoRepuestos />, esActivo: (ruta: string) => ruta.startsWith("/repuestos") },
+const enlaces: { ruta: string; etiqueta: string; permiso: Permiso; icono: React.ReactNode; esActivo: (ruta: string) => boolean }[] = [
+  { ruta: "/tecnico", etiqueta: "Mi trabajo", permiso: "ot.registrar_avance", icono: <IconoOrdenesTrabajo />, esActivo: (ruta: string) => ruta === "/tecnico" || ruta.startsWith("/tecnico/") },
+  { ruta: "/activos", etiqueta: "Activos", permiso: "activo.consultar", icono: <IconoActivos />, esActivo: (ruta: string) => ruta.startsWith("/activos") },
+  { ruta: "/clientes", etiqueta: "Clientes", permiso: "cliente.consultar", icono: <IconoClientes />, esActivo: (ruta: string) => ruta.startsWith("/clientes") },
+  { ruta: "/documentacion-tecnica", etiqueta: "Documentos", permiso: "documento.consultar", icono: <IconoDocumentacion />, esActivo: (ruta: string) => ruta.startsWith("/documentacion-tecnica") },
+  { ruta: "/repuestos", etiqueta: "Repuestos", permiso: "stock.consultar", icono: <IconoRepuestos />, esActivo: (ruta: string) => ruta.startsWith("/repuestos") },
 ];
 
-/** Estructura pensada para el celular: cabecera compacta y barra inferior con objetivos táctiles de 48 px. */
+/**
+ * Estructura pensada para el celular: cabecera compacta y barra inferior con objetivos táctiles de 48 px.
+ * El técnico la usa en todas sus secciones (con «Escritorio» cambia a la vista de escritorio); administrador y jefe,
+ * solo en «Mi trabajo», con un enlace al escritorio.
+ */
 export function EstructuraTecnico({ children }: { children: React.ReactNode }) {
   const rutaActual = usePathname();
+  const usuario = useUsuarioEnSesion();
+  const roles = usuario?.roles ?? [];
+  const tituloSeccion = enlaces.find((enlace) => enlace.esActivo(rutaActual))?.etiqueta ?? "SOTRA";
 
   return (
     <div className="tecnico-estructura">
       <header className="tecnico-cabecera">
         <Image alt="CVM" className="h-auto w-16" height={152} priority src="/images/logo-cvm.png" width={717} />
-        <span className="tecnico-cabecera-titulo">Mi trabajo</span>
-        <Link className="text-link" href="/reportes">
-          Escritorio
-          <IndicadorNavegacion destino="Escritorio" />
-        </Link>
+        <span className="tecnico-cabecera-titulo">{tituloSeccion}</span>
+        {esSoloTecnico(roles) ? (
+          // Cambia la vista guardada (recarga la página completa) y abre la misma pantalla en el escritorio.
+          <a className="text-link" href={urlCambioDeVista("escritorio", rutaActual)}>
+            Escritorio
+          </a>
+        ) : (
+          <Link className="text-link" href="/ordenes-trabajo">
+            Escritorio
+            <IndicadorNavegacion destino="Escritorio" />
+          </Link>
+        )}
+        <MenuUsuario alCerrarSesion={cerrarSesion} usuario={usuario} />
       </header>
       <div className="tecnico-contenido">{children}</div>
       <footer className="app-pie"><BotonTerminos /></footer>
       <nav aria-label="Navegación del técnico" className="tecnico-barra">
-        {enlaces.map((enlace) => (
+        {enlaces.filter((enlace) => tienePermiso(roles, enlace.permiso)).map((enlace) => (
           <Link
             aria-current={enlace.esActivo(rutaActual) ? "page" : undefined}
             className="tecnico-barra-enlace"

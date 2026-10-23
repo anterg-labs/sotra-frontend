@@ -47,6 +47,9 @@ import { obtenerVersionSistema } from "@/servicios/servicio-version";
 import type { CrearOrdenTrabajoInput, FiltrosOrdenesTrabajo } from "@/tipos/orden-trabajo";
 import type { FiltrosIndicadores } from "@/tipos/reporte";
 
+/** Las URL del navegador son relativas (mismo origen): se completan para leer sus partes. */
+const urlRelativa = (url: string) => new URL(url, "http://localhost");
+
 
 beforeEach(() => vi.stubEnv("API_URL", "http://api.test"));
 afterEach(() => {
@@ -56,9 +59,8 @@ afterEach(() => {
 });
 
 describe("solicitudes-http", () => {
-  it("falla con un mensaje claro si falta API_URL", () => {
-    vi.stubEnv("API_URL", "");
-    expect(() => obtenerUrlBaseApi()).toThrow("La URL de la API no está configurada.");
+  it("en el navegador pide al mismo origen (el reenvío de /api/v1 agrega el token)", () => {
+    expect(obtenerUrlBaseApi()).toBe("");
   });
 
   it("usa el mensaje de la API y su código cuando el cuerpo de error es válido", async () => {
@@ -93,7 +95,7 @@ describe("servicio-version", () => {
   it("consulta /api/v1/version sin caché", async () => {
     const { llamadas } = simularFetch(() => ({ cuerpo: { version: "1.2.3" } }));
     expect(await obtenerVersionSistema()).toBe("1.2.3");
-    expect(llamadas[0].url).toBe("http://api.test/api/v1/version");
+    expect(llamadas[0].url).toBe("/api/v1/version");
     expect(llamadas[0].opciones.cache).toBe("no-store");
   });
 });
@@ -139,11 +141,11 @@ describe("servicio-evidencias", () => {
     expect((formulario.get("archivo") as File).name).toBe("a.jpg");
     expect(llamadas[0].encabezados["Content-Type"]).toBeUndefined();
     expect((llamadas[1].cuerpo as FormData).has("archivo")).toBe(false);
-    expect(llamadas[2].url).toBe("http://api.test/api/v1/ordenes-trabajo/4/evidencias");
+    expect(llamadas[2].url).toBe("/api/v1/ordenes-trabajo/4/evidencias");
   });
 
   it("arma la URL del archivo y traduce los tipos", () => {
-    expect(obtenerUrlArchivoEvidencia(4, 9)).toBe("http://api.test/api/v1/ordenes-trabajo/4/evidencias/9/archivo");
+    expect(obtenerUrlArchivoEvidencia(4, 9)).toBe("/api/v1/ordenes-trabajo/4/evidencias/9/archivo");
     expect(obtenerEtiquetaTipoEvidencia("foto")).toBe("Foto");
     expect(obtenerEtiquetaTipoEvidencia("documento")).toBe("Documento");
     expect(obtenerEtiquetaTipoEvidencia("observacion")).toBe("Observación");
@@ -175,7 +177,7 @@ describe("servicio-documentos-tecnicos", () => {
   });
 
   it("arma el enlace público de descarga con la URL del navegador", () => {
-    expect(apiObtenerUrlDescargaDocumentoTecnico(8)).toBe("http://api.test/api/v1/documentos-tecnicos/8/archivo");
+    expect(apiObtenerUrlDescargaDocumentoTecnico(8)).toBe("/api/v1/documentos-tecnicos/8/archivo");
   });
 });
 
@@ -195,8 +197,8 @@ describe("servicio-reportes", () => {
     const { llamadas } = simularFetch(() => ({ cuerpo: {} }));
     await obtenerIndicadores(vacios);
     await obtenerIndicadores(completos);
-    expect(llamadas[0].url).toBe("http://api.test/api/v1/reportes/indicadores");
-    expect(Object.fromEntries(new URL(llamadas[1].url).searchParams)).toEqual({
+    expect(llamadas[0].url).toBe("/api/v1/reportes/indicadores");
+    expect(Object.fromEntries(urlRelativa(llamadas[1].url).searchParams)).toEqual({
       fechaDesde: "2026-01-01",
       fechaHasta: "2026-01-31",
       tecnicoId: "1",
@@ -214,7 +216,7 @@ describe("servicio-reportes", () => {
     await obtenerReincidencias(completos);
     await obtenerRepuestosUsados(vacios);
     await obtenerAlertasMaquinaria(vacios);
-    const rutas = llamadas.map((l) => new URL(l.url).pathname);
+    const rutas = llamadas.map((l) => urlRelativa(l.url).pathname);
     expect(rutas).toEqual([
       "/api/v1/reportes/tendencias",
       "/api/v1/reportes/tiempos",
@@ -222,15 +224,15 @@ describe("servicio-reportes", () => {
       "/api/v1/reportes/repuestos-usados",
       "/api/v1/reportes/alertas-maquinaria",
     ]);
-    const tendencias = new URL(llamadas[0].url).searchParams;
+    const tendencias = urlRelativa(llamadas[0].url).searchParams;
     expect(tendencias.get("agrupacion")).toBe("mes");
     expect(tendencias.has("estado")).toBe(false);
-    expect(llamadas[1].url).toBe("http://api.test/api/v1/reportes/tiempos");
+    expect(llamadas[1].url).toBe("/api/v1/reportes/tiempos");
   });
 
   it("arma las URL de descarga PDF y CSV con prioridad", () => {
-    expect(obtenerUrlReportePdf("ordenes-trabajo", vacios, "")).toBe("http://api.test/api/v1/reportes/ordenes-trabajo/pdf");
-    const csv = new URL(obtenerUrlReporteCsv("indicadores", completos, "alta"));
+    expect(obtenerUrlReportePdf("ordenes-trabajo", vacios, "")).toBe("/api/v1/reportes/ordenes-trabajo/pdf");
+    const csv = urlRelativa(obtenerUrlReporteCsv("indicadores", completos, "alta"));
     expect(csv.pathname).toBe("/api/v1/reportes/indicadores/csv");
     expect(csv.searchParams.get("prioridad")).toBe("alta");
     expect(csv.searchParams.get("estado")).toBe("cerrada");
@@ -305,11 +307,11 @@ describe("servicio-ordenes-trabajo", () => {
       tipo: "preventivo", fechaDesde: "2026-01-01", fechaHasta: "2026-02-01", conSugerencias: true, pagina: 3,
     });
     await obtenerDetalleOrdenTrabajo(4);
-    expect(llamadas[0].url).toBe("http://api.test/api/v1/ordenes-trabajo?pagina=1");
-    expect(Object.fromEntries(new URL(llamadas[1].url).searchParams)).toMatchObject({
+    expect(llamadas[0].url).toBe("/api/v1/ordenes-trabajo?pagina=1");
+    expect(Object.fromEntries(urlRelativa(llamadas[1].url).searchParams)).toMatchObject({
       buscar: "fuga", estado: "pausada", conSugerencias: "true", pagina: "3", tecnicoId: "3",
     });
-    expect(llamadas[2].url).toBe("http://api.test/api/v1/ordenes-trabajo/4");
+    expect(llamadas[2].url).toBe("/api/v1/ordenes-trabajo/4");
   });
 
   it("exige motivo solo en los cambios de estado que lo requieren", async () => {
@@ -327,14 +329,14 @@ describe("servicio-ordenes-trabajo", () => {
     await cambiarEstadoOrdenTrabajo(1, "en_ejecucion", "pausada", "  falta repuesto ");
     await cambiarEstadoOrdenTrabajo(1, "creada", "asignada", "");
     expect(llamadas[0]).toMatchObject({ metodo: "PATCH", cuerpo: { estado: "pausada", motivo: "falta repuesto" } });
-    expect(llamadas[0].url).toBe("http://api.test/api/v1/ordenes-trabajo/1/estado");
+    expect(llamadas[0].url).toBe("/api/v1/ordenes-trabajo/1/estado");
   });
 
   it("asigna técnico convirtiendo el id y rechazando vacío", async () => {
     const { llamadas } = simularFetch(() => ({ cuerpo: { id: 1 } }));
     await expect(asignarTecnicoOrdenTrabajo(1, "")).rejects.toThrow("Seleccioná un técnico");
     await asignarTecnicoOrdenTrabajo(1, "12");
-    expect(llamadas[0]).toMatchObject({ url: "http://api.test/api/v1/ordenes-trabajo/1/tecnico", cuerpo: { tecnicoId: 12 } });
+    expect(llamadas[0]).toMatchObject({ url: "/api/v1/ordenes-trabajo/1/tecnico", cuerpo: { tecnicoId: 12 } });
   });
 
   it("etiqueta estados y formatea la fecha prevista", () => {
@@ -347,7 +349,7 @@ describe("servicio-ordenes-trabajo", () => {
     const { llamadas } = simularFetch(() => ({ cuerpo: { sugerencia: "Revisar sellos" } }));
     await expect(solicitarSugerenciaOrdenTrabajo({ descripcion: " ", numero: 1, sesion: "s" })).rejects.toThrow("Escribí la descripción");
     expect(await solicitarSugerenciaOrdenTrabajo({ descripcion: "Fuga", numero: 1, sesion: "s" })).toBe("Revisar sellos");
-    expect(llamadas[0]).toMatchObject({ metodo: "POST", url: "http://api.test/api/v1/ordenes-trabajo/sugerencia" });
+    expect(llamadas[0]).toMatchObject({ metodo: "POST", url: "/api/v1/ordenes-trabajo/sugerencia" });
 
     simularFetch(() => ({ estado: 422, cuerpo: {} }));
     await expect(solicitarSugerenciaOrdenTrabajo({ descripcion: "Fuga", numero: 1, sesion: "s" })).rejects.toThrow("información suficiente");
@@ -384,20 +386,22 @@ describe("servicio-ordenes-trabajo", () => {
     expect(borrarSugerenciasTemporales("k")).toBe(false);
   });
 
-  it("lista técnicos activos con rol Técnico y los busca por rol en el servidor", async () => {
+  it("lista técnicos activos filtrando por el nombre del rol, sin pedir /roles (solo del administrador)", async () => {
     const usuario = (id: number, rol: string, estado: string) => ({ id, estado, roles: [{ id: 1, nombre: rol, activo: true }] });
-    const { llamadas } = simularFetch(({ url }) => {
-      if (url.endsWith("/roles")) return { cuerpo: [{ id: 5, nombre: "Técnico" }] };
-      return { cuerpo: paginaDe([usuario(1, "Técnico", "activo"), usuario(2, "Técnico", "inactivo"), usuario(3, "Administrador", "activo")]) };
-    });
+    const { llamadas } = simularFetch(() => ({
+      cuerpo: paginaDe([usuario(1, "Técnico", "activo"), usuario(2, "Técnico", "inactivo"), usuario(3, "Administrador", "activo")]),
+    }));
     const tecnicos = await listarTecnicos();
     expect(tecnicos.map((t) => t.id)).toEqual([1]);
 
     const paginados = await listarTecnicosPaginados("ana");
-    expect(paginados).toHaveLength(3);
-    const ultima = new URL(llamadas.at(-1)!.url);
-    expect(ultima.searchParams.get("rolId")).toBe("5");
+    expect(paginados.map((t) => t.id)).toEqual([1]);
+    const ultima = urlRelativa(llamadas.at(-1)!.url);
+    expect(ultima.pathname).toBe("/api/v1/usuarios");
+    expect(ultima.searchParams.get("rolId")).toBeNull();
     expect(ultima.searchParams.get("estado")).toBe("activo");
+    expect(ultima.searchParams.get("tamanoPagina")).toBe("100");
     expect(ultima.searchParams.get("buscar")).toBe("ana");
+    expect(llamadas.some((llamada) => llamada.url.includes("/roles"))).toBe(false);
   });
 });

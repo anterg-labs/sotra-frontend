@@ -4,6 +4,7 @@ import { listarActivosServidor } from "@/servicios/servidor/activos";
 import { obtenerClienteServidor } from "@/servicios/servidor/clientes";
 import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
+import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
 
 function mostrarTexto(valor: string | null) {
   return valor === null || valor === "" ? "Sin dato" : valor;
@@ -106,9 +107,11 @@ export default async function PaginaDetalleCliente(props: { params: Promise<{ id
                 </div>
               </dl>
               <div className="form-actions">
-                <Link className="primary-button" href={"/clientes/" + cliente.id + "/editar"}>
-                  Modificar
-                </Link>
+                <SiTienePermiso permiso="cliente.gestionar">
+                  <Link className="primary-button" href={"/clientes/" + cliente.id + "/editar"}>
+                    Modificar
+                  </Link>
+                </SiTienePermiso>
               </div>
             </section>
 

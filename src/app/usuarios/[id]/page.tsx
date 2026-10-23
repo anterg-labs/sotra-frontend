@@ -2,10 +2,13 @@ import Link from "next/link";
 import { EstadoRegistro } from "@/componentes/listado/estado-registro";
 import { OrdenesAsociadas } from "@/componentes/ordenes-asociadas";
 import { obtenerEstadoTerminosServidor } from "@/servicios/servidor/terminos";
+import { esUsuarioAdministrador } from "@/seguridad/permisos";
+import { tienePermisoServidor } from "@/servicios/servidor/sesion";
 import { obtenerUsuarioServidor } from "@/servicios/servidor/usuarios";
 import type { EstadoTerminos } from "@/tipos/terminos";
 import type { UsuarioDetalle } from "@/tipos/usuario";
 import { formatearFechaNumerica } from "@/utilidades/fechas";
+import { BotonRestablecerContrasena } from "../boton-restablecer-contrasena";
 
 async function cargarUsuario(usuarioId: number): Promise<UsuarioDetalle | null> {
   if (!Number.isInteger(usuarioId) || usuarioId <= 0) return null;
@@ -35,6 +38,8 @@ function textoEstadoTerminos(estado: EstadoTerminos | null) {
 export default async function PaginaDetalleUsuario(props: { params: Promise<{ id: string }> }) {
   const usuario = await cargarUsuario(Number((await props.params).id));
   const estadoTerminos = usuario ? await cargarEstadoTerminos(usuario.id) : null;
+  // El jefe ve a los administradores, pero no los modifica.
+  const puedeModificar = usuario !== null && ((await tienePermisoServidor("usuario.gestionar_administradores")) || !esUsuarioAdministrador(usuario));
 
   return (
     <main className="page-content">
@@ -79,11 +84,14 @@ export default async function PaginaDetalleUsuario(props: { params: Promise<{ id
                 </dd>
               </div>
             </dl>
-            <div className="form-actions">
-              <Link className="primary-button" href={"/usuarios/" + usuario.id + "/editar"}>
-                Modificar
-              </Link>
-            </div>
+            {puedeModificar ? (
+              <div className="form-actions">
+                <BotonRestablecerContrasena correo={usuario.correo} usuarioId={usuario.id} />
+                <Link className="primary-button" href={"/usuarios/" + usuario.id + "/editar"}>
+                  Modificar
+                </Link>
+              </div>
+            ) : null}
           </section>
 
           <OrdenesAsociadas

@@ -11,7 +11,6 @@ import { validarUsuario } from "@/validaciones/usuario";
 
 type PropiedadesFormularioUsuario = {
   usuarioInicial?: ActualizarUsuarioInput;
-  solicitarContrasena?: boolean;
   etiquetaConfirmacion: string;
   rutaCancelar: string;
   rutaExito: string;
@@ -23,9 +22,13 @@ type PropiedadesFormularioUsuario = {
   alCancelar?: () => void;
 };
 
+/** Aviso del alta: la contraseña la elige el usuario con el enlace que Keycloak le manda por correo. */
+export function mensajeUsuarioCreado(usuario: Pick<Usuario, "correo">) {
+  return "Usuario creado. Se envió un correo a " + usuario.correo + " para que elija su contraseña.";
+}
+
 export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   const { usuarioInicial, roles, accion, alGuardar, alCancelar, etiquetaConfirmacion, rutaCancelar, rutaExito } = props;
-  const solicitarContrasena = props.solicitarContrasena ?? false;
 
   const enrutador = useRouter();
   const { mostrarAviso } = useAvisos();
@@ -33,17 +36,16 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   const [apellido, setApellido] = useState(usuarioInicial?.apellido ?? "");
   const [correo, setCorreo] = useState(usuarioInicial?.correo ?? "");
   const [telefono, setTelefono] = useState(usuarioInicial?.telefono ?? "");
-  const [contrasena, setContrasena] = useState("");
   const [idsRolSeleccionados, setIdsRolSeleccionados] = useState<number[]>(usuarioInicial?.idsRol ?? []);
 
   const { errores, errorGeneral, estaEnviando, enviar, referenciaErrorGeneral } = useFormularioAccion({
-    validar: (datos: CrearUsuarioInput) => validarUsuario(datos, { exigirContrasena: solicitarContrasena }),
+    validar: (datos: CrearUsuarioInput) => validarUsuario(datos),
     accion,
     alExito: (usuario: Usuario) => {
       if (alGuardar) {
         alGuardar(usuario);
       } else {
-        mostrarAviso("exito", usuarioInicial ? "Usuario actualizado." : "Usuario creado.");
+        mostrarAviso("exito", usuarioInicial ? "Usuario actualizado." : mensajeUsuarioCreado(usuario));
         enrutador.push(rutaExito);
       }
     },
@@ -52,7 +54,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
 
   function enviarFormulario(evento: React.FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    enviar({ nombre, apellido, correo, telefono, idsRol: idsRolSeleccionados, contrasena });
+    enviar({ nombre, apellido, correo, telefono, idsRol: idsRolSeleccionados });
   }
 
   function mostrarError(campo: string, mensaje?: string) {
@@ -67,26 +69,6 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   let mensajeError = null;
   if (errorGeneral) {
     mensajeError = <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p>;
-  }
-
-  let campoContrasena = null;
-  if (solicitarContrasena) {
-    campoContrasena = (
-      <div className="form-field campo-contrasena-usuario">
-        <label htmlFor="contrasena">Contraseña</label>
-        <input
-          id="contrasena"
-          maxLength={255}
-          aria-describedby={errores.contrasena ? "contrasena-error" : undefined}
-          aria-invalid={errores.contrasena ? true : undefined}
-          onChange={(evento) => setContrasena(evento.target.value)}
-          required
-          type="password"
-          value={contrasena}
-        />
-        {mostrarError("contrasena", errores.contrasena)}
-      </div>
-    );
   }
 
   let campoRol = null;
@@ -180,10 +162,15 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
           {mostrarError("telefono", errores.telefono)}
         </div>
 
-        {campoContrasena}
         {campoRol}
 
       </div>
+
+      {usuarioInicial ? null : (
+        <p className="page-description">
+          La contraseña no se carga acá: al crear el usuario le llega un correo para que elija la suya.
+        </p>
+      )}
 
       <div className="form-actions">
         {alCancelar ? (

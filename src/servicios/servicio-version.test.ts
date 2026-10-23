@@ -24,6 +24,6 @@ describe("servicio-version", () => {
     const version = await obtenerVersionSistema();
 
     expect(version).toBe("1.0.3");
-    expect(fetch).toHaveBeenCalledWith("http://localhost:4000/api/v1/version", { cache: "no-store" });
+    expect(fetch).toHaveBeenCalledWith("/api/v1/version", { cache: "no-store" });
   });
 });

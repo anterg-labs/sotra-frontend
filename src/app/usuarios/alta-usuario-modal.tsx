@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AltaUsuario } from "@/componentes/alta-usuario";
 import { useAvisos } from "@/componentes/avisos";
+import { mensajeUsuarioCreado } from "@/componentes/formulario-usuario";
 import { marcarCreado } from "@/componentes/listado/ultimo-creado";
 import { Modal } from "@/componentes/modal";
 import type { Rol } from "@/tipos/usuario";
@@ -24,7 +25,7 @@ export function AltaUsuarioModal(props: { roles: Rol[] | null }) {
             alGuardar={(usuario) => {
               setEstaAbierto(false);
               marcarCreado("usuarios", usuario.id);
-              mostrarAviso("exito", "Usuario creado.");
+              mostrarAviso("exito", mensajeUsuarioCreado(usuario));
             }}
             roles={props.roles}
           />

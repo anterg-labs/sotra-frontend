@@ -22,7 +22,14 @@ function nombreVisibleDeActivo(activo: Activo) {
   return activo.nombre !== null && activo.nombre.trim() !== "" ? activo.nombre : activo.numSerie;
 }
 
-type PropiedadesBarra = { filtros: FiltrosOrdenesTrabajo; clientes: Cliente[]; activos: Activo[]; tecnicos: Usuario[] };
+type PropiedadesBarra = {
+  filtros: FiltrosOrdenesTrabajo;
+  clientes: Cliente[];
+  activos: Activo[];
+  tecnicos: Usuario[];
+  /** Sin permiso para listar usuarios (técnico, pañolero) no se muestra el filtro por técnico. */
+  puedeFiltrarPorTecnico?: boolean;
+};
 
 /**
  * Filtros del listado en vivo: el texto espera un instante y lo demás aplica al instante.
@@ -91,18 +98,20 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
         valor={valores.activoId}
       />
 
-      <Combobox
-        alCambiar={(tecnicoId) => cambiar({ tecnicoId })}
-        buscarOpciones={async (consulta) => {
-          const tecnicos = await listarTecnicosPaginados(consulta);
-          return tecnicos.map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }));
-        }}
-        etiqueta="Técnico"
-        id="tecnicoId"
-        opciones={props.tecnicos.map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }))}
-        textoVacio="Todos los técnicos"
-        valor={valores.tecnicoId}
-      />
+      {props.puedeFiltrarPorTecnico ?? true ? (
+        <Combobox
+          alCambiar={(tecnicoId) => cambiar({ tecnicoId })}
+          buscarOpciones={async (consulta) => {
+            const tecnicos = await listarTecnicosPaginados(consulta);
+            return tecnicos.map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }));
+          }}
+          etiqueta="Técnico"
+          id="tecnicoId"
+          opciones={props.tecnicos.map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }))}
+          textoVacio="Todos los técnicos"
+          valor={valores.tecnicoId}
+        />
+      ) : null}
 
       <div className="form-field">
         <label htmlFor="estado">Estado</label>

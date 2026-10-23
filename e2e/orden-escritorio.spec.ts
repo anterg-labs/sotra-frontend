@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { crearOrdenAsignada } from "./api";
+import { apiBase, crearOrdenAsignada } from "./api";
 
 const pngDeUnPixel = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
@@ -47,7 +47,6 @@ test("una orden recorre su ciclo desde el escritorio con una evidencia y queda c
 
 test("la edición detecta que otra persona modificó la orden y no pisa sus cambios", async ({ page, request }) => {
   const { ordenId } = await crearOrdenAsignada(request);
-  const apiBase = process.env.SOTRA_API_URL ?? "http://localhost:8081";
 
   await page.goto(`/ordenes-trabajo/${ordenId}/editar`);
   await expect(page.getByRole("button", { name: "Confirmar modificación" })).toBeVisible();

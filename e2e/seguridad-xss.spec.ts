@@ -1,8 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { buscarEnVivo } from "./filtros";
-import { sufijo } from "./api";
-
-const apiBase = process.env.SOTRA_API_URL ?? "http://localhost:8081";
+import { apiBase, sufijo } from "./api";
 const cargas = [
   "<img src=x onerror=\"window.__xss=1\">",
   "<script>window.__xss=1</script>",

@@ -18,6 +18,8 @@ const chips: { valor: FiltroEstado; etiqueta: string }[] = [
 
 type PropiedadesMiTrabajo = {
   tecnicoId: string;
+  /** Administrador y jefe eligen el técnico; el técnico ve siempre sus propias órdenes. */
+  puedeElegirTecnico: boolean;
   /** Opciones del selector de técnico (la primera página y el técnico elegido). */
   tecnicos: { valor: string; etiqueta: string }[];
   /** Órdenes del técnico ya ordenadas por urgencia; `null` si no hay técnico elegido o falló la carga. */
@@ -45,21 +47,22 @@ export function MiTrabajo(props: PropiedadesMiTrabajo) {
     <section aria-busy={estaPendiente} aria-labelledby="titulo-mi-trabajo" className="grid gap-4">
       <h1 className="sr-only" id="titulo-mi-trabajo">Mi trabajo</h1>
 
-      <div className="tecnico-tarjeta">
-        <Combobox
-          alCambiar={elegirTecnico}
-          buscarOpciones={async (consulta) => {
-            const lista = await listarTecnicosPaginados(consulta);
-            return lista.map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }));
-          }}
-          etiqueta="Técnico"
-          id="tecnicoMiTrabajo"
-          opciones={tecnicos}
-          textoVacio="Elegí tu usuario"
-          valor={tecnicoId}
-        />
-        <small>Selección temporal: cuando esté el inicio de sesión se usará el técnico que ingresó.</small>
-      </div>
+      {props.puedeElegirTecnico ? (
+        <div className="tecnico-tarjeta">
+          <Combobox
+            alCambiar={elegirTecnico}
+            buscarOpciones={async (consulta) => {
+              const lista = await listarTecnicosPaginados(consulta);
+              return lista.map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }));
+            }}
+            etiqueta="Técnico"
+            id="tecnicoMiTrabajo"
+            opciones={tecnicos}
+            textoVacio="Elegí un técnico"
+            valor={tecnicoId}
+          />
+        </div>
+      ) : null}
 
       {error ? <p className="form-error-banner" role="alert">{error}</p> : null}
 

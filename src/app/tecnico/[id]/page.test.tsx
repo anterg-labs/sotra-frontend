@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import PaginaOrdenDelTecnico from "./page";
+import { ErrorDeApi } from "@/servicios/api/solicitudes-http";
 
 const obtenerOrdenTrabajoServidor = vi.hoisted(() => vi.fn());
 const cambiarEstadoOrdenTrabajo = vi.hoisted(() => vi.fn());
@@ -86,5 +87,13 @@ describe("orden del técnico", () => {
     render(await PaginaOrdenDelTecnico({ params: Promise.resolve({ id: "abc" }) }));
     expect(obtenerOrdenTrabajoServidor).not.toHaveBeenCalled();
     expect(screen.getByRole("alert")).toHaveTextContent("No se pudo obtener la orden");
+  });
+});
+
+describe("orden ajena", () => {
+  it("si la orden no está asignada al técnico (403) lo dice, en lugar de culpar a la conexión", async () => {
+    obtenerOrdenTrabajoServidor.mockRejectedValue(new ErrorDeApi("No tenés permiso para realizar esta acción.", "SIN_PERMISO", 403));
+    render(await PaginaOrdenDelTecnico(parametros));
+    expect(screen.getByRole("alert")).toHaveTextContent("Esta orden no está asignada a vos.");
   });
 });

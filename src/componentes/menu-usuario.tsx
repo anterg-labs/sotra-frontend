@@ -2,7 +2,15 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { IconoSalir, IconoUsuarios } from "@/componentes/iconos";
+import { obtenerIniciales } from "@/servicios/servicio-sesion";
 import type { UsuarioEnSesion } from "@/tipos/sesion";
+
+const nombresDeRol: Record<UsuarioEnSesion["roles"][number], string> = {
+  administrador: "Administrador",
+  jefe_mantenimiento: "Jefe de mantenimiento",
+  tecnico: "Técnico",
+  panolero: "Pañolero",
+};
 
 type MenuUsuarioProps = {
   usuario: UsuarioEnSesion | null;
@@ -16,8 +24,8 @@ export function MenuUsuario({ usuario, alCerrarSesion }: MenuUsuarioProps) {
   const referencia = useRef<HTMLDivElement>(null);
   const referenciaBoton = useRef<HTMLButtonElement>(null);
   const idPanel = useId();
-  const nombre = usuario ? `${usuario.nombre} ${usuario.apellido}`.trim() : "Usuario no logueado";
-  const iniciales = usuario ? `${usuario.nombre.trim().charAt(0)}${usuario.apellido.trim().charAt(0)}`.toLocaleUpperCase("es") : null;
+  const nombre = usuario ? usuario.nombre.trim() || usuario.correo : "Sin sesión";
+  const iniciales = usuario ? obtenerIniciales(usuario) : null;
 
   useEffect(() => {
     if (!estaAbierto) return;
@@ -69,7 +77,12 @@ export function MenuUsuario({ usuario, alCerrarSesion }: MenuUsuarioProps) {
         <svg aria-hidden="true" className="usuario-menu-flecha" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m6 9 6 6 6-6" /></svg>
       </button>
       <div className="usuario-menu-panel" hidden={!estaAbierto} id={idPanel}>
-        <div className="usuario-menu-identidad"><span>Cuenta de usuario</span><strong>{nombre}</strong></div>
+        <div className="usuario-menu-identidad">
+          <span>Cuenta de usuario</span>
+          <strong>{nombre}</strong>
+          {usuario ? <span>{usuario.correo}</span> : null}
+          {usuario && usuario.roles.length > 0 ? <span>{usuario.roles.map((rol) => nombresDeRol[rol]).join(", ")}</span> : null}
+        </div>
         <button className="usuario-menu-salir" disabled={estaCerrando} onClick={salir} type="button">
           <IconoSalir />{estaCerrando ? "Cerrando sesión…" : "Cerrar sesión"}
         </button>

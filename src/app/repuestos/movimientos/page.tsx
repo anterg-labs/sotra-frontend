@@ -7,6 +7,7 @@ import { ProveedorNavegacionListado, ZonaListado } from "@/componentes/listado/n
 import type { ParametrosBusqueda } from "@/componentes/listado/url-listado";
 import { conSeleccionado } from "@/servicios/servidor/opciones";
 import { listarRepuestosServidor, obtenerRepuestoServidor } from "@/servicios/servidor/repuestos";
+import { tienePermisoServidor } from "@/servicios/servidor/sesion";
 import { listarUsuariosServidor, obtenerUsuarioServidor } from "@/servicios/servidor/usuarios";
 import type { Repuesto } from "@/tipos/repuesto";
 import type { Usuario } from "@/tipos/usuario";
@@ -21,13 +22,17 @@ export default async function PaginaMovimientosStock(props: { searchParams: Prom
   const consulta = anticiparConsulta(listarMovimientosStockServidor(filtros));
   const clave = Object.values(filtros).join("|");
 
+  // El pañolero no puede listar usuarios: sin ese permiso no se muestra el filtro por usuario responsable.
+  const puedeFiltrarPorUsuario = await tienePermisoServidor("usuario.listar");
   const [repuestos, usuarios] = await Promise.all([
     listarRepuestosServidor({ buscar: "", estado: "", ubicacion: "", bajoStock: false, pagina: 1 })
       .then((pagina) => conSeleccionado<Repuesto>(pagina.elementos, filtros.repuestoId, obtenerRepuestoServidor))
       .catch(() => [] as Repuesto[]),
-    listarUsuariosServidor({ buscar: "", rolId: "", estado: "", pagina: 1 })
-      .then((pagina) => conSeleccionado<Usuario>(pagina.elementos, filtros.usuarioId, obtenerUsuarioServidor))
-      .catch(() => [] as Usuario[]),
+    puedeFiltrarPorUsuario
+      ? listarUsuariosServidor({ buscar: "", rolId: "", estado: "", pagina: 1 })
+          .then((pagina) => conSeleccionado<Usuario>(pagina.elementos, filtros.usuarioId, obtenerUsuarioServidor))
+          .catch(() => [] as Usuario[])
+      : ([] as Usuario[]),
   ]);
 
   return (
@@ -43,7 +48,12 @@ export default async function PaginaMovimientosStock(props: { searchParams: Prom
       </header>
 
       <ProveedorNavegacionListado etiquetaCarga={ETIQUETA_CARGA}>
-        <BarraFiltrosMovimientos filtros={filtros} repuestos={repuestos} usuarios={usuarios} />
+        <BarraFiltrosMovimientos
+          filtros={filtros}
+          puedeFiltrarPorUsuario={puedeFiltrarPorUsuario}
+          repuestos={repuestos}
+          usuarios={usuarios}
+        />
 
         <section className="panel">
           <ZonaListado>

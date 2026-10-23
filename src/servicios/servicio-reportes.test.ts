@@ -46,7 +46,7 @@ describe("servicio-reportes", () => {
 
     expect(indicadores.totalOrdenes).toBe(3);
     expect(indicadores.activosConMasIntervenciones[0].nombre).toBe("Excavadora 01");
-    expect(fetch).toHaveBeenCalledWith("http://localhost:4000/api/v1/reportes/indicadores", { cache: "no-store" });
+    expect(fetch).toHaveBeenCalledWith("/api/v1/reportes/indicadores", { cache: "no-store" });
   });
 
   it("envía solo los filtros completados", async () => {
@@ -63,7 +63,7 @@ describe("servicio-reportes", () => {
     await obtenerIndicadores(filtros);
 
     expect(fetch).toHaveBeenCalledWith(
-      "http://localhost:4000/api/v1/reportes/indicadores?fechaDesde=2026-01-01&fechaHasta=2026-12-31&clienteId=4&estado=en_ejecucion&tipo=preventivo",
+      "/api/v1/reportes/indicadores?fechaDesde=2026-01-01&fechaHasta=2026-12-31&clienteId=4&estado=en_ejecucion&tipo=preventivo",
       { cache: "no-store" },
     );
   });
@@ -82,7 +82,7 @@ describe("servicio-reportes", () => {
     const url = obtenerUrlReportePdf("ordenes-trabajo", filtros, "alta");
 
     expect(url).toBe(
-      "http://localhost:4000/api/v1/reportes/ordenes-trabajo/pdf?fechaDesde=2026-01-01&clienteId=4&prioridad=alta",
+      "/api/v1/reportes/ordenes-trabajo/pdf?fechaDesde=2026-01-01&clienteId=4&prioridad=alta",
     );
   });
 
@@ -98,7 +98,7 @@ describe("servicio-reportes", () => {
     };
 
     expect(obtenerUrlReporteCsv("indicadores", filtros, "")).toBe(
-      "http://localhost:4000/api/v1/reportes/indicadores/csv?fechaHasta=2026-12-31&estado=cerrada",
+      "/api/v1/reportes/indicadores/csv?fechaHasta=2026-12-31&estado=cerrada",
     );
   });
 });

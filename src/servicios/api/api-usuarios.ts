@@ -25,6 +25,27 @@ export async function apiListarUsuariosPaginados(filtros: FiltrosUsuarios) {
   return pagina as Pagina<Usuario>;
 }
 
+export const NOMBRE_ROL_TECNICO = "Técnico";
+
+export function esTecnicoActivo(usuario: Usuario) {
+  return usuario.estado === "activo" && usuario.roles.some((rol) => rol.nombre === NOMBRE_ROL_TECNICO);
+}
+
+/** Primeros 100 usuarios activos que coinciden con `buscar`, filtrados a los que tienen el rol «Técnico». */
+export function construirConsultaTecnicos(buscar: string) {
+  const parametros = new URLSearchParams();
+  if (buscar.trim() !== "") parametros.append("buscar", buscar.trim());
+  parametros.append("estado", "activo");
+  parametros.append("pagina", "1");
+  parametros.append("tamanoPagina", "100");
+  return parametros;
+}
+
+export async function apiListarTecnicos(buscar: string) {
+  const pagina = (await leerPagina("/api/v1/usuarios", construirConsultaTecnicos(buscar), "No se pudo obtener el listado de técnicos.")) as Pagina<Usuario>;
+  return pagina.elementos.filter(esTecnicoActivo);
+}
+
 export async function apiListarRoles() {
   const roles = await leerDatosApi("/api/v1/roles", { cache: "no-store" }, "No se pudo obtener el listado de roles.");
   return roles as Rol[];

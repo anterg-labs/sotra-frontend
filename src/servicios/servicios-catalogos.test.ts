@@ -3,7 +3,6 @@ import { paginaDe, simularFetch } from "@/pruebas/ayudas";
 import { listarRoles, listarUsuarios, listarUsuariosPaginados, obtenerDetalleUsuario } from "@/servicios/servicio-usuarios";
 import { listarModelosMaquinaPaginados } from "@/servicios/servicio-modelos-maquina";
 import { listarTiposMaquinaPaginados } from "@/servicios/servicio-tipos-maquina";
-import { cerrarSesion, obtenerUsuarioEnSesion } from "@/servicios/servicio-sesion";
 import { listarActivosPaginados, obtenerDetalleActivo } from "@/servicios/servicio-activos";
 import { listarClientesPaginados, obtenerDetalleCliente } from "@/servicios/servicio-clientes";
 import { ErrorDeApi } from "@/servicios/api/solicitudes-http";
@@ -22,14 +21,14 @@ describe("servicio-usuarios (lecturas del navegador)", () => {
     await listarUsuariosPaginados({ buscar: " ana ", rolId: "2", estado: "activo", pagina: 3 });
     await listarUsuariosPaginados({ buscar: "  ", rolId: "", estado: "", pagina: 1 });
     expect(llamadas[0].url).toBe(
-      "http://api.test/api/v1/usuarios?buscar=ana&rolId=2&estado=activo&direccionOrden=desc&pagina=3",
+      "/api/v1/usuarios?buscar=ana&rolId=2&estado=activo&direccionOrden=desc&pagina=3",
     );
-    expect(llamadas[1].url).toBe("http://api.test/api/v1/usuarios?direccionOrden=desc&pagina=1");
+    expect(llamadas[1].url).toBe("/api/v1/usuarios?direccionOrden=desc&pagina=1");
   });
 
   it("recorre todas las páginas al listar todo", async () => {
     const { llamadas } = simularFetch(({ url }) => {
-      const pagina = Number(new URL(url).searchParams.get("pagina"));
+      const pagina = Number(new URL(url, "http://localhost").searchParams.get("pagina"));
       return { cuerpo: paginaDe([{ id: pagina }], { pagina, totalPaginas: 3 }) };
     });
     const usuarios = await listarUsuarios();
@@ -44,7 +43,7 @@ describe("servicio-usuarios (lecturas del navegador)", () => {
     }));
     expect(await listarRoles()).toEqual([{ id: 1, nombre: "Admin" }]);
     expect(await obtenerDetalleUsuario(5)).toEqual({ id: 5 });
-    expect(llamadas[1].url).toBe("http://api.test/api/v1/usuarios/5");
+    expect(llamadas[1].url).toBe("/api/v1/usuarios/5");
   });
 
   it("propaga el código y el mensaje del error de la API", async () => {
@@ -76,14 +75,8 @@ describe("servicio-clientes (lecturas del navegador)", () => {
     const { llamadas } = simularFetch(() => ({ cuerpo: paginaDe([]) }));
     await listarClientesPaginados({ buscar: "x", estado: "inactivo", pagina: 2 });
     await obtenerDetalleCliente(3);
-    expect(llamadas[0].url).toBe("http://api.test/api/v1/clientes?buscar=x&estado=inactivo&direccionOrden=desc&pagina=2");
-    expect(llamadas[1]).toMatchObject({ metodo: "GET", url: "http://api.test/api/v1/clientes/3" });
+    expect(llamadas[0].url).toBe("/api/v1/clientes?buscar=x&estado=inactivo&direccionOrden=desc&pagina=2");
+    expect(llamadas[1]).toMatchObject({ metodo: "GET", url: "/api/v1/clientes/3" });
   });
 });
 
-describe("servicio-sesion", () => {
-  it("sin integración de identidad no hay usuario y cerrar sesión no falla", async () => {
-    expect(obtenerUsuarioEnSesion()).toBeNull();
-    await expect(cerrarSesion()).resolves.toBeUndefined();
-  });
-});

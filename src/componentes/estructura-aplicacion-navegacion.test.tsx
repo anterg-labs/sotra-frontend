@@ -109,11 +109,11 @@ describe("EstructuraAplicacion: navegación de escritorio", () => {
     expect(within(screen.getByRole("contentinfo")).getByRole("button", { name: "Términos y condiciones" })).toBeInTheDocument();
   });
 
-  it("sin sesión muestra 'Usuario no logueado' y permite cerrar sesión", () => {
+  it("muestra el usuario en sesión en el encabezado y permite cerrar sesión", () => {
     render(<EstructuraAplicacion>x</EstructuraAplicacion>);
     expect(screen.queryByRole("button", { name: "Cerrar sesión" })).not.toBeInTheDocument();
-    fireEvent.click(within(screen.getByRole("banner")).getByRole("button", { name: "Menú de usuario: Usuario no logueado" }));
-    expect(screen.getByText("Usuario no logueado")).toBeInTheDocument();
+    fireEvent.click(within(screen.getByRole("banner")).getByRole("button", { name: "Menú de usuario: Ana Pérez" }));
+    expect(screen.getByText("admin.prueba@sotra.test")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Cerrar sesión" })).toBeEnabled();
   });
 
@@ -138,6 +138,7 @@ describe("AltaUsuario", () => {
     expect(screen.getByText("No hay roles disponibles.")).toBeInTheDocument();
     desmontar();
     render(<AltaUsuario roles={[{ id: 1, nombre: "Técnico" }]} />);
-    expect(screen.getByLabelText("Contraseña")).toBeInTheDocument();
+    expect(screen.getByLabelText("Nombre")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Contraseña")).not.toBeInTheDocument();
   });
 });

@@ -19,7 +19,7 @@ export async function apiObtenerIndicadores(filtros: FiltrosIndicadores) {
 
 export type FormatoReporte = "pdf" | "csv";
 
-/** Enlace público de descarga (PDF o CSV): lo abre el navegador, por eso usa `API_URL`. */
+/** Enlace de descarga (PDF o CSV) al mismo origen: el reenvío de `/api/v1` le agrega el token de la sesión. */
 export function apiObtenerUrlReporte(
   tipoReporte: string,
   filtros: FiltrosIndicadores,

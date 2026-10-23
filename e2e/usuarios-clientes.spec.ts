@@ -41,6 +41,8 @@ test("un cliente se registra, rechaza el duplicado junto al campo y se da de baj
 });
 
 test("un usuario se crea con rol, valida el teléfono numérico y se da de baja", async ({ page }) => {
+  // El alta crea el usuario en Keycloak y le envía un correo real para elegir la contraseña.
+  test.skip(!process.env.SOTRA_E2E_ENVIAR_CORREOS, "Envía un correo real: correr con SOTRA_E2E_ENVIAR_CORREOS=1.");
   const id = sufijo();
   const correo = `usuario.${id}@pruebas.test`;
 
@@ -51,7 +53,6 @@ test("un usuario se crea con rol, valida el teléfono numérico y se da de baja"
   await formulario.getByLabel("Apellido").fill("Automatica");
   await formulario.getByLabel("Correo electrónico").fill(correo);
   await formulario.getByLabel("Número de teléfono").fill("abc123");
-  await formulario.getByLabel("Contraseña").fill("Clave1234!");
   await formulario.getByRole("checkbox", { name: "Técnico", exact: true }).check();
   await page.keyboard.press("Escape");
   await formulario.getByRole("button", { name: /^Confirmar|^Crear|^Registrar/ }).click();
@@ -60,7 +61,7 @@ test("un usuario se crea con rol, valida el teléfono numérico y se da de baja"
 
   await formulario.getByLabel("Número de teléfono").fill(telefonoNumerico());
   await formulario.getByRole("button", { name: /^Confirmar|^Crear|^Registrar/ }).click();
-  await expect(page.getByText("Usuario creado.")).toBeVisible();
+  await expect(page.getByText(/Usuario creado. Se envió un correo a/)).toBeVisible();
 
   await buscarEnVivo(page, page.getByLabel("Buscar"), correo);
   const fila = page.getByRole("row", { name: new RegExp(id) });

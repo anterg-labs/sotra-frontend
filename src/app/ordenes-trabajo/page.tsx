@@ -9,7 +9,9 @@ import { listarClientesServidor, obtenerClienteServidor } from "@/servicios/serv
 import { listarOrdenesTrabajoServidor, listarTecnicosServidor } from "@/servicios/servidor/ordenes-trabajo";
 import { conSeleccionado } from "@/servicios/servidor/opciones";
 import { obtenerIndicadoresServidor } from "@/servicios/servidor/reportes";
+import { tienePermisoServidor } from "@/servicios/servidor/sesion";
 import { obtenerUsuarioServidor } from "@/servicios/servidor/usuarios";
+import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
 import type { Indicadores } from "@/tipos/reporte";
@@ -40,17 +42,24 @@ export default async function PaginaOrdenesTrabajo(props: { searchParams: Promis
   const consulta = anticiparConsulta(listarOrdenesTrabajoServidor(filtros));
   const clave = Object.values(filtros).join("|");
 
+  // El resumen sale de reportes y la lista de técnicos, de usuarios: solo se piden si el rol los puede ver.
+  const [puedeVerResumen, puedeFiltrarPorTecnico] = await Promise.all([
+    tienePermisoServidor("reporte.consultar"),
+    tienePermisoServidor("usuario.listar"),
+  ]);
   const [resumen, clientes, activos, tecnicos] = await Promise.all([
-    obtenerIndicadoresServidor(sinFiltrosDeIndicadores).catch(() => null),
+    puedeVerResumen ? obtenerIndicadoresServidor(sinFiltrosDeIndicadores).catch(() => null) : null,
     listarClientesServidor({ buscar: "", estado: "", pagina: 1 })
       .then((pagina) => conSeleccionado<Cliente>(pagina.elementos, filtros.clienteId, obtenerClienteServidor))
       .catch(() => [] as Cliente[]),
     listarActivosServidor({ buscar: "", clienteId: filtros.clienteId, modeloMaquinaId: "", estado: "", pagina: 1 })
       .then((pagina) => conSeleccionado<Activo>(pagina.elementos, filtros.activoId, obtenerActivoServidor))
       .catch(() => [] as Activo[]),
-    listarTecnicosServidor()
-      .then((lista) => conSeleccionado<Usuario>(lista, filtros.tecnicoId, obtenerUsuarioServidor))
-      .catch(() => [] as Usuario[]),
+    puedeFiltrarPorTecnico
+      ? listarTecnicosServidor()
+          .then((lista) => conSeleccionado<Usuario>(lista, filtros.tecnicoId, obtenerUsuarioServidor))
+          .catch(() => [] as Usuario[])
+      : ([] as Usuario[]),
   ]);
 
   return (
@@ -59,9 +68,11 @@ export default async function PaginaOrdenesTrabajo(props: { searchParams: Promis
         <div>
           <h1>Órdenes de trabajo</h1>
         </div>
-        <Link className="primary-button" href="/ordenes-trabajo/nuevo">
-          Crear orden
-        </Link>
+        <SiTienePermiso permiso="ot.crear">
+          <Link className="primary-button" href="/ordenes-trabajo/nuevo">
+            Crear orden
+          </Link>
+        </SiTienePermiso>
       </header>
 
       {resumen !== null ? (
@@ -74,7 +85,13 @@ export default async function PaginaOrdenesTrabajo(props: { searchParams: Promis
       ) : null}
 
       <ProveedorNavegacionListado etiquetaCarga={ETIQUETA_CARGA}>
-        <BarraFiltrosOrdenes activos={activos} clientes={clientes} filtros={filtros} tecnicos={tecnicos} />
+        <BarraFiltrosOrdenes
+          activos={activos}
+          clientes={clientes}
+          filtros={filtros}
+          puedeFiltrarPorTecnico={puedeFiltrarPorTecnico}
+          tecnicos={tecnicos}
+        />
 
         <section className="panel">
           <ZonaListado>

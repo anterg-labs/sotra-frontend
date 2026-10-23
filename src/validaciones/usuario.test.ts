@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validarContrasena, validarCorreo, validarNombrePersona, validarTelefono, validarUsuario } from "./usuario";
+import { validarCorreo, validarNombrePersona, validarTelefono, validarUsuario } from "./usuario";
 
 describe("validarNombrePersona", () => {
   it.each(["", "   ", "###", "Juan3"])("rechaza %j", (valor) => {
@@ -14,16 +14,6 @@ describe("validarNombrePersona", () => {
     expect(validarNombrePersona("a".repeat(101), "Apellido")).toBe(
       "El campo Apellido no puede superar los 100 caracteres.",
     );
-  });
-});
-
-describe("validarContrasena", () => {
-  it.each(["", "Clave1!", "clave1234!", "CLAVE1234!", "Clave12345"])("rechaza %j", (valor) => {
-    expect(validarContrasena(valor)).toBeDefined();
-  });
-
-  it("acepta exactamente 8 caracteres válidos", () => {
-    expect(validarContrasena("Clave12!")).toBeUndefined();
   });
 });
 
@@ -49,13 +39,13 @@ describe("validarCorreo", () => {
 });
 
 describe("validarUsuario", () => {
-  const valido = { nombre: "Ana", apellido: "Pérez", correo: "ana@empresa.com", telefono: "99123456", contrasena: "" };
+  const valido = { nombre: "Ana", apellido: "Pérez", correo: "ana@empresa.com", telefono: "99123456" };
 
-  it("no exige contraseña al modificar", () => {
-    expect(validarUsuario(valido, { exigirContrasena: false })).toEqual({});
+  it("un usuario válido no tiene errores: la contraseña la elige el usuario en Keycloak", () => {
+    expect(validarUsuario(valido)).toEqual({});
   });
 
-  it("exige contraseña al crear", () => {
-    expect(validarUsuario(valido, { exigirContrasena: true })).toHaveProperty("contrasena");
+  it("informa los campos inválidos", () => {
+    expect(Object.keys(validarUsuario({ ...valido, correo: "x", telefono: "" }))).toEqual(["correo", "telefono"]);
   });
 });

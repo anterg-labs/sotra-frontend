@@ -1,4 +1,6 @@
 import { leerIdFiltro, type ParametrosBusqueda } from "@/componentes/listado/url-listado";
+import { tienePermiso } from "@/seguridad/permisos";
+import { obtenerEstadoSesion } from "@/servicios/servidor/sesion";
 import { listarOrdenesTrabajoServidor, listarTecnicosServidor } from "@/servicios/servidor/ordenes-trabajo";
 import { conSeleccionado } from "@/servicios/servidor/opciones";
 import { obtenerUsuarioServidor } from "@/servicios/servidor/usuarios";
@@ -35,9 +37,22 @@ async function cargarOrdenes(tecnicoId: string) {
   }
 }
 
+/**
+ * El técnico ve sus propias órdenes (el usuario de la sesión). Quien puede listar usuarios (administrador y jefe)
+ * elige el técnico en un selector, para ver el trabajo de cualquiera.
+ */
 export default async function PaginaMiTrabajo(props: { searchParams: Promise<ParametrosBusqueda> }) {
-  const tecnicoId = leerIdFiltro(await props.searchParams, "tecnicoId");
+  const sesion = await obtenerEstadoSesion();
+  const usuario = sesion.estado === "con-acceso" ? sesion.usuario : null;
+  const puedeElegirTecnico = usuario !== null && tienePermiso(usuario.roles, "usuario.listar");
 
+  if (!puedeElegirTecnico) {
+    const tecnicoId = usuario?.idUsuario ? String(usuario.idUsuario) : "";
+    const { ordenes, error } = await cargarOrdenes(tecnicoId);
+    return <MiTrabajo error={error} ordenes={ordenes} puedeElegirTecnico={false} tecnicoId={tecnicoId} tecnicos={[]} />;
+  }
+
+  const tecnicoId = leerIdFiltro(await props.searchParams, "tecnicoId");
   const [{ ordenes, error }, tecnicos] = await Promise.all([
     cargarOrdenes(tecnicoId),
     listarTecnicosServidor()
@@ -49,6 +64,7 @@ export default async function PaginaMiTrabajo(props: { searchParams: Promise<Par
     <MiTrabajo
       error={tecnicos === null && error === "" ? "No se pudo obtener la lista de técnicos." : error}
       ordenes={ordenes}
+      puedeElegirTecnico
       tecnicoId={tecnicoId}
       tecnicos={(tecnicos ?? []).map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }))}
     />

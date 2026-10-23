@@ -1,16 +1,27 @@
 import Link from "next/link";
 import { FormularioUsuario } from "@/componentes/formulario-usuario";
+import { esUsuarioAdministrador, rolesAsignables } from "@/seguridad/permisos";
+import { tienePermisoServidor } from "@/servicios/servidor/sesion";
 import { listarRolesServidor, obtenerUsuarioServidor } from "@/servicios/servidor/usuarios";
 import type { Rol, UsuarioDetalle } from "@/tipos/usuario";
 import { actualizarUsuarioAccion } from "../../acciones";
 
 const RUTA_LISTADO = "/usuarios";
 
-async function cargarDatos(usuarioId: number): Promise<{ usuario: UsuarioDetalle; roles: Rol[] } | null> {
+/** El jefe no puede modificar a un administrador ni asignar ese rol: `puedeModificar` en falso muestra el aviso. */
+async function cargarDatos(usuarioId: number): Promise<{ usuario: UsuarioDetalle; roles: Rol[]; puedeModificar: boolean } | null> {
   if (!Number.isInteger(usuarioId) || usuarioId <= 0) return null;
   try {
-    const [usuario, roles] = await Promise.all([obtenerUsuarioServidor(usuarioId), listarRolesServidor()]);
-    return { usuario, roles };
+    const [usuario, roles, puedeGestionarAdministradores] = await Promise.all([
+      obtenerUsuarioServidor(usuarioId),
+      listarRolesServidor(),
+      tienePermisoServidor("usuario.gestionar_administradores"),
+    ]);
+    return {
+      usuario,
+      roles: rolesAsignables(roles, puedeGestionarAdministradores),
+      puedeModificar: puedeGestionarAdministradores || !esUsuarioAdministrador(usuario),
+    };
   } catch {
     return null;
   }
@@ -31,7 +42,9 @@ export default async function PaginaEditarUsuario(props: { params: Promise<{ id:
         </Link>
       </header>
 
-      {datos ? (
+      {datos && !datos.puedeModificar ? (
+        <p className="form-error-banner">Solo un administrador puede modificar a un administrador.</p>
+      ) : datos ? (
         <section className="panel form-panel">
           <FormularioUsuario
             accion={actualizarUsuarioAccion.bind(null, datos.usuario.id, datos.usuario.estado, datos.usuario.fechaIngreso)}

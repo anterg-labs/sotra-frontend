@@ -173,10 +173,12 @@ describe("alta de usuario en modal", () => {
     fireEvent.change(within(dialogo).getByLabelText("Apellido"), { target: { value: "Pérez" } });
     fireEvent.change(within(dialogo).getByLabelText("Correo electrónico"), { target: { value: "ana@sotra.com" } });
     fireEvent.change(within(dialogo).getByLabelText("Número de teléfono"), { target: { value: "099111222" } });
-    fireEvent.change(within(dialogo).getByLabelText("Contraseña"), { target: { value: "Clave.Segura1" } });
+    expect(within(dialogo).queryByLabelText("Contraseña")).not.toBeInTheDocument();
     fireEvent.click(within(dialogo).getByRole("button", { name: "Confirmar creación" }));
-    await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("exito", "Usuario creado."));
-    expect(crearUsuarioAccion).toHaveBeenCalledWith(expect.objectContaining({ nombre: "Ana", contrasena: "Clave.Segura1" }));
+    await waitFor(() =>
+      expect(mostrarAviso).toHaveBeenCalledWith("exito", "Usuario creado. Se envió un correo a " + usuario(9, ["Técnico"]).correo + " para que elija su contraseña."),
+    );
+    expect(crearUsuarioAccion).toHaveBeenCalledWith({ nombre: "Ana", apellido: "Pérez", correo: "ana@sotra.com", telefono: "099111222", idsRol: [] });
   });
 
   it("sin roles o con error de roles lo informa en lugar del formulario", () => {

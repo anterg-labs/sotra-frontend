@@ -62,13 +62,11 @@ describe("formulario de usuarios", () => {
     expect(accion).not.toHaveBeenCalled();
   });
 
-  it("exige la contraseña solo en el alta", async () => {
-    const accion = vi.fn();
-    render(<FormularioUsuario accion={accion} etiquetaConfirmacion="Guardar" rutaCancelar="/usuarios" rutaExito="/usuarios" solicitarContrasena />);
-    completar();
-    fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
-    expect(await screen.findByText("El campo Contraseña es obligatorio.")).toBeInTheDocument();
-    expect(accion).not.toHaveBeenCalled();
+  it("no pide contraseña: en el alta avisa que llega un correo para elegirla", () => {
+    render(<FormularioUsuario accion={vi.fn()} etiquetaConfirmacion="Guardar" rutaCancelar="/usuarios" rutaExito="/usuarios" />);
+    expect(screen.queryByLabelText("Contraseña")).not.toBeInTheDocument();
+    expect(document.querySelector("input[type=password]")).toBeNull();
+    expect(screen.getByText(/le llega un correo para que elija la suya/)).toBeInTheDocument();
   });
 
   it("al guardar avisa y vuelve al listado; en edición avisa «Usuario actualizado.»", async () => {
@@ -77,7 +75,7 @@ describe("formulario de usuarios", () => {
     completar();
     fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
     await waitFor(() => expect(push).toHaveBeenCalledWith("/usuarios"));
-    expect(mostrarAviso).toHaveBeenCalledWith("exito", "Usuario creado.");
+    expect(mostrarAviso).toHaveBeenCalledWith("exito", "Usuario creado. Se envió un correo a " + usuario.correo + " para que elija su contraseña.");
     expect(accion).toHaveBeenCalledWith(expect.objectContaining({ nombre: "Ana", telefono: "99123456", idsRol: [] }));
     unmount();
 

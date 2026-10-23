@@ -1,7 +1,6 @@
 const LARGO_MAXIMO_NOMBRE = 100;
 const LARGO_MAXIMO_CORREO = 254;
 const LARGO_MAXIMO_TELEFONO = 30;
-const LARGO_MINIMO_CONTRASENA = 8;
 
 const PATRON_NOMBRE_PERMITIDO = /^[\p{L} '’.-]+$/u;
 const PATRON_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -11,7 +10,6 @@ export type CamposValidablesUsuario = {
   apellido: string;
   correo: string;
   telefono: string;
-  contrasena: string;
 };
 
 export type ErroresUsuario = Partial<Record<keyof CamposValidablesUsuario, string>>;
@@ -46,27 +44,13 @@ export function validarTelefono(valor: string): string | undefined {
   return undefined;
 }
 
-export function validarContrasena(valor: string): string | undefined {
-  if (valor === "") return "El campo Contraseña es obligatorio.";
-  if (valor.length < LARGO_MINIMO_CONTRASENA) {
-    return `La contraseña debe tener al menos ${LARGO_MINIMO_CONTRASENA} caracteres.`;
-  }
-  if (!/\p{Lu}/u.test(valor)) return "La contraseña debe contener al menos una letra mayúscula.";
-  if (!/\p{Ll}/u.test(valor)) return "La contraseña debe contener al menos una letra minúscula.";
-  if (!/[^\p{L}\p{N}\s]/u.test(valor)) return "La contraseña debe contener al menos un carácter especial.";
-  return undefined;
-}
-
-export function validarUsuario(
-  campos: CamposValidablesUsuario,
-  opciones: { exigirContrasena: boolean },
-): ErroresUsuario {
+/** La contraseña no pasa por SOTRA: la elige el usuario en Keycloak, con el enlace que recibe por correo. */
+export function validarUsuario(campos: CamposValidablesUsuario): ErroresUsuario {
   const errores: ErroresUsuario = {
     nombre: validarNombrePersona(campos.nombre, "Nombre"),
     apellido: validarNombrePersona(campos.apellido, "Apellido"),
     correo: validarCorreo(campos.correo),
     telefono: validarTelefono(campos.telefono),
-    contrasena: opciones.exigirContrasena ? validarContrasena(campos.contrasena) : undefined,
   };
 
   return Object.fromEntries(Object.entries(errores).filter(([, mensaje]) => mensaje !== undefined));

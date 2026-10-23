@@ -1,13 +1,13 @@
 import type { APIRequestContext } from "@playwright/test";
 
-const apiBase = process.env.SOTRA_API_URL ?? "http://localhost:8081";
+/** Los datos de prueba van por `/api/v1` del frontend, que agrega el token de la sesión guardada por «sesion». */
+export const apiBase = process.env.SOTRA_URL ?? "http://localhost";
+
+/** Técnico de prueba existente (en Keycloak y en SOTRA): dar de alta uno nuevo enviaría un correo real. */
+const tecnicoId = Number(process.env.SOTRA_E2E_TECNICO_ID ?? 30);
 
 export function sufijo() {
   return Math.random().toString(36).slice(2, 10);
-}
-
-function letras() {
-  return Array.from({ length: 8 }, () => String.fromCharCode(97 + Math.floor(Math.random() * 26))).join("");
 }
 
 function telefono() {
@@ -26,7 +26,7 @@ export async function crearRepuesto(request: APIRequestContext, cantidad: number
   });
 }
 
-/** Crea un cliente, un activo, un técnico y una orden asignada a ese técnico; devuelve sus identificadores. */
+/** Crea un cliente, un activo y una orden asignada al técnico de prueba; devuelve sus identificadores. */
 export async function crearOrdenAsignada(request: APIRequestContext) {
   const id = sufijo();
   const cliente = await crear<{ id: number }>(request, "/api/v1/clientes", {
@@ -41,16 +41,12 @@ export async function crearOrdenAsignada(request: APIRequestContext) {
     clienteId: cliente.id, numSerie: "SN-" + id, modeloMaquinaId: modelo.id, nombre: "Activo e2e " + id,
     ubicacion: "Planta", descripcion: "", anioFabricacion: 2021,
   });
-  const tecnico = await crear<{ id: number }>(request, "/api/v1/usuarios", {
-    nombre: "Tecnico", apellido: "Prueba" + letras(), correo: `tec.${id}@pruebas.test`, telefono: telefono(),
-    contrasena: "Clave1234!", idsRol: [3],
-  });
   const orden = await crear<{ id: number }>(request, "/api/v1/ordenes-trabajo", {
-    clienteId: cliente.id, activoId: activo.id, tecnicoId: tecnico.id, tipo: "correctivo", prioridad: "alta",
+    clienteId: cliente.id, activoId: activo.id, tecnicoId, tipo: "correctivo", prioridad: "alta",
     descripcion: "Cambiar el filtro hidráulico (e2e)", observaciones: "",
     fechaPrevistaEjecucion: new Date().toISOString().slice(0, 10), sugerencias: [], repuestosIds: [],
   });
   const asignada = await request.patch(`${apiBase}/api/v1/ordenes-trabajo/${orden.id}/estado`, { data: { estado: "asignada" } });
   if (!asignada.ok()) throw new Error("No se pudo asignar la orden: " + (await asignada.text()));
-  return { ordenId: orden.id, tecnicoId: tecnico.id, nombreActivo: activo.nombre };
+  return { ordenId: orden.id, tecnicoId, nombreActivo: activo.nombre };
 }

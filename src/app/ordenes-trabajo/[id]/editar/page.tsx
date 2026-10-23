@@ -1,34 +1,39 @@
 import { obtenerActivoServidor, listarActivosServidor } from "@/servicios/servidor/activos";
 import { listarClientesServidor, obtenerClienteServidor } from "@/servicios/servidor/clientes";
-import { listarTecnicosServidor, obtenerOrdenTrabajoServidor } from "@/servicios/servidor/ordenes-trabajo";
+import { conTecnicoDeLaOrden, listarTecnicosServidor, obtenerOrdenTrabajoServidor } from "@/servicios/servidor/ordenes-trabajo";
 import { listarRepuestosServidor, obtenerRepuestoServidor } from "@/servicios/servidor/repuestos";
-import { obtenerUsuarioServidor } from "@/servicios/servidor/usuarios";
+import { tienePermisoServidor } from "@/servicios/servidor/sesion";
 import { FormularioEditarOrden } from "../../formularios-orden";
 
-/** La orden y sus selecciones actuales van primero en cada lista, aunque ya no estén activas. */
+/**
+ * La orden y sus selecciones actuales van primero en cada lista, aunque ya no estén activas.
+ * Los repuestos solo se cargan si el rol los puede ver (el jefe no): sin la lista, el formulario conserva los de la orden.
+ */
 async function cargarDatos(ordenTrabajoId: number) {
   if (!Number.isInteger(ordenTrabajoId) || ordenTrabajoId <= 0) return null;
   try {
+    const puedeVerRepuestos = await tienePermisoServidor("stock.consultar");
     const [orden, paginaClientes, tecnicos, paginaRepuestos] = await Promise.all([
       obtenerOrdenTrabajoServidor(ordenTrabajoId),
       listarClientesServidor({ buscar: "", estado: "activo", pagina: 1 }),
       listarTecnicosServidor(),
-      listarRepuestosServidor({ buscar: "", estado: "activo", ubicacion: "", bajoStock: false, pagina: 1 }),
+      puedeVerRepuestos
+        ? listarRepuestosServidor({ buscar: "", estado: "activo", ubicacion: "", bajoStock: false, pagina: 1 })
+        : Promise.resolve(null),
     ]);
-    const [paginaActivos, cliente, activo, tecnicoActual, repuestosDeLaOrden] = await Promise.all([
+    const [paginaActivos, cliente, activo, repuestosDeLaOrden] = await Promise.all([
       listarActivosServidor({ buscar: "", clienteId: String(orden.clienteId), modeloMaquinaId: "", estado: "activo", pagina: 1 }),
       obtenerClienteServidor(orden.clienteId),
       obtenerActivoServidor(orden.activoId),
-      orden.tecnicoId === null ? Promise.resolve(null) : obtenerUsuarioServidor(orden.tecnicoId),
-      Promise.all(orden.repuestos.map((repuesto) => obtenerRepuestoServidor(repuesto.id))),
+      puedeVerRepuestos ? Promise.all(orden.repuestos.map((repuesto) => obtenerRepuestoServidor(repuesto.id))) : Promise.resolve([]),
     ]);
     const idsRepuestos = new Set(repuestosDeLaOrden.map((repuesto) => repuesto.id));
     return {
       orden,
       clientes: [cliente, ...paginaClientes.elementos.filter((otro) => otro.id !== cliente.id)],
       activos: [activo, ...paginaActivos.elementos.filter((otro) => otro.id !== activo.id)],
-      tecnicos: tecnicoActual ? [tecnicoActual, ...tecnicos.filter((otro) => otro.id !== tecnicoActual.id)] : tecnicos,
-      repuestos: [...repuestosDeLaOrden, ...paginaRepuestos.elementos.filter((repuesto) => !idsRepuestos.has(repuesto.id))],
+      tecnicos: conTecnicoDeLaOrden(orden, tecnicos),
+      repuestos: [...repuestosDeLaOrden, ...(paginaRepuestos?.elementos ?? []).filter((repuesto) => !idsRepuestos.has(repuesto.id))],
     };
   } catch {
     return null;

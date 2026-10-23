@@ -2,6 +2,8 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MiTrabajo } from "./mi-trabajo";
 import PaginaMiTrabajo from "./page";
+import { usuarioDePruebas } from "@/pruebas/sesion-de-pruebas";
+import { obtenerEstadoSesion } from "@/servicios/servidor/sesion";
 
 const replace = vi.hoisted(() => vi.fn());
 const listarOrdenesTrabajoServidor = vi.hoisted(() => vi.fn());
@@ -71,11 +73,22 @@ describe("Mi trabajo (Server Component)", () => {
   });
 });
 
+describe("Mi trabajo con la sesión de un técnico", () => {
+  it("muestra las órdenes del usuario en sesión, sin selector ni lista de técnicos", async () => {
+    vi.mocked(obtenerEstadoSesion).mockResolvedValueOnce({ estado: "con-acceso", usuario: usuarioDePruebas(["tecnico"], { idUsuario: 30 }) });
+    render(await PaginaMiTrabajo({ searchParams: Promise.resolve({ tecnicoId: "25" }) }));
+    expect(listarOrdenesTrabajoServidor).toHaveBeenCalledWith(expect.objectContaining({ tecnicoId: "30" }));
+    expect(listarTecnicosServidor).not.toHaveBeenCalled();
+    expect(screen.queryByRole("combobox", { name: "Técnico" })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("link")).toHaveLength(4);
+  });
+});
+
 describe("Mi trabajo (isla)", () => {
   const ordenes = [orden(3, "en_ejecucion", "alta", "2026-11-15"), orden(2, "en_ejecucion", "alta", "2026-12-01"), orden(4, "pausada", "media", "2026-11-05"), orden(1, "asignada", "baja", "2026-11-01")];
 
   it("filtra por estado con los chips (con contadores) y busca por número", async () => {
-    render(<MiTrabajo error="" ordenes={ordenes as never} tecnicoId="25" tecnicos={[{ valor: "25", etiqueta: "Roberto Pérez" }]} />);
+    render(<MiTrabajo puedeElegirTecnico error="" ordenes={ordenes as never} tecnicoId="25" tecnicos={[{ valor: "25", etiqueta: "Roberto Pérez" }]} />);
     const chipPausadas = screen.getByRole("button", { name: /Pausadas/ });
     expect(within(chipPausadas).getByText("1")).toBeInTheDocument();
     fireEvent.click(chipPausadas);
@@ -88,14 +101,14 @@ describe("Mi trabajo (isla)", () => {
   });
 
   it("al elegir un técnico escribe la URL; sin técnico la quita", () => {
-    render(<MiTrabajo error="" ordenes={null} tecnicoId="" tecnicos={[{ valor: "25", etiqueta: "Roberto Pérez" }]} />);
+    render(<MiTrabajo puedeElegirTecnico error="" ordenes={null} tecnicoId="" tecnicos={[{ valor: "25", etiqueta: "Roberto Pérez" }]} />);
     fireEvent.focus(screen.getByRole("combobox", { name: "Técnico" }));
     fireEvent.click(screen.getByRole("option", { name: "Roberto Pérez" }));
     expect(replace).toHaveBeenLastCalledWith("/tecnico?tecnicoId=25");
   });
 
   it("muestra el vacío cuando el filtro no tiene órdenes", () => {
-    render(<MiTrabajo error="" ordenes={[]} tecnicoId="25" tecnicos={[]} />);
+    render(<MiTrabajo puedeElegirTecnico error="" ordenes={[]} tecnicoId="25" tecnicos={[]} />);
     expect(screen.getByText("No tenés órdenes pendientes con este filtro.")).toBeInTheDocument();
   });
 });

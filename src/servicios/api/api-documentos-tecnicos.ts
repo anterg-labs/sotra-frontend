@@ -14,7 +14,7 @@ export async function apiCrearDocumentoTecnico(archivo: File, activoId: number |
   return documentoCreado as DocumentoTecnico;
 }
 
-/** Enlace público de descarga: lo abre el navegador, por eso usa `API_URL` y no la URL interna. */
+/** Enlace de descarga al mismo origen: el reenvío de `/api/v1` le agrega el token de la sesión. */
 export function apiObtenerUrlDescargaDocumentoTecnico(documentoId: number) {
   const urlBaseApi = obtenerUrlBaseApi();
   return urlBaseApi + "/api/v1/documentos-tecnicos/" + documentoId + "/archivo";

@@ -14,12 +14,15 @@ import { BotonTerminos } from "@/componentes/terminos/modal-terminos";
 import { EstructuraTecnico } from "@/componentes/estructura-tecnico";
 import { useAlertasStock } from "@/hooks/use-alertas-stock";
 import { obtenerVersionSistema } from "@/servicios/servicio-version";
+import versionDelFrontend from "../../version.json";
 import {
   IconoActivos,
   IconoClientes,
   IconoConfiguracion,
   IconoDocumentacion,
+  IconoFlechaIzquierda,
   IconoHamburguesa,
+  IconoInicio,
   IconoOrdenesTrabajo,
   IconoReportes,
   IconoRepuestos,
@@ -39,17 +42,21 @@ type ElementoMenu = {
   permiso: Permiso;
   icono: React.ReactNode;
   submenus?: Submenu[];
+  submenuPermanente?: boolean;
 };
 
 /** Cada opción lleva el permiso que exige su página (la misma regla que aplica el proxy). */
 const elementosMenu: ElementoMenu[] = [
+  { ruta: "/inicio", etiqueta: "Inicio", permiso: "reporte.consultar", icono: <IconoInicio /> },
   { ruta: "/ordenes-trabajo", etiqueta: "Órdenes de trabajo", permiso: "ot.consultar", icono: <IconoOrdenesTrabajo /> },
+  { ruta: "/reportes", etiqueta: "Reportes", permiso: "reporte.consultar", icono: <IconoReportes /> },
   { ruta: "/clientes", etiqueta: "Clientes", permiso: "cliente.consultar", icono: <IconoClientes /> },
   {
     ruta: "/activos",
     etiqueta: "Activos",
     permiso: "activo.consultar",
     icono: <IconoActivos />,
+    submenuPermanente: true,
     submenus: [
       {
         ruta: "/activos",
@@ -91,9 +98,8 @@ const elementosMenu: ElementoMenu[] = [
       },
     ],
   },
-  { ruta: "/documentacion-tecnica", etiqueta: "Documentación técnica", permiso: "documento.consultar", icono: <IconoDocumentacion /> },
+  { ruta: "/documentacion-tecnica", etiqueta: "Documentación", permiso: "documento.consultar", icono: <IconoDocumentacion /> },
   { ruta: "/usuarios", etiqueta: "Usuarios", permiso: "usuario.consultar", icono: <IconoUsuarios /> },
-  { ruta: "/reportes", etiqueta: "Reportes", permiso: "reporte.consultar", icono: <IconoReportes /> },
   {
     ruta: "/configuracion",
     etiqueta: "Configuración",
@@ -134,12 +140,13 @@ function MenuLateral(props: MenuLateralProps) {
       <nav aria-label="Navegación principal" className="app-menu">
         {filtrarMenuPorRoles(roles).map((elemento) => {
           const estaActivo = rutaActual.startsWith(elemento.ruta);
+          const mostrarSubmenu = elemento.submenuPermanente || estaActivo;
           return (
             <div key={elemento.ruta}>
               <Link
                 aria-current={estaActivo && !elemento.submenus ? "page" : undefined}
-                aria-expanded={elemento.submenus ? estaActivo : undefined}
-                aria-controls={elemento.submenus && estaActivo ? `submenu-${elemento.ruta.slice(1)}` : undefined}
+                aria-expanded={elemento.submenus && !elemento.submenuPermanente ? estaActivo : undefined}
+                aria-controls={elemento.submenus && mostrarSubmenu ? `submenu-${elemento.ruta.slice(1)}` : undefined}
                 className="app-menu-enlace"
                 href={elemento.ruta}
                 onClick={props.alElegirOpcion}
@@ -155,8 +162,8 @@ function MenuLateral(props: MenuLateralProps) {
                   </span>
                 ) : null}
               </Link>
-              {elemento.submenus && estaActivo ? (
-                <div className="app-submenu" id={`submenu-${elemento.ruta.slice(1)}`}>
+              {elemento.submenus && mostrarSubmenu ? (
+                <div className={elemento.submenuPermanente ? "app-submenu app-submenu-permanente" : "app-submenu"} id={`submenu-${elemento.ruta.slice(1)}`}>
                   {elemento.submenus.map((submenu) => (
                     <Link
                       aria-current={submenu.esActivo(rutaActual) ? "page" : undefined}
@@ -186,12 +193,16 @@ type EstructuraAplicacionProps = {
   modoVista?: ModoVista;
 };
 
+function esPantallaDeEscritorio() {
+  return window.matchMedia?.("(min-width: 761px)").matches ?? false;
+}
+
 function EstructuraEscritorio(props: EstructuraAplicacionProps) {
   const children = props.children;
   const referenciaEstructura = useRef<HTMLDivElement>(null);
   const referenciaPie = useRef<HTMLElement>(null);
   const [estaMenuAbierto, setEstaMenuAbierto] = useState(false);
-  const [estaMenuRetraido, setEstaMenuRetraido] = useState(false);
+  const versionFrontend = versionDelFrontend.version;
   const [versionBackend, setVersionBackend] = useState("…");
   const usuarioEnSesion = useUsuarioEnSesion();
   const rutaActual = usePathname();
@@ -227,14 +238,14 @@ function EstructuraEscritorio(props: EstructuraAplicacionProps) {
   useEffect(() => {
     function cerrarConEscape(evento: KeyboardEvent) {
       if (evento.key === "Escape") {
+        if (esPantallaDeEscritorio() && estaMenuAbierto) return;
         setEstaMenuAbierto(false);
-        setEstaMenuRetraido(true);
       }
     }
 
     document.addEventListener("keydown", cerrarConEscape);
     return () => document.removeEventListener("keydown", cerrarConEscape);
-  }, []);
+  }, [estaMenuAbierto]);
 
   async function salirDeLaSesion() {
     setEstaMenuAbierto(false);
@@ -242,8 +253,8 @@ function EstructuraEscritorio(props: EstructuraAplicacionProps) {
   }
 
   function retraerMenu() {
+    if (esPantallaDeEscritorio() && estaMenuAbierto) return;
     setEstaMenuAbierto(false);
-    setEstaMenuRetraido(true);
   }
 
   const fechaActual = new Date().toLocaleDateString("es-UY", {
@@ -256,14 +267,23 @@ function EstructuraEscritorio(props: EstructuraAplicacionProps) {
 
   return (
     <div className="min-h-screen" ref={referenciaEstructura}>
+      <button
+        aria-controls="menu-lateral"
+        aria-expanded={estaMenuAbierto}
+        aria-label={estaMenuAbierto ? "Cerrar menú" : "Abrir menú"}
+        className="app-boton-menu"
+        onClick={() => {
+          setEstaMenuAbierto((abierto) => !abierto);
+        }}
+        type="button"
+      >
+        {estaMenuAbierto ? <IconoFlechaIzquierda /> : <IconoHamburguesa />}
+      </button>
       <aside
         className="app-lateral"
         data-abierto={estaMenuAbierto}
         data-compacto={!estaMenuAbierto}
-        data-retraido={estaMenuRetraido}
         id="menu-lateral"
-        onPointerEnter={() => setEstaMenuRetraido(false)}
-        onFocusCapture={() => setEstaMenuRetraido(false)}
       >
         <Link className="app-lateral-logo" href="/" onClick={retraerMenu}>
           <span>
@@ -295,16 +315,6 @@ function EstructuraEscritorio(props: EstructuraAplicacionProps) {
 
       <div className="app-principal">
         <header className="app-cabecera">
-          <button
-            aria-controls="menu-lateral"
-            aria-expanded={estaMenuAbierto}
-            aria-label={estaMenuAbierto ? "Cerrar menú" : "Abrir menú"}
-            className="app-boton-menu"
-            onClick={() => setEstaMenuAbierto((abierto) => !abierto)}
-            type="button"
-          >
-            <IconoHamburguesa />
-          </button>
           <div className="app-cabecera-fecha" suppressHydrationWarning>
             {fechaActual}
           </div>
@@ -321,7 +331,7 @@ function EstructuraEscritorio(props: EstructuraAplicacionProps) {
           <div className="app-pie-derecha">
             <div className="app-pie-linea">
               <span>© 2026 AnterG Labs · Sotra App</span>
-              <span className="app-pie-version">{"Versión " + versionBackend}</span>
+              <span className="app-pie-version">{"Versión " + versionFrontend + " · API " + versionBackend}</span>
             </div>
           </div>
         </footer>

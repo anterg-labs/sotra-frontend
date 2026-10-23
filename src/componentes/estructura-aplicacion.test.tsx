@@ -1,3 +1,4 @@
+import versionDelFrontend from "../../version.json";
 import { cleanup, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EstructuraAplicacion } from "./estructura-aplicacion";
@@ -20,12 +21,12 @@ describe("EstructuraAplicacion: versión del pie", () => {
   it("muestra la versión que informa el backend", async () => {
     obtenerVersionSistema.mockResolvedValue("1.2.3");
     render(<EstructuraAplicacion>contenido</EstructuraAplicacion>);
-    expect(await screen.findByText("Versión 1.2.3")).toBeInTheDocument();
+    expect(await screen.findByText("Versión " + versionDelFrontend.version + " · API 1.2.3")).toBeInTheDocument();
   });
 
   it("indica que no está disponible si la consulta falla", async () => {
     obtenerVersionSistema.mockImplementation(async () => { throw new Error("fallo"); });
     render(<EstructuraAplicacion>contenido</EstructuraAplicacion>);
-    expect(await screen.findByText("Versión no disponible")).toBeInTheDocument();
+    expect(await screen.findByText("Versión " + versionDelFrontend.version + " · API no disponible")).toBeInTheDocument();
   });
 });

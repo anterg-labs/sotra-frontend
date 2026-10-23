@@ -1002,6 +1002,15 @@ button:disabled {
   font-size: 13px;
 }
 
+.app-submenu-permanente .app-menu-enlace {
+  min-height: 40px;
+  font-weight: 500;
+}
+
+.app-submenu-permanente .app-menu-enlace[aria-current="page"] {
+  font-weight: 600;
+}
+
 .app-lateral[data-compacto="true"] .app-menu-texto,
 .app-lateral[data-compacto="true"] .app-submenu {
   display: none;
@@ -1023,6 +1032,7 @@ button:disabled {
   min-height: 100vh;
   flex-direction: column;
   margin-left: var(--lateral-ancho);
+  transition: margin-left var(--transicion);
 }
 
 .app-cabecera {
@@ -1108,6 +1118,10 @@ button:disabled {
 .app-pie-version { padding-left: 18px; border-left: 1px solid rgb(242 246 251 / 30%); white-space: nowrap; }
 
 .app-boton-menu {
+  position: fixed;
+  top: calc((var(--cabecera-alto) - 42px) / 2);
+  left: calc((var(--lateral-ancho) - 42px) / 2);
+  z-index: 50;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1155,7 +1169,7 @@ button:disabled {
 
   .app-cabecera {
     height: var(--cabecera-alto);
-    padding: 0 16px;
+    padding: 0 16px 0 var(--lateral-ancho);
   }
 
   .app-cabecera-fecha { font-size: 11px; line-height: 1.5; }
@@ -1194,21 +1208,35 @@ button:disabled {
 }
 
 @media (min-width: 761px) {
+  .app-boton-menu {
+    position: fixed;
+    top: calc(var(--cabecera-alto) + 8px);
+    left: calc((var(--lateral-ancho) - 42px) / 2);
+    z-index: 50;
+    background: var(--lateral-fondo);
+    color: var(--lateral-texto-fuerte);
+  }
+
+  .app-boton-menu:hover {
+    background: var(--acento-suave);
+  }
+
+  .app-lateral-logo {
+    justify-content: flex-start;
+    padding-left: calc((var(--lateral-ancho) - 48px) / 2);
+  }
+
+  .app-lateral-logo span { flex-shrink: 0; }
+  .app-menu { padding-top: 64px; }
+  .app-fondo-oscuro { display: none; }
+
+  .app-lateral[data-abierto="true"] ~ .app-principal {
+    margin-left: var(--lateral-ancho-abierto);
+  }
+
   .app-lateral[data-abierto="false"] {
     transform: none;
   }
-
-  .app-lateral[data-compacto="true"][data-retraido="false"]:focus-within { width: var(--lateral-ancho-abierto); }
-  .app-lateral[data-compacto="true"][data-retraido="false"]:focus-within .app-menu-texto { display: inline; }
-  .app-lateral[data-compacto="true"][data-retraido="false"]:focus-within .app-submenu { display: flex; }
-  .app-lateral[data-compacto="true"][data-retraido="false"]:focus-within .insignia-menu { position: static; margin-left: auto; padding: 1px 6px; }
-}
-
-@media (min-width: 761px) and (hover: hover) and (pointer: fine) {
-  .app-lateral[data-compacto="true"][data-retraido="false"]:hover { width: var(--lateral-ancho-abierto); }
-  .app-lateral[data-compacto="true"][data-retraido="false"]:hover .app-menu-texto { display: inline; }
-  .app-lateral[data-compacto="true"][data-retraido="false"]:hover .app-submenu { display: flex; }
-  .app-lateral[data-compacto="true"][data-retraido="false"]:hover .insignia-menu { position: static; margin-left: auto; padding: 1px 6px; }
 }
 
 /* Utilidades de color basadas en los tokens, para usar junto a las utilidades de Tailwind. */

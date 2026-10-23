@@ -23,19 +23,48 @@ vi.mock("@/app/usuarios/acciones", () => ({ crearUsuarioAccion: vi.fn() }));
 vi.mock("@/servicios/servicio-activos", () => ({ crearActivo: vi.fn(), listarActivosPaginados: vi.fn() }));
 
 beforeEach(() => {
+  vi.unstubAllGlobals();
   pathname.valor = "/clientes";
   alertas.valor = null;
   Object.values(s).forEach((f) => f.mockReset());
 });
 
 describe("EstructuraAplicacion: navegación de escritorio", () => {
-  it("marca la sección actual con aria-current y no expande submenús ajenos", () => {
+  it("mantiene el menú expandido al navegar y salir con el puntero hasta contraerlo con el botón", () => {
+    vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true })));
+    const { rerender } = render(<EstructuraAplicacion>x</EstructuraAplicacion>);
+    fireEvent.click(screen.getByRole("button", { name: "Abrir menú" }));
+    const lateral = document.getElementById("menu-lateral")!;
+    const botonMenu = screen.getByRole("button", { name: "Cerrar menú", expanded: true });
+    expect(botonMenu.parentElement).toBe(lateral.parentElement);
+    fireEvent.pointerLeave(lateral);
+    fireEvent.keyDown(document, { key: "Escape" });
+    const enlace = within(screen.getByRole("navigation", { name: "Navegación principal" })).getByRole("link", { name: "Usuarios" });
+    enlace.addEventListener("click", (evento) => evento.preventDefault());
+    fireEvent.click(enlace);
+    pathname.valor = "/usuarios";
+    rerender(<EstructuraAplicacion>usuarios</EstructuraAplicacion>);
+    expect(lateral).toHaveAttribute("data-abierto", "true");
+    expect(lateral).toHaveAttribute("data-compacto", "false");
+    fireEvent.click(screen.getByRole("button", { name: "Cerrar menú", expanded: true }));
+    expect(lateral).toHaveAttribute("data-abierto", "false");
+    fireEvent.pointerEnter(lateral);
+    fireEvent.focus(within(lateral).getByRole("link", { name: "Clientes" }));
+    expect(lateral).toHaveAttribute("data-abierto", "false");
+    expect(screen.getByRole("button", { name: "Abrir menú" })).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("marca la sección actual y mantiene los subítems de Activos disponibles desde otras secciones", () => {
     render(<EstructuraAplicacion>x</EstructuraAplicacion>);
     const menu = screen.getByRole("navigation", { name: "Navegación principal" });
     expect(within(menu).getByRole("link", { name: "Clientes" })).toHaveAttribute("aria-current", "page");
-    expect(within(menu).getByRole("link", { name: "Activos" })).not.toHaveAttribute("aria-current");
-    expect(within(menu).getByRole("link", { name: "Activos" })).toHaveAttribute("aria-expanded", "false");
-    expect(within(menu).queryByRole("link", { name: "Modelos de máquina" })).not.toBeInTheDocument();
+    const enlacesActivos = within(menu).getAllByRole("link", { name: "Activos" });
+    expect(enlacesActivos).toHaveLength(2);
+    enlacesActivos.forEach((enlace) => expect(enlace).not.toHaveAttribute("aria-current"));
+    expect(enlacesActivos[0]).not.toHaveAttribute("aria-expanded");
+    expect(within(menu).getByRole("link", { name: "Modelos de máquina" })).toHaveAttribute("href", "/activos/modelos");
+    expect(within(menu).getByRole("link", { name: "Tipos de máquina" })).toHaveAttribute("href", "/activos/tipos");
+    expect(within(menu).queryByRole("link", { name: "Movimientos de stock" })).not.toBeInTheDocument();
   });
 
   it.each([
@@ -95,9 +124,8 @@ describe("EstructuraAplicacion: navegación de escritorio", () => {
     fireEvent.click(enlace);
     expect(screen.getByRole("button", { name: "Abrir menú" })).toBeInTheDocument();
     const lateral = document.getElementById("menu-lateral");
-    expect(lateral).toHaveAttribute("data-retraido", "true");
     fireEvent.pointerEnter(lateral!);
-    expect(lateral).toHaveAttribute("data-retraido", "false");
+    expect(lateral).toHaveAttribute("data-abierto", "false");
   });
 
   it("incluye «Configuración > Términos y condiciones» en el menú y el enlace en el pie", () => {

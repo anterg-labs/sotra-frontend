@@ -53,9 +53,9 @@ describe("permisos en la interfaz", () => {
 
   it.each([
     [["tecnico"], ["/ordenes-trabajo", "/clientes", "/activos", "/documentacion-tecnica"]],
-    [["jefe_mantenimiento"], ["/ordenes-trabajo", "/clientes", "/activos", "/documentacion-tecnica", "/usuarios", "/reportes"]],
+    [["jefe_mantenimiento"], ["/inicio", "/ordenes-trabajo", "/reportes", "/clientes", "/activos", "/documentacion-tecnica", "/usuarios"]],
     [["panolero"], ["/ordenes-trabajo", "/clientes", "/activos", "/repuestos"]],
-    [["administrador"], ["/ordenes-trabajo", "/clientes", "/activos", "/repuestos", "/documentacion-tecnica", "/usuarios", "/reportes", "/configuracion"]],
+    [["administrador"], ["/inicio", "/ordenes-trabajo", "/reportes", "/clientes", "/activos", "/repuestos", "/documentacion-tecnica", "/usuarios", "/configuracion"]],
   ] as const)("menú de %j", (roles, rutas) => {
     expect(filtrarMenuPorRoles(roles).map((elemento) => elemento.ruta)).toEqual(rutas);
   });
@@ -70,7 +70,8 @@ describe("permisos en la interfaz", () => {
     expect(within(screen.getByRole("banner")).getByRole("button", { name: "Menú de usuario: Ana Pérez" })).toHaveTextContent("Ana Pérez");
     const menu = within(screen.getByRole("navigation", { name: "Navegación principal" }));
     expect(menu.getAllByRole("link").map((enlace) => enlace.getAttribute("href"))).toEqual([
-      "/ordenes-trabajo", "/clientes", "/activos", "/documentacion-tecnica", "/usuarios", "/reportes",
+      "/inicio", "/ordenes-trabajo", "/reportes", "/clientes", "/activos", "/activos", "/activos/modelos", "/activos/tipos",
+      "/documentacion-tecnica", "/usuarios",
     ]);
     expect(consultarAlertas).toHaveBeenCalledWith(false);
     cleanup();

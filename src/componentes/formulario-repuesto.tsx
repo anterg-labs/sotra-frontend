@@ -52,9 +52,9 @@ export function FormularioRepuesto(props: PropiedadesFormularioRepuesto) {
     enviar({
       codigo,
       nombre,
-      descripcion,
-      marca,
-      ubicacion,
+      descripcion: descripcion.trim() === "" ? null : descripcion,
+      marca: marca.trim() === "" ? null : marca,
+      ubicacion: ubicacion.trim() === "" ? null : ubicacion,
       cantidad: numeroODesconocido(cantidad),
       cantidadMinima: numeroODesconocido(cantidadMinima),
     });

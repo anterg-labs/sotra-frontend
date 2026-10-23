@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.17 (2026-10-23)
+
+- Formularios: los campos opcionales vacíos de repuestos y órdenes se envían como nulos para que la API los procese correctamente.
+
 ## Version 1.0.16 (2026-10-23)
 
 - Pruebas: se actualizan las comprobaciones de reenvío de correo y los datos de teléfonos de los formularios para reflejar el comportamiento vigente.

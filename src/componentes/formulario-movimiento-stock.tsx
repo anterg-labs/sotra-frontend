@@ -5,6 +5,7 @@ import { registrarAjusteStockAccion, registrarEgresoStockAccion } from "@/app/re
 import { useFormularioAccion } from "@/componentes/use-formulario-accion";
 import type { MovimientoStock } from "@/tipos/movimiento-stock";
 import { obtenerErroresAjusteStock, obtenerErroresEgresoStock } from "@/validaciones/movimiento-stock";
+import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
 type PropiedadesFormularioMovimientoStock = {
   tipo: "egreso" | "ajuste";
@@ -108,7 +109,7 @@ export function FormularioMovimientoStock(props: PropiedadesFormularioMovimiento
         <label htmlFor={"observaciones-" + tipo}>Observaciones adicionales</label>
         <textarea id={"observaciones-" + tipo} onChange={(evento) => setObservaciones(evento.target.value)} rows={2} value={observaciones} />
       </div>
-      {errorGeneral ? <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p> : null}
+      {errorGeneral ? <AvisoEnLinea ref={referenciaErrorGeneral}>{errorGeneral}</AvisoEnLinea> : null}
       <div className="form-actions">
         <button className="secondary-button" onClick={alCancelar} type="button">Cancelar</button>
         <button className="primary-button" disabled={estaEnviando} type="submit">

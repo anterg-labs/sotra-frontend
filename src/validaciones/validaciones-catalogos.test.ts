@@ -75,7 +75,7 @@ describe("validarCliente", () => {
     const errores = validarCliente({ ...clienteValido, correo: "sin-arroba", telefono: "abc" });
     expect(errores.correo).toBeDefined();
     expect(errores.telefono).toBeDefined();
-    expect(validarCliente({ ...clienteValido, correo: "a@b.com", telefono: "099123456" })).toEqual({});
+    expect(validarCliente({ ...clienteValido, correo: "a@b.com", telefono: "99123456" })).toEqual({});
   });
 });
 

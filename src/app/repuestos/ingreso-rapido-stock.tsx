@@ -11,6 +11,7 @@ import type { MovimientoStock } from "@/tipos/movimiento-stock";
 import type { Repuesto } from "@/tipos/repuesto";
 import { obtenerErroresIngresoStock } from "@/validaciones/movimiento-stock";
 import { registrarIngresoStockAccion } from "./acciones";
+import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
 type DatosIngresoRapido = { repuestoId: string; cantidad: number };
 
@@ -111,7 +112,7 @@ export function IngresoRapidoStock() {
             </p>
             {errores.cantidad ? <p className="field-error" id={IDS_CAMPOS.cantidad + "-error"} role="alert">{errores.cantidad}</p> : null}
           </div>
-          {errorGeneral ? <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p> : null}
+          {errorGeneral ? <AvisoEnLinea ref={referenciaErrorGeneral}>{errorGeneral}</AvisoEnLinea> : null}
           <div className="form-actions">
             <button className="secondary-button" onClick={() => setEstaAbierto(false)} type="button">Cancelar</button>
             <button className="primary-button" disabled={estaEnviando} type="submit">

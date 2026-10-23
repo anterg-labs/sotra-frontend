@@ -12,6 +12,7 @@ import type { IngresoStockInput, MovimientoStock } from "@/tipos/movimiento-stoc
 import type { Repuesto } from "@/tipos/repuesto";
 import { obtenerErroresIngresoStock } from "@/validaciones/movimiento-stock";
 import { registrarIngresoStockAccion } from "../acciones";
+import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
 const idsCamposIngreso: Record<string, string> = {
   cantidad: "cantidadIngreso",
@@ -182,7 +183,7 @@ export function PanelStock(props: { repuesto: Repuesto; abrirIngreso: boolean })
             <label htmlFor="observacionesIngreso">Observaciones adicionales</label>
             <textarea id="observacionesIngreso" onChange={(evento) => setObservaciones(evento.target.value)} rows={2} value={observaciones} />
           </div>
-          {errorGeneral ? <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p> : null}
+          {errorGeneral ? <AvisoEnLinea ref={referenciaErrorGeneral}>{errorGeneral}</AvisoEnLinea> : null}
           <div className="form-actions">
             <button className="secondary-button" onClick={() => setMostrarFormulario(false)} type="button">
               Cancelar

@@ -11,6 +11,7 @@ import type { GuardarModeloMaquinaInput, ModeloMaquina } from "@/tipos/modelo-ma
 import type { ResultadoGuardar } from "@/tipos/resultado-accion";
 import type { TipoMaquina } from "@/tipos/tipo-maquina";
 import { validarNombreCatalogo, validarTipoMaquinaSeleccionado } from "@/validaciones/maquinaria";
+import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
 type PropiedadesFormularioModeloMaquina = {
   modeloMaquinaInicial?: ModeloMaquina;
@@ -72,7 +73,7 @@ export function FormularioModeloMaquina(props: PropiedadesFormularioModeloMaquin
       {modeloMaquinaInicial ? <InterruptorActivo alCambiar={setEstaActivo} estaActivo={estaActivo} /> : null}
 
       {errorGeneral ? (
-        <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p>
+        <AvisoEnLinea ref={referenciaErrorGeneral}>{errorGeneral}</AvisoEnLinea>
       ) : null}
 
       <div className="form-grid">

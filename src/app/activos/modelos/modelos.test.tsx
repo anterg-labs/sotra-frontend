@@ -120,7 +120,7 @@ describe("tabla de modelos (baja)", () => {
 
   it("pide confirmación y llama a la acción; cancelar no la llama", async () => {
     cambiarEstadoModeloMaquinaAccion.mockResolvedValue({ exito: true });
-    render(<TablaModelos modelos={modelos} />);
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaModelos modelos={modelos} filtros={{ buscar: "", tipoMaquinaId: "", estado: "", pagina: 1 }} /></ProveedorNavegacionListado>);
     fireEvent.click(screen.getByRole("button", { name: "Dar de baja" }));
     fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
     expect(cambiarEstadoModeloMaquinaAccion).not.toHaveBeenCalled();
@@ -134,10 +134,10 @@ describe("tabla de modelos (baja)", () => {
 
   it("muestra el error si falla y resalta el modelo recién creado", async () => {
     cambiarEstadoModeloMaquinaAccion.mockResolvedValue({ exito: false, mensaje: "No se pudo dar de baja el modelo de máquina seleccionado." });
-    render(<TablaModelos modelos={modelos} />);
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaModelos modelos={modelos} filtros={{ buscar: "", tipoMaquinaId: "", estado: "", pagina: 1 }} /></ProveedorNavegacionListado>);
     fireEvent.click(screen.getByRole("button", { name: "Dar de baja" }));
     fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Dar de baja" }));
-    expect(await screen.findByText("No se pudo dar de baja el modelo de máquina seleccionado.")).toBeInTheDocument();
+    await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("error", "No se pudo dar de baja el modelo de máquina seleccionado."));
     act(() => marcarCreado("modelos-maquina", 2));
     expect(screen.getAllByRole("row")[2]).toHaveClass("fila-nueva");
   });

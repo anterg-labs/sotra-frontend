@@ -13,6 +13,7 @@ import type { Cliente } from "@/tipos/cliente";
 import type { ModeloMaquina } from "@/tipos/modelo-maquina";
 import type { ResultadoGuardar } from "@/tipos/resultado-accion";
 import { validarActivo } from "@/validaciones/activo";
+import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
 type PropiedadesFormularioActivo = {
   activoInicial?: Activo;
@@ -114,7 +115,7 @@ export function FormularioActivo(props: PropiedadesFormularioActivo) {
       {activoInicial ? <InterruptorActivo alCambiar={setEstaActivo} estaActivo={estaActivo} /> : null}
 
       {errorGeneral ? (
-        <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p>
+        <AvisoEnLinea ref={referenciaErrorGeneral}>{errorGeneral}</AvisoEnLinea>
       ) : null}
 
       <div className="form-grid">

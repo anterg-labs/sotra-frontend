@@ -38,7 +38,7 @@ export async function ListadoMovimientos(props: { filtros: FiltrosMovimientosSto
   return (
     <>
       <InformarResultados total={pagina.totalElementos} />
-      <TablaMovimientos filtros={filtros} movimientos={pagina.elementos} />
+      <TablaMovimientos filtros={filtros} movimientos={pagina.elementos} unaSolaPagina={pagina.totalPaginas <= 1} />
       <PaginacionListado
         filtros={filtrosSinPagina}
         pagina={pagina.pagina}

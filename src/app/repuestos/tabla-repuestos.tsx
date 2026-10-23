@@ -1,47 +1,61 @@
 "use client";
 
-import { EncabezadoOrdenable } from "@/componentes/listado/encabezado-ordenable";
-import { construirUrlRepuestos } from "./filtros";
-
 import Link from "next/link";
-import { useState } from "react";
 import { avisarStockActualizado } from "@/hooks/use-alertas-stock";
-import { useAvisos } from "@/componentes/avisos";
 import { IconoLapiz, IconoOjo, IconoPapelera, IconoReactivar } from "@/componentes/iconos";
 import { BarraNivelStock, InsigniaStock } from "@/componentes/indicador-stock";
+import { EncabezadoOrdenable } from "@/componentes/listado/encabezado-ordenable";
 import { EstadoRegistro } from "@/componentes/listado/estado-registro";
 import { useUltimoCreado } from "@/componentes/listado/ultimo-creado";
-import { useCambioEstado } from "@/componentes/listado/use-cambio-estado";
-import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
+import { useCambioEstadoConfirmado } from "@/componentes/listado/use-cambio-estado-confirmado";
 import type { Repuesto } from "@/tipos/repuesto";
-import type { FiltrosUrlRepuestos } from "./filtros";
 import { cambiarEstadoRepuestoAccion } from "./acciones";
+import { construirUrlRepuestos, type FiltrosUrlRepuestos } from "./filtros";
+import { ContenedorTabla } from "@/componentes/contenedor-tabla";
+import { useFilasConOrdenInstantaneo } from "@/componentes/listado/orden-instantaneo";
+import type { ValorOrdenable } from "@/componentes/listado/orden-local";
+
+/** Cómo ordenar las filas que ya están en pantalla (misma clave que `ordenarPor` de la API). */
+const VALORES_ORDEN = {
+  codigo: (fila: Repuesto): ValorOrdenable => fila.codigo,
+  nombre: (fila: Repuesto): ValorOrdenable => fila.nombre,
+  marca: (fila: Repuesto): ValorOrdenable => fila.marca,
+  ubicacion: (fila: Repuesto): ValorOrdenable => fila.ubicacion,
+  cantidad: (fila: Repuesto): ValorOrdenable => fila.cantidad,
+  cantidadMinima: (fila: Repuesto): ValorOrdenable => fila.cantidadMinima,
+  estado: (fila: Repuesto): ValorOrdenable => fila.estado === "activo",
+};
 
 /** Tabla del listado: recibe los repuestos ya cargados en el servidor y maneja baja y reactivación. */
-export function TablaRepuestos(props: { repuestos: Repuesto[]; filtros?: FiltrosUrlRepuestos }) {
+export function TablaRepuestos(props: { repuestos: Repuesto[]; filtros: FiltrosUrlRepuestos; unaSolaPagina?: boolean }) {
+  const repuestos = useFilasConOrdenInstantaneo(props.repuestos, VALORES_ORDEN, props.unaSolaPagina ?? false);
   const { filtros } = props;
   const columna = (clave: string, etiqueta: string) => (
     <EncabezadoOrdenable
       columna={clave}
-      construirUrl={(orden) => construirUrlRepuestos({ ...filtros, ...orden, pagina: 1 } as FiltrosUrlRepuestos)}
+      construirUrl={(orden) => construirUrlRepuestos({ ...filtros, ...orden, pagina: 1 })}
       etiqueta={etiqueta}
       orden={filtros}
     />
   );
-  const { mostrarAviso } = useAvisos();
-  const [repuestoPendienteBaja, setRepuestoPendienteBaja] = useState<Repuesto | null>(null);
 
-  const { enProcesoId, error, ejecutar } = useCambioEstado(cambiarEstadoRepuestoAccion, (_id, estado) => {
-    setRepuestoPendienteBaja(null);
-    if (estado === "activo") mostrarAviso("exito", "Repuesto reactivado.");
-    avisarStockActualizado();
+  const { enProcesoId, pedirBaja, pedirReactivacion, modales } = useCambioEstadoConfirmado<Repuesto>(cambiarEstadoRepuestoAccion, {
+    mensajeBaja: "Repuesto dado de baja.",
+    tituloBaja: "Dar de baja repuesto",
+    descripcionBaja: (repuesto) =>
+      "¿Confirmás la baja de " + repuesto.nombre + "? El repuesto no se elimina, pero ya no se podrá asociar a nuevas órdenes de trabajo.",
+    reactivacion: {
+      mensaje: "Repuesto reactivado.",
+      titulo: "Reactivar repuesto",
+      descripcion: (repuesto) => "¿Confirmás la reactivación de " + repuesto.nombre + "? Volverá a poder asociarse a órdenes de trabajo.",
+    },
+    alExito: () => avisarStockActualizado(),
   });
   const nuevoId = useUltimoCreado("repuestos");
 
   return (
     <>
-      {error ? <p className="form-error-banner">{error}</p> : null}
-      <div className="table-container">
+      <ContenedorTabla etiqueta="Listado de repuestos">
         <table>
           <thead>
             <tr>
@@ -56,7 +70,7 @@ export function TablaRepuestos(props: { repuestos: Repuesto[]; filtros?: Filtros
             </tr>
           </thead>
           <tbody>
-            {props.repuestos.map((repuesto) => {
+            {repuestos.map((repuesto) => {
               const estaActivo = repuesto.estado === "activo";
               const estaOcupado = enProcesoId === repuesto.id;
               const clases = [
@@ -101,7 +115,7 @@ export function TablaRepuestos(props: { repuestos: Repuesto[]; filtros?: Filtros
                           aria-label="Dar de baja"
                           className="boton-icono boton-icono-peligro"
                           disabled={estaOcupado}
-                          onClick={() => setRepuestoPendienteBaja(repuesto)}
+                          onClick={() => pedirBaja(repuesto)}
                           title="Dar de baja"
                           type="button"
                         >
@@ -112,7 +126,7 @@ export function TablaRepuestos(props: { repuestos: Repuesto[]; filtros?: Filtros
                           aria-label="Reactivar repuesto"
                           className="boton-icono"
                           disabled={estaOcupado}
-                          onClick={() => ejecutar(repuesto.id, "activo")}
+                          onClick={() => pedirReactivacion(repuesto)}
                           title="Reactivar repuesto"
                           type="button"
                         >
@@ -126,22 +140,9 @@ export function TablaRepuestos(props: { repuestos: Repuesto[]; filtros?: Filtros
             })}
           </tbody>
         </table>
-      </div>
+      </ContenedorTabla>
 
-      {repuestoPendienteBaja ? (
-        <ModalConfirmacion
-          descripcion={
-            "¿Confirmás la baja de " +
-            repuestoPendienteBaja.nombre +
-            "? El repuesto no se elimina, pero ya no se podrá asociar a nuevas órdenes de trabajo."
-          }
-          estaConfirmando={enProcesoId === repuestoPendienteBaja.id}
-          etiquetaConfirmar="Dar de baja"
-          onCancelar={() => setRepuestoPendienteBaja(null)}
-          onConfirmar={() => ejecutar(repuestoPendienteBaja.id, "inactivo")}
-          titulo="Dar de baja repuesto"
-        />
-      ) : null}
+      {modales}
     </>
   );
 }

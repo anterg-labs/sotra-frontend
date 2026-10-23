@@ -281,6 +281,14 @@ describe("servicio-ordenes-trabajo", () => {
     });
   });
 
+  it("rechaza descripción y observaciones de más de 4000 caracteres", () => {
+    expect(obtenerErroresOrdenTrabajo({ ...orden, descripcion: "a".repeat(4000), observaciones: "b".repeat(4000) })).toEqual({});
+    expect(obtenerErroresOrdenTrabajo({ ...orden, descripcion: "a".repeat(4001), observaciones: "b".repeat(4001) })).toEqual({
+      descripcion: "La descripción no puede superar los 4000 caracteres.",
+      observaciones: "Las observaciones no pueden superar los 4000 caracteres.",
+    });
+  });
+
   it("crea y actualiza con validación, y envía If-Match entre comillas si hay versión", async () => {
     const { llamadas } = simularFetch(() => ({ cuerpo: { id: 1 } }));
     await expect(crearOrdenTrabajo({ ...orden, activoId: 0 })).rejects.toThrow("activo");

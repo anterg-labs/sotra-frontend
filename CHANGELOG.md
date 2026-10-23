@@ -1,8 +1,28 @@
 # CHANGELOG
 
-## Version 1.0.29 (2026-10-23)
+## Version 1.0.34 (2026-10-23)
 
 - Seguridad: se fijan Node.js 24.22.1 para CI y uso directo, y Node.js 26.12.1 para las imágenes Docker de desarrollo y producción, por CVE-2026-111497.
+
+## Version 1.0.33 (2026-10-23)
+
+- Integración: se reúnen las correcciones del celular, el correo y los formularios con los cambios posteriores de listados, stock, documentos y navegación.
+
+## Version 1.0.32 (2026-10-23)
+
+- Listados: el orden elegido en clientes y usuarios llega a la API. Los formularios muestran avisos en línea y las observaciones vacías de las órdenes se envían como dato opcional.
+
+## Version 1.0.31 (2026-10-23)
+
+- Órdenes y stock: los listados ordenan las filas visibles de inmediato, muestran el resultado de las acciones con claridad y actualizan los formularios de repuestos y movimientos.
+
+## Version 1.0.30 (2026-10-23)
+
+- Activos y catálogos: los listados ordenan las filas visibles de inmediato y confirman los cambios de estado; los formularios y filtros muestran errores más claros.
+
+## Version 1.0.29 (2026-10-23)
+
+- Tablas: el detalle de repuestos y los reportes permiten ordenar los movimientos, las órdenes y los grupos de datos; el detalle enlaza al historial completo.
 
 ## Version 1.0.28 (2026-10-23)
 

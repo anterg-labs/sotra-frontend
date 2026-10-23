@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { Combobox } from "./combobox";
 
@@ -25,6 +25,56 @@ function dibujar(valor = "", buscarOpciones?: (consulta: string) => Promise<type
 }
 
 describe("Combobox", () => {
+  it("no selecciona opciones locales con Enter mientras espera la búsqueda remota", async () => {
+    const buscarOpciones = vi.fn().mockResolvedValue([{ valor: "4", etiqueta: "Álamo remoto" }]);
+    const alCambiar = dibujar("", buscarOpciones);
+    const entrada = screen.getByRole("combobox", { name: "Activo" });
+    fireEvent.change(entrada, { target: { value: "alamo" } });
+    fireEvent.keyDown(entrada, { key: "Enter" });
+    expect(alCambiar).not.toHaveBeenCalled();
+    expect(screen.getByText("Buscando…")).toBeInTheDocument();
+    expect(await screen.findByRole("option", { name: "Álamo remoto" })).toBeInTheDocument();
+    fireEvent.keyDown(entrada, { key: "Enter" });
+    expect(alCambiar).toHaveBeenCalledExactlyOnceWith("4");
+  });
+
+  it("descarta respuestas anteriores cuando cambia el texto", async () => {
+    let resolverAnterior!: (resultados: typeof opciones) => void;
+    const buscarOpciones = vi.fn()
+      .mockImplementationOnce(() => new Promise<typeof opciones>((resolver) => { resolverAnterior = resolver; }))
+      .mockResolvedValue([{ valor: "4", etiqueta: "Fresno" }]);
+    dibujar("", buscarOpciones);
+    const entrada = screen.getByRole("combobox", { name: "Activo" });
+    fireEvent.change(entrada, { target: { value: "cedro" } });
+    await waitFor(() => expect(buscarOpciones).toHaveBeenCalledWith("cedro"));
+    fireEvent.change(entrada, { target: { value: "fresno" } });
+    expect(await screen.findByRole("option", { name: "Fresno" })).toBeInTheDocument();
+    await act(async () => resolverAnterior([{ valor: "2", etiqueta: "Cedro" }]));
+    expect(screen.queryByRole("option", { name: "Cedro" })).not.toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Fresno" })).toBeInTheDocument();
+  });
+
+  it("no ofrece resultados del cliente anterior cuando cambia la búsqueda dependiente", async () => {
+    const alCambiar = vi.fn();
+    const buscarAnterior = vi.fn().mockResolvedValue([{ valor: "4", etiqueta: "Activo del cliente anterior" }]);
+    const buscarNuevo = vi.fn().mockResolvedValue([{ valor: "5", etiqueta: "Activo del cliente nuevo" }]);
+    const { rerender } = render(<Combobox alCambiar={alCambiar} buscarOpciones={buscarAnterior} etiqueta="Activo" id="activo" opciones={[]} valor="" />);
+    const entrada = screen.getByRole("combobox", { name: "Activo" });
+    fireEvent.focus(entrada);
+    expect(await screen.findByRole("option", { name: "Activo del cliente anterior" })).toBeInTheDocument();
+    rerender(<Combobox alCambiar={alCambiar} buscarOpciones={buscarNuevo} etiqueta="Activo" id="activo" opciones={[]} valor="" />);
+    expect(screen.queryByRole("option", { name: "Activo del cliente anterior" })).not.toBeInTheDocument();
+    fireEvent.keyDown(entrada, { key: "Enter" });
+    expect(alCambiar).not.toHaveBeenCalled();
+    expect(await screen.findByRole("option", { name: "Activo del cliente nuevo" })).toBeInTheDocument();
+  });
+
+  it("distingue un fallo del servidor de una búsqueda sin coincidencias", async () => {
+    dibujar("", vi.fn().mockRejectedValue(new Error("Sin conexión")));
+    fireEvent.focus(screen.getByRole("combobox", { name: "Activo" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("No se pudieron cargar las opciones");
+    expect(screen.queryByText("Sin resultados")).not.toBeInTheDocument();
+  });
   it("filtra ignorando tildes y elige una opción con el teclado", () => {
     const alCambiar = dibujar();
     const entrada = screen.getByRole("combobox", { name: "Activo" });

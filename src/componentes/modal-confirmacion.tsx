@@ -1,5 +1,7 @@
 "use client";
 
+import { useId } from "react";
+
 type ModalConfirmacionProps = {
   titulo: string;
   descripcion: string;
@@ -11,6 +13,7 @@ type ModalConfirmacionProps = {
 };
 
 export function ModalConfirmacion(props: ModalConfirmacionProps) {
+  const idTitulo = useId();
   const titulo = props.titulo;
   const descripcion = props.descripcion;
   const etiquetaConfirmar = props.etiquetaConfirmar;
@@ -37,13 +40,13 @@ export function ModalConfirmacion(props: ModalConfirmacionProps) {
   return (
     <div className="modal-overlay" onClick={onCancelar} role="presentation">
       <div
-        aria-labelledby="titulo-modal-confirmacion"
+        aria-labelledby={idTitulo}
         aria-modal="true"
         className="modal-panel"
         onClick={detenerPropagacion}
         role="dialog"
       >
-        <h2 id="titulo-modal-confirmacion">{titulo}</h2>
+        <h2 id={idTitulo}>{titulo}</h2>
         <p>{descripcion}</p>
         <div className="form-actions">
           <button className="secondary-button" disabled={estaConfirmando} onClick={onCancelar} type="button">

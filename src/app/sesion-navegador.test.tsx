@@ -95,18 +95,21 @@ describe("restablecer contraseña", () => {
   it("pide confirmación, envía el correo y avisa", async () => {
     restablecerContrasenaAccion.mockResolvedValue({ exito: true });
     render(<BotonRestablecerContrasena correo="ana@sotra.test" usuarioId={5} />);
-    fireEvent.click(screen.getByRole("button", { name: "Restablecer contraseña" }));
-    fireEvent.click(screen.getByRole("button", { name: "Enviar correo" }));
-    await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("exito", "Se envió un correo a ana@sotra.test para que elija una contraseña nueva."));
+    fireEvent.click(screen.getByRole("button", { name: "Reenviar enlace de contraseña" }));
+    fireEvent.click(screen.getByRole("button", { name: "Enviar enlace" }));
+    await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("exito", "Se envió el enlace a ana@sotra.test para que modifique su contraseña."));
     expect(restablecerContrasenaAccion).toHaveBeenCalledWith(5);
   });
 
-  it("muestra el mensaje del 409 (sin acceso o inactivo) o del 502 de Keycloak", async () => {
-    restablecerContrasenaAccion.mockResolvedValue({ exito: false, mensaje: "El usuario no tiene acceso al sistema: no está registrado en Keycloak." });
+  it.each([
+    "El usuario no tiene acceso al sistema: no está registrado en Keycloak.",
+    "No se pudo enviar el correo.",
+  ])("muestra el error de reenvío sin anunciar éxito: %s", async (mensaje) => {
+    restablecerContrasenaAccion.mockResolvedValue({ exito: false, mensaje });
     render(<BotonRestablecerContrasena correo="juan@sotra.test" usuarioId={25} />);
-    fireEvent.click(screen.getByRole("button", { name: "Restablecer contraseña" }));
-    fireEvent.click(screen.getByRole("button", { name: "Enviar correo" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("no está registrado en Keycloak");
+    fireEvent.click(screen.getByRole("button", { name: "Reenviar enlace de contraseña" }));
+    fireEvent.click(screen.getByRole("button", { name: "Enviar enlace" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(mensaje);
     expect(mostrarAviso).not.toHaveBeenCalled();
   });
 });

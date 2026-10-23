@@ -2,7 +2,8 @@
 
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 
-type TipoAviso = "exito" | "error" | "info";
+/** Verde: se hizo. Rojo: falló. Amarillo: ojo con esto. Azul: información. */
+export type TipoAviso = "exito" | "error" | "advertencia" | "info";
 
 type Aviso = {
   id: number;
@@ -15,8 +16,14 @@ type ContextoAvisos = {
 };
 
 const DURACION_MS = 5000;
+/** Un error se lee con más calma: queda más tiempo en pantalla. */
+const DURACION_ERROR_MS = 8000;
 const ContextoDeAvisos = createContext<ContextoAvisos>({ mostrarAviso: () => undefined });
 
+/**
+ * Avisos (toasts) de toda la aplicación: siempre arriba a la derecha, con el color del resultado, y se cierran solos.
+ * Los errores usan `role="alert"` (se anuncian de inmediato); el resto, la región de estado.
+ */
 export function ProveedorDeAvisos(props: { children: React.ReactNode }) {
   const [avisos, setAvisos] = useState<Aviso[]>([]);
 
@@ -28,7 +35,7 @@ export function ProveedorDeAvisos(props: { children: React.ReactNode }) {
     (tipo: TipoAviso, texto: string) => {
       const id = Date.now() + Math.random();
       setAvisos((actuales) => [...actuales, { id, tipo, texto }]);
-      window.setTimeout(() => cerrarAviso(id), DURACION_MS);
+      window.setTimeout(() => cerrarAviso(id), tipo === "error" ? DURACION_ERROR_MS : DURACION_MS);
     },
     [cerrarAviso],
   );
@@ -40,14 +47,13 @@ export function ProveedorDeAvisos(props: { children: React.ReactNode }) {
       {props.children}
       <div aria-live="polite" className="avisos-contenedor" role="status">
         {avisos.map((aviso) => (
-          <div className={"aviso aviso-" + aviso.tipo} key={aviso.id}>
+          <div
+            className={"aviso aviso-" + aviso.tipo}
+            key={aviso.id}
+            role={aviso.tipo === "error" ? "alert" : undefined}
+          >
             <span>{aviso.texto}</span>
-            <button
-              aria-label="Cerrar aviso"
-              className="aviso-cerrar"
-              onClick={() => cerrarAviso(aviso.id)}
-              type="button"
-            >
+            <button aria-label="Cerrar aviso" className="aviso-cerrar" onClick={() => cerrarAviso(aviso.id)} type="button">
               ✕
             </button>
           </div>

@@ -22,8 +22,21 @@ describe("validarTelefono", () => {
     expect(validarTelefono(valor)).toBeDefined();
   });
 
-  it("acepta solo dígitos", () => {
+  it("acepta 8 dígitos", () => {
     expect(validarTelefono("99123456")).toBeUndefined();
+    expect(validarTelefono("09912345")).toBeUndefined();
+  });
+
+  it.each(["099123456", "092624911"])("acepta el celular %j escrito con el 0 inicial (9 dígitos)", (valor) => {
+    expect(validarTelefono(valor)).toBeUndefined();
+  });
+
+  it.each(["1234567", "123456789", "0991234567"])("rechaza %j por no tener 8 dígitos (ni 9 empezando con 0)", (valor) => {
+    expect(validarTelefono(valor)).toBe("El campo teléfono debe tener 8 dígitos (o 9 si empieza con 0).");
+  });
+
+  it("avisa que solo admite dígitos antes de revisar el largo", () => {
+    expect(validarTelefono("1234567a")).toBe("El campo teléfono solo admite dígitos.");
   });
 });
 

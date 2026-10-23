@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.15 (2026-10-23)
+
+- Usuarios: el formulario acepta celulares con cero inicial y el alta muestra si el correo de Keycloak salió, falló o no correspondía; el reenvío muestra el error comunicado por la API.
+
 ## Version 1.0.14 (2026-10-23)
 
 - Integración: se corrige el archivo de dependencias para que la instalación del frontend en Linux y en CI incluya todos los paquetes necesarios.

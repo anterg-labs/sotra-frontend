@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useAvisos } from "@/componentes/avisos";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
 import { restablecerContrasenaAccion } from "./acciones";
+import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
 type PropiedadesBotonRestablecer = { usuarioId: number; correo: string };
 
-/** Reenvía el correo de Keycloak para elegir una contraseña nueva, después de confirmar. */
+/** Reenvía al correo de la persona el enlace de Keycloak para modificar su contraseña, después de confirmar. */
 export function BotonRestablecerContrasena(props: PropiedadesBotonRestablecer) {
   const { mostrarAviso } = useAvisos();
   const [estaConfirmando, setEstaConfirmando] = useState(false);
@@ -20,12 +21,12 @@ export function BotonRestablecerContrasena(props: PropiedadesBotonRestablecer) {
     try {
       const resultado = await restablecerContrasenaAccion(props.usuarioId);
       if (resultado.exito) {
-        mostrarAviso("exito", "Se envió un correo a " + props.correo + " para que elija una contraseña nueva.");
+        mostrarAviso("exito", "Se envió el enlace a " + props.correo + " para que modifique su contraseña.");
       } else {
         setError(resultado.mensaje);
       }
     } catch {
-      setError("No se pudo enviar el correo para restablecer la contraseña.");
+      setError("No se pudo enviar el enlace para modificar la contraseña.");
     } finally {
       setEstaEnviando(false);
       setEstaConfirmando(false);
@@ -35,17 +36,17 @@ export function BotonRestablecerContrasena(props: PropiedadesBotonRestablecer) {
   return (
     <>
       <button className="secondary-button" disabled={estaEnviando} onClick={() => setEstaConfirmando(true)} type="button">
-        Restablecer contraseña
+        Reenviar enlace de contraseña
       </button>
-      {error ? <p className="form-error-banner" role="alert">{error}</p> : null}
+      {error ? <AvisoEnLinea>{error}</AvisoEnLinea> : null}
       {estaConfirmando ? (
         <ModalConfirmacion
-          descripcion={"Se le enviará a " + props.correo + " un correo para elegir una contraseña nueva."}
+          descripcion={"Se le enviará a " + props.correo + " un correo con un enlace para modificar su contraseña de acceso."}
           estaConfirmando={estaEnviando}
-          etiquetaConfirmar="Enviar correo"
+          etiquetaConfirmar="Enviar enlace"
           onCancelar={() => setEstaConfirmando(false)}
           onConfirmar={restablecer}
-          titulo="Restablecer contraseña"
+          titulo="Reenviar enlace de contraseña"
         />
       ) : null}
     </>

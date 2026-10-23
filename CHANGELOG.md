@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.19 (2026-10-23)
+
+- Listados: se conserva visible la tabla anterior mientras se cargan filtros, orden o paginación, evitando el parpadeo.
+
 ## Version 1.0.18 (2026-10-23)
 
 - Listados: se pueden ordenar las columnas de usuarios, clientes, máquinas, órdenes, repuestos y movimientos desde el encabezado, conservando filtros y paginación.

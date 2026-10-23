@@ -145,7 +145,7 @@ describe("filtros en vivo", () => {
     expect(replace).toHaveBeenCalledWith("/lista?buscar=acme");
   });
 
-  it("al escribir conserva el mismo campo, con foco, aunque la tabla se reemplace por el esqueleto", async () => {
+  it("al escribir conserva el mismo campo, con foco, y la tabla anterior sigue a la vista mientras carga", async () => {
     replace.mockImplementation(() => new Promise<void>(() => undefined));
     render(
       conProveedor(
@@ -161,8 +161,9 @@ describe("filtros en vivo", () => {
     buscar.focus();
     fireEvent.change(buscar, { target: { value: "acme" } });
     await esperarRetardoDeBusqueda();
-    expect(screen.getByRole("status", { name: "Cargando…" })).toHaveAttribute("aria-busy", "true");
-    expect(screen.queryByText("Tabla")).not.toBeInTheDocument();
+    expect(screen.getByRole("status", { name: "Cargando…" })).toBeInTheDocument();
+    expect(screen.getByText("Tabla")).toBeVisible();
+    expect(screen.getByText("Tabla").parentElement).toHaveAttribute("aria-busy", "true");
     expect(screen.getByLabelText("Buscar")).toBe(buscar);
     expect(buscar).toHaveFocus();
     expect(buscar.value).toBe("acme");

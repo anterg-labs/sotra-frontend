@@ -120,6 +120,23 @@ th {
   text-transform: uppercase;
 }
 
+.zona-listado {
+  transition: opacity 0.15s ease;
+}
+
+.zona-listado[data-cargando="true"] {
+  opacity: 0.55;
+  pointer-events: none;
+  transition-delay: 0.2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zona-listado,
+  .zona-listado[data-cargando="true"] {
+    transition: none;
+  }
+}
+
 .encabezado-ordenable {
   display: inline-flex;
   align-items: center;

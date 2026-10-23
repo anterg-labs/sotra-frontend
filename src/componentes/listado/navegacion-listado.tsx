@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useRef, useState, useTransition } from "react";
-import { EsqueletoListado } from "./esqueleto-listado";
 import { leerOrdenDeUrl, type OrdenListado } from "./url-listado";
 
 type ContextoNavegacion = {
@@ -37,7 +36,7 @@ function textoDeResultados(total: number) {
 
 /**
  * Comparte entre los filtros, la paginación y la tabla una misma transición de navegación:
- * la URL cambia dentro de `useTransition` y, mientras el servidor prepara la nueva página, la tabla anterior se reemplaza por el esqueleto.
+ * la URL cambia dentro de `useTransition` y, mientras el servidor prepara la nueva página, la tabla anterior permanece visible.
  * También mantiene la región `aria-live` que anuncia «Cargando…» y el total de resultados.
  */
 export function ProveedorNavegacionListado(props: { etiquetaCarga: string; children: React.ReactNode }) {
@@ -71,10 +70,15 @@ export function ProveedorNavegacionListado(props: { etiquetaCarga: string; child
   );
 }
 
-/** Muestra el contenido del listado (renderizado en el servidor) o el esqueleto mientras se navega. */
+/** Conserva el contenido anterior durante la navegación para evitar el parpadeo. */
 export function ZonaListado(props: { children: React.ReactNode }) {
   const { estaPendiente, etiquetaCarga } = useNavegacionListado();
-  return estaPendiente ? <EsqueletoListado etiqueta={etiquetaCarga} /> : props.children;
+  return (
+    <div aria-busy={estaPendiente} className="zona-listado" data-cargando={estaPendiente}>
+      {props.children}
+      {estaPendiente ? <span aria-label={etiquetaCarga} className="sr-only" role="status">{etiquetaCarga}</span> : null}
+    </div>
+  );
 }
 
 /** Lo renderiza el listado (en el servidor) para que la región `aria-live` anuncie cuántos resultados hay. */

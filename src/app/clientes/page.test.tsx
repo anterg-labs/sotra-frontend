@@ -160,7 +160,7 @@ describe("barra de filtros (en vivo)", () => {
 });
 
 describe("navegación del listado", () => {
-  it("reemplaza la tabla por el esqueleto mientras el servidor prepara la nueva página, sin desmontar la barra", async () => {
+  it("conserva la tabla anterior mientras el servidor prepara la nueva página, sin desmontar la barra", async () => {
     let terminar: () => void = () => undefined;
     replace.mockImplementation(() => new Promise<void>((resolver) => { terminar = resolver; }));
     render(
@@ -176,8 +176,9 @@ describe("navegación del listado", () => {
     const estado = screen.getByLabelText("Estado");
     expect(screen.getByText("Tabla anterior")).toBeInTheDocument();
     fireEvent.change(estado, { target: { value: "activo" } });
-    expect(await screen.findByRole("status", { name: "Cargando clientes…" })).toHaveAttribute("aria-busy", "true");
-    expect(screen.queryByText("Tabla anterior")).not.toBeInTheDocument();
+    expect(await screen.findByRole("status", { name: "Cargando clientes…" })).toBeInTheDocument();
+    expect(screen.getByText("Tabla anterior")).toBeVisible();
+    expect(screen.getByText("Tabla anterior").parentElement).toHaveAttribute("aria-busy", "true");
     expect(screen.getByLabelText("Estado")).toBe(estado);
     await act(async () => terminar());
     expect(await screen.findByText("Tabla anterior")).toBeInTheDocument();

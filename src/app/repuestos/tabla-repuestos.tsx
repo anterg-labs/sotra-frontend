@@ -71,7 +71,7 @@ export function TablaRepuestos(props: { repuestos: Repuesto[]; filtros?: Filtros
                   <td>{repuesto.nombre}</td>
                   <td>{repuesto.marca}</td>
                   <td>{repuesto.ubicacion}</td>
-                  <td>
+                  <td className="celda-numerica">
                     <strong>{repuesto.cantidad}</strong>
                     {estaActivo ? (
                       <>
@@ -81,7 +81,7 @@ export function TablaRepuestos(props: { repuestos: Repuesto[]; filtros?: Filtros
                       </>
                     ) : null}
                   </td>
-                  <td>{repuesto.cantidadMinima}</td>
+                  <td className="celda-numerica">{repuesto.cantidadMinima}</td>
                   <td><EstadoRegistro estado={repuesto.estado} /></td>
                   <td>
                     <div className="table-actions">

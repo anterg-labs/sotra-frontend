@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.28 (2026-10-23)
+
+- Órdenes de trabajo: las órdenes asociadas se ordenan y paginan sin vaciar la tabla durante la carga; al asignar técnico se evita elegir al ya asignado.
+
 ## Version 1.0.27 (2026-10-23)
 
 - Usuarios y clientes: los listados muestran y permiten ordenar por las órdenes asociadas; se mejoran las confirmaciones de baja y reactivación y los mensajes del alta de usuarios.

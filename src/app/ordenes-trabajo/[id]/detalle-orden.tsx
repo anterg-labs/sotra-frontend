@@ -16,6 +16,7 @@ import {
 import type { HistorialEstadoOrdenTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
 import { formatearFechaCorta, formatearFechaHora } from "@/utilidades/fechas";
+import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
 type PropiedadesDetalleOrden = {
   ordenInicial: OrdenTrabajo;
@@ -33,9 +34,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
   const puedeRegistrarAvance = useTienePermiso("ot.registrar_avance");
   const errorCarga = puedeAsignarTecnico && props.huboErrorTecnicos ? "No se pudo obtener el listado de técnicos." : "";
   const tecnicos = props.tecnicosIniciales;
-  const [tecnicoSeleccionadoId, setTecnicoSeleccionadoId] = useState(
-    props.ordenInicial.tecnicoId === null ? "" : String(props.ordenInicial.tecnicoId),
-  );
+  const [tecnicoSeleccionadoId, setTecnicoSeleccionadoId] = useState("");
   const [estadoSeleccionado, setEstadoSeleccionado] = useState("");
   const [motivoEstado, setMotivoEstado] = useState("");
   const [estaGuardandoTecnico, setEstaGuardandoTecnico] = useState(false);
@@ -52,6 +51,11 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
   }
 
   async function confirmarTecnico() {
+    if (orden === null || estaGuardandoTecnico) return;
+    if (tecnicoSeleccionadoId === String(orden.tecnicoId)) {
+      setErrorAccion("El técnico ya está asignado a esta orden de trabajo.");
+      return;
+    }
     setErrorAccion("");
     setMensajeExito("");
     setEstaGuardandoTecnico(true);
@@ -59,6 +63,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
     try {
       const ordenActualizada = await asignarTecnicoOrdenTrabajo(ordenTrabajoId, tecnicoSeleccionadoId);
       setOrden(ordenActualizada);
+      setTecnicoSeleccionadoId("");
       setMensajeExito("Técnico asignado correctamente.");
     } catch (error) {
       let mensaje = "No se pudo asignar el técnico a la orden de trabajo.";
@@ -158,7 +163,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
 
     let mensajeAccionError = null;
     if (errorAccion) {
-      mensajeAccionError = <p className="form-error-banner">{errorAccion}</p>;
+      mensajeAccionError = <AvisoEnLinea>{errorAccion}</AvisoEnLinea>;
     }
 
     let mensajeAccionExito = null;
@@ -183,18 +188,20 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
             alCambiar={setTecnicoSeleccionadoId}
             buscarOpciones={async (consulta) => {
               const pagina = await listarTecnicosPaginados(consulta);
-              return pagina.map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }));
+              return pagina.filter((tecnico) => tecnico.id !== orden.tecnicoId)
+                .map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }));
             }}
             etiqueta="Asignar o modificar técnico"
             id="tecnicoAsignado"
-            opciones={tecnicos.map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }))}
+            opciones={tecnicos.filter((tecnico) => tecnico.id !== orden.tecnicoId)
+              .map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }))}
             textoVacio="Seleccioná un técnico"
             valor={tecnicoSeleccionadoId}
           />
           <div className="form-actions">
             <button
               className="primary-button"
-              disabled={estaGuardandoTecnico || tecnicoSeleccionadoId === ""}
+              disabled={estaGuardandoTecnico || tecnicoSeleccionadoId === "" || tecnicoSeleccionadoId === String(orden.tecnicoId)}
               onClick={confirmarTecnico}
               type="button"
             >

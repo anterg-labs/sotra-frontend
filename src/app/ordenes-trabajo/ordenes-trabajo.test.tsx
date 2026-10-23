@@ -5,6 +5,7 @@ import { ProveedorNavegacionListado } from "@/componentes/listado/navegacion-lis
 import { OrdenesAsociadas } from "@/componentes/ordenes-asociadas";
 import EditarOrden from "./[id]/editar/page";
 import DetalleOrden from "./[id]/page";
+import { DetalleOrdenTrabajo } from "./[id]/detalle-orden";
 import { BarraFiltrosOrdenes } from "./barra-filtros-ordenes";
 import { construirUrlOrdenes, leerFiltrosOrdenes } from "./filtros";
 import { ListadoOrdenes } from "./listado-ordenes";
@@ -274,6 +275,20 @@ describe("barra de filtros de órdenes (en vivo)", () => {
     expect(screen.queryByRole("option", { name: "Pala 9" })).not.toBeInTheDocument();
   });
 
+  it("busca un cliente fuera de la primera página y aplica su ID descartando el activo anterior", async () => {
+    s.listarClientesPaginados.mockResolvedValue(pagina([{ id: 99, razonSocial: "Cliente remoto" }]));
+    render(conNavegacion(<BarraFiltrosOrdenes activos={[activo as never]} clientes={[cliente as never]} filtros={{ ...filtrosVacios, activoId: "2", estado: "pausada" }} tecnicos={[]} />));
+    const entrada = screen.getByRole("combobox", { name: "Cliente" });
+    fireEvent.change(entrada, { target: { value: "Cliente remoto" } });
+    fireEvent.keyDown(entrada, { key: "Enter" });
+    expect(replace).not.toHaveBeenCalled();
+    fireEvent.click(await screen.findByRole("option", { name: "Cliente remoto" }));
+    expect(s.listarClientesPaginados).toHaveBeenCalledWith({ buscar: "Cliente remoto", estado: "", pagina: 1 });
+    expect(replace).toHaveBeenLastCalledWith("/ordenes-trabajo?clienteId=99&estado=pausada");
+    expect(entrada).toHaveValue("Cliente remoto");
+    expect(screen.getByRole("combobox", { name: "Activo" })).toHaveValue("");
+  });
+
   it("bloquea un rango de fechas invertido y enfoca la fecha final", () => {
     render(conNavegacion(<BarraFiltrosOrdenes activos={[]} clientes={[]} filtros={{ ...filtrosVacios, fechaDesde: "2026-06-10", fechaHasta: "2026-06-01" }} tecnicos={[]} />));
     fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "pausada" } });
@@ -308,6 +323,43 @@ describe("OrdenesAsociadas", () => {
 });
 
 describe("detalle de orden de trabajo", () => {
+  it("excluye al técnico actual de las opciones iniciales y remotas", async () => {
+    const otro = { id: 8, nombre: "Ana", apellido: "Pérez" };
+    s.listarTecnicosPaginados.mockResolvedValue([tecnico, otro]);
+    render(<DetalleOrdenTrabajo ordenInicial={orden(11, { tecnicoId: 7, nombreTecnico: "Tomás Ruiz" }) as never} tecnicosIniciales={[tecnico, otro] as never} huboErrorTecnicos={false} />);
+    const entrada = screen.getByRole("combobox", { name: "Asignar o modificar técnico" });
+    expect(entrada).toHaveValue("");
+    expect(screen.getByRole("button", { name: "Confirmar técnico" })).toBeDisabled();
+    fireEvent.focus(entrada);
+    expect(screen.queryByRole("option", { name: "Tomás Ruiz" })).not.toBeInTheDocument();
+    fireEvent.change(entrada, { target: { value: "Tomás" } });
+    await waitFor(() => expect(s.listarTecnicosPaginados).toHaveBeenCalledWith("Tomás"));
+    await waitFor(() => expect(screen.queryByText("Buscando…")).not.toBeInTheDocument());
+    expect(screen.queryByRole("option", { name: "Tomás Ruiz" })).not.toBeInTheDocument();
+    expect(s.asignarTecnicoOrdenTrabajo).not.toHaveBeenCalled();
+  });
+
+  it("al cambiar de X a Y permite volver a X y vacía la selección tras cada asignación", async () => {
+    const otro = { id: 8, nombre: "Ana", apellido: "Pérez" };
+    s.listarTecnicosPaginados.mockResolvedValue([tecnico, otro]);
+    s.asignarTecnicoOrdenTrabajo.mockResolvedValueOnce(orden(11, { tecnicoId: 8, nombreTecnico: "Ana Pérez" }))
+      .mockResolvedValueOnce(orden(11, { tecnicoId: 7, nombreTecnico: "Tomás Ruiz" }));
+    render(<DetalleOrdenTrabajo ordenInicial={orden(11, { tecnicoId: 7 }) as never} tecnicosIniciales={[tecnico, otro] as never} huboErrorTecnicos={false} />);
+    const entrada = screen.getByRole("combobox", { name: "Asignar o modificar técnico" });
+    fireEvent.focus(entrada);
+    fireEvent.click(screen.getByRole("option", { name: "Ana Pérez" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar técnico" }));
+    await waitFor(() => expect(entrada).toHaveValue(""));
+    expect(s.asignarTecnicoOrdenTrabajo).toHaveBeenLastCalledWith(11, "8");
+    expect(screen.getByRole("button", { name: "Confirmar técnico" })).toBeDisabled();
+    fireEvent.focus(entrada);
+    expect(screen.queryByRole("option", { name: "Ana Pérez" })).not.toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("option", { name: "Tomás Ruiz" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar técnico" }));
+    await waitFor(() => expect(s.asignarTecnicoOrdenTrabajo).toHaveBeenLastCalledWith(11, "7"));
+    await waitFor(() => expect(entrada).toHaveValue(""));
+  });
+
   beforeEach(() => {
     s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11));
   });
@@ -364,6 +416,9 @@ describe("detalle de orden de trabajo", () => {
     s.obtenerUsuarioServidor.mockResolvedValue(tecnico);
     render(await DetalleOrden(parametros("11")));
     const boton = screen.getByRole("button", { name: "Confirmar técnico" });
+    s.listarTecnicosPaginados.mockResolvedValue([{ id: 8, nombre: "Ana", apellido: "Pérez" }]);
+    fireEvent.change(screen.getByRole("combobox", { name: "Asignar o modificar técnico" }), { target: { value: "Ana" } });
+    fireEvent.click(await screen.findByRole("option", { name: "Ana Pérez" }));
     expect(boton).toBeEnabled();
     fireEvent.click(boton);
     expect(await screen.findByText("El técnico no está activo.")).toBeInTheDocument();

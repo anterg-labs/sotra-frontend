@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.31 (2026-10-23)
+
+- Órdenes y stock: los listados ordenan las filas visibles de inmediato, muestran el resultado de las acciones con claridad y actualizan los formularios de repuestos y movimientos.
+
 ## Version 1.0.30 (2026-10-23)
 
 - Activos y catálogos: los listados ordenan las filas visibles de inmediato y confirman los cambios de estado; los formularios y filtros muestran errores más claros.

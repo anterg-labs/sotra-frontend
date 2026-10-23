@@ -31,6 +31,7 @@ import type {
 } from "@/tipos/orden-trabajo";
 import type { Repuesto } from "@/tipos/repuesto";
 import type { Usuario } from "@/tipos/usuario";
+import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
 type PropiedadesFormularioOrdenTrabajo = {
   ordenInicial?: OrdenTrabajo;
@@ -115,7 +116,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
   const [estaEnviando, setEstaEnviando] = useState(false);
   const [errorGeneral, setErrorGeneral] = useState("");
   const [errores, setErrores] = useState<ReturnType<typeof obtenerErroresOrdenTrabajo> & { motivoEstado?: string }>({});
-  const referenciaErrorGeneral = useRef<HTMLParagraphElement>(null);
+  const referenciaErrorGeneral = useRef<HTMLDivElement>(null);
   const [estaAltaClienteAbierta, setEstaAltaClienteAbierta] = useState(false);
   const [clientesAgregados, setClientesAgregados] = useState<Cliente[]>([]);
   const { mostrarAviso } = useAvisos();
@@ -200,7 +201,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
 
   let mensajeError = null;
   if (errorGeneral) {
-    mensajeError = <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p>;
+    mensajeError = <AvisoEnLinea ref={referenciaErrorGeneral}>{errorGeneral}</AvisoEnLinea>;
   }
 
   let textoBoton = etiquetaConfirmacion;
@@ -263,7 +264,8 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
 
       <div className="form-field form-field-full">
         <label htmlFor="observaciones">Observaciones adicionales</label>
-        <textarea id="observaciones" onChange={cambiarObservaciones} rows={3} value={observaciones} />
+        <textarea aria-describedby={errores.observaciones ? "observaciones-error" : undefined} aria-invalid={errores.observaciones ? true : undefined} id="observaciones" onChange={cambiarObservaciones} rows={3} value={observaciones} />
+        {errores.observaciones ? <p className="field-error" id="observaciones-error" role="alert">{errores.observaciones}</p> : null}
       </div>
 
       {puedeVerRepuestos ? (

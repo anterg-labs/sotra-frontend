@@ -28,11 +28,16 @@ const etiquetasEstado = {
   cancelada: "Cancelada",
 };
 
+/** Decisión D12 (2026-10-21): la API rechaza descripciones y observaciones de más de 4000 caracteres. */
+export const LARGO_MAXIMO_TEXTO_ORDEN = 4000;
+
 export function obtenerErroresOrdenTrabajo(input: CrearOrdenTrabajoInput) {
-  const errores: Partial<Record<"clienteId" | "activoId" | "descripcion" | "fechaPrevistaEjecucion", string>> = {};
+  const errores: Partial<Record<"clienteId" | "activoId" | "descripcion" | "observaciones" | "fechaPrevistaEjecucion", string>> = {};
   if (input.clienteId <= 0) errores.clienteId = "El cliente es obligatorio.";
   if (input.activoId <= 0) errores.activoId = "El activo es obligatorio.";
   if (!input.descripcion.trim()) errores.descripcion = "La descripción de la tarea es obligatoria.";
+  else if (input.descripcion.length > LARGO_MAXIMO_TEXTO_ORDEN) errores.descripcion = `La descripción no puede superar los ${LARGO_MAXIMO_TEXTO_ORDEN} caracteres.`;
+  if (input.observaciones.length > LARGO_MAXIMO_TEXTO_ORDEN) errores.observaciones = `Las observaciones no pueden superar los ${LARGO_MAXIMO_TEXTO_ORDEN} caracteres.`;
   if (!input.fechaPrevistaEjecucion) errores.fechaPrevistaEjecucion = "La fecha prevista de ejecución es obligatoria.";
   return errores;
 }

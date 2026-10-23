@@ -168,7 +168,7 @@ describe("tabla de repuestos (baja y reactivación)", () => {
 
   it("confirma la baja nombrando el repuesto y avisa a los contadores de stock", async () => {
     cambiarEstadoRepuestoAccion.mockResolvedValue({ exito: true });
-    render(<TablaRepuestos repuestos={repuestos} />);
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaRepuestos filtros={{ buscar: "", estado: "", ubicacion: "", stock: "", pagina: 1 }} repuestos={repuestos} /></ProveedorNavegacionListado>);
     fireEvent.click(screen.getByRole("button", { name: "Dar de baja" }));
     const dialogo = screen.getByRole("dialog", { name: "Dar de baja repuesto" });
     expect(dialogo).toHaveTextContent("Filtro 1");
@@ -182,15 +182,19 @@ describe("tabla de repuestos (baja y reactivación)", () => {
     cambiarEstadoRepuestoAccion
       .mockResolvedValueOnce({ exito: true })
       .mockResolvedValueOnce({ exito: false, mensaje: "No se pudo reactivar el repuesto seleccionado." });
-    render(<TablaRepuestos repuestos={repuestos} />);
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaRepuestos filtros={{ buscar: "", estado: "", ubicacion: "", stock: "", pagina: 1 }} repuestos={repuestos} /></ProveedorNavegacionListado>);
     fireEvent.click(screen.getByRole("button", { name: "Reactivar repuesto" }));
+    expect(cambiarEstadoRepuestoAccion).not.toHaveBeenCalled();
+    fireEvent.click(within(await screen.findByRole("dialog", { name: "Reactivar repuesto" })).getByRole("button", { name: "Reactivar" }));
     await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("exito", "Repuesto reactivado."));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     fireEvent.click(screen.getByRole("button", { name: "Reactivar repuesto" }));
-    expect(await screen.findByText("No se pudo reactivar el repuesto seleccionado.")).toBeInTheDocument();
+    fireEvent.click(within(await screen.findByRole("dialog", { name: "Reactivar repuesto" })).getByRole("button", { name: "Reactivar" }));
+    await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("error", "No se pudo reactivar el repuesto seleccionado."));
   });
 
   it("cancelar la baja no llama a la acción; resalta el repuesto nuevo", () => {
-    render(<TablaRepuestos repuestos={repuestos} />);
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaRepuestos filtros={{ buscar: "", estado: "", ubicacion: "", stock: "", pagina: 1 }} repuestos={repuestos} /></ProveedorNavegacionListado>);
     fireEvent.click(screen.getByRole("button", { name: "Dar de baja" }));
     fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
     expect(cambiarEstadoRepuestoAccion).not.toHaveBeenCalled();

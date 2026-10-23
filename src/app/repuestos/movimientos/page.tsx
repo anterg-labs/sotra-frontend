@@ -20,7 +20,6 @@ const ETIQUETA_CARGA = "Cargando movimientos de stock…";
 export default async function PaginaMovimientosStock(props: { searchParams: Promise<ParametrosBusqueda> }) {
   const filtros = leerFiltrosMovimientos(await props.searchParams);
   const consulta = anticiparConsulta(listarMovimientosStockServidor(filtros));
-  const clave = Object.values(filtros).join("|");
 
   // El pañolero no puede listar usuarios: sin ese permiso no se muestra el filtro por usuario responsable.
   const puedeFiltrarPorUsuario = await tienePermisoServidor("usuario.listar");
@@ -57,7 +56,7 @@ export default async function PaginaMovimientosStock(props: { searchParams: Prom
 
         <section className="panel">
           <ZonaListado>
-            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />} key={clave}>
+            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />}>
               <ListadoMovimientos consulta={consulta} filtros={filtros} />
             </Suspense>
           </ZonaListado>

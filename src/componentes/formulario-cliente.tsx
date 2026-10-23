@@ -8,6 +8,8 @@ import { useFormularioAccion } from "@/componentes/use-formulario-accion";
 import type { ResultadoGuardar } from "@/tipos/resultado-accion";
 import type { Cliente, CrearClienteInput } from "@/tipos/cliente";
 import { validarCliente } from "@/validaciones/cliente";
+import { CANTIDAD_DIGITOS_TELEFONO, EJEMPLO_TELEFONO } from "@/validaciones/usuario";
+import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
 type PropiedadesFormularioCliente = {
   clienteInicial?: CrearClienteInput;
@@ -94,7 +96,7 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
 
   let mensajeError = null;
   if (errorGeneral) {
-    mensajeError = <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p>;
+    mensajeError = <AvisoEnLinea ref={referenciaErrorGeneral}>{errorGeneral}</AvisoEnLinea>;
   }
 
   let textoBoton = etiquetaConfirmacion;
@@ -151,9 +153,11 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
           <input
             aria-describedby={errores.telefono ? "telefono-error" : undefined}
             aria-invalid={errores.telefono ? true : undefined}
+            autoComplete="tel-national"
             id="telefono"
             inputMode="numeric"
             onChange={(evento) => setTelefono(evento.target.value)}
+            placeholder={`${CANTIDAD_DIGITOS_TELEFONO} dígitos, por ejemplo ${EJEMPLO_TELEFONO}`}
             type="tel"
             value={telefono}
           />

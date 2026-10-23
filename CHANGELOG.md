@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.22 (2026-10-23)
+
+- Documentación: se pueden cargar, filtrar y editar documentos con título, tipo, descripción y asociación; también marcar su vigencia.
+
 ## Version 1.0.21 (2026-10-23)
 
 - Stock: se puede ingresar stock desde el listado eligiendo repuesto y cantidad; la fecha y la ubicación se asignan automáticamente.

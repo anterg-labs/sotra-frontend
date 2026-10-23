@@ -1373,6 +1373,20 @@ button:disabled {
   font-size: 12px;
 }
 
+.aviso-en-linea {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.aviso-en-linea .aviso-cerrar {
+  flex: none;
+  padding: 0 2px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
 /* Resaltado del registro recién guardado. */
 .fila-nueva td {
   animation: fila-nueva 3s ease;

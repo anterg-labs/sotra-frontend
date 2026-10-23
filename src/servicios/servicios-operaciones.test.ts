@@ -164,12 +164,12 @@ describe("servicio-documentos-tecnicos", () => {
 
   it("sube el documento como multipart con las banderas indicadas", async () => {
     const { llamadas } = simularFetch(() => ({ estado: 201, cuerpo: { id: 1 } }));
-    await expect(crearDocumentoTecnico({ archivo: null, activoId: null, usaSugerenciasIA: true })).rejects.toThrow("Seleccioná");
-    await expect(crearDocumentoTecnico({ archivo: new File(["x"], "a.pdf"), activoId: null, usaSugerenciasIA: true })).rejects.toThrow("no es un PDF válido");
+    await expect(crearDocumentoTecnico({ archivo: null, titulo: "", tipo: "manual_tecnico", descripcion: "", activoId: null, modeloMaquinaId: null, usaSugerenciasIA: true })).rejects.toThrow("Seleccioná");
+    await expect(crearDocumentoTecnico({ archivo: new File(["x"], "a.pdf"), titulo: "", tipo: "manual_tecnico", descripcion: "", activoId: null, modeloMaquinaId: null, usaSugerenciasIA: true })).rejects.toThrow("no es un PDF válido");
     expect(llamadas).toHaveLength(0);
 
-    await crearDocumentoTecnico({ archivo: pdfValido(), activoId: 7, usaSugerenciasIA: false });
-    await crearDocumentoTecnico({ archivo: pdfValido(), activoId: null, usaSugerenciasIA: true });
+    await crearDocumentoTecnico({ archivo: pdfValido(), titulo: "", tipo: "manual_tecnico", descripcion: "", activoId: 7, modeloMaquinaId: null, usaSugerenciasIA: false });
+    await crearDocumentoTecnico({ archivo: pdfValido(), titulo: "", tipo: "manual_tecnico", descripcion: "", activoId: null, modeloMaquinaId: null, usaSugerenciasIA: true });
     const primero = llamadas[0].cuerpo as FormData;
     expect(primero.get("activoId")).toBe("7");
     expect(primero.get("usaSugerenciasIA")).toBe("false");

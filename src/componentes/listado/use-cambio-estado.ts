@@ -10,6 +10,7 @@ import type { ResultadoCambiarEstado } from "@/tipos/resultado-accion";
 export function useCambioEstado(
   accion: (id: number, estado: "activo" | "inactivo") => Promise<ResultadoCambiarEstado>,
   alExito?: (id: number, estado: "activo" | "inactivo") => void,
+  alError?: (mensaje: string) => void,
 ) {
   const [enProcesoId, marcarEnProceso] = useOptimistic<number | null, number>(null, (_actual, id) => id);
   const [, iniciarTransicion] = useTransition();
@@ -24,6 +25,7 @@ export function useCambioEstado(
         alExito?.(id, estado);
       } else {
         setError(resultado.mensaje);
+        alError?.(resultado.mensaje);
       }
     });
   }

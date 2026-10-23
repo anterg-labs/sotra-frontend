@@ -7,28 +7,32 @@ import { ProveedorNavegacionListado, ZonaListado } from "@/componentes/listado/n
 import type { ParametrosBusqueda } from "@/componentes/listado/url-listado";
 import { listarActivosServidor, obtenerActivoServidor } from "@/servicios/servidor/activos";
 import { conSeleccionado } from "@/servicios/servidor/opciones";
+import { listarModelosMaquinaServidor, obtenerModeloMaquinaServidor } from "@/servicios/servidor/modelos-maquina";
 import type { Activo } from "@/tipos/activo";
+import type { ModeloMaquina } from "@/tipos/modelo-maquina";
 import { BarraFiltrosDocumentos } from "./barra-filtros-documentos";
 import { leerFiltrosDocumentos } from "./filtros";
 import { ListadoDocumentos } from "./listado-documentos";
 import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
 
-const ETIQUETA_CARGA = "Cargando documentos técnicos…";
+const ETIQUETA_CARGA = "Cargando documentación…";
 
 export default async function PaginaDocumentacionTecnica(props: { searchParams: Promise<ParametrosBusqueda> }) {
   const filtros = leerFiltrosDocumentos(await props.searchParams);
   const consulta = anticiparConsulta(listarDocumentosTecnicosServidor(filtros));
-  const clave = [filtros.buscar, filtros.activoId, filtros.pagina].join("|");
 
   const activos = await listarActivosServidor({ buscar: "", clienteId: "", modeloMaquinaId: "", estado: "", pagina: 1 })
     .then((pagina) => conSeleccionado<Activo>(pagina.elementos, filtros.activoId, obtenerActivoServidor))
     .catch(() => [] as Activo[]);
+  const modelos = await listarModelosMaquinaServidor({ buscar: "", tipoMaquinaId: "", estado: "", pagina: 1 })
+    .then((pagina) => conSeleccionado<ModeloMaquina>(pagina.elementos, filtros.modeloMaquinaId, obtenerModeloMaquinaServidor))
+    .catch(() => [] as ModeloMaquina[]);
 
   return (
     <main className="page-content">
       <header className="page-heading">
         <div>
-          <h1>Documentación técnica</h1>
+          <h1>Documentación</h1>
         </div>
         <SiTienePermiso permiso="documento.gestionar">
           <Link className="primary-button" href="/documentacion-tecnica/nuevo">
@@ -38,11 +42,11 @@ export default async function PaginaDocumentacionTecnica(props: { searchParams: 
       </header>
 
       <ProveedorNavegacionListado etiquetaCarga={ETIQUETA_CARGA}>
-        <BarraFiltrosDocumentos activos={activos} filtros={filtros} />
+        <BarraFiltrosDocumentos activos={activos} filtros={filtros} modelosMaquina={modelos} />
 
         <section className="panel">
           <ZonaListado>
-            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />} key={clave}>
+            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />}>
               <ListadoDocumentos consulta={consulta} filtros={filtros} />
             </Suspense>
           </ZonaListado>

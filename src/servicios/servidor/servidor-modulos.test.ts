@@ -87,7 +87,7 @@ describe("servicios de servidor de repuestos y movimientos de stock", () => {
 
 describe("servicios de servidor de documentos, activos y órdenes", () => {
   it("lista y consulta documentos técnicos y elimina con DELETE aunque la respuesta venga vacía", async () => {
-    await listarDocumentosTecnicosServidor({ buscar: " manual ", activoId: "3", pagina: 2 });
+    await listarDocumentosTecnicosServidor({ buscar: " manual ", activoId: "3", modeloMaquinaId: "", tipo: "", vigente: "", pagina: 2 });
     await obtenerDocumentoTecnicoServidor(8);
     fetchSimulado.mockResolvedValueOnce(new Response(null, { status: 204 }));
     await expect(eliminarDocumentoTecnicoServidor(8)).resolves.toBeUndefined();

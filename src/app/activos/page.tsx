@@ -21,7 +21,6 @@ const ETIQUETA_CARGA = "Cargando activos…";
 export default async function PaginaActivos(props: { searchParams: Promise<ParametrosBusqueda> }) {
   const filtros = leerFiltrosActivos(await props.searchParams);
   const consulta = anticiparConsulta(listarActivosServidor(filtros));
-  const clave = [filtros.buscar, filtros.clienteId, filtros.modeloMaquinaId, filtros.estado, filtros.pagina].join("|");
 
   // El pañolero ve activos pero no modelos; los datos del alta solo hacen falta si el rol puede crear.
   const [puedeVerModelos, puedeCrear] = await Promise.all([tienePermisoServidor("modelo.consultar"), tienePermisoServidor("activo.crear")]);
@@ -60,7 +59,7 @@ export default async function PaginaActivos(props: { searchParams: Promise<Param
 
         <section className="panel mb-8">
           <ZonaListado>
-            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />} key={clave}>
+            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />}>
               <ListadoActivos consulta={consulta} filtros={filtros} />
             </Suspense>
           </ZonaListado>

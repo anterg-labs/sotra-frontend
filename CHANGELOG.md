@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.30 (2026-10-23)
+
+- Activos y catálogos: los listados ordenan las filas visibles de inmediato y confirman los cambios de estado; los formularios y filtros muestran errores más claros.
+
 ## Version 1.0.29 (2026-10-23)
 
 - Tablas: el detalle de repuestos y los reportes permiten ordenar los movimientos, las órdenes y los grupos de datos; el detalle enlaza al historial completo.

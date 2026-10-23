@@ -28,7 +28,6 @@ async function cargarTiposParaFiltro(tipoMaquinaId: string) {
 export default async function PaginaModelosMaquina(props: { searchParams: Promise<ParametrosBusqueda> }) {
   const filtros = leerFiltrosModelos(await props.searchParams);
   const consulta = anticiparConsulta(listarModelosMaquinaServidor(filtros));
-  const clave = [filtros.buscar, filtros.tipoMaquinaId, filtros.estado, filtros.pagina].join("|");
   const [tiposFiltro, tiposAlta] = await Promise.all([
     cargarTiposParaFiltro(filtros.tipoMaquinaId),
     listarTiposMaquinaServidor({ buscar: "", estado: "activo", pagina: 1 }).then((pagina) => pagina.elementos).catch(() => null),
@@ -54,7 +53,7 @@ export default async function PaginaModelosMaquina(props: { searchParams: Promis
 
           <section className="panel">
             <ZonaListado>
-              <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />} key={clave}>
+              <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />}>
                 <ListadoModelos consulta={consulta} filtros={filtros} />
               </Suspense>
             </ZonaListado>

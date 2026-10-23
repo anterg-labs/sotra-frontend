@@ -1,4 +1,5 @@
 import "server-only";
+import { parametrosDeOrden } from "@/componentes/listado/url-listado";
 import { leerJsonServidor, opcionesJsonServidor } from "@/servicios/servidor/cliente-http-servidor";
 import type { Activo, ActualizarActivoInput, CrearActivoInput, EstadoActivo, FiltrosActivos } from "@/tipos/activo";
 import type { DocumentoTecnico } from "@/tipos/documento-tecnico";
@@ -10,6 +11,7 @@ export function listarActivosServidor(filtros: FiltrosActivos) {
   if (filtros.clienteId !== "") parametros.append("clienteId", filtros.clienteId);
   if (filtros.modeloMaquinaId !== "") parametros.append("modeloMaquinaId", filtros.modeloMaquinaId);
   if (filtros.estado !== "") parametros.append("estado", filtros.estado);
+  for (const [nombre, valor] of parametrosDeOrden(filtros)) parametros.append(nombre, valor);
   parametros.append("pagina", String(filtros.pagina));
   return leerJsonServidor<Pagina<Activo>>("/api/v1/activos?" + parametros.toString(), "No se pudo obtener el listado de activos.");
 }

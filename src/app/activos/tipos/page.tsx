@@ -12,7 +12,6 @@ const ETIQUETA_CARGA = "Cargando tipos de máquina…";
 
 export default async function PaginaTiposMaquina(props: { searchParams: Promise<ParametrosBusqueda> }) {
   const filtros = leerFiltrosTipos(await props.searchParams);
-  const clave = [filtros.buscar, filtros.estado, filtros.pagina].join("|");
 
   return (
     <main className="page-content">
@@ -34,7 +33,7 @@ export default async function PaginaTiposMaquina(props: { searchParams: Promise<
 
           <section className="panel">
             <ZonaListado>
-              <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />} key={clave}>
+              <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />}>
                 <ListadoTipos filtros={filtros} />
               </Suspense>
             </ZonaListado>

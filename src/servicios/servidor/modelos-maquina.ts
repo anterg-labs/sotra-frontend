@@ -1,4 +1,5 @@
 import "server-only";
+import { parametrosDeOrden } from "@/componentes/listado/url-listado";
 import { leerJsonServidor, opcionesJsonServidor } from "@/servicios/servidor/cliente-http-servidor";
 import type {
   ActualizarModeloMaquinaInput,
@@ -14,6 +15,7 @@ export function listarModelosMaquinaServidor(filtros: FiltrosModelosMaquina) {
   if (filtros.buscar.trim() !== "") parametros.append("buscar", filtros.buscar.trim());
   if (filtros.tipoMaquinaId !== "") parametros.append("tipoMaquinaId", filtros.tipoMaquinaId);
   if (filtros.estado !== "") parametros.append("estado", filtros.estado);
+  for (const [nombre, valor] of parametrosDeOrden(filtros)) parametros.append(nombre, valor);
   parametros.append("pagina", String(filtros.pagina));
   return leerJsonServidor<Pagina<ModeloMaquina>>(
     "/api/v1/modelos-maquina?" + parametros.toString(),

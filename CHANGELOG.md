@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.33 (2026-10-23)
+
+- Integración: se reúnen las correcciones del celular, el correo y los formularios con los cambios posteriores de listados, stock, documentos y navegación.
+
 ## Version 1.0.32 (2026-10-23)
 
 - Listados: el orden elegido en clientes y usuarios llega a la API. Los formularios muestran avisos en línea y las observaciones vacías de las órdenes se envían como dato opcional.

@@ -13,9 +13,12 @@ vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => (cookiesDePr
 
 
 describe("páginas de estado", () => {
-  it("la raíz redirige a la página de inicio del rol (administrador: reportes)", async () => {
+  it("la raíz redirige al inicio del administrador", async () => {
+    const { obtenerEstadoSesion } = await import("@/servicios/servidor/sesion");
+    const { usuarioDePruebas } = await import("@/pruebas/sesion-de-pruebas");
+    vi.mocked(obtenerEstadoSesion).mockResolvedValue({ estado: "con-acceso", usuario: usuarioDePruebas() });
     await PaginaInicio();
-    expect(redirect).toHaveBeenCalledWith("/reportes");
+    expect(redirect).toHaveBeenCalledWith("/inicio");
   });
 
   it("el técnico empieza en «Mi trabajo», o en el listado de órdenes si eligió la vista de escritorio", async () => {

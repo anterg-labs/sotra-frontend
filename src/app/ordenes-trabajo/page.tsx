@@ -40,7 +40,6 @@ function TarjetaResumen(props: { etiqueta: string; valor: number }) {
 export default async function PaginaOrdenesTrabajo(props: { searchParams: Promise<ParametrosBusqueda> }) {
   const filtros = leerFiltrosOrdenes(await props.searchParams);
   const consulta = anticiparConsulta(listarOrdenesTrabajoServidor(filtros));
-  const clave = Object.values(filtros).join("|");
 
   // El resumen sale de reportes y la lista de técnicos, de usuarios: solo se piden si el rol los puede ver.
   const [puedeVerResumen, puedeFiltrarPorTecnico] = await Promise.all([
@@ -95,7 +94,7 @@ export default async function PaginaOrdenesTrabajo(props: { searchParams: Promis
 
         <section className="panel">
           <ZonaListado>
-            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />} key={clave}>
+            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />}>
               <ListadoOrdenes consulta={consulta} filtros={filtros} />
             </Suspense>
           </ZonaListado>

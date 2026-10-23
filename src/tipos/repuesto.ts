@@ -40,7 +40,7 @@ export type FiltrosRepuestos = {
   bajoStock: boolean;
   estadoStock?: EstadoStock | "";
   orden?: "criticidad";
-  pagina: number;
   ordenarPor?: string;
   direccionOrden?: "asc" | "desc" | "";
+  pagina: number;
 };

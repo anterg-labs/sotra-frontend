@@ -37,7 +37,7 @@ export async function ListadoRepuestos(props: { filtros: FiltrosUrlRepuestos; co
   return (
     <>
       <InformarResultados total={pagina.totalElementos} />
-      <TablaRepuestos filtros={filtros} repuestos={pagina.elementos} />
+      <TablaRepuestos filtros={filtros} repuestos={pagina.elementos} unaSolaPagina={pagina.totalPaginas <= 1} />
       <PaginacionListado
         filtros={{ buscar: filtros.buscar, estado: filtros.estado, ubicacion: filtros.ubicacion, stock: filtros.stock, ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden }}
         pagina={pagina.pagina}

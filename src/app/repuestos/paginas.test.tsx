@@ -87,6 +87,23 @@ describe("detalle de repuesto (Server Component + panel de stock)", () => {
     expect(screen.queryByRole("form", { name: /ingreso/i })).not.toBeInTheDocument();
   });
 
+  it("muestra el historial del repuesto con fecha y hora, usuario y el enlace al historial completo", async () => {
+    s.listarMovimientosStockServidor.mockResolvedValue({ ...pagina([movimiento]), totalElementos: 45 });
+    render(await DetalleRepuesto(parametros("5")));
+
+    expect(screen.getByRole("heading", { level: 2, name: "Historial de movimientos" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Fecha y hora" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Usuario" })).toBeInTheDocument();
+    expect(screen.getByText("Sin registrar")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Ver los 45 movimientos" })).toHaveAttribute("href", "/repuestos/movimientos?repuestoId=5");
+  });
+
+  it("no ofrece el historial completo cuando ya se muestran todos los movimientos", async () => {
+    render(await DetalleRepuesto(parametros("5")));
+
+    expect(screen.queryByRole("link", { name: /Ver los \d+ movimientos/ })).not.toBeInTheDocument();
+  });
+
   it("informa el error del repuesto, el de movimientos y el vacío", async () => {
     s.listarMovimientosStockServidor.mockRejectedValueOnce(new Error("x"));
     const { unmount } = render(await DetalleRepuesto(parametros("5")));
@@ -121,6 +138,9 @@ describe("detalle de repuesto (Server Component + panel de stock)", () => {
   it("abre el formulario de ingreso con ?ingresar=1 si el repuesto está activo", async () => {
     render(await DetalleRepuesto(parametros("5", { ingresar: "1" })));
     expect(screen.getByLabelText("Cantidad a ingresar")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Fecha del ingreso")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Motivo del ingreso")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Ubicación o depósito")).not.toBeInTheDocument();
   });
 
   it("valida el ingreso: enfoca el primer campo inválido y muestra el error del servidor", async () => {

@@ -35,10 +35,20 @@ beforeEach(() => {
 });
 
 describe("acciones de repuestos", () => {
+  it("permite borrar opcionales con null y rechaza una edición que los omite", async () => {
+    r.actualizarRepuestoServidor.mockResolvedValue(guardado);
+    const vaciado = { ...datos, descripcion: null, marca: null, ubicacion: null };
+    await expect(actualizarRepuestoAccion(5, vaciado)).resolves.toMatchObject({ exito: true });
+    expect(r.actualizarRepuestoServidor).toHaveBeenCalledWith(5, vaciado);
+    r.actualizarRepuestoServidor.mockClear();
+    await expect(actualizarRepuestoAccion(5, { codigo: "R-1", nombre: "Filtro" } as never)).resolves.toMatchObject({ exito: false });
+    expect(r.actualizarRepuestoServidor).not.toHaveBeenCalled();
+  });
+
   it("crea el repuesto y revalida /repuestos", async () => {
     r.crearRepuestoServidor.mockResolvedValue(guardado);
     await expect(crearRepuestoAccion(datos)).resolves.toEqual({ exito: true, registro: guardado });
-    expect(r.crearRepuestoServidor).toHaveBeenCalledWith(datos);
+    expect(r.crearRepuestoServidor).toHaveBeenCalledWith({ ...datos, descripcion: null, marca: null, ubicacion: null });
     expect(revalidatePath).toHaveBeenCalledWith("/repuestos", "layout");
   });
 
@@ -63,7 +73,7 @@ describe("acciones de repuestos", () => {
   it("modifica el repuesto indicado y rechaza ids inválidos", async () => {
     r.actualizarRepuestoServidor.mockResolvedValue(guardado);
     await expect(actualizarRepuestoAccion(5, datos)).resolves.toMatchObject({ exito: true });
-    expect(r.actualizarRepuestoServidor).toHaveBeenCalledWith(5, datos);
+    expect(r.actualizarRepuestoServidor).toHaveBeenCalledWith(5, { ...datos, descripcion: null, marca: null, ubicacion: null });
     await expect(actualizarRepuestoAccion(0, datos)).resolves.toMatchObject({ exito: false });
   });
 

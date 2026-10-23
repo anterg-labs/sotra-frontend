@@ -40,7 +40,7 @@ export async function ListadoOrdenes(props: { filtros: FiltrosOrdenesTrabajo; co
   return (
     <>
       <InformarResultados total={pagina.totalElementos} />
-      <TablaOrdenes filtros={filtros} ordenes={pagina.elementos} />
+      <TablaOrdenes filtros={filtros} ordenes={pagina.elementos} unaSolaPagina={pagina.totalPaginas <= 1} />
       <PaginacionListado
         filtros={filtrosSinPagina}
         pagina={pagina.pagina}

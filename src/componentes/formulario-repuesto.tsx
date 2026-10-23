@@ -7,6 +7,7 @@ import { useFormularioAccion } from "@/componentes/use-formulario-accion";
 import type { ResultadoGuardar } from "@/tipos/resultado-accion";
 import type { CrearRepuestoInput, Repuesto } from "@/tipos/repuesto";
 import { obtenerErroresRepuesto } from "@/validaciones/repuesto";
+import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
 type PropiedadesFormularioRepuesto = {
   repuestoInicial?: Repuesto;
@@ -72,7 +73,7 @@ export function FormularioRepuesto(props: PropiedadesFormularioRepuesto) {
   return (
     <form aria-busy={estaEnviando} noValidate onSubmit={enviarFormulario}>
       {errorGeneral ? (
-        <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p>
+        <AvisoEnLinea ref={referenciaErrorGeneral}>{errorGeneral}</AvisoEnLinea>
       ) : null}
 
       <div className="form-grid">

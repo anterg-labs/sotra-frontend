@@ -10,6 +10,7 @@ import {
   obtenerUrlArchivoEvidencia,
 } from "@/servicios/servicio-evidencias";
 import type { Evidencia } from "@/tipos/evidencia";
+import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
 type PropiedadesEvidenciasOrdenTrabajo = {
   ordenTrabajoId: number;
@@ -27,7 +28,7 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
   const [estaEnviando, setEstaEnviando] = useState(false);
   const [errorFormulario, setErrorFormulario] = useState("");
   const [errores, setErrores] = useState<ReturnType<typeof obtenerErroresEvidencia>>({});
-  const referenciaErrorFormulario = useRef<HTMLParagraphElement>(null);
+  const referenciaErrorFormulario = useRef<HTMLDivElement>(null);
   const [mensajeExito, setMensajeExito] = useState("");
 
   useEffect(() => {
@@ -188,7 +189,7 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
   if (props.permiteRegistrar && mostrarFormulario) {
     let mensajeErrorFormulario = null;
     if (errorFormulario) {
-      mensajeErrorFormulario = <p className="form-error-banner" ref={referenciaErrorFormulario} role="alert" tabIndex={-1}>{errorFormulario}</p>;
+      mensajeErrorFormulario = <AvisoEnLinea ref={referenciaErrorFormulario}>{errorFormulario}</AvisoEnLinea>;
     }
 
     let campoArchivo = null;

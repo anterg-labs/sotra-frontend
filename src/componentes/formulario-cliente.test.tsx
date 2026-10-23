@@ -70,7 +70,7 @@ describe("formulario de clientes", () => {
     render(
       <FormularioCliente
         accion={accion}
-        clienteInicial={{ razonSocial: "ACME", nombreContacto: "Luis", correo: null, telefono: "099", direccion: null, observaciones: null }}
+        clienteInicial={{ razonSocial: "ACME", nombreContacto: "Luis", correo: null, telefono: "99123456", direccion: null, observaciones: null }}
         etiquetaConfirmacion="Confirmar modificación"
       />,
     );

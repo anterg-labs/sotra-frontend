@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useAvisos } from "@/componentes/avisos";
+import { useAvisos, type TipoAviso } from "@/componentes/avisos";
 import { useFormularioAccion } from "@/componentes/use-formulario-accion";
 import type { ResultadoGuardar } from "@/tipos/resultado-accion";
 import type { ActualizarUsuarioInput, CrearUsuarioInput, Rol, Usuario } from "@/tipos/usuario";
 import { validarUsuario } from "@/validaciones/usuario";
+import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
 type PropiedadesFormularioUsuario = {
   usuarioInicial?: ActualizarUsuarioInput;
@@ -22,9 +23,21 @@ type PropiedadesFormularioUsuario = {
   alCancelar?: () => void;
 };
 
-/** Aviso del alta: la contraseña la elige el usuario con el enlace que Keycloak le manda por correo. */
-export function mensajeUsuarioCreado(usuario: Pick<Usuario, "correo">) {
-  return "Usuario creado. Se envió un correo a " + usuario.correo + " para que elija su contraseña.";
+/** El alta puede completarse aunque falle el correo; solo se anuncia el envío si la API lo confirma. */
+export function avisoUsuarioCreado(usuario: Pick<Usuario, "correo" | "correoDeContrasenaEnviado">): { tipo: TipoAviso; texto: string } {
+  if (usuario.correoDeContrasenaEnviado === true) {
+    return { tipo: "exito", texto: "Usuario creado. Se envió un correo a " + usuario.correo + " para que elija su contraseña." };
+  }
+  if (usuario.correoDeContrasenaEnviado === false) {
+    return {
+      tipo: "advertencia",
+      texto: "Usuario creado, pero no se pudo enviar el correo para elegir su contraseña. Usá «Reenviar enlace de contraseña» desde el detalle del usuario.",
+    };
+  }
+  return {
+    tipo: "info",
+    texto: "Usuario creado. No se envió un nuevo correo de contraseña. Si lo necesita, usá «Reenviar enlace de contraseña» desde su detalle.",
+  };
 }
 
 export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
@@ -45,7 +58,8 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
       if (alGuardar) {
         alGuardar(usuario);
       } else {
-        mostrarAviso("exito", usuarioInicial ? "Usuario actualizado." : mensajeUsuarioCreado(usuario));
+        const aviso = usuarioInicial ? { tipo: "exito" as const, texto: "Usuario actualizado." } : avisoUsuarioCreado(usuario);
+        mostrarAviso(aviso.tipo, aviso.texto);
         enrutador.push(rutaExito);
       }
     },
@@ -68,13 +82,18 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
 
   let mensajeError = null;
   if (errorGeneral) {
-    mensajeError = <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p>;
+    mensajeError = <AvisoEnLinea ref={referenciaErrorGeneral}>{errorGeneral}</AvisoEnLinea>;
   }
 
   let campoRol = null;
   if (roles) {
     campoRol = (
-      <fieldset className="roles-usuario" id="roles">
+      <fieldset
+        aria-describedby={errores.idsRol ? "roles-error" : undefined}
+        aria-invalid={errores.idsRol ? true : undefined}
+        className="roles-usuario"
+        id="roles"
+      >
         <legend>Roles</legend>
         <div className="roles-usuario-opciones">
           {roles.map((rol) => (
@@ -91,6 +110,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
             </label>
           ))}
         </div>
+        {mostrarError("roles", errores.idsRol)}
       </fieldset>
     );
   }
@@ -150,15 +170,18 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
         <div className="form-field">
           <label htmlFor="telefono">Número de teléfono</label>
           <input
-            aria-describedby={errores.telefono ? "telefono-error" : undefined}
+            aria-describedby={errores.telefono ? "telefono-ayuda telefono-error" : "telefono-ayuda"}
             aria-invalid={errores.telefono ? true : undefined}
+            autoComplete="tel-national"
             id="telefono"
             inputMode="numeric"
             onChange={(evento) => setTelefono(evento.target.value)}
+            placeholder="99123456 o 099123456"
             required
             type="tel"
             value={telefono}
           />
+          <p className="field-hint" id="telefono-ayuda">8 dígitos, o 9 si incluís el cero inicial del celular. Por ejemplo, 99123456 o 099123456.</p>
           {mostrarError("telefono", errores.telefono)}
         </div>
 
@@ -168,7 +191,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
 
       {usuarioInicial ? null : (
         <p className="page-description">
-          La contraseña no se carga acá: al crear el usuario le llega un correo para que elija la suya.
+          Se debe revisar el correo para configurar la contraseña de acceso.
         </p>
       )}
 

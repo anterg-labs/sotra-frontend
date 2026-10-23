@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProveedorNavegacionListado, useNavegacionListado } from "./navegacion-listado";
 import { useFilasConOrdenInstantaneo } from "./orden-instantaneo";
+import { ordenarFilas } from "./orden-local";
 
 const push = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace: push }) }));
@@ -37,6 +38,11 @@ function pintar(instantaneo: boolean, url: string) {
 }
 
 describe("orden al instante de un listado de una sola página", () => {
+  it("ordena texto en español sin separar mayúsculas de minúsculas", () => {
+    const nombres = ["Zorro", "Árbol", "Beto", "abeja"];
+    expect(ordenarFilas(nombres, (nombre) => nombre, "asc")).toEqual(["abeja", "Árbol", "Beto", "Zorro"]);
+  });
+
   let terminar: () => void = () => undefined;
 
   beforeEach(() => {

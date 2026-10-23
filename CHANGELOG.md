@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.36 (2026-10-23)
+
+- Listados: la ordenación local de texto usa español de Uruguay sin separar mayúsculas; conserva el orden natural de números dentro del texto.
+
 ## Version 1.0.35 (2026-10-23)
 
 - Seguridad: se actualizan Zod, Vite y Vitest junto con sus dependencias de desarrollo para corregir los avisos detectados por `npm audit`.

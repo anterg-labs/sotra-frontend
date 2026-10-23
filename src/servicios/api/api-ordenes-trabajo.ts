@@ -43,7 +43,7 @@ export async function apiAsignarTecnicoOrdenTrabajo(ordenTrabajoId: number, tecn
 }
 
 export async function apiCrearOrdenTrabajo(orden: CrearOrdenTrabajoInput) {
-  const opciones = crearOpcionesJson("POST", orden);
+  const opciones = crearOpcionesJson("POST", { ...orden, observaciones: orden.observaciones?.trim() === "" ? null : orden.observaciones });
   const ordenCreada = await leerDatosApi("/api/v1/ordenes-trabajo", opciones, "No se pudo crear la orden de trabajo.");
   return ordenCreada as OrdenTrabajo;
 }
@@ -53,7 +53,7 @@ export async function apiActualizarOrdenTrabajo(
   orden: ActualizarOrdenTrabajoInput,
   versionLeida?: string,
 ) {
-  const opciones = crearOpcionesJson("PUT", orden);
+  const opciones = crearOpcionesJson("PUT", { ...orden, observaciones: orden.observaciones?.trim() === "" ? null : orden.observaciones });
   if (versionLeida) {
     opciones.headers = { ...opciones.headers, "If-Match": '"' + versionLeida + '"' };
   }

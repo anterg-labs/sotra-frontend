@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.26 (2026-10-23)
+
+- Avisos: los resultados y errores aparecen arriba con colores y mensajes accesibles; los errores duran más y los diálogos de confirmación tienen títulos identificables.
+
 ## Version 1.0.25 (2026-10-23)
 
 - Desarrollo: el caché de compilación local persiste al recrear contenedores y se pueden precalentar las pantallas con una cuenta de prueba. Se amplía la prueba de ingreso rápido de stock.

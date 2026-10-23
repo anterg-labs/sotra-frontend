@@ -30,9 +30,9 @@ export function esEstadoValido(estado: unknown): estado is "activo" | "inactivo"
   return estado === "activo" || estado === "inactivo";
 }
 
-/** Texto opcional de una entrada no confiable: blanco o ausente es `null`; un tipo inválido es `undefined`. */
+/** Blanco o null borra un opcional; undefined indica que el formulario está incompleto. */
 export function textoOpcional(valor: unknown): string | null | undefined {
-  if (valor === null || valor === undefined) return null;
+  if (valor === null) return null;
   if (typeof valor !== "string") return undefined;
   return valor.trim() === "" ? null : valor;
 }

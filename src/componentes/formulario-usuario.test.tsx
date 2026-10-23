@@ -9,7 +9,7 @@ vi.mock("@/componentes/avisos", () => ({ useAvisos: () => ({ mostrarAviso }) }))
 
 const usuario = {
   id: 3, nombre: "Ana", apellido: "Pérez", correo: "ana@ejemplo.com", telefono: "99123456", roles: [],
-  estado: "activo", fechaIngreso: "2026-01-01",
+  estado: "activo", fechaIngreso: "2026-01-01", correoDeContrasenaEnviado: true,
 };
 
 function completar() {
@@ -42,6 +42,44 @@ describe("formulario de usuarios", () => {
     await waitFor(() => expect(accion).toHaveBeenLastCalledWith(expect.objectContaining({ idsRol: [2] })));
   });
 
+  it("sugiere el formato del teléfono con un texto de ejemplo", () => {
+    render(<FormularioUsuario accion={vi.fn()} etiquetaConfirmacion="Guardar" rutaCancelar="/usuarios" rutaExito="/usuarios" />);
+    expect(screen.getByLabelText("Número de teléfono")).toHaveAttribute("placeholder", "99123456 o 099123456");
+    expect(screen.getByLabelText("Número de teléfono")).toHaveAccessibleDescription("8 dígitos, o 9 si incluís el cero inicial del celular. Por ejemplo, 99123456 o 099123456.");
+  });
+
+  it.each(["99123456", "099123456", "092624911"])("envía el alta con el teléfono válido %s sin truncarlo", async (telefono) => {
+    const accion = vi.fn().mockResolvedValue({ exito: true, registro: usuario });
+    render(<FormularioUsuario accion={accion} etiquetaConfirmacion="Guardar" rutaCancelar="/usuarios" rutaExito="/usuarios" />);
+    completar();
+    fireEvent.change(screen.getByLabelText("Número de teléfono"), { target: { value: telefono } });
+    fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
+    await waitFor(() => expect(accion).toHaveBeenCalledWith(expect.objectContaining({ telefono })));
+    expect(screen.getByLabelText("Número de teléfono")).not.toHaveAttribute("aria-invalid", "true");
+  });
+
+  it.each(["9912345", "991234567", "0991234567"])("rechaza el teléfono %s que no cumple la excepción del cero inicial", async (telefono) => {
+    const accion = vi.fn();
+    render(<FormularioUsuario accion={accion} etiquetaConfirmacion="Guardar" rutaCancelar="/usuarios" rutaExito="/usuarios" />);
+    completar();
+    fireEvent.change(screen.getByLabelText("Número de teléfono"), { target: { value: telefono } });
+    fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
+    expect(await screen.findByText("El campo teléfono debe tener 8 dígitos (o 9 si empieza con 0).")).toHaveAttribute("role", "alert");
+    expect(accion).not.toHaveBeenCalled();
+  });
+
+  it("muestra la falta de rol junto al grupo de roles", async () => {
+    const accion = vi.fn().mockResolvedValue({ exito: false, errores: { idsRol: "Debe seleccionar al menos un rol." }, mensaje: "" });
+    render(<FormularioUsuario accion={accion} etiquetaConfirmacion="Guardar" rutaCancelar="/usuarios" rutaExito="/usuarios"
+      roles={[{ id: 1, nombre: "Administrador" }]} />);
+    completar();
+    fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
+    const error = await screen.findByText("Debe seleccionar al menos un rol.");
+    expect(error).toHaveAttribute("id", "roles-error");
+    expect(screen.getByRole("group", { name: "Roles" })).toHaveAttribute("aria-describedby", "roles-error");
+    expect(push).not.toHaveBeenCalled();
+  });
+
   it("muestra un teléfono duplicado junto al campo", async () => {
     const accion = vi.fn().mockResolvedValue({ exito: false, errores: { telefono: "El número de teléfono ya está registrado." }, mensaje: "" });
     render(<FormularioUsuario accion={accion} etiquetaConfirmacion="Guardar" rutaCancelar="/usuarios" rutaExito="/usuarios" />);
@@ -66,7 +104,7 @@ describe("formulario de usuarios", () => {
     render(<FormularioUsuario accion={vi.fn()} etiquetaConfirmacion="Guardar" rutaCancelar="/usuarios" rutaExito="/usuarios" />);
     expect(screen.queryByLabelText("Contraseña")).not.toBeInTheDocument();
     expect(document.querySelector("input[type=password]")).toBeNull();
-    expect(screen.getByText(/le llega un correo para que elija la suya/)).toBeInTheDocument();
+    expect(screen.getByText("Se debe revisar el correo para configurar la contraseña de acceso.")).toBeInTheDocument();
   });
 
   it("al guardar avisa y vuelve al listado; en edición avisa «Usuario actualizado.»", async () => {
@@ -90,6 +128,21 @@ describe("formulario de usuarios", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
     await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("exito", "Usuario actualizado."));
+  });
+
+  it.each([
+    [false, "advertencia", "Usuario creado, pero no se pudo enviar el correo para elegir su contraseña. Usá «Reenviar enlace de contraseña» desde el detalle del usuario."],
+    [undefined, "info", "Usuario creado. No se envió un nuevo correo de contraseña. Si lo necesita, usá «Reenviar enlace de contraseña» desde su detalle."],
+    [null, "info", "Usuario creado. No se envió un nuevo correo de contraseña. Si lo necesita, usá «Reenviar enlace de contraseña» desde su detalle."],
+  ])("no anuncia envío cuando el resultado es %s y conserva el alta", async (correoDeContrasenaEnviado, tipo, texto) => {
+    const accion = vi.fn().mockResolvedValue({ exito: true, registro: { ...usuario, correoDeContrasenaEnviado } });
+    render(<FormularioUsuario accion={accion} etiquetaConfirmacion="Guardar" rutaCancelar="/usuarios" rutaExito="/usuarios" />);
+    completar();
+    fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/usuarios"));
+    expect(mostrarAviso).toHaveBeenCalledWith(tipo, texto);
+    expect(mostrarAviso).not.toHaveBeenCalledWith("exito", expect.stringContaining("Se envió un correo"));
+    expect(accion).toHaveBeenCalledTimes(1);
   });
 
   it("con alGuardar no navega; el mensaje general del servidor se muestra como alerta", async () => {

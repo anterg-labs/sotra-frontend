@@ -23,7 +23,7 @@ vi.mock("@/servicios/servidor/activos", () => ({ listarActivosServidor: s.listar
 vi.mock("./acciones", () => ({ actualizarClienteAccion: s.actualizarClienteAccion, crearClienteAccion: s.crearClienteAccion }));
 
 const cliente = {
-  id: 5, razonSocial: "ACME", nombreContacto: "Luis", correo: null, telefono: "099", direccion: "",
+  id: 5, razonSocial: "ACME", nombreContacto: "Luis", correo: null, telefono: "99123456", direccion: "",
   observaciones: null, cantidadActivosAsociados: 1, estado: "activo", creadoEn: "2026-01-01T00:00:00Z",
 };
 const activo = { id: 5, numSerie: "SN-5", nombre: "Retro" };

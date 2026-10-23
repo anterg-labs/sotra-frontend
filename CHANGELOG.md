@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.16 (2026-10-23)
+
+- Pruebas: se actualizan las comprobaciones de reenvío de correo y los datos de teléfonos de los formularios para reflejar el comportamiento vigente.
+
 ## Version 1.0.15 (2026-10-23)
 
 - Usuarios: el formulario acepta celulares con cero inicial y el alta muestra si el correo de Keycloak salió, falló o no correspondía; el reenvío muestra el error comunicado por la API.

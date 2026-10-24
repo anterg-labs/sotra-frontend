@@ -28,7 +28,7 @@ describe("formulario de usuarios", () => {
   it("muestra los roles sin desplegable y permite seleccionar varios y quitar uno sin perder los otros", async () => {
     const accion = vi.fn().mockResolvedValue({ exito: true, registro: usuario });
     render(<FormularioUsuario accion={accion} etiquetaConfirmacion="Guardar" rutaCancelar="/usuarios" rutaExito="/usuarios"
-      roles={[{ id: 1, nombre: "Administrador" }, { id: 2, nombre: "Técnico" }]}
+      roles={[{ id: 1, nombre: "Administrador", estado: "activo" }, { id: 2, nombre: "Técnico", estado: "activo" }]}
       usuarioInicial={{ nombre: "Ana", apellido: "Pérez", correo: "ana@ejemplo.com", telefono: "99123456", idsRol: [1], estado: "activo", fechaIngreso: "2026-01-01" }} />);
     expect(screen.getByRole("group", { name: "Roles" })).toBeInTheDocument();
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
@@ -71,7 +71,7 @@ describe("formulario de usuarios", () => {
   it("muestra la falta de rol junto al grupo de roles", async () => {
     const accion = vi.fn().mockResolvedValue({ exito: false, errores: { idsRol: "Debe seleccionar al menos un rol." }, mensaje: "" });
     render(<FormularioUsuario accion={accion} etiquetaConfirmacion="Guardar" rutaCancelar="/usuarios" rutaExito="/usuarios"
-      roles={[{ id: 1, nombre: "Administrador" }]} />);
+      roles={[{ id: 1, nombre: "Administrador", estado: "activo" }]} />);
     completar();
     fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
     const error = await screen.findByText("Debe seleccionar al menos un rol.");

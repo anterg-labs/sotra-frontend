@@ -8,7 +8,6 @@ import { useFormularioAccion } from "@/componentes/use-formulario-accion";
 import type { ResultadoGuardar } from "@/tipos/resultado-accion";
 import type { Cliente, CrearClienteInput } from "@/tipos/cliente";
 import { validarCliente } from "@/validaciones/cliente";
-import { CANTIDAD_DIGITOS_TELEFONO, EJEMPLO_TELEFONO } from "@/validaciones/usuario";
 import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
 type PropiedadesFormularioCliente = {
@@ -157,7 +156,7 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
             id="telefono"
             inputMode="numeric"
             onChange={(evento) => setTelefono(evento.target.value)}
-            placeholder={`${CANTIDAD_DIGITOS_TELEFONO} dígitos, por ejemplo ${EJEMPLO_TELEFONO}`}
+            placeholder="099123456"
             type="tel"
             value={telefono}
           />

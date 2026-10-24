@@ -21,7 +21,7 @@ beforeEach(() => {
   listado.mockReset();
   listarRolesServidor.mockReset();
   listarUsuariosServidor.mockReset().mockResolvedValue({ elementos: [] });
-  listarRolesServidor.mockResolvedValue([{ id: 1, nombre: "Administrador" }, { id: 2, nombre: "Técnico" }]);
+  listarRolesServidor.mockResolvedValue([{ id: 1, nombre: "Administrador", estado: "activo" }, { id: 2, nombre: "Técnico", estado: "activo" }]);
 });
 
 describe("página del listado de usuarios (Server Component)", () => {

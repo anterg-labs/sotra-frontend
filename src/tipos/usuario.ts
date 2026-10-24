@@ -3,6 +3,7 @@ export type EstadoUsuario = "activo" | "inactivo";
 export type Rol = {
   id: number;
   nombre: string;
+  estado: EstadoUsuario;
 };
 
 export type RolDeUsuario = {

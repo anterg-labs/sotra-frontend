@@ -165,7 +165,7 @@ describe("AltaUsuario", () => {
     const { unmount: desmontar } = render(<AltaUsuario roles={[]} />);
     expect(screen.getByText("No hay roles disponibles.")).toBeInTheDocument();
     desmontar();
-    render(<AltaUsuario roles={[{ id: 1, nombre: "Técnico" }]} />);
+    render(<AltaUsuario roles={[{ id: 1, nombre: "Técnico", estado: "activo" }]} />);
     expect(screen.getByLabelText("Nombre")).toBeInTheDocument();
     expect(screen.queryByLabelText("Contraseña")).not.toBeInTheDocument();
   });

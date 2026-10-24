@@ -4,6 +4,10 @@
 
 - Clientes: el formulario muestra como ejemplo un celular con cero inicial y lo envía tal como se ingresó; la lista y el detalle conservan el formato guardado.
 
+## Version 1.0.38 (2026-10-23)
+
+- Roles: el tipo de rol del frontend incluye el estado que informa la API.
+
 ## Version 1.0.37 (2026-10-23)
 
 - Usuarios: se quita el texto de ayuda sobre la cantidad de dígitos y el formulario muestra como ejemplo un celular con cero inicial. El teléfono recuperado para edición conserva el formato ingresado.

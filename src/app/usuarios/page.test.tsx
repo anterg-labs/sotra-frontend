@@ -43,7 +43,7 @@ const pagina = (elementos: ReturnType<typeof usuario>[], totalPaginas = 1) => ({
   totalPaginas,
 });
 
-const roles = [{ id: 1, nombre: "Administrador" }, { id: 2, nombre: "Técnico" }];
+const roles = [{ id: 1, nombre: "Administrador", estado: "activo" as const }, { id: 2, nombre: "Técnico", estado: "activo" as const }];
 const filtrosVacios = { buscar: "", rolId: "", estado: "", pagina: 1 };
 const conNavegacion = (ui: React.ReactNode) => <ProveedorNavegacionListado etiquetaCarga="Cargando usuarios…">{ui}</ProveedorNavegacionListado>;
 

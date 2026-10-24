@@ -69,11 +69,11 @@ export default async function PaginaDetalleMovimientoStock(props: { params: Prom
               <dt>Usuario responsable</dt>
               <dd>{movimiento.nombreUsuario ?? "Sin registrar (todavía no hay login)"}</dd>
             </div>
-            <div>
+            <div className="detail-wide">
               <dt>Motivo</dt>
               <dd>{movimiento.motivo}</dd>
             </div>
-            <div>
+            <div className="detail-wide">
               <dt>Observaciones</dt>
               <dd>{movimiento.observaciones !== "" ? movimiento.observaciones : "Sin observaciones"}</dd>
             </div>

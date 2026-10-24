@@ -294,7 +294,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
           </div>
           <div>
             <dt>Estado</dt>
-            <dd>{obtenerEtiquetaEstadoOrdenTrabajo(orden.estado)}</dd>
+            <dd><span className={"status status-" + orden.estado}>{obtenerEtiquetaEstadoOrdenTrabajo(orden.estado)}</span></dd>
           </div>
           <div>
             <dt>Fecha de creación</dt>
@@ -304,19 +304,19 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
             <dt>Fecha prevista de ejecución</dt>
             <dd>{formatearFechaPrevista(orden.fechaPrevistaEjecucion)}</dd>
           </div>
-          <div>
+          <div className="detail-wide">
             <dt>Descripción de la tarea</dt>
             <dd>{orden.descripcion}</dd>
           </div>
-          <div>
+          <div className="detail-wide">
             <dt>Observaciones</dt>
             <dd>{textoObservaciones}</dd>
           </div>
-          <div>
+          <div className="detail-wide">
             <dt>Repuestos</dt>
             <dd>{textoRepuestos}</dd>
           </div>
-          <div>
+          <div className="detail-wide">
             <dt>Sugerencias</dt>
             <dd>{textoSugerencias}</dd>
           </div>

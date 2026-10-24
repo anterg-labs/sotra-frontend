@@ -346,6 +346,11 @@ button:disabled {
   box-shadow: var(--sombra-s);
 }
 
+/* El menú de un selector abierto sobresale de la tarjeta en lugar de quedar recortado por el overflow de .panel. */
+.panel:has(.combobox-panel) {
+  overflow: visible;
+}
+
 .text-link {
   color: var(--texto);
   font-size: 12px;
@@ -902,8 +907,21 @@ button:disabled {
 
 .detail-list {
   display: grid;
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 18px 32px;
   margin: 22px 0;
+}
+
+.detail-list > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Los datos largos (descripción, observaciones, listas) ocupan todo el ancho; los cortos se reparten en columnas. */
+.detail-list > .detail-wide {
+  grid-column: 1 / -1;
+  padding-top: 16px;
+  border-top: 1px solid var(--borde);
 }
 
 .detail-list dt {

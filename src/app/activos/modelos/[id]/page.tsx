@@ -49,7 +49,7 @@ export default async function PaginaDetalleModeloMaquina(props: { params: Promis
                   <Link className="text-link" href={"/activos/tipos/" + datos.modelo.tipoMaquinaId}>{datos.nombreTipo}</Link>
                 </dd>
               </div>
-              <div>
+              <div className="detail-wide">
                 <dt>Descripción</dt>
                 <dd>{datos.modelo.descripcion ? datos.modelo.descripcion : "Sin descripción"}</dd>
               </div>

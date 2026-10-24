@@ -108,7 +108,7 @@ export default async function PaginaDetalleActivo(props: { params: Promise<{ id:
                   <dt>Ubicación</dt>
                   <dd>{datos.activo.ubicacion ? datos.activo.ubicacion : "Sin dato"}</dd>
                 </div>
-                <div>
+                <div className="detail-wide">
                   <dt>Descripción</dt>
                   <dd>{datos.activo.descripcion ? datos.activo.descripcion : "Sin descripción"}</dd>
                 </div>

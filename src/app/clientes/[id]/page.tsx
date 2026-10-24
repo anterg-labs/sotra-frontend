@@ -89,11 +89,11 @@ export default async function PaginaDetalleCliente(props: { params: Promise<{ id
                   <dt>Teléfono</dt>
                   <dd>{mostrarTexto(cliente.telefono)}</dd>
                 </div>
-                <div>
+                <div className="detail-wide">
                   <dt>Dirección</dt>
                   <dd>{mostrarTexto(cliente.direccion)}</dd>
                 </div>
-                <div>
+                <div className="detail-wide">
                   <dt>Observaciones</dt>
                   <dd>{mostrarTexto(cliente.observaciones)}</dd>
                 </div>

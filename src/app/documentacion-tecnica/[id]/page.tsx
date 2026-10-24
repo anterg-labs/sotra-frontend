@@ -49,7 +49,7 @@ export default async function PaginaDetalleDocumentoTecnico(props: { params: Pro
               </dd>
             </div>
             {documento.descripcion ? (
-              <div>
+              <div className="detail-wide">
                 <dt>Descripción</dt>
                 <dd>{documento.descripcion}</dd>
               </div>
@@ -70,7 +70,7 @@ export default async function PaginaDetalleDocumentoTecnico(props: { params: Pro
               <dt>Modelo de máquina</dt>
               <dd>{documento.nombreModelo ?? "Sin modelo"}</dd>
             </div>
-            <div>
+            <div className="detail-wide">
               <dt>Sugerencias de IA</dt>
               <dd>
                 {documento.usaSugerenciasIA

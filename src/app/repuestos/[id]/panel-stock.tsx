@@ -105,7 +105,7 @@ export function PanelStock(props: { repuesto: Repuesto; abrirIngreso: boolean })
           <dt>Marca</dt>
           <dd>{repuesto.marca}</dd>
         </div>
-        <div>
+        <div className="detail-wide">
           <dt>Descripción</dt>
           <dd>{repuesto.descripcion}</dd>
         </div>

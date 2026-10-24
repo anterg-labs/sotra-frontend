@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.38 (2026-10-23)
+
+- Roles: el tipo de rol del frontend incluye el estado que informa la API.
+
 ## Version 1.0.36 (2026-10-23)
 
 - Listados: la ordenación local de texto usa español de Uruguay sin separar mayúsculas; conserva el orden natural de números dentro del texto.

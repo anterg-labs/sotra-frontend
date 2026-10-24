@@ -4,6 +4,7 @@ import { obtenerDocumentoTecnicoServidor } from "@/servicios/servidor/documentos
 import { obtenerEtiquetaTipoDocumento, type DocumentoTecnico } from "@/tipos/documento-tecnico";
 import { formatearFechaHora } from "@/utilidades/fechas";
 import { BotonVigencia } from "./boton-vigencia";
+import { EnlaceVolver } from "@/componentes/enlace-volver";
 
 async function cargarDocumento(documentoId: number): Promise<DocumentoTecnico | null> {
   if (!Number.isInteger(documentoId) || documentoId <= 0) return null;
@@ -20,13 +21,13 @@ export default async function PaginaDetalleDocumentoTecnico(props: { params: Pro
   return (
     <main className="page-content">
       <header className="page-heading">
-        <div>
-          <p className="eyebrow">Documentación</p>
-          <h1>{documento ? documento.titulo : "Detalle del documento"}</h1>
+        <div className="encabezado-volver">
+          <EnlaceVolver etiqueta="Volver al listado" href="/documentacion-tecnica" />
+          <div>
+            <p className="eyebrow">Documentación</p>
+            <h1>{documento ? documento.titulo : "Detalle del documento"}</h1>
+          </div>
         </div>
-        <Link className="secondary-button" href="/documentacion-tecnica">
-          Volver al listado
-        </Link>
       </header>
 
       {documento ? (

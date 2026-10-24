@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.42 (2026-10-24)
+
+- Navegación: el botón «Volver al listado» (y «Volver a activos», «Volver a repuestos», «Volver a movimientos») pasa a ser una flecha a la izquierda del título, con el texto como etiqueta accesible, en los detalles de órdenes, clientes, usuarios, activos, modelos, tipos, documentos, repuestos y movimientos, y en el alta y la edición de usuarios.
+
 ## Version 1.0.41 (2026-10-24)
 
 - Vistas de detalle: los datos cortos se reparten en columnas y los largos (descripción, observaciones, repuestos y sugerencias) ocupan todo el ancho, con lo que la tarjeta principal de la orden de trabajo, los clientes, los activos, los modelos, los documentos, los repuestos y sus movimientos aprovecha mejor la pantalla. El estado de la orden se muestra como etiqueta.

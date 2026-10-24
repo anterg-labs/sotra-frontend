@@ -8,6 +8,7 @@ import type { Pagina } from "@/tipos/pagina";
 import type { Repuesto } from "@/tipos/repuesto";
 import { PanelStock } from "./panel-stock";
 import { TablaMovimientosRepuesto } from "@/componentes/tablas-ordenables";
+import { EnlaceVolver } from "@/componentes/enlace-volver";
 
 async function cargarRepuesto(repuestoId: number): Promise<Repuesto | null> {
   if (!Number.isInteger(repuestoId) || repuestoId <= 0) return null;
@@ -41,13 +42,13 @@ export default async function PaginaDetalleRepuesto(props: {
   return (
     <main className="page-content">
       <header className="page-heading">
-        <div>
-          <p className="eyebrow">Repuestos</p>
-          <h1>{repuesto ? repuesto.codigo + " - " + repuesto.nombre : "Detalle del repuesto"}</h1>
+        <div className="encabezado-volver">
+          <EnlaceVolver etiqueta="Volver al listado" href="/repuestos" />
+          <div>
+            <p className="eyebrow">Repuestos</p>
+            <h1>{repuesto ? repuesto.codigo + " - " + repuesto.nombre : "Detalle del repuesto"}</h1>
+          </div>
         </div>
-        <Link className="secondary-button" href="/repuestos">
-          Volver al listado
-        </Link>
       </header>
 
       {repuesto ? (

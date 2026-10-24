@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.40 (2026-10-24)
+
+- Órdenes de trabajo: el menú del selector de técnico se ve completo sobre la tarjeta en lugar de quedar recortado dentro de ella; lo mismo vale para cualquier selector dentro de una tarjeta.
+
 ## Version 1.0.39 (2026-10-23)
 
 - Clientes: el formulario muestra como ejemplo un celular con cero inicial y lo envía tal como se ingresó; la lista y el detalle conservan el formato guardado.

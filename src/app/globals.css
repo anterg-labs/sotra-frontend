@@ -320,6 +320,11 @@ button:disabled {
   box-shadow: var(--sombra-s);
 }
 
+/* El menú de un selector abierto sobresale de la tarjeta en lugar de quedar recortado por el overflow de .panel. */
+.panel:has(.combobox-panel) {
+  overflow: visible;
+}
+
 .text-link {
   color: var(--texto);
   font-size: 12px;

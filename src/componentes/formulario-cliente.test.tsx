@@ -14,9 +14,9 @@ const clienteGuardado: Cliente = {
   observaciones: null, cantidadActivosAsociados: 0, cantidadOrdenesAsociadas: 0, estado: "activo", creadoEn: "2026-01-01T00:00:00Z",
 };
 
-it("sugiere el formato del teléfono con un texto de ejemplo", () => {
+it("muestra como ejemplo un celular con cero inicial", () => {
   render(<FormularioCliente accion={vi.fn()} etiquetaConfirmacion="Guardar" />);
-  expect(screen.getByLabelText("Número telefónico (opcional)")).toHaveAttribute("placeholder", "8 dígitos, por ejemplo 99123456");
+  expect(screen.getByLabelText("Número telefónico (opcional)")).toHaveAttribute("placeholder", "099123456");
 });
 
 function completar(telefono = "") {
@@ -68,6 +68,15 @@ describe("formulario de clientes", () => {
       razonSocial: "Cliente prueba", nombreContacto: "Ana Pérez", correo: null, telefono: null, direccion: null, observaciones: null,
     });
     expect(mostrarAviso).toHaveBeenCalledWith("exito", "Cliente registrado.");
+  });
+
+  it("envía el celular con cero inicial tal como se ingresó", async () => {
+    const accion = vi.fn().mockResolvedValue({ exito: true, registro: clienteGuardado });
+    render(<FormularioCliente accion={accion} etiquetaConfirmacion="Guardar" />);
+    completar("099123456");
+    fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
+
+    await waitFor(() => expect(accion).toHaveBeenCalledWith(expect.objectContaining({ telefono: "099123456" })));
   });
 
   it("al modificar avisa «Cliente actualizado.» y precarga los datos", async () => {

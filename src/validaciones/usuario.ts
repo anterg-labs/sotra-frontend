@@ -2,7 +2,6 @@ const LARGO_MAXIMO_NOMBRE = 100;
 const LARGO_MAXIMO_CORREO = 254;
 /** El teléfono tiene 8 dígitos, o 9 con el 0 inicial; la API conserva el formato ingresado. */
 export const CANTIDAD_DIGITOS_TELEFONO = 8;
-export const EJEMPLO_TELEFONO = "99123456";
 
 const PATRON_NOMBRE_PERMITIDO = /^[\p{L} '’.-]+$/u;
 const PATRON_CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

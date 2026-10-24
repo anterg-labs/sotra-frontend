@@ -44,8 +44,8 @@ describe("formulario de usuarios", () => {
 
   it("sugiere el formato del teléfono con un texto de ejemplo", () => {
     render(<FormularioUsuario accion={vi.fn()} etiquetaConfirmacion="Guardar" rutaCancelar="/usuarios" rutaExito="/usuarios" />);
-    expect(screen.getByLabelText("Número de teléfono")).toHaveAttribute("placeholder", "99123456 o 099123456");
-    expect(screen.getByLabelText("Número de teléfono")).toHaveAccessibleDescription("8 dígitos, o 9 si incluís el cero inicial del celular. Por ejemplo, 99123456 o 099123456.");
+    expect(screen.getByLabelText("Número de teléfono")).toHaveAttribute("placeholder", "099123456");
+    expect(screen.getByLabelText("Número de teléfono")).not.toHaveAccessibleDescription();
   });
 
   it.each(["99123456", "099123456", "092624911"])("envía el alta con el teléfono válido %s sin truncarlo", async (telefono) => {

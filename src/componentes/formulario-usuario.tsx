@@ -170,18 +170,17 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
         <div className="form-field">
           <label htmlFor="telefono">Número de teléfono</label>
           <input
-            aria-describedby={errores.telefono ? "telefono-ayuda telefono-error" : "telefono-ayuda"}
+            aria-describedby={errores.telefono ? "telefono-error" : undefined}
             aria-invalid={errores.telefono ? true : undefined}
             autoComplete="tel-national"
             id="telefono"
             inputMode="numeric"
             onChange={(evento) => setTelefono(evento.target.value)}
-            placeholder="99123456 o 099123456"
+            placeholder="099123456"
             required
             type="tel"
             value={telefono}
           />
-          <p className="field-hint" id="telefono-ayuda">8 dígitos, o 9 si incluís el cero inicial del celular. Por ejemplo, 99123456 o 099123456.</p>
           {mostrarError("telefono", errores.telefono)}
         </div>
 

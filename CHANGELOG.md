@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.37 (2026-10-23)
+
+- Usuarios: se quita el texto de ayuda sobre la cantidad de dígitos y el formulario muestra como ejemplo un celular con cero inicial. El teléfono recuperado para edición conserva el formato ingresado.
+
 ## Version 1.0.36 (2026-10-23)
 
 - Listados: la ordenación local de texto usa español de Uruguay sin separar mayúsculas; conserva el orden natural de números dentro del texto.

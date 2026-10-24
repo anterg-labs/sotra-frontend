@@ -1,6 +1,6 @@
 const LARGO_MAXIMO_NOMBRE = 100;
 const LARGO_MAXIMO_CORREO = 254;
-/** El teléfono tiene 8 dígitos, o 9 si es un celular escrito con el 0 inicial (la API guarda siempre los 8), en la API y en la interfaz. */
+/** El teléfono tiene 8 dígitos, o 9 con el 0 inicial; la API conserva el formato ingresado. */
 export const CANTIDAD_DIGITOS_TELEFONO = 8;
 export const EJEMPLO_TELEFONO = "99123456";
 

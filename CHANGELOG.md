@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.43 (2026-10-24)
+
+- Órdenes de trabajo: el desplegable «Actualizar estado» del detalle ahora es igual al de «Asignar o modificar técnico» (mismo aspecto y comportamiento), en lugar de la lista nativa del navegador.
+
 ## Version 1.0.42 (2026-10-24)
 
 - Navegación: el botón «Volver al listado» (y «Volver a activos», «Volver a repuestos», «Volver a movimientos») pasa a ser una flecha a la izquierda del título, con el texto como etiqueta accesible, en los detalles de órdenes, clientes, usuarios, activos, modelos, tipos, documentos, repuestos y movimientos, y en el alta y la edición de usuarios.

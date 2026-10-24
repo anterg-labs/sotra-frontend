@@ -322,6 +322,11 @@ describe("OrdenesAsociadas", () => {
   });
 });
 
+function elegirEstado(etiqueta: string) {
+  fireEvent.focus(screen.getByRole("combobox", { name: "Actualizar estado" }));
+  fireEvent.click(screen.getByRole("option", { name: etiqueta }));
+}
+
 describe("detalle de orden de trabajo", () => {
   it("excluye al técnico actual de las opciones iniciales y remotas", async () => {
     const otro = { id: 8, nombre: "Ana", apellido: "Pérez" };
@@ -429,9 +434,9 @@ describe("detalle de orden de trabajo", () => {
     render(await DetalleOrden(parametros("11")));
     expect(screen.getByRole("button", { name: "Confirmar estado" })).toBeDisabled();
 
-    fireEvent.change(screen.getByLabelText("Actualizar estado"), { target: { value: "pausada" } });
+    elegirEstado("Pausada");
     expect(screen.getByLabelText("Motivo u observación")).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Actualizar estado"), { target: { value: "asignada" } });
+    elegirEstado("Asignada");
     expect(screen.queryByLabelText("Motivo u observación")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Confirmar estado" }));
@@ -443,7 +448,7 @@ describe("detalle de orden de trabajo", () => {
   it("muestra el error de validación del servicio al cambiar de estado sin motivo", async () => {
     s.cambiarEstadoOrdenTrabajo.mockRejectedValue(new Error("Indicá el motivo u observación del cambio de estado."));
     render(await DetalleOrden(parametros("11")));
-    fireEvent.change(screen.getByLabelText("Actualizar estado"), { target: { value: "pausada" } });
+    elegirEstado("Pausada");
     fireEvent.click(screen.getByRole("button", { name: "Confirmar estado" }));
     expect(await screen.findByText("Indicá el motivo u observación del cambio de estado.")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Motivo u observación"), { target: { value: "Falta repuesto" } });

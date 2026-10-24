@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { AltaUsuario } from "@/componentes/alta-usuario";
 import { rolesAsignables } from "@/seguridad/permisos";
 import { tienePermisoServidor } from "@/servicios/servidor/sesion";
 import { listarRolesServidor } from "@/servicios/servidor/usuarios";
+import { EnlaceVolver } from "@/componentes/enlace-volver";
 
 export default async function PaginaNuevoUsuario() {
   const [todos, puedeGestionarAdministradores] = await Promise.all([
@@ -15,16 +15,16 @@ export default async function PaginaNuevoUsuario() {
   return (
     <main className="page-content">
       <header className="page-heading">
-        <div>
-          <p className="eyebrow">Gestión de usuarios</p>
-          <h1>Crear nuevo usuario</h1>
-          <p className="page-description">
+        <div className="encabezado-volver">
+          <EnlaceVolver etiqueta="Volver al listado" href="/usuarios" />
+          <div>
+            <p className="eyebrow">Gestión de usuarios</p>
+            <h1>Crear nuevo usuario</h1>
+            <p className="page-description">
             Registrá un usuario interno indicando sus datos de contacto y roles. Le llega un correo para elegir su contraseña.
-          </p>
+            </p>
+          </div>
         </div>
-        <Link className="text-link" href="/usuarios">
-          Volver al listado
-        </Link>
       </header>
 
       <section className="panel form-panel">

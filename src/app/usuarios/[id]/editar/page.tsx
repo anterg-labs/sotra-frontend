@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { BotonRestablecerContrasena } from "../../boton-restablecer-contrasena";
+import { EnlaceVolver } from "@/componentes/enlace-volver";
 import { FormularioUsuario } from "@/componentes/formulario-usuario";
 import { esUsuarioAdministrador, rolesAsignables } from "@/seguridad/permisos";
 import { tienePermisoServidor } from "@/servicios/servidor/sesion";
@@ -34,17 +34,17 @@ export default async function PaginaEditarUsuario(props: { params: Promise<{ id:
   return (
     <main className="page-content">
       <header className="page-heading">
-        <div>
-          <p className="eyebrow">Gestión de usuarios</p>
-          <h1>Modificar usuario</h1>
+        <div className="encabezado-volver">
+          <EnlaceVolver etiqueta="Volver al listado" href={RUTA_LISTADO} />
+          <div>
+            <p className="eyebrow">Gestión de usuarios</p>
+            <h1>Modificar usuario</h1>
+          </div>
         </div>
         <div className="form-actions">
           {datos?.puedeModificar && datos.usuario.estado === "activo" ? (
             <BotonRestablecerContrasena correo={datos.usuario.correo} usuarioId={datos.usuario.id} />
           ) : null}
-          <Link className="text-link" href={RUTA_LISTADO}>
-            Volver al listado
-          </Link>
         </div>
       </header>
 

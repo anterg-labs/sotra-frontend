@@ -1,6 +1,5 @@
 import { listarMovimientosStockServidor } from "@/servicios/servidor/movimientos-stock";
 import { anticiparConsulta } from "@/servicios/servidor/consulta-anticipada";
-import Link from "next/link";
 import { Suspense } from "react";
 import { EsqueletoListado } from "@/componentes/listado/esqueleto-listado";
 import { ProveedorNavegacionListado, ZonaListado } from "@/componentes/listado/navegacion-listado";
@@ -14,6 +13,7 @@ import type { Usuario } from "@/tipos/usuario";
 import { BarraFiltrosMovimientos } from "./barra-filtros-movimientos";
 import { leerFiltrosMovimientos } from "./filtros";
 import { ListadoMovimientos } from "./listado-movimientos";
+import { EnlaceVolver } from "@/componentes/enlace-volver";
 
 const ETIQUETA_CARGA = "Cargando movimientos de stock…";
 
@@ -37,13 +37,13 @@ export default async function PaginaMovimientosStock(props: { searchParams: Prom
   return (
     <main className="page-content">
       <header className="page-heading">
-        <div>
-          <p className="eyebrow">Repuestos</p>
-          <h1>Movimientos de stock</h1>
+        <div className="encabezado-volver">
+          <EnlaceVolver etiqueta="Volver a repuestos" href="/repuestos" />
+          <div>
+            <p className="eyebrow">Repuestos</p>
+            <h1>Movimientos de stock</h1>
+          </div>
         </div>
-        <Link className="secondary-button" href="/repuestos">
-          Volver a repuestos
-        </Link>
       </header>
 
       <ProveedorNavegacionListado etiquetaCarga={ETIQUETA_CARGA}>

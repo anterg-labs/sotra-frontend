@@ -17,6 +17,7 @@ import type { HistorialEstadoOrdenTrabajo, OrdenTrabajo } from "@/tipos/orden-tr
 import type { Usuario } from "@/tipos/usuario";
 import { formatearFechaCorta, formatearFechaHora } from "@/utilidades/fechas";
 import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
+import { EnlaceVolver } from "@/componentes/enlace-volver";
 
 type PropiedadesDetalleOrden = {
   ordenInicial: OrdenTrabajo;
@@ -368,13 +369,13 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
   return (
     <main className="page-content">
       <header className="page-heading">
-        <div>
-          <p className="eyebrow">Órdenes de trabajo</p>
-          <h1>{titulo}</h1>
+        <div className="encabezado-volver">
+          <EnlaceVolver etiqueta="Volver al listado" href="/ordenes-trabajo" />
+          <div>
+            <p className="eyebrow">Órdenes de trabajo</p>
+            <h1>{titulo}</h1>
+          </div>
         </div>
-        <Link className="secondary-button" href="/ordenes-trabajo">
-          Volver al listado
-        </Link>
       </header>
 
       {mensajeError}

@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { conTecnicoDeLaOrden, obtenerOrdenTrabajoServidor, listarTecnicosServidor } from "@/servicios/servidor/ordenes-trabajo";
 import { tienePermisoServidor } from "@/servicios/servidor/sesion";
 import type { OrdenTrabajo } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
 import { DetalleOrdenTrabajo } from "./detalle-orden";
+import { EnlaceVolver } from "@/componentes/enlace-volver";
 
 async function cargarOrden(ordenTrabajoId: number): Promise<OrdenTrabajo | null> {
   if (!Number.isInteger(ordenTrabajoId) || ordenTrabajoId <= 0) return null;
@@ -29,13 +29,13 @@ export default async function PaginaDetalleOrdenTrabajo(props: { params: Promise
     return (
       <main className="page-content">
         <header className="page-heading">
-          <div>
-            <p className="eyebrow">Órdenes de trabajo</p>
-            <h1>Orden de trabajo</h1>
+          <div className="encabezado-volver">
+            <EnlaceVolver etiqueta="Volver al listado" href="/ordenes-trabajo" />
+            <div>
+              <p className="eyebrow">Órdenes de trabajo</p>
+              <h1>Orden de trabajo</h1>
+            </div>
           </div>
-          <Link className="secondary-button" href="/ordenes-trabajo">
-            Volver al listado
-          </Link>
         </header>
         <p className="form-error-banner">No se pudo obtener la información de la orden solicitada.</p>
       </main>

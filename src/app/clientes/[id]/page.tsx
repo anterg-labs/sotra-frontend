@@ -5,6 +5,7 @@ import { obtenerClienteServidor } from "@/servicios/servidor/clientes";
 import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
 import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
+import { EnlaceVolver } from "@/componentes/enlace-volver";
 
 function mostrarTexto(valor: string | null) {
   return valor === null || valor === "" ? "Sin dato" : valor;
@@ -63,13 +64,13 @@ export default async function PaginaDetalleCliente(props: { params: Promise<{ id
   return (
     <main className="page-content">
       <header className="page-heading">
-        <div>
-          <p className="eyebrow">Gestión de clientes</p>
-          <h1>{cliente ? cliente.razonSocial : "Detalle del cliente"}</h1>
+        <div className="encabezado-volver">
+          <EnlaceVolver etiqueta="Volver al listado" href="/clientes" />
+          <div>
+            <p className="eyebrow">Gestión de clientes</p>
+            <h1>{cliente ? cliente.razonSocial : "Detalle del cliente"}</h1>
+          </div>
         </div>
-        <Link className="secondary-button" href="/clientes">
-          Volver al listado
-        </Link>
       </header>
 
       {cliente ? (

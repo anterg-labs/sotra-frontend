@@ -9,6 +9,7 @@ import type { Activo } from "@/tipos/activo";
 import type { DocumentoTecnico } from "@/tipos/documento-tecnico";
 import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import { tienePermisoServidor } from "@/servicios/servidor/sesion";
+import { EnlaceVolver } from "@/componentes/enlace-volver";
 
 type DatosActivo = {
   activo: Activo;
@@ -56,13 +57,13 @@ export default async function PaginaDetalleActivo(props: { params: Promise<{ id:
   return (
     <main className="page-content">
       <header className="page-heading">
-        <div>
-          <p className="eyebrow">Activos</p>
-          <h1>{datos ? (datos.activo.nombre ?? "Sin nombre") : "Detalle del activo"}</h1>
+        <div className="encabezado-volver">
+          <EnlaceVolver etiqueta="Volver al listado" href="/activos" />
+          <div>
+            <p className="eyebrow">Activos</p>
+            <h1>{datos ? (datos.activo.nombre ?? "Sin nombre") : "Detalle del activo"}</h1>
+          </div>
         </div>
-        <Link className="secondary-button" href="/activos">
-          Volver al listado
-        </Link>
       </header>
 
       {datos ? (

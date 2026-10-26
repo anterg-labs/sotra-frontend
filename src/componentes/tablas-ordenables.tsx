@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 import { ContenedorTabla } from "@/componentes/contenedor-tabla";
 import { IconoOjo } from "@/componentes/iconos";
 import { InsigniaStock } from "@/componentes/indicador-stock";
 import { EncabezadoOrdenLocal, useOrdenLocal } from "@/componentes/listado/orden-local";
-import { obtenerEtiquetaEstadoOrdenTrabajo } from "@/servicios/servicio-ordenes-trabajo";
+import { useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
 import type { MovimientoStock } from "@/tipos/movimiento-stock";
 import type { OrdenTrabajo } from "@/tipos/orden-trabajo";
 import type { CantidadPorGrupo } from "@/tipos/reporte";
@@ -23,18 +24,20 @@ const RANGO_STOCK: Record<string, number> = { sin_stock: 0, bajo: 1, normal: 2 }
 
 type ColumnaOrdenes = "id" | "cliente" | "activo" | "tecnico" | "prioridad" | "estado";
 
-const VALORES_ORDENES = {
+const crearValoresOrdenes = (etiquetaEstado: (estado: string) => string) => ({
   id: (orden: OrdenTrabajo) => orden.id,
   cliente: (orden: OrdenTrabajo) => orden.nombreCliente,
   activo: (orden: OrdenTrabajo) => orden.nombreActivo,
   tecnico: (orden: OrdenTrabajo) => orden.nombreTecnico,
   prioridad: (orden: OrdenTrabajo) => RANGO_PRIORIDAD[orden.prioridad] ?? 0,
-  estado: (orden: OrdenTrabajo) => obtenerEtiquetaEstadoOrdenTrabajo(orden.estado),
-} satisfies Record<ColumnaOrdenes, (orden: OrdenTrabajo) => string | number | null>;
+  estado: (orden: OrdenTrabajo) => etiquetaEstado(orden.estado),
+} satisfies Record<ColumnaOrdenes, (orden: OrdenTrabajo) => string | number | null>);
 
 /** «Órdenes recientes» de Inicio y de Reportes. */
 export function TablaOrdenesResumen(props: { ordenes: OrdenTrabajo[]; etiqueta: string }) {
-  const { filasOrdenadas, orden, alternar } = useOrdenLocal(props.ordenes, VALORES_ORDENES);
+  const etiquetaEstado = useEtiquetaEstadoOrden();
+  const valoresOrdenes = useMemo(() => crearValoresOrdenes(etiquetaEstado), [etiquetaEstado]);
+  const { filasOrdenadas, orden, alternar } = useOrdenLocal(props.ordenes, valoresOrdenes);
   const encabezado = (columna: ColumnaOrdenes, etiqueta: string) => (
     <EncabezadoOrdenLocal alternar={alternar} columna={columna} etiqueta={etiqueta} orden={orden} />
   );
@@ -61,7 +64,7 @@ export function TablaOrdenesResumen(props: { ordenes: OrdenTrabajo[]; etiqueta: 
               <td>{fila.nombreActivo}</td>
               <td>{fila.nombreTecnico ?? "Sin asignar"}</td>
               <td>{fila.prioridad}</td>
-              <td>{obtenerEtiquetaEstadoOrdenTrabajo(fila.estado)}</td>
+              <td>{etiquetaEstado(fila.estado)}</td>
               <td>
                 <Link aria-label="Ver detalle" className="boton-icono" href={"/ordenes-trabajo/" + fila.id} title="Ver detalle">
                   <IconoOjo />

@@ -1,26 +1,21 @@
-import type { AlertasMaquinaria, CantidadPorGrupo, Indicadores } from "@/tipos/reporte";
-
-const ESTADOS_TERMINADOS = new Set(["finalizada", "cerrada", "cancelada"]);
+import { ETIQUETAS_FASE_ORDEN, type OpcionEstadoOrden } from "@/tipos/orden-trabajo";
+import type { AlertasMaquinaria, Indicadores } from "@/tipos/reporte";
+import { contarPorFase } from "@/utilidades/estados-orden";
 
 export type Acceso = { etiqueta: string; valor: number | string; detalle?: string; href: string; destacado?: boolean };
 
-function cantidadEnEstado(grupos: CantidadPorGrupo[], estado: string) {
-  return grupos.find((grupo) => grupo.nombre === estado)?.cantidad ?? 0;
-}
-
-export function armarAccesos(indicadores: Indicadores, alertas: AlertasMaquinaria | null): Acceso[] {
-  const abiertas = indicadores.ordenesPorEstado
-    .filter((grupo) => !ESTADOS_TERMINADOS.has(grupo.nombre))
-    .reduce((total, grupo) => total + grupo.cantidad, 0);
-  const sinAsignar = cantidadEnEstado(indicadores.ordenesPorEstado, "creada");
-  const enEjecucion = cantidadEnEstado(indicadores.ordenesPorEstado, "en_ejecucion");
+/** `estados` es el catálogo de la base: qué estados son pendientes, en curso o por validar lo dice cada estado (`fase`). */
+export function armarAccesos(indicadores: Indicadores, alertas: AlertasMaquinaria | null, estados: readonly OpcionEstadoOrden[]): Acceso[] {
+  const grupos = indicadores.ordenesPorEstado;
+  const pendientes = contarPorFase(grupos, estados, "pendiente");
+  const enCurso = contarPorFase(grupos, estados, "en_curso");
 
   return [
-    { etiqueta: "Órdenes abiertas", valor: abiertas, detalle: "Creadas, asignadas, en ejecución o pausadas", href: "/ordenes-trabajo" },
+    { etiqueta: "Órdenes abiertas", valor: pendientes + enCurso, detalle: "Pendientes y en curso", href: "/ordenes-trabajo" },
     { etiqueta: "Prioridad alta pendientes", valor: indicadores.ordenesAltaPrioridadPendientes, href: "/ordenes-trabajo?prioridad=alta", destacado: indicadores.ordenesAltaPrioridadPendientes > 0 },
-    { etiqueta: "Sin asignar", valor: sinAsignar, detalle: "Esperan un técnico", href: "/ordenes-trabajo?estado=creada" },
-    { etiqueta: "En ejecución", valor: enEjecucion, href: "/ordenes-trabajo?estado=en_ejecucion" },
-    { etiqueta: "Pendientes de validación", valor: indicadores.ordenesPendientesDeValidacion, detalle: "Finalizadas sin cerrar", href: "/ordenes-trabajo?estado=finalizada" },
+    { etiqueta: ETIQUETAS_FASE_ORDEN.pendiente, valor: pendientes, detalle: "Esperan técnico o inicio", href: "/ordenes-trabajo?fase=pendiente" },
+    { etiqueta: ETIQUETAS_FASE_ORDEN.en_curso, valor: enCurso, href: "/ordenes-trabajo?fase=en_curso" },
+    { etiqueta: ETIQUETAS_FASE_ORDEN.por_validar, valor: indicadores.ordenesPendientesDeValidacion, detalle: "Terminadas sin cerrar", href: "/ordenes-trabajo?fase=por_validar" },
     {
       etiqueta: "Alertas de maquinaria",
       valor: alertas?.total ?? "—",

@@ -6,7 +6,7 @@ import { ProveedorNavegacionListado, ZonaListado } from "@/componentes/listado/n
 import type { ParametrosBusqueda } from "@/componentes/listado/url-listado";
 import { listarActivosServidor, obtenerActivoServidor } from "@/servicios/servidor/activos";
 import { listarClientesServidor, obtenerClienteServidor } from "@/servicios/servidor/clientes";
-import { listarOrdenesTrabajoServidor, listarTecnicosServidor } from "@/servicios/servidor/ordenes-trabajo";
+import { listarEstadosOrdenTrabajoOVacio, listarOrdenesTrabajoServidor, listarTecnicosServidor } from "@/servicios/servidor/ordenes-trabajo";
 import { conSeleccionado } from "@/servicios/servidor/opciones";
 import { obtenerIndicadoresServidor } from "@/servicios/servidor/reportes";
 import { tienePermisoServidor } from "@/servicios/servidor/sesion";
@@ -14,8 +14,9 @@ import { obtenerUsuarioServidor } from "@/servicios/servidor/usuarios";
 import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
-import type { Indicadores } from "@/tipos/reporte";
 import type { Usuario } from "@/tipos/usuario";
+import { ETIQUETAS_FASE_ORDEN } from "@/tipos/orden-trabajo";
+import { contarPorFase } from "@/utilidades/estados-orden";
 import { BarraFiltrosOrdenes } from "./barra-filtros-ordenes";
 import { leerFiltrosOrdenes } from "./filtros";
 import { ListadoOrdenes } from "./listado-ordenes";
@@ -23,10 +24,6 @@ import { ListadoOrdenes } from "./listado-ordenes";
 const ETIQUETA_CARGA = "Cargando órdenes de trabajo…";
 
 const sinFiltrosDeIndicadores = { fechaDesde: "", fechaHasta: "", tecnicoId: "", clienteId: "", activoId: "", estado: "", tipo: "" };
-
-function contarPorEstado(resumen: Indicadores, nombreEstado: string) {
-  return resumen.ordenesPorEstado.find((grupo) => grupo.nombre === nombreEstado)?.cantidad ?? 0;
-}
 
 function TarjetaResumen(props: { etiqueta: string; valor: number }) {
   return (
@@ -38,7 +35,8 @@ function TarjetaResumen(props: { etiqueta: string; valor: number }) {
 }
 
 export default async function PaginaOrdenesTrabajo(props: { searchParams: Promise<ParametrosBusqueda> }) {
-  const filtros = leerFiltrosOrdenes(await props.searchParams);
+  const estados = await listarEstadosOrdenTrabajoOVacio();
+  const filtros = leerFiltrosOrdenes(await props.searchParams, estados);
   const consulta = anticiparConsulta(listarOrdenesTrabajoServidor(filtros));
 
   // El resumen sale de reportes y la lista de técnicos, de usuarios: solo se piden si el rol los puede ver.
@@ -77,9 +75,9 @@ export default async function PaginaOrdenesTrabajo(props: { searchParams: Promis
       {resumen !== null ? (
         <section aria-label="Resumen de órdenes de trabajo" className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
           <TarjetaResumen etiqueta="Total de órdenes" valor={resumen.totalOrdenes} />
-          <TarjetaResumen etiqueta="Creadas" valor={contarPorEstado(resumen, "creada")} />
-          <TarjetaResumen etiqueta="En ejecución" valor={contarPorEstado(resumen, "en_ejecucion")} />
-          <TarjetaResumen etiqueta="Cerradas" valor={contarPorEstado(resumen, "cerrada")} />
+          <TarjetaResumen etiqueta={ETIQUETAS_FASE_ORDEN.pendiente} valor={contarPorFase(resumen.ordenesPorEstado, estados, "pendiente")} />
+          <TarjetaResumen etiqueta={ETIQUETAS_FASE_ORDEN.en_curso} valor={contarPorFase(resumen.ordenesPorEstado, estados, "en_curso")} />
+          <TarjetaResumen etiqueta={ETIQUETAS_FASE_ORDEN.cerrada} valor={contarPorFase(resumen.ordenesPorEstado, estados, "cerrada")} />
         </section>
       ) : null}
 

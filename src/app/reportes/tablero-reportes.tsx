@@ -7,11 +7,11 @@ import { useFiltrosEnVivo } from "@/componentes/listado/use-filtros-en-vivo";
 import { PanelAnalitica } from "@/componentes/panel-analitica";
 import { listarActivosPaginados } from "@/servicios/servicio-activos";
 import { listarClientesPaginados } from "@/servicios/servicio-clientes";
-import { listarTecnicosPaginados, obtenerEtiquetaEstadoOrdenTrabajo } from "@/servicios/servicio-ordenes-trabajo";
+import { listarTecnicosPaginados } from "@/servicios/servicio-ordenes-trabajo";
 import { obtenerUrlReporteCsv, obtenerUrlReportePdf, tiposDeReporte } from "@/servicios/servicio-reportes";
 import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
-import { estadosOrdenTrabajo } from "@/tipos/orden-trabajo";
+import { useEstadosOrden } from "@/componentes/estados-orden";
 import type { FiltrosIndicadores } from "@/tipos/reporte";
 import type { Usuario } from "@/tipos/usuario";
 import { construirUrlReportes } from "./filtros";
@@ -37,6 +37,7 @@ type PropiedadesTablero = {
  * y la pestaña de análisis (que se pide al abrirla) siguen siendo del navegador.
  */
 export function TableroReportes(props: PropiedadesTablero) {
+  const estados = useEstadosOrden();
   const { filtros, children } = props;
   const { valores, cambiar, aplicarAhora, limpiar, estaPendiente } = useFiltrosEnVivo<FiltrosIndicadores>({
     inicial: filtros,
@@ -115,8 +116,8 @@ export function TableroReportes(props: PropiedadesTablero) {
           <label htmlFor="estado">Estado</label>
           <select id="estado" onChange={(evento) => cambiar({ estado: evento.target.value })} value={estado}>
             <option value="">Todos los estados</option>
-            {estadosOrdenTrabajo.map((estadoOrden) => (
-              <option key={estadoOrden} value={estadoOrden}>{obtenerEtiquetaEstadoOrdenTrabajo(estadoOrden)}</option>
+            {estados.map((estado) => (
+              <option key={estado.valor} value={estado.valor}>{estado.etiqueta}</option>
             ))}
           </select>
         </div>

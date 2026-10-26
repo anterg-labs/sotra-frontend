@@ -401,37 +401,36 @@ label:has(input:disabled) {
 }
 
 .status-activo,
-.status-cerrada {
+.status-tono-exito {
   background: var(--exito-fondo);
   color: var(--exito-texto);
 }
 
 .status-inactivo,
+.status-tono-peligro,
 .prioridad-alta {
   background: var(--peligro-fondo);
   color: var(--peligro-texto);
 }
 
-.status-creada,
-.status-cancelada {
+.status-tono-neutro {
   background: var(--neutro-fondo);
   color: var(--neutro-texto);
 }
 
-.status-asignada,
-.status-en_ejecucion,
+.status-tono-info,
 .prioridad-baja {
   background: var(--info-fondo);
   color: var(--info-texto);
 }
 
-.status-pausada,
+.status-tono-alerta,
 .prioridad-media {
   background: var(--alerta-fondo);
   color: var(--alerta-texto);
 }
 
-.status-finalizada {
+.status-tono-destacado {
   background: var(--finalizada-fondo);
   color: var(--finalizada-texto);
 }
@@ -859,6 +858,11 @@ label:has(input:disabled) {
   justify-content: flex-end;
   gap: 14px;
   margin-top: 26px;
+}
+
+/* Dentro de una grilla con su propio espacio entre bloques, el margen propio sobra. */
+.grid > .form-actions {
+  margin-top: 0;
 }
 
 .formulario-evidencia,

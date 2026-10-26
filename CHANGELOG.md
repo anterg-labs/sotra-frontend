@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## Version 1.0.47 (2026-10-26)
+
+- Órdenes de trabajo: los estados, sus etiquetas, sus colores y los pasos permitidos de cada orden salen de la base (`estado_ot` y `transiciones` de cada orden); la pantalla ya no nombra ningún estado.
+- Órdenes de trabajo: el combo de estado del detalle y de la modificación muestra solo los estados a los que se puede pasar desde el actual; nunca se muestra un valor como `en_ejecucion`.
+- Órdenes de trabajo: el listado se puede filtrar por fase (pendientes, en curso, por validar, cerradas o canceladas) y el Inicio y las tarjetas de resumen cuentan por fase.
+- Órdenes de trabajo: si falta el motivo al cambiar el estado desde el detalle, el aviso aparece debajo del campo «Motivo u observación» y lleva el cursor allí.
+- Técnico: las acciones de la orden (Iniciar, Pausar, Reanudar, Finalizar) y su pedido de motivo vienen de la base, y «Mi trabajo» trae las órdenes pendientes y en curso.
+
 ## Version 1.0.46 (2026-10-26)
 
 - Reportes: cada punto de «Atención necesaria» (prioridad alta pendientes, pendientes de validación y bajo stock) es un enlace que lleva directo al listado correspondiente.

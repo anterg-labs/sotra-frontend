@@ -5,8 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   formatearFechaPrevista,
   listarOrdenesTrabajo,
-  obtenerEtiquetaEstadoOrdenTrabajo,
 } from "@/servicios/servicio-ordenes-trabajo";
+import { EtiquetaEstadoOrden } from "@/componentes/estados-orden";
 import type { FiltrosOrdenesTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
 import { IconoOjo } from "@/componentes/iconos";
 import { ContenedorTabla } from "@/componentes/contenedor-tabla";
@@ -146,7 +146,7 @@ export function OrdenesAsociadas(props: PropiedadesOrdenesAsociadas) {
                     <span className={"status prioridad-" + orden.prioridad}>{orden.prioridad}</span>
                   </td>
                   <td>
-                    <span className={"status status-" + orden.estado}>{obtenerEtiquetaEstadoOrdenTrabajo(orden.estado)}</span>
+                    <EtiquetaEstadoOrden estado={orden.estado} />
                   </td>
                   <td>{formatearFechaPrevista(orden.fechaPrevistaEjecucion)}</td>
                   <td>

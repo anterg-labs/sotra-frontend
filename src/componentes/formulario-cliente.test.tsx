@@ -52,7 +52,7 @@ describe("formulario de clientes", () => {
 
     await waitFor(() => expect(screen.getByText("El número telefónico ya está registrado.")).toHaveAttribute("id", "telefono-error"));
     expect(screen.getByLabelText("Número telefónico (opcional)")).toHaveAttribute("aria-invalid", "true");
-    expect(screen.getByLabelText("Número telefónico (opcional)")).toHaveFocus();
+    await waitFor(() => expect(screen.getByLabelText("Número telefónico (opcional)")).toHaveFocus());
     expect(screen.getByLabelText("Nombre o razón social")).toHaveValue("Cliente prueba");
     expect(screen.queryByText("No se pudo guardar la información del cliente.")).toBeNull();
   });

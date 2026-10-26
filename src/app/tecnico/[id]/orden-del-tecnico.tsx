@@ -136,6 +136,7 @@ export function OrdenDelTecnico(props: { ordenInicial: OrdenTrabajo }) {
                 id="motivoCambio"
                 onChange={(evento) => setMotivo(evento.target.value)}
                 ref={referenciaMotivo}
+                required
                 rows={3}
                 value={motivo}
               />

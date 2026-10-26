@@ -470,14 +470,18 @@ describe("detalle de orden de trabajo", () => {
     expect(screen.getByLabelText("Actualizar estado")).toHaveValue("");
   });
 
-  it("muestra el error de validación del servicio al cambiar de estado sin motivo", async () => {
-    s.cambiarEstadoOrdenTrabajo.mockRejectedValue(new Error("Indicá el motivo u observación del cambio de estado."));
+  it("sin motivo, el error queda junto al campo de motivo, con el foco, y no llama a la API", async () => {
     render(await DetalleOrden(parametros("11")));
     elegirEstado("Pausada");
     fireEvent.click(screen.getByRole("button", { name: "Confirmar estado" }));
-    expect(await screen.findByText("Indicá el motivo u observación del cambio de estado.")).toBeInTheDocument();
+
+    const error = await screen.findByText("Indicá el motivo u observación del cambio de estado.");
+    expect(error).toHaveAttribute("id", "motivoCambioEstado-error");
+    expect(error).toHaveClass("field-error");
+    expect(screen.getByLabelText("Motivo u observación")).toHaveFocus();
+    expect(s.cambiarEstadoOrdenTrabajo).not.toHaveBeenCalled();
     fireEvent.change(screen.getByLabelText("Motivo u observación"), { target: { value: "Falta repuesto" } });
-    expect(screen.getByLabelText("Motivo u observación")).toHaveValue("Falta repuesto");
+    expect(screen.queryByText("Indicá el motivo u observación del cambio de estado.")).not.toBeInTheDocument();
   });
 
   it("informa si la orden no existe, si el id es inválido o si falla el listado de técnicos", async () => {

@@ -42,10 +42,12 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
   const [estaGuardandoTecnico, setEstaGuardandoTecnico] = useState(false);
   const [estaGuardandoEstado, setEstaGuardandoEstado] = useState(false);
   const [errorAccion, setErrorAccion] = useState("");
+  const [errorMotivo, setErrorMotivo] = useState("");
   const [mensajeExito, setMensajeExito] = useState("");
 
   function cambiarMotivoEstado(evento: React.ChangeEvent<HTMLTextAreaElement>) {
     setMotivoEstado(evento.target.value);
+    setErrorMotivo("");
   }
 
   async function confirmarTecnico() {
@@ -81,18 +83,20 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
 
     setErrorAccion("");
     setMensajeExito("");
+    const exigeMotivo = orden.transiciones.find((transicion) => transicion.estado === estadoSeleccionado)?.exigeMotivo ?? false;
+    if (exigeMotivo && motivoEstado.trim() === "") {
+      setErrorMotivo("Indicá el motivo u observación del cambio de estado.");
+      document.getElementById("motivoCambioEstado")?.focus();
+      return;
+    }
     setEstaGuardandoEstado(true);
 
     try {
-      const ordenActualizada = await cambiarEstadoOrdenTrabajo(
-        ordenTrabajoId,
-        estadoSeleccionado,
-        motivoEstado,
-        orden.transiciones.find((transicion) => transicion.estado === estadoSeleccionado)?.exigeMotivo ?? false,
-      );
+      const ordenActualizada = await cambiarEstadoOrdenTrabajo(ordenTrabajoId, estadoSeleccionado, motivoEstado, exigeMotivo);
       setOrden(ordenActualizada);
       setEstadoSeleccionado("");
       setMotivoEstado("");
+      setErrorMotivo("");
       setMensajeExito("Estado actualizado correctamente.");
     } catch (error) {
       let mensaje = "No se pudo cambiar el estado de la orden de trabajo.";
@@ -220,7 +224,16 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
         campoMotivo = (
           <div className="form-field">
             <label htmlFor="motivoCambioEstado">Motivo u observación</label>
-            <textarea id="motivoCambioEstado" onChange={cambiarMotivoEstado} rows={3} value={motivoEstado} />
+            <textarea
+              aria-describedby={errorMotivo ? "motivoCambioEstado-error" : undefined}
+              aria-invalid={errorMotivo ? true : undefined}
+              id="motivoCambioEstado"
+              onChange={cambiarMotivoEstado}
+              required
+              rows={3}
+              value={motivoEstado}
+            />
+            {errorMotivo ? <p className="field-error" id="motivoCambioEstado-error" role="alert">{errorMotivo}</p> : null}
           </div>
         );
       }
@@ -231,9 +244,12 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
       }
 
       seccionEstado = (
-        <>
+        <div className="grid gap-4">
           <Combobox
-            alCambiar={setEstadoSeleccionado}
+            alCambiar={(estado) => {
+              setEstadoSeleccionado(estado);
+              setErrorMotivo("");
+            }}
             etiqueta="Actualizar estado"
             id="nuevoEstado"
             opciones={orden.transiciones.map((transicion) => ({ valor: transicion.estado, etiqueta: etiquetaEstado(transicion.estado) }))}
@@ -251,7 +267,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
               {textoBotonEstado}
             </button>
           </div>
-        </>
+        </div>
       );
     }
 

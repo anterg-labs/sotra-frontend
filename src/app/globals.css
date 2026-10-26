@@ -831,6 +831,11 @@ button:disabled {
   margin-top: 26px;
 }
 
+/* Dentro de una grilla con su propio espacio entre bloques, el margen propio sobra. */
+.grid > .form-actions {
+  margin-top: 0;
+}
+
 .formulario-evidencia,
 .campo-archivo-evidencia {
   width: 100%;

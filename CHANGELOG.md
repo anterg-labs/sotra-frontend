@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.46 (2026-10-26)
+
+- Reportes: cada punto de «Atención necesaria» (prioridad alta pendientes, pendientes de validación y bajo stock) es un enlace que lleva directo al listado correspondiente.
+
 ## Version 1.0.43 (2026-10-24)
 
 - Órdenes de trabajo: el desplegable «Actualizar estado» del detalle ahora es igual al de «Asignar o modificar técnico» (mismo aspecto y comportamiento), en lugar de la lista nativa del navegador.

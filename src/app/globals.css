@@ -697,6 +697,12 @@ label:has(input:disabled) {
   margin-top: 20px;
 }
 
+/* Dentro de una grilla, «ancho completo» ocupa todas las columnas; el espacio lo da el `gap`, no un margen que lo desalinea. */
+.form-grid > .form-field-full {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
 .campo-contrasena-usuario,
 .roles-usuario {
   grid-column: 1 / -1;

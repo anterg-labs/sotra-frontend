@@ -1,9 +1,14 @@
-import { obtenerEtiquetaEstadoOrdenTrabajo } from "@/servicios/servicio-ordenes-trabajo";
+"use client";
+
+import { useEstadosOrden, useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
+import { motivoNoDisponible } from "@/servicios/servicio-ordenes-trabajo";
 import type { EstadoOrdenTrabajo } from "@/tipos/orden-trabajo";
 
 type PropiedadesCamposEstadoFechasOrdenTrabajo = {
   permiteCambiarEstado: boolean;
   estado: string;
+  /** Estado en el que está guardada la orden: de ahí se calculan los estados a los que se puede pasar. */
+  estadoActual: string;
   estadosDisponibles: EstadoOrdenTrabajo[];
   necesitaMotivo: boolean;
   motivoEstado: string;
@@ -16,6 +21,8 @@ type PropiedadesCamposEstadoFechasOrdenTrabajo = {
 };
 
 export function CamposEstadoFechasOrdenTrabajo(props: PropiedadesCamposEstadoFechasOrdenTrabajo) {
+  const estados = useEstadosOrden();
+  const etiquetaEstado = useEtiquetaEstadoOrden();
   function cambiarEstado(evento: React.ChangeEvent<HTMLSelectElement>) {
     props.alCambiarEstado(evento.target.value);
   }
@@ -34,11 +41,16 @@ export function CamposEstadoFechasOrdenTrabajo(props: PropiedadesCamposEstadoFec
       <div className="form-field">
         <label htmlFor="estado">Estado</label>
         <select id="estado" onChange={cambiarEstado} value={props.estado}>
-          {props.estadosDisponibles.map((estadoDisponible) => (
-            <option key={estadoDisponible} value={estadoDisponible}>
-              {obtenerEtiquetaEstadoOrdenTrabajo(estadoDisponible)}
-            </option>
-          ))}
+          {estados.map((estado) => {
+            const disponibilidad = estado.valor === props.estadoActual
+              ? {}
+              : motivoNoDisponible(estado.valor, props.estadoActual, props.estadosDisponibles, etiquetaEstado);
+            return (
+              <option disabled={disponibilidad.deshabilitada} key={estado.valor} value={estado.valor}>
+                {disponibilidad.motivo ? `${estado.etiqueta} (${disponibilidad.motivo.toLowerCase()})` : estado.etiqueta}
+              </option>
+            );
+          })}
         </select>
       </div>
     );

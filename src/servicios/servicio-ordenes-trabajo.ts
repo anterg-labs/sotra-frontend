@@ -12,21 +12,10 @@ import { listarUsuarios } from "@/servicios/servicio-usuarios";
 import type {
   ActualizarOrdenTrabajoInput,
   CrearOrdenTrabajoInput,
-  EstadoOrdenTrabajo,
   FiltrosOrdenesTrabajo,
   SolicitarSugerenciaInput,
 } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
-
-const etiquetasEstado = {
-  creada: "Creada",
-  asignada: "Asignada",
-  en_ejecucion: "En ejecución",
-  pausada: "Pausada",
-  finalizada: "Finalizada",
-  cerrada: "Cerrada",
-  cancelada: "Cancelada",
-};
 
 /** Decisión D12 (2026-10-21): la API rechaza descripciones y observaciones de más de 4000 caracteres. */
 export const LARGO_MAXIMO_TEXTO_ORDEN = 4000;
@@ -47,8 +36,19 @@ function validarOrdenTrabajo(input: CrearOrdenTrabajoInput) {
   if (primerError) throw new Error(primerError);
 }
 
-export function obtenerEtiquetaEstadoOrdenTrabajo(estado: EstadoOrdenTrabajo) {
-  return etiquetasEstado[estado];
+/**
+ * Para ofrecer todos los estados del catálogo y marcar los que no se pueden alcanzar: desde el estado actual solo se
+ * puede pasar a `estadosSiguientes` (ciclo de vida de la API). Devuelve `{}` cuando el estado es elegible.
+ */
+export function motivoNoDisponible(
+  estado: string,
+  estadoActual: string,
+  estadosSiguientes: readonly string[],
+  etiquetaEstado: (estado: string) => string,
+): { deshabilitada?: true; motivo?: string } {
+  if (estado === estadoActual) return { deshabilitada: true, motivo: "Estado actual" };
+  if (estadosSiguientes.includes(estado)) return {};
+  return { deshabilitada: true, motivo: "No disponible desde " + etiquetaEstado(estadoActual) };
 }
 
 export function formatearFechaPrevista(fechaPrevista: string) {

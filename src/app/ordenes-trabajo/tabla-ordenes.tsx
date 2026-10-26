@@ -7,7 +7,8 @@ import { EncabezadoOrdenable } from "@/componentes/listado/encabezado-ordenable"
 import { useFilasConOrdenInstantaneo } from "@/componentes/listado/orden-instantaneo";
 import type { ValorOrdenable } from "@/componentes/listado/orden-local";
 import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
-import { formatearFechaPrevista, obtenerEtiquetaEstadoOrdenTrabajo } from "@/servicios/servicio-ordenes-trabajo";
+import { useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
+import { formatearFechaPrevista } from "@/servicios/servicio-ordenes-trabajo";
 import type { FiltrosOrdenesTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
 import { formatearFechaCorta } from "@/utilidades/fechas";
 import { urlOrdenOrdenes } from "./filtros";
@@ -30,6 +31,7 @@ const VALORES_ORDEN = {
 /** Tabla del listado de órdenes: se ordena al instante en el navegador cuando todas las filas caben en una página. */
 export function TablaOrdenes(props: { ordenes: OrdenTrabajo[]; filtros: FiltrosOrdenesTrabajo; unaSolaPagina?: boolean }) {
   const { filtros } = props;
+  const etiquetaEstado = useEtiquetaEstadoOrden();
   const ordenes = useFilasConOrdenInstantaneo(props.ordenes, VALORES_ORDEN, props.unaSolaPagina ?? false);
   const columna = (clave: string, etiqueta: string) => (
     <EncabezadoOrdenable columna={clave} etiqueta={etiqueta} orden={filtros} urlSiguiente={urlOrdenOrdenes(filtros, clave)} />
@@ -64,7 +66,7 @@ export function TablaOrdenes(props: { ordenes: OrdenTrabajo[]; filtros: FiltrosO
               </td>
               <td>{orden.nombreTecnico ? orden.nombreTecnico : "Sin asignar"}</td>
               <td>
-                <span className={"status status-" + orden.estado}>{obtenerEtiquetaEstadoOrdenTrabajo(orden.estado)}</span>
+                <span className={"status status-" + orden.estado}>{etiquetaEstado(orden.estado)}</span>
               </td>
               <td>{formatearFechaCorta(orden.creadoEn)}</td>
               <td>{formatearFechaPrevista(orden.fechaPrevistaEjecucion)}</td>

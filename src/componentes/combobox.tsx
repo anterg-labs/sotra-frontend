@@ -2,7 +2,8 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 
-export type OpcionCombobox = { valor: string; etiqueta: string };
+/** Una opción `deshabilitada` se ve, pero no se puede elegir; el `motivo` explica por qué. */
+export type OpcionCombobox = { valor: string; etiqueta: string; deshabilitada?: boolean; motivo?: string };
 
 type PropiedadesCombobox = {
   id: string;
@@ -71,6 +72,7 @@ export function Combobox(props: PropiedadesCombobox) {
   const indiceVisible = Math.min(indiceActivo, opcionesFiltradas.length - 1);
 
   function elegir(opcion: OpcionCombobox) {
+    if (opcion.deshabilitada) return;
     props.alCambiar(opcion.valor);
     setOpcionElegidaRemota(opcion);
     setConsulta("");
@@ -85,7 +87,13 @@ export function Combobox(props: PropiedadesCombobox) {
       setIndiceActivo((actual) => {
         const cantidad = opcionesFiltradas.length;
         if (cantidad === 0) return 0;
-        return evento.key === "ArrowDown" ? (actual + 1) % cantidad : (actual - 1 + cantidad) % cantidad;
+        const paso = evento.key === "ArrowDown" ? 1 : -1;
+        let siguiente = actual;
+        for (let intento = 0; intento < cantidad; intento += 1) {
+          siguiente = (siguiente + paso + cantidad) % cantidad;
+          if (!opcionesFiltradas[siguiente].deshabilitada) return siguiente;
+        }
+        return actual;
       });
     } else if (evento.key === "Enter" && estaAbierto) {
       evento.preventDefault();
@@ -151,15 +159,25 @@ export function Combobox(props: PropiedadesCombobox) {
           {!estaCargando && !falloBusqueda && opcionesFiltradas.length === 0 ? <p className="combobox-estado">Sin resultados</p> : null}
           {!estaCargando && opcionesFiltradas.map((opcion, indice) => (
             <button
+              aria-describedby={opcion.motivo ? `${idLista}-${indice}-motivo` : undefined}
+              aria-disabled={opcion.deshabilitada || undefined}
+              aria-label={opcion.motivo ? opcion.etiqueta : undefined}
               aria-selected={opcion.valor === props.valor}
-              className={indice === indiceVisible ? "combobox-opcion combobox-opcion-activa" : "combobox-opcion"}
+              className={[
+                "combobox-opcion",
+                indice === indiceVisible && !opcion.deshabilitada ? "combobox-opcion-activa" : "",
+                opcion.deshabilitada ? "combobox-opcion-deshabilitada" : "",
+              ].filter(Boolean).join(" ")}
               id={`${idLista}-${indice}`}
               key={opcion.valor}
               onClick={() => elegir(opcion)}
               onPointerDown={(evento) => { evento.preventDefault(); elegir(opcion); }}
               role="option"
               type="button"
-            >{opcion.etiqueta}</button>
+            >
+              {opcion.etiqueta}
+              {opcion.motivo ? <span className="combobox-opcion-motivo" id={`${idLista}-${indice}-motivo`}>{opcion.motivo}</span> : null}
+            </button>
           ))}
         </div>
       ) : null}

@@ -1,7 +1,13 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render as renderBase, screen, waitFor } from "@testing-library/react";
+import type { ReactElement } from "react";
+import { conEstadosOrden } from "@/pruebas/estados-orden";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import PaginaOrdenDelTecnico from "./page";
 import { ErrorDeApi } from "@/servicios/api/solicitudes-http";
+
+function render(ui: ReactElement) {
+  return renderBase(conEstadosOrden(ui));
+}
 
 const obtenerOrdenTrabajoServidor = vi.hoisted(() => vi.fn());
 const cambiarEstadoOrdenTrabajo = vi.hoisted(() => vi.fn());

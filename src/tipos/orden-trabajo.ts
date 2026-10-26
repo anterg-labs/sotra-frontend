@@ -11,15 +11,8 @@ export type TipoOrdenTrabajo = "preventivo" | "correctivo";
 
 export type PrioridadOrdenTrabajo = "baja" | "media" | "alta";
 
-export const estadosOrdenTrabajo: EstadoOrdenTrabajo[] = [
-  "creada",
-  "asignada",
-  "en_ejecucion",
-  "pausada",
-  "finalizada",
-  "cerrada",
-  "cancelada",
-];
+/** Un estado del catálogo que entrega la API (`GET /api/v1/ordenes-trabajo/estados`, tabla `estado_ot`). */
+export type OpcionEstadoOrden = { valor: EstadoOrdenTrabajo; etiqueta: string };
 
 export type RepuestoDeOrden = {
   id: number;

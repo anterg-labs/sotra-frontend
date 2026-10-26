@@ -11,8 +11,9 @@ import {
   estadoNecesitaMotivo,
   formatearFechaPrevista,
   listarTecnicosPaginados,
-  obtenerEtiquetaEstadoOrdenTrabajo,
+  motivoNoDisponible,
 } from "@/servicios/servicio-ordenes-trabajo";
+import { useEstadosOrden, useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
 import type { HistorialEstadoOrdenTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
 import { formatearFechaCorta, formatearFechaHora } from "@/utilidades/fechas";
@@ -29,6 +30,8 @@ type PropiedadesDetalleOrden = {
 /** Detalle de la orden: los datos llegan del servidor; el cambio de estado, la asignación y las evidencias siguen en el navegador. */
 export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
   const ordenTrabajoId = props.ordenInicial.id;
+  const estados = useEstadosOrden();
+  const etiquetaEstado = useEtiquetaEstadoOrden();
   const [orden, setOrden] = useState<OrdenTrabajo | null>(props.ordenInicial);
   const puedeEditar = useTienePermiso("ot.editar");
   const puedeAsignarTecnico = useTienePermiso("ot.asignar_tecnico");
@@ -211,7 +214,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
 
     let seccionEstado = <p className="empty-state">No hay cambios de estado disponibles para esta orden.</p>;
     if (!puedeRegistrarAvance) {
-      seccionEstado = <p className="empty-state">{"Estado actual: " + obtenerEtiquetaEstadoOrdenTrabajo(orden.estado) + "."}</p>;
+      seccionEstado = <p className="empty-state">{"Estado actual: " + etiquetaEstado(orden.estado) + "."}</p>;
     } else if (orden.estadosSiguientes.length > 0) {
       let campoMotivo = null;
       if (estadoNecesitaMotivo(orden.estado, estadoSeleccionado)) {
@@ -234,9 +237,10 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
             alCambiar={setEstadoSeleccionado}
             etiqueta="Actualizar estado"
             id="nuevoEstado"
-            opciones={orden.estadosSiguientes.map((estadoSiguiente) => ({
-              valor: estadoSiguiente,
-              etiqueta: obtenerEtiquetaEstadoOrdenTrabajo(estadoSiguiente),
+            opciones={estados.map((estado) => ({
+              valor: estado.valor,
+              etiqueta: estado.etiqueta,
+              ...motivoNoDisponible(estado.valor, orden.estado, orden.estadosSiguientes, etiquetaEstado),
             }))}
             textoVacio="Seleccioná el nuevo estado"
             valor={estadoSeleccionado}
@@ -290,7 +294,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
           </div>
           <div>
             <dt>Estado</dt>
-            <dd><span className={"status status-" + orden.estado}>{obtenerEtiquetaEstadoOrdenTrabajo(orden.estado)}</span></dd>
+            <dd><span className={"status status-" + orden.estado}>{etiquetaEstado(orden.estado)}</span></dd>
           </div>
           <div>
             <dt>Fecha de creación</dt>
@@ -335,7 +339,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
         <section className="panel detail-panel">
           <h2>Estado de la orden</h2>
           <p className="mb-4 mt-2">
-            <span className={"status status-" + orden.estado}>{obtenerEtiquetaEstadoOrdenTrabajo(orden.estado)}</span>
+            <span className={"status status-" + orden.estado}>{etiquetaEstado(orden.estado)}</span>
           </p>
           {seccionEstado}
         </section>
@@ -345,7 +349,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
           <ul className="mt-4 grid gap-3">
             {historialMasNuevoPrimero.map((cambio, indice) => (
               <li className="border-b u-borde pb-3 text-sm" key={indice}>
-                <strong>{obtenerEtiquetaEstadoOrdenTrabajo(cambio.estado)}</strong>
+                <strong>{etiquetaEstado(cambio.estado)}</strong>
                 <span className="block text-xs texto-tenue">{formatearFechaHora(cambio.fechaHora)}</span>
                 <span className="block">{cambio.observacion}</span>
               </li>

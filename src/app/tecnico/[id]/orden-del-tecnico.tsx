@@ -7,8 +7,8 @@ import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
 import {
   cambiarEstadoOrdenTrabajo,
   formatearFechaPrevista,
-  obtenerEtiquetaEstadoOrdenTrabajo,
 } from "@/servicios/servicio-ordenes-trabajo";
+import { useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
 import type { EstadoOrdenTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
 import { formatearFechaHora } from "@/utilidades/fechas";
 
@@ -21,6 +21,7 @@ const accionesDelTecnico: Partial<Record<EstadoOrdenTrabajo, { etiqueta: string;
 
 /** Orden del técnico: los datos llegan del servidor; el cambio de estado y las evidencias (cámara incluida) siguen en el navegador. */
 export function OrdenDelTecnico(props: { ordenInicial: OrdenTrabajo }) {
+  const etiquetaEstado = useEtiquetaEstadoOrden();
   const [orden, setOrden] = useState<OrdenTrabajo>(props.ordenInicial);
   const [estadoPendiente, setEstadoPendiente] = useState<EstadoOrdenTrabajo | null>(null);
   const [motivo, setMotivo] = useState("");
@@ -47,7 +48,7 @@ export function OrdenDelTecnico(props: { ordenInicial: OrdenTrabajo }) {
     setEstaGuardando(true);
     try {
       setOrden(await cambiarEstadoOrdenTrabajo(orden.id, orden.estado, estadoPendiente, motivo));
-      setMensaje("Estado actualizado: " + obtenerEtiquetaEstadoOrdenTrabajo(estadoPendiente) + ".");
+      setMensaje("Estado actualizado: " + etiquetaEstado(estadoPendiente) + ".");
       setEstadoPendiente(null);
     } catch (falla) {
       setErrorMotivo(falla instanceof Error ? falla.message : "No se pudo cambiar el estado.");
@@ -66,7 +67,7 @@ export function OrdenDelTecnico(props: { ordenInicial: OrdenTrabajo }) {
       <header className="tecnico-tarjeta">
         <span className="flex flex-wrap items-center justify-between gap-2">
           <h1 style={{ fontSize: "1.25rem" }}>{"Orden #" + orden.id}</h1>
-          <span className={"status status-" + orden.estado}>{obtenerEtiquetaEstadoOrdenTrabajo(orden.estado)}</span>
+          <span className={"status status-" + orden.estado}>{etiquetaEstado(orden.estado)}</span>
         </span>
         <strong>{orden.nombreActivo}</strong>
         <small>{orden.nombreCliente + " · prioridad " + orden.prioridad + " · " + orden.tipo}</small>
@@ -110,7 +111,7 @@ export function OrdenDelTecnico(props: { ordenInicial: OrdenTrabajo }) {
         <ol>
           {[...orden.historialEstados].reverse().map((cambio, indice) => (
             <li key={indice}>
-              <strong>{obtenerEtiquetaEstadoOrdenTrabajo(cambio.estado)}</strong>
+              <strong>{etiquetaEstado(cambio.estado)}</strong>
               {" · " + formatearFechaHora(cambio.fechaHora)}
               {cambio.observacion ? <small>{" — " + cambio.observacion}</small> : null}
             </li>

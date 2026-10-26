@@ -1,4 +1,6 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render as renderBase, screen, waitFor, within } from "@testing-library/react";
+import type { ReactElement } from "react";
+import { conEstadosOrden } from "@/pruebas/estados-orden";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { OrdenTrabajo } from "@/tipos/orden-trabajo";
 import { FormularioOrdenTrabajo } from "./formulario-orden-trabajo";
@@ -7,6 +9,10 @@ import { SelectorClienteActivoOrdenTrabajo } from "./selector-cliente-activo-ord
 import { SelectorRepuestosOrdenTrabajo } from "./selector-repuestos-orden-trabajo";
 import { CamposGeneralesOrdenTrabajo } from "./campos-generales-orden-trabajo";
 import { EstructuraTecnico } from "./estructura-tecnico";
+
+function render(ui: ReactElement) {
+  return renderBase(conEstadosOrden(ui));
+}
 
 const push = vi.hoisted(() => vi.fn());
 const pathname = vi.hoisted(() => ({ valor: "/tecnico" }));
@@ -173,9 +179,17 @@ describe("FormularioOrdenTrabajo (modificación)", () => {
     dibujarFormulario({ ordenInicial: ordenExistente() });
     expect(screen.getByLabelText("Descripción de la tarea")).toHaveValue("Cambiar filtro");
     expect(screen.getByLabelText("Fecha prevista de ejecución")).toHaveValue("2026-10-20");
-    expect(within(screen.getByLabelText("Estado")).getAllByRole("option").map((o) => o.textContent)).toEqual([
-      "En ejecución", "Pausada", "Finalizada",
+    const opciones = within(screen.getByLabelText("Estado")).getAllByRole("option") as HTMLOptionElement[];
+    expect(opciones.map((o) => o.textContent)).toEqual([
+      "Creada (no disponible desde en ejecución)",
+      "Asignada (no disponible desde en ejecución)",
+      "En ejecución",
+      "Pausada",
+      "Finalizada",
+      "Cerrada (no disponible desde en ejecución)",
+      "Cancelada (no disponible desde en ejecución)",
     ]);
+    expect(opciones.filter((o) => o.disabled).map((o) => o.value)).toEqual(["creada", "asignada", "cerrada", "cancelada"]);
     expect(screen.getByLabelText("Sugerencia 1")).toHaveValue("Sugerida");
     expect(within(screen.getByRole("list", { name: "Repuestos seleccionados" })).getByText(/R3 - Filtro/)).toBeInTheDocument();
   });

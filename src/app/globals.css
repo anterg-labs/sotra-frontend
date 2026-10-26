@@ -782,6 +782,22 @@ button:disabled {
   background: var(--superficie-suave);
 }
 
+.combobox-opcion-deshabilitada {
+  color: var(--texto-suave);
+  cursor: not-allowed;
+}
+
+.combobox-opcion-deshabilitada:hover {
+  background: transparent;
+}
+
+.combobox-opcion-motivo {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 400;
+}
+
 .combobox-estado {
   padding: 10px 12px;
   color: var(--texto-suave);

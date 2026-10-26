@@ -5,10 +5,11 @@ import { FiltroFecha, rangoDeFechasInvalido } from "@/componentes/filtro-fecha";
 import { useFiltrosEnVivo } from "@/componentes/listado/use-filtros-en-vivo";
 import { listarActivosPaginados } from "@/servicios/servicio-activos";
 import { listarClientesPaginados } from "@/servicios/servicio-clientes";
-import { listarTecnicosPaginados, obtenerEtiquetaEstadoOrdenTrabajo } from "@/servicios/servicio-ordenes-trabajo";
+import { listarTecnicosPaginados } from "@/servicios/servicio-ordenes-trabajo";
 import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
-import { estadosOrdenTrabajo, type FiltrosOrdenesTrabajo } from "@/tipos/orden-trabajo";
+import { useEstadosOrden } from "@/componentes/estados-orden";
+import type { FiltrosOrdenesTrabajo } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
 import { construirUrlOrdenes } from "./filtros";
 
@@ -37,6 +38,7 @@ type PropiedadesBarra = {
  */
 export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
   const { filtros } = props;
+  const estados = useEstadosOrden();
   const { valores, cambiar, aplicarAhora, limpiar, estaPendiente } = useFiltrosEnVivo<ValoresOrdenes>({
     inicial: {
       buscar: filtros.buscar, clienteId: filtros.clienteId, activoId: filtros.activoId, tecnicoId: filtros.tecnicoId,
@@ -118,8 +120,8 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
         <label htmlFor="estado">Estado</label>
         <select id="estado" onChange={(evento) => cambiar({ estado: evento.target.value })} value={valores.estado}>
           <option value="">Todos los estados</option>
-          {estadosOrdenTrabajo.map((estadoOrden) => (
-            <option key={estadoOrden} value={estadoOrden}>{obtenerEtiquetaEstadoOrdenTrabajo(estadoOrden)}</option>
+          {estados.map((estado) => (
+            <option key={estado.valor} value={estado.valor}>{estado.etiqueta}</option>
           ))}
         </select>
       </div>

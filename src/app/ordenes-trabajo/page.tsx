@@ -6,7 +6,7 @@ import { ProveedorNavegacionListado, ZonaListado } from "@/componentes/listado/n
 import type { ParametrosBusqueda } from "@/componentes/listado/url-listado";
 import { listarActivosServidor, obtenerActivoServidor } from "@/servicios/servidor/activos";
 import { listarClientesServidor, obtenerClienteServidor } from "@/servicios/servidor/clientes";
-import { listarOrdenesTrabajoServidor, listarTecnicosServidor } from "@/servicios/servidor/ordenes-trabajo";
+import { listarEstadosOrdenTrabajoOVacio, listarOrdenesTrabajoServidor, listarTecnicosServidor } from "@/servicios/servidor/ordenes-trabajo";
 import { conSeleccionado } from "@/servicios/servidor/opciones";
 import { obtenerIndicadoresServidor } from "@/servicios/servidor/reportes";
 import { tienePermisoServidor } from "@/servicios/servidor/sesion";
@@ -38,7 +38,7 @@ function TarjetaResumen(props: { etiqueta: string; valor: number }) {
 }
 
 export default async function PaginaOrdenesTrabajo(props: { searchParams: Promise<ParametrosBusqueda> }) {
-  const filtros = leerFiltrosOrdenes(await props.searchParams);
+  const filtros = leerFiltrosOrdenes(await props.searchParams, await listarEstadosOrdenTrabajoOVacio());
   const consulta = anticiparConsulta(listarOrdenesTrabajoServidor(filtros));
 
   // El resumen sale de reportes y la lista de técnicos, de usuarios: solo se piden si el rol los puede ver.

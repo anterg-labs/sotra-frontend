@@ -39,7 +39,7 @@ import {
   listarTecnicos,
   listarTecnicosPaginados,
   obtenerDetalleOrdenTrabajo,
-  obtenerEtiquetaEstadoOrdenTrabajo,
+  motivoNoDisponible,
   obtenerErroresOrdenTrabajo,
   solicitarSugerenciaOrdenTrabajo,
 } from "@/servicios/servicio-ordenes-trabajo";
@@ -347,10 +347,26 @@ describe("servicio-ordenes-trabajo", () => {
     expect(llamadas[0]).toMatchObject({ url: "/api/v1/ordenes-trabajo/1/tecnico", cuerpo: { tecnicoId: 12 } });
   });
 
-  it("etiqueta estados y formatea la fecha prevista", () => {
-    expect(obtenerEtiquetaEstadoOrdenTrabajo("en_ejecucion")).toBe("En ejecución");
-    expect(obtenerEtiquetaEstadoOrdenTrabajo("cancelada")).toBe("Cancelada");
+  it("formatea la fecha prevista", () => {
     expect(formatearFechaPrevista("2026-10-05")).toBe("05/10/2026");
+  });
+
+  describe("motivoNoDisponible", () => {
+    const etiqueta = (estado: string) => ({ finalizada: "Finalizada", pausada: "Pausada" })[estado as "finalizada"] ?? estado;
+
+    it("deja elegir un estado al que se puede pasar desde el actual", () => {
+      expect(motivoNoDisponible("cerrada", "finalizada", ["cerrada", "asignada"], etiqueta)).toEqual({});
+    });
+
+    it("deshabilita el estado actual", () => {
+      expect(motivoNoDisponible("finalizada", "finalizada", ["cerrada", "asignada"], etiqueta))
+        .toEqual({ deshabilitada: true, motivo: "Estado actual" });
+    });
+
+    it("deshabilita los estados inalcanzables y dice desde cuál no se puede", () => {
+      expect(motivoNoDisponible("pausada", "finalizada", ["cerrada", "asignada"], etiqueta))
+        .toEqual({ deshabilitada: true, motivo: "No disponible desde Finalizada" });
+    });
   });
 
   it("solicita sugerencias: valida, traduce 422 y 5xx, y devuelve el texto", async () => {

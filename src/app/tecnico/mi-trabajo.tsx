@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Combobox } from "@/componentes/combobox";
-import { formatearFechaPrevista, listarTecnicosPaginados, obtenerEtiquetaEstadoOrdenTrabajo } from "@/servicios/servicio-ordenes-trabajo";
+import { useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
+import { formatearFechaPrevista, listarTecnicosPaginados } from "@/servicios/servicio-ordenes-trabajo";
 import type { EstadoOrdenTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
 import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
@@ -31,6 +32,7 @@ type PropiedadesMiTrabajo = {
 /** «Mi trabajo»: el servidor trae las órdenes del técnico elegido en la URL; los chips y la búsqueda por número filtran en el navegador. */
 export function MiTrabajo(props: PropiedadesMiTrabajo) {
   const { tecnicoId, tecnicos, ordenes, error } = props;
+  const etiquetaEstado = useEtiquetaEstadoOrden();
   const enrutador = useRouter();
   const [estaPendiente, iniciarTransicion] = useTransition();
   const [filtro, setFiltro] = useState<FiltroEstado>("");
@@ -98,7 +100,7 @@ export function MiTrabajo(props: PropiedadesMiTrabajo) {
                 <Link className={"tecnico-tarjeta tecnico-tarjeta-prioridad-" + orden.prioridad} href={"/tecnico/" + orden.id}>
                   <span className="flex flex-wrap items-center justify-between gap-2">
                     <strong>{"Orden #" + orden.id}</strong>
-                    <span className={"status status-" + orden.estado}>{obtenerEtiquetaEstadoOrdenTrabajo(orden.estado)}</span>
+                    <span className={"status status-" + orden.estado}>{etiquetaEstado(orden.estado)}</span>
                   </span>
                   <span>{orden.nombreActivo}</span>
                   <small>{orden.nombreCliente + " · prioridad " + orden.prioridad + " · prevista " + formatearFechaPrevista(orden.fechaPrevistaEjecucion)}</small>

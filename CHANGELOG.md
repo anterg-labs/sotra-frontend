@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.46 (2026-10-26)
+
+- Reportes: cada punto de «Atención necesaria» (prioridad alta pendientes, pendientes de validación y bajo stock) es un enlace que lleva directo al listado correspondiente.
+
 ## Version 1.0.44 (2026-10-25)
 
 - Órdenes de trabajo: en el alta y la edición, el campo Cliente queda alineado con el campo Activo aunque este muestre su texto de ayuda debajo.

@@ -120,6 +120,13 @@ describe("página de reportes (Server Component)", () => {
 });
 
 describe("resumen de indicadores (Server Component)", () => {
+  it("lleva cada punto de «Atención necesaria» a su listado", async () => {
+    render(await ResumenIndicadores({ filtros: filtrosVacios }));
+    expect(screen.getByRole("link", { name: /órdenes de prioridad alta pendientes/ })).toHaveAttribute("href", "/ordenes-trabajo?prioridad=alta");
+    expect(screen.getByRole("link", { name: /pendientes de validación/ })).toHaveAttribute("href", "/ordenes-trabajo?fase=por_validar");
+    expect(screen.getByRole("link", { name: /repuestos con bajo stock/ })).toHaveAttribute("href", "/repuestos?stock=alerta");
+  });
+
   it("muestra los indicadores, tablas y alertas", async () => {
     render(await ResumenIndicadores({ filtros: { ...filtrosVacios, estado: "cerrada" } }));
     expect(s.obtenerIndicadoresServidor).toHaveBeenCalledWith({ ...filtrosVacios, estado: "cerrada" });

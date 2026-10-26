@@ -110,33 +110,18 @@ export function crearSesionDeSugerencias() {
   return identificador;
 }
 
-export function estadoNecesitaMotivo(estadoActual: string, estadoNuevo: string) {
-  if (estadoNuevo === estadoActual) {
-    return false;
-  }
-
-  if (estadoNuevo === "pausada" || estadoNuevo === "cancelada" || estadoNuevo === "cerrada") {
-    return true;
-  }
-
-  if (estadoActual === "finalizada" && estadoNuevo === "asignada") {
-    return true;
-  }
-
-  return false;
-}
-
+/** `exigeMotivo` viene de la transición que entrega la API; la validación definitiva la hace el servidor. */
 export async function cambiarEstadoOrdenTrabajo(
   ordenTrabajoId: number,
-  estadoActual: string,
   estadoNuevo: string,
   motivo: string,
+  exigeMotivo: boolean,
 ) {
   if (estadoNuevo === "") {
     throw new Error("Seleccioná el nuevo estado.");
   }
 
-  if (estadoNecesitaMotivo(estadoActual, estadoNuevo) && motivo.trim() === "") {
+  if (exigeMotivo && motivo.trim() === "") {
     throw new Error("Indicá el motivo u observación del cambio de estado.");
   }
 

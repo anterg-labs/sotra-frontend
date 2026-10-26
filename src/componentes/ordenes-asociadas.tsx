@@ -6,7 +6,7 @@ import {
   formatearFechaPrevista,
   listarOrdenesTrabajo,
 } from "@/servicios/servicio-ordenes-trabajo";
-import { useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
+import { EtiquetaEstadoOrden } from "@/componentes/estados-orden";
 import type { FiltrosOrdenesTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
 import { IconoOjo } from "@/componentes/iconos";
 import { ContenedorTabla } from "@/componentes/contenedor-tabla";
@@ -30,7 +30,6 @@ const MENSAJE_ERROR = "No se pudieron obtener las órdenes de trabajo asociadas.
  */
 export function OrdenesAsociadas(props: PropiedadesOrdenesAsociadas) {
   const { clienteId, activoId, tecnicoId } = props;
-  const etiquetaEstado = useEtiquetaEstadoOrden();
   const [ordenes, setOrdenes] = useState<OrdenTrabajo[] | null>(null);
   const [errorCarga, setErrorCarga] = useState("");
   const [estaCargando, setEstaCargando] = useState(true);
@@ -147,7 +146,7 @@ export function OrdenesAsociadas(props: PropiedadesOrdenesAsociadas) {
                     <span className={"status prioridad-" + orden.prioridad}>{orden.prioridad}</span>
                   </td>
                   <td>
-                    <span className={"status status-" + orden.estado}>{etiquetaEstado(orden.estado)}</span>
+                    <EtiquetaEstadoOrden estado={orden.estado} />
                   </td>
                   <td>{formatearFechaPrevista(orden.fechaPrevistaEjecucion)}</td>
                   <td>

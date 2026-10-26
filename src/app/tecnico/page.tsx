@@ -8,7 +8,8 @@ import type { OrdenTrabajo } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
 import { MiTrabajo } from "./mi-trabajo";
 
-const estadosDelTrabajo = ["asignada", "en_ejecucion", "pausada"] as const;
+// Trabajo vivo del técnico: lo que espera y lo que está en curso. Qué estados son los dicta la base (fase).
+const fasesDelTrabajo = ["pendiente", "en_curso"] as const;
 const pesoDePrioridad = { alta: 0, media: 1, baja: 2 } as const;
 
 function ordenarPorUrgencia(ordenes: OrdenTrabajo[]) {
@@ -24,9 +25,9 @@ async function cargarOrdenes(tecnicoId: string) {
   if (tecnicoId === "") return { ordenes: null, error: "" };
   try {
     const paginas = await Promise.all(
-      estadosDelTrabajo.map((estado) =>
+      fasesDelTrabajo.map((fase) =>
         listarOrdenesTrabajoServidor({
-          buscar: "", clienteId: "", activoId: "", tecnicoId, estado, prioridad: "", tipo: "",
+          buscar: "", clienteId: "", activoId: "", tecnicoId, estado: "", fase, prioridad: "", tipo: "",
           fechaDesde: "", fechaHasta: "", conSugerencias: false, pagina: 1,
         }),
       ),

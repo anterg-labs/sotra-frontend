@@ -8,48 +8,41 @@ import {
   cambiarEstadoOrdenTrabajo,
   formatearFechaPrevista,
 } from "@/servicios/servicio-ordenes-trabajo";
-import { useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
-import type { EstadoOrdenTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
+import { EtiquetaEstadoOrden, useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
+import type { OrdenTrabajo, TransicionOrden } from "@/tipos/orden-trabajo";
 import { formatearFechaHora } from "@/utilidades/fechas";
-
-/** Estados a los que puede llevar la orden un técnico; no cancela ni cierra (eso es del jefe de mantenimiento). */
-const accionesDelTecnico: Partial<Record<EstadoOrdenTrabajo, { etiqueta: string; principal: boolean }>> = {
-  en_ejecucion: { etiqueta: "Iniciar", principal: true },
-  pausada: { etiqueta: "Pausar", principal: false },
-  finalizada: { etiqueta: "Finalizar", principal: true },
-};
 
 /** Orden del técnico: los datos llegan del servidor; el cambio de estado y las evidencias (cámara incluida) siguen en el navegador. */
 export function OrdenDelTecnico(props: { ordenInicial: OrdenTrabajo }) {
   const etiquetaEstado = useEtiquetaEstadoOrden();
   const [orden, setOrden] = useState<OrdenTrabajo>(props.ordenInicial);
-  const [estadoPendiente, setEstadoPendiente] = useState<EstadoOrdenTrabajo | null>(null);
+  const [transicionPendiente, setTransicionPendiente] = useState<TransicionOrden | null>(null);
   const [motivo, setMotivo] = useState("");
   const [errorMotivo, setErrorMotivo] = useState("");
   const [estaGuardando, setEstaGuardando] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const referenciaMotivo = useRef<HTMLTextAreaElement>(null);
 
-  function pedirCambio(estado: EstadoOrdenTrabajo) {
+  function pedirCambio(transicion: TransicionOrden) {
     setMotivo("");
     setErrorMotivo("");
     setMensaje("");
-    setEstadoPendiente(estado);
+    setTransicionPendiente(transicion);
   }
 
   async function confirmarCambio() {
-    if (estadoPendiente === null) return;
-    if (estadoPendiente === "pausada" && motivo.trim() === "") {
-      setErrorMotivo("Indicá por qué pausás la orden.");
+    if (transicionPendiente === null) return;
+    if (transicionPendiente.exigeMotivo && motivo.trim() === "") {
+      setErrorMotivo("Indicá el motivo del cambio de estado.");
       referenciaMotivo.current?.focus();
       return;
     }
 
     setEstaGuardando(true);
     try {
-      setOrden(await cambiarEstadoOrdenTrabajo(orden.id, orden.estado, estadoPendiente, motivo));
-      setMensaje("Estado actualizado: " + etiquetaEstado(estadoPendiente) + ".");
-      setEstadoPendiente(null);
+      setOrden(await cambiarEstadoOrdenTrabajo(orden.id, transicionPendiente.estado, motivo, transicionPendiente.exigeMotivo));
+      setMensaje("Estado actualizado: " + etiquetaEstado(transicionPendiente.estado) + ".");
+      setTransicionPendiente(null);
     } catch (falla) {
       setErrorMotivo(falla instanceof Error ? falla.message : "No se pudo cambiar el estado.");
     } finally {
@@ -57,8 +50,10 @@ export function OrdenDelTecnico(props: { ordenInicial: OrdenTrabajo }) {
     }
   }
 
-  const acciones = orden.estadosSiguientes.filter((estado) => estado in accionesDelTecnico);
-  const puedeRegistrarEvidencias = orden.estado !== "cerrada" && orden.estado !== "cancelada";
+  // Qué puede hacer el técnico lo dicta la base (`transicion_estado_ot`); un estado sin salidas es final.
+  const acciones = orden.transiciones.filter((transicion) => transicion.puedeTecnico);
+  const puedeRegistrarEvidencias = orden.transiciones.length > 0;
+  const nombreDeLaAccion = (transicion: TransicionOrden) => transicion.accion ?? etiquetaEstado(transicion.estado);
 
   return (
     <article className="grid gap-4" style={{ paddingBottom: acciones.length > 0 ? 72 : 0 }}>
@@ -67,7 +62,7 @@ export function OrdenDelTecnico(props: { ordenInicial: OrdenTrabajo }) {
       <header className="tecnico-tarjeta">
         <span className="flex flex-wrap items-center justify-between gap-2">
           <h1 style={{ fontSize: "1.25rem" }}>{"Orden #" + orden.id}</h1>
-          <span className={"status status-" + orden.estado}>{etiquetaEstado(orden.estado)}</span>
+          <EtiquetaEstadoOrden estado={orden.estado} />
         </span>
         <strong>{orden.nombreActivo}</strong>
         <small>{orden.nombreCliente + " · prioridad " + orden.prioridad + " · " + orden.tipo}</small>
@@ -121,55 +116,49 @@ export function OrdenDelTecnico(props: { ordenInicial: OrdenTrabajo }) {
 
       {acciones.length > 0 ? (
         <div aria-label="Acciones de la orden" className="tecnico-acciones" role="group">
-          {acciones.map((estado) => {
-            const accion = accionesDelTecnico[estado]!;
-            const etiqueta = estado === "en_ejecucion" && orden.estado === "pausada" ? "Reanudar" : accion.etiqueta;
-            return (
-              <button className={accion.principal ? "primary-button" : "secondary-button"} key={estado} onClick={() => pedirCambio(estado)} type="button">
-                {etiqueta}
-              </button>
-            );
-          })}
+          {acciones.map((transicion) => (
+            <button className={transicion.principal ? "primary-button" : "secondary-button"} key={transicion.estado} onClick={() => pedirCambio(transicion)} type="button">
+              {nombreDeLaAccion(transicion)}
+            </button>
+          ))}
         </div>
       ) : null}
 
-      {estadoPendiente === "pausada" ? (
+      {transicionPendiente?.exigeMotivo ? (
         <div className="modal-overlay" role="presentation">
           <div aria-labelledby="titulo-pausa" aria-modal="true" className="modal-panel" role="dialog">
-            <h2 id="titulo-pausa">Pausar la orden</h2>
+            <h2 id="titulo-pausa">{nombreDeLaAccion(transicionPendiente) + " la orden"}</h2>
             <div className="form-field mt-3">
-              <label htmlFor="motivoPausa">Motivo de la pausa</label>
+              <label htmlFor="motivoCambio">Motivo del cambio de estado</label>
               <textarea
-                aria-describedby={errorMotivo ? "motivoPausa-error" : undefined}
+                aria-describedby={errorMotivo ? "motivoCambio-error" : undefined}
                 aria-invalid={errorMotivo ? true : undefined}
-                id="motivoPausa"
+                id="motivoCambio"
                 onChange={(evento) => setMotivo(evento.target.value)}
                 ref={referenciaMotivo}
                 rows={3}
                 value={motivo}
               />
-              {errorMotivo ? <p className="field-error" id="motivoPausa-error" role="alert">{errorMotivo}</p> : null}
+              {errorMotivo ? <p className="field-error" id="motivoCambio-error" role="alert">{errorMotivo}</p> : null}
             </div>
             <div className="form-actions">
-              <button className="secondary-button" onClick={() => setEstadoPendiente(null)} type="button">Cancelar</button>
+              <button className="secondary-button" onClick={() => setTransicionPendiente(null)} type="button">Cancelar</button>
               <button className="primary-button" disabled={estaGuardando} onClick={confirmarCambio} type="button">
-                {estaGuardando ? "Guardando…" : "Confirmar pausa"}
+                {estaGuardando ? "Guardando…" : "Confirmar"}
               </button>
             </div>
           </div>
         </div>
       ) : null}
 
-      {estadoPendiente === "finalizada" || estadoPendiente === "en_ejecucion" ? (
+      {transicionPendiente !== null && !transicionPendiente.exigeMotivo ? (
         <ModalConfirmacion
-          descripcion={estadoPendiente === "finalizada"
-            ? "¿Confirmás que el trabajo está terminado? El jefe de mantenimiento lo va a validar."
-            : orden.estado === "pausada" ? "¿Querés reanudar el trabajo de esta orden?" : "¿Querés iniciar el trabajo de esta orden?"}
+          descripcion={"La orden pasará a «" + etiquetaEstado(transicionPendiente.estado) + "». ¿Querés continuar?"}
           estaConfirmando={estaGuardando}
-          etiquetaConfirmar={estadoPendiente === "finalizada" ? "Finalizar" : orden.estado === "pausada" ? "Reanudar" : "Iniciar"}
-          onCancelar={() => setEstadoPendiente(null)}
+          etiquetaConfirmar={nombreDeLaAccion(transicionPendiente)}
+          onCancelar={() => setTransicionPendiente(null)}
           onConfirmar={confirmarCambio}
-          titulo={estadoPendiente === "finalizada" ? "Finalizar la orden" : orden.estado === "pausada" ? "Reanudar la orden" : "Iniciar la orden"}
+          titulo={nombreDeLaAccion(transicionPendiente) + " la orden"}
         />
       ) : null}
     </article>

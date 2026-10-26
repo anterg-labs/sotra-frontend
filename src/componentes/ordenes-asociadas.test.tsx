@@ -14,7 +14,7 @@ function orden(id: number, cliente: string): OrdenTrabajo {
   return {
     id, clienteId: 1, nombreCliente: cliente, activoId: 1, nombreActivo: "Excavadora", tecnicoId: null, nombreTecnico: null,
     tipo: "correctivo", prioridad: "media", descripcion: "", observaciones: "", fechaPrevistaEjecucion: "2026-10-30", estado: "creada",
-    creadoEn: "2026-10-20T10:00:00Z", fechaInicio: null, fechaCierre: null, sugerencias: [], repuestos: [], estadosSiguientes: [],
+    creadoEn: "2026-10-20T10:00:00Z", fechaInicio: null, fechaCierre: null, sugerencias: [], repuestos: [], transiciones: [],
     historialEstados: [], version: "v",
   };
 }

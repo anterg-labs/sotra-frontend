@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { TablaOrdenesResumen } from "@/componentes/tablas-ordenables";
+import { listarEstadosOrdenTrabajoOVacio } from "@/servicios/servidor/ordenes-trabajo";
 import { obtenerAlertasMaquinariaServidor, obtenerIndicadoresServidor } from "@/servicios/servidor/reportes";
 import type { FiltrosIndicadores, Indicadores } from "@/tipos/reporte";
 import { armarAccesos, type Acceso } from "./accesos";
@@ -38,7 +39,7 @@ export default async function PaginaInicio() {
     );
   }
   const alertas = await obtenerAlertasMaquinariaServidor(SIN_FILTROS).catch(() => null);
-  const accesos = armarAccesos(indicadores, alertas);
+  const accesos = armarAccesos(indicadores, alertas, await listarEstadosOrdenTrabajoOVacio());
 
   return (
     <main className="page-content">

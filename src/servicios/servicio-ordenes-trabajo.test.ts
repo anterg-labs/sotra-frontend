@@ -5,7 +5,6 @@ import {
   borrarSugerenciasTemporales,
   cambiarEstadoOrdenTrabajo,
   crearOrdenTrabajo,
-  estadoNecesitaMotivo,
   formatearFechaPrevista,
   guardarSugerenciasTemporales,
   leerSugerenciasTemporales,
@@ -152,23 +151,14 @@ describe("servicio-ordenes-trabajo", () => {
     await expect(crearOrdenTrabajo(ordenSinDescripcion)).rejects.toThrow("La descripción de la tarea es obligatoria.");
   });
 
-  it("pide motivo al pausar, cancelar, cerrar o reasignar una orden finalizada", () => {
-    expect(estadoNecesitaMotivo("en_ejecucion", "pausada")).toBe(true);
-    expect(estadoNecesitaMotivo("creada", "cancelada")).toBe(true);
-    expect(estadoNecesitaMotivo("finalizada", "cerrada")).toBe(true);
-    expect(estadoNecesitaMotivo("finalizada", "asignada")).toBe(true);
-    expect(estadoNecesitaMotivo("asignada", "en_ejecucion")).toBe(false);
-    expect(estadoNecesitaMotivo("pausada", "pausada")).toBe(false);
-  });
-
   it("no cambia el estado sin motivo cuando hace falta", async () => {
-    await expect(cambiarEstadoOrdenTrabajo(1, "en_ejecucion", "pausada", "  ")).rejects.toThrow(
+    await expect(cambiarEstadoOrdenTrabajo(1, "pausada", "  ", true)).rejects.toThrow(
       "Indicá el motivo u observación del cambio de estado.",
     );
   });
 
   it("envía el cambio de estado con su motivo", async () => {
-    await cambiarEstadoOrdenTrabajo(1, "en_ejecucion", "pausada", " Falta de repuestos ");
+    await cambiarEstadoOrdenTrabajo(1, "pausada", " Falta de repuestos ", true);
 
     expect(fetch).toHaveBeenCalledWith("/api/v1/ordenes-trabajo/1/estado", {
       method: "PATCH",

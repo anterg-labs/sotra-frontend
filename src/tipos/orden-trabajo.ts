@@ -1,18 +1,40 @@
-export type EstadoOrdenTrabajo =
-  | "creada"
-  | "asignada"
-  | "en_ejecucion"
-  | "pausada"
-  | "finalizada"
-  | "cerrada"
-  | "cancelada";
+/** El valor de un estado lo define el catálogo de la base (`estado_ot`): el frontend no conoce la lista. */
+export type EstadoOrdenTrabajo = string;
+
+export type FaseEstadoOrden = "pendiente" | "en_curso" | "por_validar" | "cerrada" | "cancelada";
+
+/** Cómo se llama cada fase en la interfaz (las fases las define la base; aquí solo su texto). */
+export const ETIQUETAS_FASE_ORDEN: Record<FaseEstadoOrden, string> = {
+  pendiente: "Pendientes",
+  en_curso: "En curso",
+  por_validar: "Por validar",
+  cerrada: "Cerradas",
+  cancelada: "Canceladas",
+};
+
+export type TonoEstadoOrden = "neutro" | "info" | "alerta" | "exito" | "peligro" | "destacado";
 
 export type TipoOrdenTrabajo = "preventivo" | "correctivo";
 
 export type PrioridadOrdenTrabajo = "baja" | "media" | "alta";
 
 /** Un estado del catálogo que entrega la API (`GET /api/v1/ordenes-trabajo/estados`, tabla `estado_ot`). */
-export type OpcionEstadoOrden = { valor: EstadoOrdenTrabajo; etiqueta: string };
+export type OpcionEstadoOrden = {
+  valor: EstadoOrdenTrabajo;
+  etiqueta: string;
+  orden: number;
+  fase: FaseEstadoOrden;
+  tono: TonoEstadoOrden;
+};
+
+/** Un paso permitido desde el estado actual de la orden (tabla `transicion_estado_ot`). */
+export type TransicionOrden = {
+  estado: EstadoOrdenTrabajo;
+  exigeMotivo: boolean;
+  puedeTecnico: boolean;
+  accion: string | null;
+  principal: boolean;
+};
 
 export type RepuestoDeOrden = {
   id: number;
@@ -45,7 +67,7 @@ export type OrdenTrabajo = {
   fechaCierre: string | null;
   sugerencias: string[];
   repuestos: RepuestoDeOrden[];
-  estadosSiguientes: EstadoOrdenTrabajo[];
+  transiciones: TransicionOrden[];
   historialEstados: HistorialEstadoOrdenTrabajo[];
   version: string;
 };
@@ -84,6 +106,8 @@ export type FiltrosOrdenesTrabajo = {
   activoId: string;
   tecnicoId: string;
   estado: string;
+  /** Fase del estado: trae las órdenes de todos los estados de esa fase. */
+  fase?: string;
   prioridad: string;
   tipo: string;
   fechaDesde: string;

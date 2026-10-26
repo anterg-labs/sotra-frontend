@@ -24,6 +24,7 @@ import type {
 } from "@/tipos/reporte";
 import { formatearFechaCorta } from "@/utilidades/fechas";
 import { ContenedorTabla } from "@/componentes/contenedor-tabla";
+import { useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
 import { EncabezadoOrdenLocal, useOrdenLocal } from "@/componentes/listado/orden-local";
 
 type PropiedadesPanelAnalitica = {
@@ -31,14 +32,6 @@ type PropiedadesPanelAnalitica = {
 };
 
 type Resultado<T> = { datos: T | null; error: string };
-
-const etiquetasDeEstado: Record<string, string> = {
-  creada: "Sin asignar",
-  asignada: "Asignada, sin iniciar",
-  en_ejecucion: "En ejecución",
-  pausada: "Pausada",
-  finalizada: "En validación",
-};
 
 type ColumnaReincidencias = "activo" | "cliente" | "correctivas" | "reincidencias" | "dias" | "ultima";
 
@@ -102,6 +95,7 @@ function describirVariacion(actual: number, anterior: number | null) {
 
 /** Análisis del mantenimiento: tendencias, tiempos, reincidencias y alertas de maquinaria, con los filtros del tablero. */
 export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
+  const etiquetaEstado = useEtiquetaEstadoOrden();
   const [agrupacion, setAgrupacion] = useState<AgrupacionTendencias>("semana");
   const [tendencias, setTendencias] = useState<Resultado<Tendencias> | null>(null);
   const [tiempos, setTiempos] = useState<Resultado<Tiempos> | null>(null);
@@ -264,7 +258,7 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
             </div>
             <GraficoBarras
               datos={datos.etapas.map((etapa) => ({
-                etiqueta: etiquetasDeEstado[etapa.estado] ?? etapa.estado,
+                etiqueta: etiquetaEstado(etapa.estado),
                 valor: etapa.promedioHoras,
                 valorTexto: formatearDuracion(etapa.promedioHoras),
                 detalle: "Promedio de " + etapa.cantidad + (etapa.cantidad === 1 ? " tramo" : " tramos"),

@@ -8,11 +8,10 @@ import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import {
   asignarTecnicoOrdenTrabajo,
   cambiarEstadoOrdenTrabajo,
-  estadoNecesitaMotivo,
   formatearFechaPrevista,
   listarTecnicosPaginados,
 } from "@/servicios/servicio-ordenes-trabajo";
-import { useEstadosOrden, useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
+import { EtiquetaEstadoOrden, useEtiquetaEstadoOrden, useFaseEstadoOrden } from "@/componentes/estados-orden";
 import type { HistorialEstadoOrdenTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
 import { formatearFechaCorta, formatearFechaHora } from "@/utilidades/fechas";
@@ -29,8 +28,8 @@ type PropiedadesDetalleOrden = {
 /** Detalle de la orden: los datos llegan del servidor; el cambio de estado, la asignación y las evidencias siguen en el navegador. */
 export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
   const ordenTrabajoId = props.ordenInicial.id;
-  const estados = useEstadosOrden();
   const etiquetaEstado = useEtiquetaEstadoOrden();
+  const faseDelEstado = useFaseEstadoOrden();
   const [orden, setOrden] = useState<OrdenTrabajo | null>(props.ordenInicial);
   const puedeEditar = useTienePermiso("ot.editar");
   const puedeAsignarTecnico = useTienePermiso("ot.asignar_tecnico");
@@ -87,9 +86,9 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
     try {
       const ordenActualizada = await cambiarEstadoOrdenTrabajo(
         ordenTrabajoId,
-        orden.estado,
         estadoSeleccionado,
         motivoEstado,
+        orden.transiciones.find((transicion) => transicion.estado === estadoSeleccionado)?.exigeMotivo ?? false,
       );
       setOrden(ordenActualizada);
       setEstadoSeleccionado("");
@@ -150,7 +149,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
     const fechaCreacion = formatearFechaCorta(orden.creadoEn);
 
     let enlaceModificar = null;
-    if (orden.estado !== "cerrada" && puedeEditar) {
+    if (faseDelEstado(orden.estado) !== "cerrada" && puedeEditar) {
       enlaceModificar = (
         <Link className="primary-button" href={"/ordenes-trabajo/" + orden.id + "/editar"}>
           Modificar
@@ -158,7 +157,8 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
       );
     }
 
-    const ordenEstaTerminada = orden.estado === "cerrada" || orden.estado === "cancelada";
+    // Un estado sin transiciones de salida es final: la orden queda solo para consulta.
+    const ordenEstaTerminada = orden.transiciones.length === 0;
 
     let mensajeAccionError = null;
     if (errorAccion) {
@@ -214,9 +214,9 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
     let seccionEstado = <p className="empty-state">No hay cambios de estado disponibles para esta orden.</p>;
     if (!puedeRegistrarAvance) {
       seccionEstado = <p className="empty-state">{"Estado actual: " + etiquetaEstado(orden.estado) + "."}</p>;
-    } else if (orden.estadosSiguientes.length > 0) {
+    } else if (orden.transiciones.length > 0) {
       let campoMotivo = null;
-      if (estadoNecesitaMotivo(orden.estado, estadoSeleccionado)) {
+      if (orden.transiciones.some((transicion) => transicion.estado === estadoSeleccionado && transicion.exigeMotivo)) {
         campoMotivo = (
           <div className="form-field">
             <label htmlFor="motivoCambioEstado">Motivo u observación</label>
@@ -236,9 +236,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
             alCambiar={setEstadoSeleccionado}
             etiqueta="Actualizar estado"
             id="nuevoEstado"
-            opciones={estados
-              .filter((estado) => orden.estadosSiguientes.includes(estado.valor))
-              .map((estado) => ({ valor: estado.valor, etiqueta: estado.etiqueta }))}
+            opciones={orden.transiciones.map((transicion) => ({ valor: transicion.estado, etiqueta: etiquetaEstado(transicion.estado) }))}
             textoVacio="Seleccioná el nuevo estado"
             valor={estadoSeleccionado}
           />
@@ -291,7 +289,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
           </div>
           <div>
             <dt>Estado</dt>
-            <dd><span className={"status status-" + orden.estado}>{etiquetaEstado(orden.estado)}</span></dd>
+            <dd><EtiquetaEstadoOrden estado={orden.estado} /></dd>
           </div>
           <div>
             <dt>Fecha de creación</dt>
@@ -336,7 +334,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
         <section className="panel detail-panel">
           <h2>Estado de la orden</h2>
           <p className="mb-4 mt-2">
-            <span className={"status status-" + orden.estado}>{etiquetaEstado(orden.estado)}</span>
+            <EtiquetaEstadoOrden estado={orden.estado} />
           </p>
           {seccionEstado}
         </section>

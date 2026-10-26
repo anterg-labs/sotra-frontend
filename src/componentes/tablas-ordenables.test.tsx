@@ -11,7 +11,7 @@ function orden(id: number, cliente: string, prioridad: OrdenTrabajo["prioridad"]
     id, clienteId: id, nombreCliente: cliente, activoId: id, nombreActivo: "Activo " + id, tecnicoId: tecnico ? id : null,
     nombreTecnico: tecnico, tipo: "correctivo", prioridad, descripcion: "", observaciones: "", fechaPrevistaEjecucion: "2026-10-30",
     estado: "creada", creadoEn: "2026-10-20T10:00:00Z", fechaInicio: null, fechaCierre: null, sugerencias: [], repuestos: [],
-    estadosSiguientes: [], historialEstados: [], version: "v",
+    transiciones: [], historialEstados: [], version: "v",
   };
 }
 

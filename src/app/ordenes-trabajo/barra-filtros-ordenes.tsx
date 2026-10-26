@@ -9,13 +9,13 @@ import { listarTecnicosPaginados } from "@/servicios/servicio-ordenes-trabajo";
 import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
 import { useEstadosOrden } from "@/componentes/estados-orden";
-import type { FiltrosOrdenesTrabajo } from "@/tipos/orden-trabajo";
+import { ETIQUETAS_FASE_ORDEN, type FiltrosOrdenesTrabajo } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
 import { construirUrlOrdenes } from "./filtros";
 
 type ValoresOrdenes = Omit<FiltrosOrdenesTrabajo, "pagina">;
 const VACIOS: ValoresOrdenes = {
-  buscar: "", clienteId: "", activoId: "", tecnicoId: "", estado: "", prioridad: "", tipo: "",
+  buscar: "", clienteId: "", activoId: "", tecnicoId: "", estado: "", fase: "", prioridad: "", tipo: "",
   fechaDesde: "", fechaHasta: "", conSugerencias: false,
 };
 
@@ -42,7 +42,7 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
   const { valores, cambiar, aplicarAhora, limpiar, estaPendiente } = useFiltrosEnVivo<ValoresOrdenes>({
     inicial: {
       buscar: filtros.buscar, clienteId: filtros.clienteId, activoId: filtros.activoId, tecnicoId: filtros.tecnicoId,
-      estado: filtros.estado, prioridad: filtros.prioridad, tipo: filtros.tipo, fechaDesde: filtros.fechaDesde,
+      estado: filtros.estado, fase: filtros.fase ?? "", prioridad: filtros.prioridad, tipo: filtros.tipo, fechaDesde: filtros.fechaDesde,
       fechaHasta: filtros.fechaHasta, conSugerencias: filtros.conSugerencias,
       ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden,
     },
@@ -51,6 +51,7 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
     alInvalido: () => document.getElementById("fechaCreacion-hasta")?.focus(),
   });
 
+  const fasesDelCatalogo = [...new Set(estados.map((estado) => estado.fase))];
   const activosDelCliente = props.activos.filter((activo) => valores.clienteId === "" || String(activo.clienteId) === valores.clienteId);
 
   return (
@@ -122,6 +123,16 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
           <option value="">Todos los estados</option>
           {estados.map((estado) => (
             <option key={estado.valor} value={estado.valor}>{estado.etiqueta}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="form-field">
+        <label htmlFor="fase">Fase</label>
+        <select id="fase" onChange={(evento) => cambiar({ fase: evento.target.value })} value={valores.fase ?? ""}>
+          <option value="">Todas las fases</option>
+          {fasesDelCatalogo.map((fase) => (
+            <option key={fase} value={fase}>{ETIQUETAS_FASE_ORDEN[fase]}</option>
           ))}
         </select>
       </div>

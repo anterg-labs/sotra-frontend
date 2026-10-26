@@ -31,7 +31,6 @@ import {
   cambiarEstadoOrdenTrabajo,
   crearOrdenTrabajo,
   crearSesionDeSugerencias,
-  estadoNecesitaMotivo,
   formatearFechaPrevista,
   guardarSugerenciasTemporales,
   leerSugerenciasTemporales,
@@ -321,20 +320,13 @@ describe("servicio-ordenes-trabajo", () => {
     expect(llamadas[2].url).toBe("/api/v1/ordenes-trabajo/4");
   });
 
-  it("exige motivo solo en los cambios de estado que lo requieren", async () => {
-    expect(estadoNecesitaMotivo("creada", "creada")).toBe(false);
-    expect(estadoNecesitaMotivo("en_ejecucion", "pausada")).toBe(true);
-    expect(estadoNecesitaMotivo("asignada", "cancelada")).toBe(true);
-    expect(estadoNecesitaMotivo("finalizada", "cerrada")).toBe(true);
-    expect(estadoNecesitaMotivo("finalizada", "asignada")).toBe(true);
-    expect(estadoNecesitaMotivo("creada", "asignada")).toBe(false);
-
+  it("exige motivo solo cuando la transición lo pide", async () => {
     const { llamadas } = simularFetch(() => ({ cuerpo: { id: 1 } }));
-    await expect(cambiarEstadoOrdenTrabajo(1, "creada", "", "")).rejects.toThrow("Seleccioná el nuevo estado");
-    await expect(cambiarEstadoOrdenTrabajo(1, "en_ejecucion", "pausada", "  ")).rejects.toThrow("motivo");
+    await expect(cambiarEstadoOrdenTrabajo(1, "", "", false)).rejects.toThrow("Seleccioná el nuevo estado");
+    await expect(cambiarEstadoOrdenTrabajo(1, "pausada", "  ", true)).rejects.toThrow("motivo");
     expect(llamadas).toHaveLength(0);
-    await cambiarEstadoOrdenTrabajo(1, "en_ejecucion", "pausada", "  falta repuesto ");
-    await cambiarEstadoOrdenTrabajo(1, "creada", "asignada", "");
+    await cambiarEstadoOrdenTrabajo(1, "pausada", "  falta repuesto ", true);
+    await cambiarEstadoOrdenTrabajo(1, "asignada", "", false);
     expect(llamadas[0]).toMatchObject({ metodo: "PATCH", cuerpo: { estado: "pausada", motivo: "falta repuesto" } });
     expect(llamadas[0].url).toBe("/api/v1/ordenes-trabajo/1/estado");
   });

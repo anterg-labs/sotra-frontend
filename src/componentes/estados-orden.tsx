@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, type ReactNode } from "react";
-import type { OpcionEstadoOrden } from "@/tipos/orden-trabajo";
+import type { FaseEstadoOrden, OpcionEstadoOrden, TonoEstadoOrden } from "@/tipos/orden-trabajo";
 
 const ContextoEstadosOrden = createContext<OpcionEstadoOrden[]>([]);
 
@@ -25,4 +25,21 @@ export function etiquetaLegible(valor: string) {
 export function useEtiquetaEstadoOrden() {
   const estados = useEstadosOrden();
   return useCallback((valor: string) => estados.find((estado) => estado.valor === valor)?.etiqueta ?? etiquetaLegible(valor), [estados]);
+}
+
+/** Fase de un estado según el catálogo; `null` si el catálogo no lo conoce. */
+export function useFaseEstadoOrden() {
+  const estados = useEstadosOrden();
+  return useCallback((valor: string): FaseEstadoOrden | null => estados.find((estado) => estado.valor === valor)?.fase ?? null, [estados]);
+}
+
+const TONOS_CON_ESTILO: readonly TonoEstadoOrden[] = ["neutro", "info", "alerta", "exito", "peligro", "destacado"];
+
+/** Etiqueta de color de un estado: el color lo define el catálogo (`tono`); sin catálogo, neutro. */
+export function EtiquetaEstadoOrden(props: { estado: string }) {
+  const estados = useEstadosOrden();
+  const etiqueta = useEtiquetaEstadoOrden();
+  const tono = estados.find((estado) => estado.valor === props.estado)?.tono;
+  const tonoVisible = tono !== undefined && TONOS_CON_ESTILO.includes(tono) ? tono : "neutro";
+  return <span className={"status status-tono-" + tonoVisible}>{etiqueta(props.estado)}</span>;
 }

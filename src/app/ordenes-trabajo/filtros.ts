@@ -34,6 +34,7 @@ export function leerFiltrosOrdenes(parametros: ParametrosBusqueda, estados: read
     activoId: leerIdFiltro(parametros, "activoId"),
     tecnicoId: leerIdFiltro(parametros, "tecnicoId"),
     estado: leerOpcion(parametros, "estado", estados.map((estado) => estado.valor)),
+    fase: leerOpcion(parametros, "fase", estados.map((estado) => estado.fase)),
     prioridad: leerOpcion(parametros, "prioridad", ["alta", "media", "baja"]),
     tipo: leerOpcion(parametros, "tipo", ["preventivo", "correctivo"]),
     fechaDesde: leerFecha(parametros, "fechaDesde"),

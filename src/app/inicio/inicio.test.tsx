@@ -1,6 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AlertasMaquinaria, Indicadores } from "@/tipos/reporte";
+import { estadosDePrueba } from "@/pruebas/estados-orden";
 import { armarAccesos } from "./accesos";
 import PaginaInicio from "./page";
 
@@ -9,6 +10,10 @@ const servidor = vi.hoisted(() => ({
   obtenerAlertasMaquinariaServidor: vi.fn(),
 }));
 vi.mock("@/servicios/servidor/reportes", () => servidor);
+vi.mock("@/servicios/servidor/ordenes-trabajo", async () => {
+  const { estadosDePrueba: estados } = await import("@/pruebas/estados-orden");
+  return { listarEstadosOrdenTrabajoOVacio: async () => estados };
+});
 
 const indicadores: Indicadores = {
   totalOrdenes: 20,
@@ -35,24 +40,30 @@ const indicadores: Indicadores = {
 const alertas: AlertasMaquinaria = { total: 4, criticas: 1, alertas: [] };
 
 describe("accesos del inicio", () => {
-  it("cuenta como abiertas las órdenes que no están finalizadas, cerradas ni canceladas", () => {
-    const accesos = armarAccesos(indicadores, alertas);
+  it("cuenta por fase del catálogo: abiertas son las pendientes y en curso", () => {
+    const accesos = armarAccesos(indicadores, alertas, estadosDePrueba);
 
     expect(accesos.find((a) => a.etiqueta === "Órdenes abiertas")?.valor).toBe(10);
-    expect(accesos.find((a) => a.etiqueta === "Sin asignar")?.valor).toBe(3);
-    expect(accesos.find((a) => a.etiqueta === "En ejecución")?.valor).toBe(4);
+    expect(accesos.find((a) => a.etiqueta === "Pendientes")?.valor).toBe(5);
+    expect(accesos.find((a) => a.etiqueta === "En curso")?.valor).toBe(5);
+  });
+
+  it("sin catálogo no cuenta órdenes por fase en vez de adivinar por el nombre del estado", () => {
+    expect(armarAccesos(indicadores, alertas, []).find((a) => a.etiqueta === "Órdenes abiertas")?.valor).toBe(0);
   });
 
   it("enlaza cada acceso con su listado filtrado", () => {
-    const enlaces = Object.fromEntries(armarAccesos(indicadores, alertas).map((a) => [a.etiqueta, a.href]));
+    const enlaces = Object.fromEntries(armarAccesos(indicadores, alertas, estadosDePrueba).map((a) => [a.etiqueta, a.href]));
 
     expect(enlaces["Prioridad alta pendientes"]).toBe("/ordenes-trabajo?prioridad=alta");
-    expect(enlaces["Pendientes de validación"]).toBe("/ordenes-trabajo?estado=finalizada");
+    expect(enlaces["Pendientes"]).toBe("/ordenes-trabajo?fase=pendiente");
+    expect(enlaces["En curso"]).toBe("/ordenes-trabajo?fase=en_curso");
+    expect(enlaces["Por validar"]).toBe("/ordenes-trabajo?fase=por_validar");
     expect(enlaces["Repuestos con bajo stock"]).toBe("/repuestos?stock=alerta");
   });
 
   it("si las alertas no se pueden leer, lo indica sin romper el resto", () => {
-    const acceso = armarAccesos(indicadores, null).find((a) => a.etiqueta === "Alertas de maquinaria");
+    const acceso = armarAccesos(indicadores, null, estadosDePrueba).find((a) => a.etiqueta === "Alertas de maquinaria");
 
     expect(acceso?.valor).toBe("—");
     expect(acceso?.detalle).toBe("No disponible por ahora");

@@ -1,6 +1,6 @@
 import { fireEvent, render as renderBase, screen, waitFor, within } from "@testing-library/react";
 import type { ReactElement } from "react";
-import { conEstadosOrden, estadosDePrueba } from "@/pruebas/estados-orden";
+import { conEstadosOrden, estadosDePrueba, transicion } from "@/pruebas/estados-orden";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { esperarRetardoDeBusqueda } from "@/pruebas/ayudas-filtros";
 import { ProveedorNavegacionListado } from "@/componentes/listado/navegacion-listado";
@@ -122,7 +122,7 @@ const orden = (id: number, extra: Record<string, unknown> = {}) => ({
   id, clienteId: 1, nombreCliente: "ACME", activoId: 2, nombreActivo: "Retro 1", tecnicoId: null, nombreTecnico: null,
   tipo: "correctivo", prioridad: "alta", descripcion: "Cambiar filtro", observaciones: "", fechaPrevistaEjecucion: "2026-10-20",
   estado: "creada", creadoEn: "2026-10-01T10:00:00Z", fechaInicio: null, fechaCierre: null, sugerencias: [], repuestos: [],
-  estadosSiguientes: ["asignada", "pausada"],
+  transiciones: [transicion("asignada"), transicion("pausada", { exigeMotivo: true })],
   historialEstados: [
     { estado: "creada", fechaHora: "2026-10-01T10:00:00Z", observacion: "Alta" },
     { estado: "asignada", fechaHora: "2026-10-02T10:00:00Z", observacion: "Asignada a Tomás" },
@@ -135,7 +135,7 @@ const cliente = { id: 1, razonSocial: "ACME", estado: "activo" };
 const activo = { id: 2, clienteId: 1, nombre: "Retro 1", numSerie: "S1", estado: "activo" };
 const resumen = { totalOrdenes: 30, ordenesPorEstado: [{ nombre: "creada", cantidad: 5 }, { nombre: "cerrada", cantidad: 9 }] };
 const filtrosVacios = {
-  buscar: "", clienteId: "", activoId: "", tecnicoId: "", estado: "", prioridad: "", tipo: "",
+  buscar: "", clienteId: "", activoId: "", tecnicoId: "", estado: "", fase: "", prioridad: "", tipo: "",
   fechaDesde: "", fechaHasta: "", conSugerencias: false, pagina: 1,
 };
 const conNavegacion = (ui: React.ReactNode) => <ProveedorNavegacionListado etiquetaCarga="Cargando…">{ui}</ProveedorNavegacionListado>;
@@ -162,9 +162,12 @@ describe("filtros de la URL de órdenes", () => {
         fechaDesde: "2026-10-01", fechaHasta: "2026-10-31", conSugerencias: "true", pagina: "2",
       }, estadosDePrueba),
     ).toEqual({
-      buscar: "fuga", clienteId: "1", activoId: "2", tecnicoId: "7", estado: "pausada", prioridad: "alta", tipo: "preventivo",
+      buscar: "fuga", clienteId: "1", activoId: "2", tecnicoId: "7", estado: "pausada", fase: "", prioridad: "alta", tipo: "preventivo",
       fechaDesde: "2026-10-01", fechaHasta: "2026-10-31", conSugerencias: true, pagina: 2,
     });
+    expect(leerFiltrosOrdenes({ fase: "en_curso" }, estadosDePrueba).fase).toBe("en_curso");
+    expect(leerFiltrosOrdenes({ fase: "inventada" }, estadosDePrueba).fase).toBe("");
+    expect(construirUrlOrdenes({ ...filtrosVacios, fase: "por_validar" })).toBe("/ordenes-trabajo?fase=por_validar");
     expect(leerFiltrosOrdenes({ estado: "x", prioridad: "urgente", tipo: "otro", fechaDesde: "ayer", conSugerencias: "si", clienteId: "1;" }, estadosDePrueba)).toEqual(filtrosVacios);
     expect(construirUrlOrdenes({ ...filtrosVacios, estado: "pausada", conSugerencias: true, pagina: 2 })).toBe(
       "/ordenes-trabajo?estado=pausada&conSugerencias=true&pagina=2",
@@ -340,7 +343,7 @@ function elegirEstado(etiqueta: string) {
 
 describe("detalle de orden de trabajo", () => {
   it("ofrece solo los estados a los que se puede pasar desde el actual, con las etiquetas y el orden del catálogo", () => {
-    render(<DetalleOrdenTrabajo ordenInicial={orden(11, { estado: "finalizada", estadosSiguientes: ["asignada", "cerrada"] }) as never} tecnicosIniciales={[]} huboErrorTecnicos={false} />);
+    render(<DetalleOrdenTrabajo ordenInicial={orden(11, { estado: "finalizada", transiciones: [transicion("asignada", { exigeMotivo: true }), transicion("cerrada", { exigeMotivo: true })] }) as never} tecnicosIniciales={[]} huboErrorTecnicos={false} />);
     fireEvent.focus(screen.getByRole("combobox", { name: "Actualizar estado" }));
 
     expect(screen.getAllByRole("option").map((opcion) => opcion.textContent)).toEqual(["Asignada", "Cerrada"]);
@@ -418,7 +421,7 @@ describe("detalle de orden de trabajo", () => {
   });
 
   it("una orden cerrada es solo de consulta: sin modificar, sin técnico ni cambios de estado, sin registrar evidencias", async () => {
-    s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11, { estado: "cerrada", estadosSiguientes: [] }));
+    s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11, { estado: "cerrada", transiciones: [] }));
     render(await DetalleOrden(parametros("11")));
     expect(screen.getByText("La orden está cerrada o cancelada y solo queda disponible para consulta.")).toBeInTheDocument();
     expect(screen.getByText("No hay cambios de estado disponibles para esta orden.")).toBeInTheDocument();
@@ -462,7 +465,7 @@ describe("detalle de orden de trabajo", () => {
     expect(screen.queryByLabelText("Motivo u observación")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Confirmar estado" }));
-    await waitFor(() => expect(s.cambiarEstadoOrdenTrabajo).toHaveBeenCalledWith(11, "creada", "asignada", ""));
+    await waitFor(() => expect(s.cambiarEstadoOrdenTrabajo).toHaveBeenCalledWith(11, "asignada", "", false));
     expect(await screen.findByText("Estado actualizado correctamente.")).toBeInTheDocument();
     expect(screen.getByLabelText("Actualizar estado")).toHaveValue("");
   });
@@ -542,7 +545,7 @@ describe("edición y alta de orden de trabajo (páginas)", () => {
 describe("órdenes según el rol", () => {
   it("el técnico ve el detalle, cambia el estado y carga evidencias, pero no asigna técnico ni modifica", async () => {
     vi.mocked(tienePermisoServidor).mockImplementation(async (permiso) => permiso !== "ot.asignar_tecnico");
-    s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11, { tecnicoId: 30, nombreTecnico: "Técnico Prueba", estado: "asignada", estadosSiguientes: ["en_ejecucion"] }));
+    s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11, { tecnicoId: 30, nombreTecnico: "Técnico Prueba", estado: "asignada", transiciones: [transicion("en_ejecucion")] }));
     render(<ProveedorSesion usuario={usuarioDePruebas(["tecnico"])}>{await DetalleOrden(parametros("11"))}</ProveedorSesion>);
 
     expect(s.listarTecnicosServidor).not.toHaveBeenCalled();

@@ -9,6 +9,7 @@ export function construirConsultaOrdenes(filtros: FiltrosOrdenesTrabajo) {
   for (const campo of campos) {
     if (filtros[campo] !== "") parametros.append(campo, filtros[campo]);
   }
+  if (filtros.fase) parametros.append("fase", filtros.fase);
   if (filtros.conSugerencias) parametros.append("conSugerencias", "true");
   for (const [nombre, valor] of parametrosDeOrden(filtros)) parametros.append(nombre, valor);
   parametros.append("pagina", String(filtros.pagina));

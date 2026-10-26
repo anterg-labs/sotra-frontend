@@ -207,6 +207,29 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* Todo lo que se acciona sin escribir texto muestra la mano; los campos de texto conservan el cursor de texto. */
+a[href],
+select,
+summary,
+label:has(input:is([type="checkbox"], [type="radio"])),
+input:is([type="checkbox"], [type="radio"], [type="date"], [type="file"], [type="button"], [type="submit"], [type="reset"]),
+input[type="file"]::file-selector-button,
+input[type="date"]::-webkit-calendar-picker-indicator,
+[role="button"],
+[role="option"],
+[role="tab"],
+[role="switch"],
+[role="menuitem"],
+[role="combobox"] {
+  cursor: pointer;
+}
+
+:is(button, select, input, a, [role="button"], [role="option"], [role="tab"], [role="menuitem"]):disabled,
+[aria-disabled="true"],
+label:has(input:disabled) {
+  cursor: not-allowed;
+}
+
 .page-content {
   max-width: 1500px;
   margin: 0 auto;

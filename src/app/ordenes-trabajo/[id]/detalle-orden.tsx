@@ -43,10 +43,6 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
   const [errorAccion, setErrorAccion] = useState("");
   const [mensajeExito, setMensajeExito] = useState("");
 
-  function cambiarEstadoSeleccionado(evento: React.ChangeEvent<HTMLSelectElement>) {
-    setEstadoSeleccionado(evento.target.value);
-  }
-
   function cambiarMotivoEstado(evento: React.ChangeEvent<HTMLTextAreaElement>) {
     setMotivoEstado(evento.target.value);
   }
@@ -234,17 +230,17 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
 
       seccionEstado = (
         <>
-          <div className="form-field">
-            <label htmlFor="nuevoEstado">Actualizar estado</label>
-            <select id="nuevoEstado" onChange={cambiarEstadoSeleccionado} value={estadoSeleccionado}>
-              <option value="">Seleccioná el nuevo estado</option>
-              {orden.estadosSiguientes.map((estadoSiguiente) => (
-                <option key={estadoSiguiente} value={estadoSiguiente}>
-                  {obtenerEtiquetaEstadoOrdenTrabajo(estadoSiguiente)}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Combobox
+            alCambiar={setEstadoSeleccionado}
+            etiqueta="Actualizar estado"
+            id="nuevoEstado"
+            opciones={orden.estadosSiguientes.map((estadoSiguiente) => ({
+              valor: estadoSiguiente,
+              etiqueta: obtenerEtiquetaEstadoOrdenTrabajo(estadoSiguiente),
+            }))}
+            textoVacio="Seleccioná el nuevo estado"
+            valor={estadoSeleccionado}
+          />
           {campoMotivo}
           <div className="form-actions">
             <button

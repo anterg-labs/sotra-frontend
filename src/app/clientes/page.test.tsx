@@ -149,6 +149,17 @@ describe("barra de filtros (en vivo)", () => {
     expect(replace).toHaveBeenLastCalledWith("/clientes?buscar=acme&estado=inactivo");
   });
 
+  it("el interruptor de activos asociados se aplica al instante y se lee de la URL", () => {
+    expect(leerFiltrosClientes({ conActivos: "true" }).conActivos).toBe(true);
+    expect(leerFiltrosClientes({ conActivos: "otro" }).conActivos).toBe(false);
+    expect(construirUrlClientes({ ...filtrosVacios, conActivos: true })).toBe("/clientes?conActivos=true");
+    render(conNavegacion(<BarraFiltrosClientes filtros={filtrosVacios} />));
+    fireEvent.click(screen.getByRole("switch", { name: "Solo con activos asociados" }));
+    expect(replace).toHaveBeenLastCalledWith("/clientes?conActivos=true");
+    fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
+    expect(replace).toHaveBeenLastCalledWith("/clientes");
+  });
+
   it("limpia los campos y vuelve al listado sin filtros", () => {
     render(conNavegacion(<BarraFiltrosClientes filtros={{ buscar: "acme", estado: "activo", pagina: 1 }} />));
     expect(screen.getByLabelText("Buscar")).toHaveValue("acme");

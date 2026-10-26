@@ -28,6 +28,8 @@ export type ActualizarClienteInput = CrearClienteInput;
 export type FiltrosClientes = {
   buscar: string;
   estado: string;
+  /** Solo clientes con al menos un activo asociado. */
+  conActivos?: boolean;
   pagina: number;
   ordenarPor?: string;
   direccionOrden?: "asc" | "desc" | "";

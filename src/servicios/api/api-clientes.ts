@@ -11,6 +11,9 @@ export async function apiListarClientesPaginados(filtros: FiltrosClientes) {
   if (filtros.estado !== "") {
     parametros.append("estado", filtros.estado);
   }
+  if (filtros.conActivos) {
+    parametros.append("conActivos", "true");
+  }
   for (const [nombre, valor] of parametrosDeOrden(filtros, "desc")) parametros.append(nombre, valor);
   parametros.append("pagina", String(filtros.pagina));
 

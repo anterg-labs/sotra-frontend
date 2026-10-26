@@ -8,6 +8,7 @@ export function listarClientesServidor(filtros: FiltrosClientes) {
   const parametros = new URLSearchParams();
   if (filtros.buscar.trim() !== "") parametros.append("buscar", filtros.buscar.trim());
   if (filtros.estado !== "") parametros.append("estado", filtros.estado);
+  if (filtros.conActivos) parametros.append("conActivos", "true");
   for (const [nombre, valor] of parametrosDeOrden(filtros, "desc")) parametros.append(nombre, valor);
   parametros.append("pagina", String(filtros.pagina));
   return leerJsonServidor<Pagina<Cliente>>("/api/v1/clientes?" + parametros.toString(), "No se pudo obtener el listado de clientes.");

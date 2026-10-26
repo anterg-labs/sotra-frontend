@@ -52,7 +52,7 @@ export function SelectorClienteActivoOrdenTrabajo(props: PropiedadesSelectorClie
 
   return (
     <>
-      <div className="flex min-w-0 flex-wrap items-end gap-2">
+      <div className="flex min-w-0 flex-wrap items-end gap-2 self-start">
         <div className="min-w-0 flex-[1_1_180px]">
           <Combobox
             alCambiar={props.alCambiarCliente}

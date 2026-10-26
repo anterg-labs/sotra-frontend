@@ -1,8 +1,12 @@
 # CHANGELOG
 
-## Version 1.0.47 (2026-10-26)
+## Version 1.0.48 (2026-10-26)
 
 - Pruebas: las comprobaciones del foco en los formularios de usuarios y clientes esperan a que el foco llegue al campo, con lo que dejan de fallar de forma intermitente en la integración continua.
+
+## Version 1.0.46 (2026-10-26)
+
+- Reportes: cada punto de «Atención necesaria» (prioridad alta pendientes, pendientes de validación y bajo stock) es un enlace que lleva directo al listado correspondiente.
 
 ## Version 1.0.44 (2026-10-25)
 

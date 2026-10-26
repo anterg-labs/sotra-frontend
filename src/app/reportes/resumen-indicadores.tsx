@@ -45,9 +45,21 @@ export async function ResumenIndicadores(props: { filtros: FiltrosIndicadores; c
       <section className="panel p-6">
         <h2>Atención necesaria</h2>
         <ul className="mt-3 grid gap-2 text-sm">
-          <li><strong>{indicadores.ordenesAltaPrioridadPendientes}</strong> órdenes de prioridad alta pendientes</li>
-          <li><strong>{indicadores.ordenesPendientesDeValidacion}</strong> órdenes finalizadas pendientes de validación</li>
-          <li><strong>{indicadores.repuestosBajoStock.length}</strong> repuestos con bajo stock</li>
+          <li>
+            <Link className="text-link" href="/ordenes-trabajo?prioridad=alta">
+              <strong>{indicadores.ordenesAltaPrioridadPendientes}</strong> órdenes de prioridad alta pendientes
+            </Link>
+          </li>
+          <li>
+            <Link className="text-link" href="/ordenes-trabajo?fase=por_validar">
+              <strong>{indicadores.ordenesPendientesDeValidacion}</strong> órdenes finalizadas pendientes de validación
+            </Link>
+          </li>
+          <li>
+            <Link className="text-link" href="/repuestos?stock=alerta">
+              <strong>{indicadores.repuestosBajoStock.length}</strong> repuestos con bajo stock
+            </Link>
+          </li>
         </ul>
       </section>
       <section className="panel p-6">

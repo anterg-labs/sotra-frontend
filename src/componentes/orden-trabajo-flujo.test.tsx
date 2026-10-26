@@ -179,17 +179,9 @@ describe("FormularioOrdenTrabajo (modificación)", () => {
     dibujarFormulario({ ordenInicial: ordenExistente() });
     expect(screen.getByLabelText("Descripción de la tarea")).toHaveValue("Cambiar filtro");
     expect(screen.getByLabelText("Fecha prevista de ejecución")).toHaveValue("2026-10-20");
-    const opciones = within(screen.getByLabelText("Estado")).getAllByRole("option") as HTMLOptionElement[];
-    expect(opciones.map((o) => o.textContent)).toEqual([
-      "Creada (no disponible desde en ejecución)",
-      "Asignada (no disponible desde en ejecución)",
-      "En ejecución",
-      "Pausada",
-      "Finalizada",
-      "Cerrada (no disponible desde en ejecución)",
-      "Cancelada (no disponible desde en ejecución)",
+    expect(within(screen.getByLabelText("Estado")).getAllByRole("option").map((o) => o.textContent)).toEqual([
+      "En ejecución", "Pausada", "Finalizada",
     ]);
-    expect(opciones.filter((o) => o.disabled).map((o) => o.value)).toEqual(["creada", "asignada", "cerrada", "cancelada"]);
     expect(screen.getByLabelText("Sugerencia 1")).toHaveValue("Sugerida");
     expect(within(screen.getByRole("list", { name: "Repuestos seleccionados" })).getByText(/R3 - Filtro/)).toBeInTheDocument();
   });

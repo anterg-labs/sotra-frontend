@@ -36,21 +36,6 @@ function validarOrdenTrabajo(input: CrearOrdenTrabajoInput) {
   if (primerError) throw new Error(primerError);
 }
 
-/**
- * Para ofrecer todos los estados del catálogo y marcar los que no se pueden alcanzar: desde el estado actual solo se
- * puede pasar a `estadosSiguientes` (ciclo de vida de la API). Devuelve `{}` cuando el estado es elegible.
- */
-export function motivoNoDisponible(
-  estado: string,
-  estadoActual: string,
-  estadosSiguientes: readonly string[],
-  etiquetaEstado: (estado: string) => string,
-): { deshabilitada?: true; motivo?: string } {
-  if (estado === estadoActual) return { deshabilitada: true, motivo: "Estado actual" };
-  if (estadosSiguientes.includes(estado)) return {};
-  return { deshabilitada: true, motivo: "No disponible desde " + etiquetaEstado(estadoActual) };
-}
-
 export function formatearFechaPrevista(fechaPrevista: string) {
   const partesFecha = fechaPrevista.split("-");
   return partesFecha[2] + "/" + partesFecha[1] + "/" + partesFecha[0];

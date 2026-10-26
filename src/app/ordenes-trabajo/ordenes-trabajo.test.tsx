@@ -339,21 +339,12 @@ function elegirEstado(etiqueta: string) {
 }
 
 describe("detalle de orden de trabajo", () => {
-  it("ofrece todos los estados del catálogo y deshabilita los que no se pueden alcanzar, con el motivo", () => {
-    render(<DetalleOrdenTrabajo ordenInicial={orden(11, { estado: "finalizada", estadosSiguientes: ["cerrada", "asignada"] }) as never} tecnicosIniciales={[]} huboErrorTecnicos={false} />);
+  it("ofrece solo los estados a los que se puede pasar desde el actual, con las etiquetas y el orden del catálogo", () => {
+    render(<DetalleOrdenTrabajo ordenInicial={orden(11, { estado: "finalizada", estadosSiguientes: ["asignada", "cerrada"] }) as never} tecnicosIniciales={[]} huboErrorTecnicos={false} />);
     fireEvent.focus(screen.getByRole("combobox", { name: "Actualizar estado" }));
 
-    const opciones = screen.getAllByRole("option");
-    expect(opciones.map((opcion) => opcion.getAttribute("aria-label") ?? opcion.textContent)).toEqual([
-      "Creada", "Asignada", "En ejecución", "Pausada", "Finalizada", "Cerrada", "Cancelada",
-    ]);
-    const deshabilitadas = opciones.filter((opcion) => opcion.getAttribute("aria-disabled") === "true");
-    expect(deshabilitadas.map((opcion) => opcion.getAttribute("aria-label"))).toEqual(["Creada", "En ejecución", "Pausada", "Finalizada", "Cancelada"]);
-    expect(screen.getByRole("option", { name: "Pausada" })).toHaveAccessibleDescription("No disponible desde Finalizada");
-    expect(screen.getByRole("option", { name: "Finalizada" })).toHaveAccessibleDescription("Estado actual");
-    expect(screen.getByRole("option", { name: "Cerrada" })).not.toHaveAttribute("aria-disabled");
-
-    fireEvent.click(screen.getByRole("option", { name: "Pausada" }));
+    expect(screen.getAllByRole("option").map((opcion) => opcion.textContent)).toEqual(["Asignada", "Cerrada"]);
+    expect(screen.queryByRole("option", { name: "Pausada" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Confirmar estado" })).toBeDisabled();
     fireEvent.click(screen.getByRole("option", { name: "Cerrada" }));
     expect(screen.getByRole("button", { name: "Confirmar estado" })).toBeEnabled();

@@ -246,7 +246,6 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
           alCambiarFechaPrevista={setFechaPrevistaEjecucion}
           alCambiarMotivo={setMotivoEstado}
           estado={estado}
-          estadoActual={estadoInicial}
           estadosDisponibles={estadosDisponibles}
           fechaPrevistaEjecucion={fechaPrevistaEjecucion}
           motivoEstado={motivoEstado}

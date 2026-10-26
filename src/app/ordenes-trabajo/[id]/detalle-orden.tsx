@@ -11,7 +11,6 @@ import {
   estadoNecesitaMotivo,
   formatearFechaPrevista,
   listarTecnicosPaginados,
-  motivoNoDisponible,
 } from "@/servicios/servicio-ordenes-trabajo";
 import { useEstadosOrden, useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
 import type { HistorialEstadoOrdenTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
@@ -237,11 +236,9 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
             alCambiar={setEstadoSeleccionado}
             etiqueta="Actualizar estado"
             id="nuevoEstado"
-            opciones={estados.map((estado) => ({
-              valor: estado.valor,
-              etiqueta: estado.etiqueta,
-              ...motivoNoDisponible(estado.valor, orden.estado, orden.estadosSiguientes, etiquetaEstado),
-            }))}
+            opciones={estados
+              .filter((estado) => orden.estadosSiguientes.includes(estado.valor))
+              .map((estado) => ({ valor: estado.valor, etiqueta: estado.etiqueta }))}
             textoVacio="Seleccioná el nuevo estado"
             valor={estadoSeleccionado}
           />

@@ -39,7 +39,6 @@ import {
   listarTecnicos,
   listarTecnicosPaginados,
   obtenerDetalleOrdenTrabajo,
-  motivoNoDisponible,
   obtenerErroresOrdenTrabajo,
   solicitarSugerenciaOrdenTrabajo,
 } from "@/servicios/servicio-ordenes-trabajo";
@@ -349,24 +348,6 @@ describe("servicio-ordenes-trabajo", () => {
 
   it("formatea la fecha prevista", () => {
     expect(formatearFechaPrevista("2026-10-05")).toBe("05/10/2026");
-  });
-
-  describe("motivoNoDisponible", () => {
-    const etiqueta = (estado: string) => ({ finalizada: "Finalizada", pausada: "Pausada" })[estado as "finalizada"] ?? estado;
-
-    it("deja elegir un estado al que se puede pasar desde el actual", () => {
-      expect(motivoNoDisponible("cerrada", "finalizada", ["cerrada", "asignada"], etiqueta)).toEqual({});
-    });
-
-    it("deshabilita el estado actual", () => {
-      expect(motivoNoDisponible("finalizada", "finalizada", ["cerrada", "asignada"], etiqueta))
-        .toEqual({ deshabilitada: true, motivo: "Estado actual" });
-    });
-
-    it("deshabilita los estados inalcanzables y dice desde cuál no se puede", () => {
-      expect(motivoNoDisponible("pausada", "finalizada", ["cerrada", "asignada"], etiqueta))
-        .toEqual({ deshabilitada: true, motivo: "No disponible desde Finalizada" });
-    });
   });
 
   it("solicita sugerencias: valida, traduce 422 y 5xx, y devuelve el texto", async () => {

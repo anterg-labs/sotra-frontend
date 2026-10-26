@@ -24,41 +24,6 @@ function dibujar(valor = "", buscarOpciones?: (consulta: string) => Promise<type
   return alCambiar;
 }
 
-describe("Combobox con opciones deshabilitadas", () => {
-  const conDeshabilitada = [
-    { valor: "1", etiqueta: "Álamo" },
-    { valor: "2", etiqueta: "Cedro", deshabilitada: true, motivo: "No disponible desde Álamo" },
-    { valor: "3", etiqueta: "Roble" },
-  ];
-
-  function dibujarConDeshabilitada() {
-    const alCambiar = vi.fn();
-    render(<Combobox alCambiar={alCambiar} etiqueta="Árbol" id="arbol" opciones={conDeshabilitada} valor="" />);
-    fireEvent.focus(screen.getByRole("combobox", { name: "Árbol" }));
-    return alCambiar;
-  }
-
-  it("la muestra con su motivo, pero no se puede elegir", () => {
-    const alCambiar = dibujarConDeshabilitada();
-    const cedro = screen.getByRole("option", { name: "Cedro" });
-    expect(cedro).toHaveAttribute("aria-disabled", "true");
-    expect(cedro).toHaveAccessibleDescription("No disponible desde Álamo");
-
-    fireEvent.click(cedro);
-    expect(alCambiar).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("option", { name: "Roble" }));
-    expect(alCambiar).toHaveBeenCalledWith("3");
-  });
-
-  it("las flechas del teclado se saltan las deshabilitadas y Enter elige la siguiente disponible", () => {
-    const alCambiar = dibujarConDeshabilitada();
-    const entrada = screen.getByRole("combobox", { name: "Árbol" });
-    fireEvent.keyDown(entrada, { key: "ArrowDown" });
-    fireEvent.keyDown(entrada, { key: "Enter" });
-    expect(alCambiar).toHaveBeenCalledWith("3");
-  });
-});
-
 describe("Combobox", () => {
   it("no selecciona opciones locales con Enter mientras espera la búsqueda remota", async () => {
     const buscarOpciones = vi.fn().mockResolvedValue([{ valor: "4", etiqueta: "Álamo remoto" }]);

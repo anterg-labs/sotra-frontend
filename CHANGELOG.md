@@ -1,22 +1,29 @@
 # CHANGELOG
 
+## Version 1.0.48 (2026-10-26)
+
+- Órdenes de trabajo: si falta el motivo al cambiar el estado desde el detalle, el aviso aparece debajo del campo «Motivo u observación» y lleva el cursor allí, en lugar de mostrarse arriba de la página.
+
 ## Version 1.0.47 (2026-10-26)
 
-- Órdenes de trabajo: los estados, sus etiquetas, sus colores y los pasos permitidos de cada orden salen de la base (`estado_ot` y `transiciones` de cada orden); la pantalla ya no nombra ningún estado.
-- Órdenes de trabajo: el combo de estado del detalle y de la modificación muestra solo los estados a los que se puede pasar desde el actual; nunca se muestra un valor como `en_ejecucion`.
+- Reportes: cada punto de «Atención necesaria» (prioridad alta pendientes, pendientes de validación y bajo stock) es un enlace que lleva directo al listado correspondiente.
+
+## Version 1.0.46 (2026-10-25)
+
+- Órdenes de trabajo: los colores, las acciones y los pasos permitidos de cada estado salen de la base (`tono` y `transiciones` de cada orden); la pantalla ya no nombra ningún estado.
 - Órdenes de trabajo: el listado se puede filtrar por fase (pendientes, en curso, por validar, cerradas o canceladas) y el Inicio y las tarjetas de resumen cuentan por fase.
-- Órdenes de trabajo: si falta el motivo al cambiar el estado desde el detalle, el aviso aparece debajo del campo «Motivo u observación» y lleva el cursor allí.
 - Técnico: las acciones de la orden (Iniciar, Pausar, Reanudar, Finalizar) y su pedido de motivo vienen de la base, y «Mi trabajo» trae las órdenes pendientes y en curso.
 
-## Version 1.0.46 (2026-10-26)
+## Version 1.0.45 (2026-10-25)
 
-- Reportes: cada punto de «Atención necesaria» (prioridad alta pendientes, pendientes de validación y bajo stock) es un enlace que lleva directo al listado correspondiente.
+- Órdenes de trabajo: los filtros, los reportes, los formularios y las etiquetas toman los estados de la base; el combo de estado del detalle y de la modificación muestra solo los estados a los que se puede pasar desde el actual.
+- Estados: nunca se muestra un valor como `en_ejecucion`; si falta la etiqueta, se muestra legible y con la primera letra en mayúscula.
+- Formularios: el campo «Motivo del cambio de estado» (y cualquier campo de ancho completo dentro de una grilla) ocupa todo el ancho y queda alineado con el resto, sin el margen que lo desplazaba.
+- Interfaz: los desplegables, botones, enlaces, casillas, selectores de fecha y demás elementos que se accionan sin escribir texto muestran el cursor de mano, y los deshabilitados el de no permitido; los campos de texto conservan el suyo.
 
 ## Version 1.0.44 (2026-10-25)
 
 - Órdenes de trabajo: en el alta y la edición, el campo Cliente queda alineado con el campo Activo aunque este muestre su texto de ayuda debajo.
-- Formularios: el campo «Motivo del cambio de estado» (y cualquier campo de ancho completo dentro de una grilla) ocupa todo el ancho y queda alineado con el resto, sin el margen que lo desplazaba.
-- Interfaz: los desplegables, botones, enlaces, casillas, selectores de fecha y demás elementos que se accionan sin escribir texto muestran el cursor de mano, y los deshabilitados el de no permitido; los campos de texto conservan el suyo.
 
 ## Version 1.0.43 (2026-10-24)
 

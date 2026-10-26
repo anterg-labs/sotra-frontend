@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Version 1.0.44 (2026-10-25)
+
+- Órdenes de trabajo: en el alta y la edición, el campo Cliente queda alineado con el campo Activo aunque este muestre su texto de ayuda debajo.
+- Formularios: el campo «Motivo del cambio de estado» (y cualquier campo de ancho completo dentro de una grilla) ocupa todo el ancho y queda alineado con el resto, sin el margen que lo desplazaba.
+- Interfaz: los desplegables, botones, enlaces, casillas, selectores de fecha y demás elementos que se accionan sin escribir texto muestran el cursor de mano, y los deshabilitados el de no permitido; los campos de texto conservan el suyo.
+
 ## Version 1.0.43 (2026-10-24)
 
 - Órdenes de trabajo: el desplegable «Actualizar estado» del detalle ahora es igual al de «Asignar o modificar técnico» (mismo aspecto y comportamiento), en lugar de la lista nativa del navegador.

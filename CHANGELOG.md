@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.44 (2026-10-25)
+
+- Órdenes de trabajo: en el alta y la edición, el campo Cliente queda alineado con el campo Activo aunque este muestre su texto de ayuda debajo.
+
 ## Version 1.0.43 (2026-10-24)
 
 - Órdenes de trabajo: el desplegable «Actualizar estado» del detalle ahora es igual al de «Asignar o modificar técnico» (mismo aspecto y comportamiento), en lugar de la lista nativa del navegador.

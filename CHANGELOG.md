@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.47 (2026-10-26)
+
+- Pruebas: las comprobaciones del foco en los formularios de usuarios y clientes esperan a que el foco llegue al campo, con lo que dejan de fallar de forma intermitente en la integración continua.
+
 ## Version 1.0.44 (2026-10-25)
 
 - Órdenes de trabajo: en el alta y la edición, el campo Cliente queda alineado con el campo Activo aunque este muestre su texto de ayuda debajo.

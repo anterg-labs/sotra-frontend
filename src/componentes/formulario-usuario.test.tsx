@@ -88,7 +88,7 @@ describe("formulario de usuarios", () => {
 
     await waitFor(() => expect(screen.getByText("El número de teléfono ya está registrado.")).toHaveAttribute("id", "telefono-error"));
     expect(screen.getByLabelText("Número de teléfono")).toHaveAttribute("aria-invalid", "true");
-    expect(screen.getByLabelText("Número de teléfono")).toHaveFocus();
+    await waitFor(() => expect(screen.getByLabelText("Número de teléfono")).toHaveFocus());
   });
 
   it("lleva el foco al primer campo inválido sin llamar a la acción", async () => {

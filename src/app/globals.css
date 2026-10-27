@@ -916,7 +916,10 @@ label:has(input:disabled) {
 .modal-panel {
   width: 100%;
   max-width: 420px;
+  max-height: calc(100dvh - 40px);
   padding: 28px;
+  overflow-wrap: anywhere;
+  overflow-y: auto;
   background: var(--superficie);
   border: 1px solid var(--borde);
   border-radius: var(--radio-l);
@@ -1386,6 +1389,7 @@ label:has(input:disabled) {
 
 .modal-dialogo-titulos {
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .modal-dialogo-titulos h2 {
@@ -1403,6 +1407,7 @@ label:has(input:disabled) {
 
 .modal-dialogo-cuerpo {
   padding: 24px;
+  overflow-wrap: anywhere;
   overflow-y: auto;
 }
 

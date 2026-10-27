@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.57 (2026-10-27)
+
+- Interfaz: en los modales de confirmación (por ejemplo, dar de baja un cliente) y en los formularios, los textos largos, como un nombre sin espacios, saltan de línea en lugar de salirse de la ventana.
+
 ## Version 1.0.56 (2026-10-27)
 
 - Interfaz: las altas y modificaciones (órdenes de trabajo, clientes, activos, modelos, tipos, repuestos, usuarios y documentos técnicos) se abren en un modal desde los listados y detalles, con foco en el primer campo, confirmación al descartar cambios, tamaño amplio para formularios extensos y pantalla completa en el móvil. Abiertas por enlace directo se ven como página.

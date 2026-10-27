@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Version 1.0.76 (2026-10-27)
+
+- Reportes: franja de avisos con ícono, conteos por gravedad y control «Ver detalle / Ocultar»; lista agrupada en críticos y de atención, con encabezado adaptado a móvil.
+- Resumen general: estado, prioridad, tipo y activos se alinean en cuatro columnas en escritorio; los repuestos con bajo stock ocupan todo el ancho. En móvil se apilan.
+- Descarga: control discreto «Descargar PDF o CSV» que despliega el formulario debajo.
+
 ## Version 1.0.75 (2026-10-27)
 
 - Filtros: la fecha es un solo selector con un calendario de dos meses y atajos (hoy, últimos 7 o 30 días, este mes, mes pasado, este año) en Reportes, Órdenes de trabajo y Movimientos de stock; desaparece el interruptor de rango y el segundo campo de fecha. Campos más prolijos, del mismo alto y con foco claro.

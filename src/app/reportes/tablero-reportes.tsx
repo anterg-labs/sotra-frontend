@@ -131,12 +131,11 @@ export function TableroReportes(props: PropiedadesTablero) {
         </div>
       </form>
 
-      <details className="panel panel-descarga-plegable mb-6">
+      <details className="panel-descarga-plegable mb-6">
         <summary className="panel-descarga-resumen">
-          <span>Descargar reportes</span>
-          <span className="texto-tenue">PDF o CSV con los filtros de arriba</span>
+          <span>Descargar PDF o CSV</span>
         </summary>
-        <div className="panel-descarga">
+        <div className="panel panel-descarga mt-2">
         <div className="panel-descarga-campos">
           <div className="form-field">
             <label htmlFor="tipoReporte">Tipo de reporte</label>

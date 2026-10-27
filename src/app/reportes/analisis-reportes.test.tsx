@@ -194,10 +194,10 @@ describe("franja de avisos", () => {
 
   it("resume la cantidad, lista cada aviso con su evidencia y enlaza a las órdenes", async () => {
     render(await FranjaAvisos({ consulta: anticiparConsulta(Promise.resolve(avisos)) }));
-    expect(screen.getByText("2 avisos · 1 crítico")).toBeInTheDocument();
+    expect(screen.getByText("2 avisos")).toBeInTheDocument();
     expect(screen.getByText("Retro 1 tuvo 6 correctivas")).toBeInTheDocument();
     expect(screen.getByText("Detalle dos")).toBeInTheDocument();
-    const enlaces = screen.getAllByRole("link", { name: "Ver las órdenes" });
+    const enlaces = screen.getAllByRole("link", { name: /Ver las órdenes/ });
     expect(enlaces[0]).toHaveAttribute("href", "/ordenes-trabajo?activoId=5&tipo=correctivo");
     expect(enlaces[1]).toHaveAttribute("href", "/ordenes-trabajo?estado=en_revision");
     expect(enlaceDelAviso({ ...avisos.avisos[1], enlaceEstado: null })).toBeNull();

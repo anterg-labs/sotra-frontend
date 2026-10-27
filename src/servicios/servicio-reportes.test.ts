@@ -7,7 +7,7 @@ describe("servicio-reportes", () => {
 
     const indicadoresSimulados = {
       totalOrdenes: 3,
-      ordenesPorEstado: [{ nombre: "creada", cantidad: 3 }],
+      ordenesPorEstado: [{ nombre: "pendiente", cantidad: 3 }],
       ordenesPorPrioridad: [{ nombre: "alta", cantidad: 3 }],
       ordenesPorTipo: [{ nombre: "correctivo", cantidad: 3 }],
       ordenesPorTecnico: [],
@@ -56,14 +56,14 @@ describe("servicio-reportes", () => {
       tecnicoId: "",
       clienteId: "4",
       activoId: "",
-      estado: "en_ejecucion",
+      estado: "en_progreso",
       tipo: "preventivo",
     };
 
     await obtenerIndicadores(filtros);
 
     expect(fetch).toHaveBeenCalledWith(
-      "/api/v1/reportes/indicadores?fechaDesde=2026-01-01&fechaHasta=2026-12-31&clienteId=4&estado=en_ejecucion&tipo=preventivo",
+      "/api/v1/reportes/indicadores?fechaDesde=2026-01-01&fechaHasta=2026-12-31&clienteId=4&estado=en_progreso&tipo=preventivo",
       { cache: "no-store" },
     );
   });
@@ -93,12 +93,12 @@ describe("servicio-reportes", () => {
       tecnicoId: "",
       clienteId: "",
       activoId: "",
-      estado: "cerrada",
+      estado: "cerrado",
       tipo: "",
     };
 
     expect(obtenerUrlReporteCsv("indicadores", filtros, "")).toBe(
-      "/api/v1/reportes/indicadores/csv?fechaHasta=2026-12-31&estado=cerrada",
+      "/api/v1/reportes/indicadores/csv?fechaHasta=2026-12-31&estado=cerrado",
     );
   });
 });

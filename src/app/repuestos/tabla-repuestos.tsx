@@ -23,6 +23,9 @@ const VALORES_ORDEN = {
   ubicacion: (fila: Repuesto): ValorOrdenable => fila.ubicacion,
   cantidad: (fila: Repuesto): ValorOrdenable => fila.cantidad,
   cantidadMinima: (fila: Repuesto): ValorOrdenable => fila.cantidadMinima,
+  cantidadReservada: (fila: Repuesto): ValorOrdenable => fila.cantidadReservada,
+  cantidadEntregada: (fila: Repuesto): ValorOrdenable => fila.cantidadEntregada,
+  cantidadDisponible: (fila: Repuesto): ValorOrdenable => fila.cantidadDisponible,
   estado: (fila: Repuesto): ValorOrdenable => fila.estado === "activo",
 };
 
@@ -63,8 +66,11 @@ export function TablaRepuestos(props: { repuestos: Repuesto[]; filtros: FiltrosU
               {columna("nombre", "Nombre")}
               {columna("marca", "Marca")}
               {columna("ubicacion", "Ubicación")}
-              {columna("cantidad", "Cantidad")}
+              {columna("cantidad", "Stock")}
               {columna("cantidadMinima", "Mínima")}
+              {columna("cantidadReservada", "Reservado")}
+              {columna("cantidadEntregada", "Entregado")}
+              {columna("cantidadDisponible", "Disponible")}
               {columna("estado", "Estado")}
               <th>Acciones</th>
             </tr>
@@ -96,6 +102,9 @@ export function TablaRepuestos(props: { repuestos: Repuesto[]; filtros: FiltrosU
                     ) : null}
                   </td>
                   <td className="celda-numerica">{repuesto.cantidadMinima}</td>
+                  <td className="celda-numerica">{repuesto.cantidadReservada}</td>
+                  <td className="celda-numerica">{repuesto.cantidadEntregada}</td>
+                  <td className="celda-numerica">{repuesto.cantidadDisponible}</td>
                   <td><EstadoRegistro estado={repuesto.estado} /></td>
                   <td>
                     <div className="table-actions">

@@ -37,12 +37,13 @@ const rolesPorPermiso = {
   "ot.crear": [administrador, jefe],
   "ot.editar": [administrador, jefe],
   "ot.asignar_tecnico": [administrador, jefe],
+  "ot.gestionar_repuestos": [administrador, jefe, panolero],
   "ot.registrar_avance": [administrador, jefe, tecnico],
 
   "documento.consultar": [administrador, jefe, tecnico],
   "documento.gestionar": [administrador, jefe],
 
-  "stock.consultar": [administrador, panolero],
+  "stock.consultar": [administrador, jefe, panolero],
   "repuesto.gestionar": [administrador, panolero],
   "stock.registrar_movimiento": [administrador, panolero],
 

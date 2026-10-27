@@ -36,12 +36,12 @@ describe("permisos en la interfaz", () => {
   }
 
   it("SiTienePermiso y useTienePermiso muestran lo que el rol puede hacer", () => {
-    render(conSesion(["jefe_mantenimiento"], <><BotonCrear /><SiTienePermiso permiso="stock.consultar">Repuestos</SiTienePermiso></>));
+    render(conSesion(["jefe_mantenimiento"], <><BotonCrear /><SiTienePermiso permiso="stock.registrar_movimiento">Repuestos</SiTienePermiso></>));
     expect(screen.getByRole("button", { name: "Crear orden" })).toBeInTheDocument();
     expect(screen.queryByText("Repuestos")).not.toBeInTheDocument();
     cleanup();
 
-    render(conSesion(["panolero"], <><BotonCrear /><SiTienePermiso permiso="stock.consultar">Repuestos</SiTienePermiso></>));
+    render(conSesion(["panolero"], <><BotonCrear /><SiTienePermiso permiso="stock.registrar_movimiento">Repuestos</SiTienePermiso></>));
     expect(screen.getByText("Solo consulta")).toBeInTheDocument();
     expect(screen.getByText("Repuestos")).toBeInTheDocument();
   });
@@ -53,7 +53,7 @@ describe("permisos en la interfaz", () => {
 
   it.each([
     [["tecnico"], ["/ordenes-trabajo", "/clientes", "/activos", "/documentacion-tecnica"]],
-    [["jefe_mantenimiento"], ["/inicio", "/ordenes-trabajo", "/reportes", "/clientes", "/activos", "/documentacion-tecnica", "/usuarios"]],
+    [["jefe_mantenimiento"], ["/inicio", "/ordenes-trabajo", "/reportes", "/clientes", "/activos", "/repuestos", "/documentacion-tecnica", "/usuarios"]],
     [["panolero"], ["/ordenes-trabajo", "/clientes", "/activos", "/repuestos"]],
     [["administrador"], ["/inicio", "/ordenes-trabajo", "/reportes", "/clientes", "/activos", "/repuestos", "/documentacion-tecnica", "/usuarios", "/configuracion"]],
   ] as const)("menú de %j", (roles, rutas) => {
@@ -65,15 +65,15 @@ describe("permisos en la interfaz", () => {
     expect(activos?.submenus?.map((submenu) => submenu.ruta)).toEqual(["/activos"]);
   });
 
-  it("la estructura muestra el nombre del usuario y el menú de su rol; solo consulta alertas de stock si ve repuestos", () => {
+  it("la estructura muestra el nombre del usuario y el menú de su rol; consulta alertas de stock porque ve repuestos", () => {
     render(conSesion(["jefe_mantenimiento"], <EstructuraAplicacion>contenido</EstructuraAplicacion>));
     expect(within(screen.getByRole("banner")).getByRole("button", { name: "Menú de usuario: Ana Pérez" })).toHaveTextContent("Ana Pérez");
     const menu = within(screen.getByRole("navigation", { name: "Navegación principal" }));
     expect(menu.getAllByRole("link").map((enlace) => enlace.getAttribute("href"))).toEqual([
       "/inicio", "/ordenes-trabajo", "/reportes", "/clientes", "/activos", "/activos", "/activos/modelos", "/activos/tipos",
-      "/documentacion-tecnica", "/usuarios",
+      "/repuestos", "/documentacion-tecnica", "/usuarios",
     ]);
-    expect(consultarAlertas).toHaveBeenCalledWith(false);
+    expect(consultarAlertas).toHaveBeenCalledWith(true);
     cleanup();
 
     render(conSesion(["panolero"], <EstructuraAplicacion>contenido</EstructuraAplicacion>));

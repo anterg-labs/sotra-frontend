@@ -16,7 +16,7 @@ test("el técnico ve su orden, la inicia y la pausa con motivo en un celular de 
 
   await page.getByRole("group", { name: "Acciones de la orden" }).getByRole("button", { name: "Iniciar" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Iniciar" }).click();
-  await expect(page.getByText("Estado actualizado: En ejecución.")).toBeVisible();
+  await expect(page.getByText("Estado actualizado: En progreso.")).toBeVisible();
 
   await page.getByRole("button", { name: "Pausar" }).click();
   await page.getByRole("button", { name: "Confirmar pausa" }).click();
@@ -24,7 +24,7 @@ test("el técnico ve su orden, la inicia y la pausa con motivo en un celular de 
   await expect(page.getByLabel("Motivo de la pausa")).toBeFocused();
   await page.getByLabel("Motivo de la pausa").fill("Falta de material");
   await page.getByRole("button", { name: "Confirmar pausa" }).click();
-  await expect(page.getByText("Estado actualizado: Pausada.")).toBeVisible();
+  await expect(page.getByText("Estado actualizado: Pausado.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Reanudar" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Cancelar orden|Cerrar/ })).toHaveCount(0);
 });

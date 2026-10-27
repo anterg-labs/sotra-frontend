@@ -1,7 +1,7 @@
 /** El valor de un estado lo define el catálogo de la base (`estado_ot`): el frontend no conoce la lista. */
 export type EstadoOrdenTrabajo = string;
 
-export type FaseEstadoOrden = "pendiente" | "en_curso" | "por_validar" | "cerrada" | "cancelada";
+export type FaseEstadoOrden = "pendiente" | "en_curso" | "por_validar" | "cerrada" | "eliminada";
 
 /** Cómo se llama cada fase en la interfaz (las fases las define la base; aquí solo su texto). */
 export const ETIQUETAS_FASE_ORDEN: Record<FaseEstadoOrden, string> = {
@@ -9,7 +9,7 @@ export const ETIQUETAS_FASE_ORDEN: Record<FaseEstadoOrden, string> = {
   en_curso: "En curso",
   por_validar: "Por validar",
   cerrada: "Cerradas",
-  cancelada: "Canceladas",
+  eliminada: "Eliminadas",
 };
 
 export type TonoEstadoOrden = "neutro" | "info" | "alerta" | "exito" | "peligro" | "destacado";
@@ -36,15 +36,59 @@ export type TransicionOrden = {
   principal: boolean;
 };
 
+/** Ciclo de un repuesto en una orden: reservado al asignarlo, entregado cuando la orden empieza, descontado al cerrarla. */
+export type EstadoRepuestoDeOrden = "reservado" | "entregado" | "descontado";
+
 export type RepuestoDeOrden = {
   id: number;
   codigo: string;
   nombre: string;
+  cantidad: number;
+  estado: EstadoRepuestoDeOrden;
 };
 
+/** Un repuesto y la cantidad que se pide para la orden (lo que viaja en el alta y la modificación). */
+export type RepuestoPedido = {
+  repuestoId: number;
+  cantidad: number;
+};
+
+export type AccionRepuestoOrden = "reservar" | "modificar" | "entregar" | "descontar" | "liberar";
+
+/** Un cambio de un repuesto en la orden: qué se hizo, con cuántas unidades, quién y cuándo. */
+export type HistorialRepuestoOrdenTrabajo = {
+  repuestoId: number;
+  codigo: string;
+  nombre: string;
+  accion: AccionRepuestoOrden;
+  cantidadAnterior: number | null;
+  cantidadNueva: number;
+  estadoAnterior: string | null;
+  estadoNuevo: string;
+  fechaHora: string;
+  usuarioId: number | null;
+  nombreUsuario: string | null;
+};
+
+/** Un cambio de estado: de qué estado vino (`null` en el alta), a cuál pasó, cuándo, quién lo hizo y el motivo. */
 export type HistorialEstadoOrdenTrabajo = {
   estado: EstadoOrdenTrabajo;
+  estadoAnterior: EstadoOrdenTrabajo | null;
   fechaHora: string;
+  observacion: string | null;
+  usuarioId: number | null;
+  nombreUsuario: string | null;
+};
+
+/** Una asignación o cambio de técnico: de quién a quién (`null` en la primera asignación), quién lo hizo y cuándo. */
+export type HistorialTecnicoOrdenTrabajo = {
+  tecnicoAnteriorId: number | null;
+  nombreTecnicoAnterior: string | null;
+  tecnicoId: number | null;
+  nombreTecnico: string | null;
+  fechaHora: string;
+  usuarioId: number | null;
+  nombreUsuario: string | null;
   observacion: string | null;
 };
 
@@ -54,6 +98,9 @@ export type OrdenTrabajo = {
   nombreCliente: string;
   activoId: number;
   nombreActivo: string;
+  /** Quién creó la orden (el responsable). */
+  responsableId: number;
+  nombreResponsable: string | null;
   tecnicoId: number | null;
   nombreTecnico: string | null;
   tipo: TipoOrdenTrabajo;
@@ -69,6 +116,8 @@ export type OrdenTrabajo = {
   repuestos: RepuestoDeOrden[];
   transiciones: TransicionOrden[];
   historialEstados: HistorialEstadoOrdenTrabajo[];
+  historialTecnicos: HistorialTecnicoOrdenTrabajo[];
+  historialRepuestos: HistorialRepuestoOrdenTrabajo[];
   version: string;
 };
 
@@ -82,7 +131,7 @@ export type CrearOrdenTrabajoInput = {
   observaciones: string;
   fechaPrevistaEjecucion: string;
   sugerencias: string[];
-  repuestosIds: number[];
+  repuestos: RepuestoPedido[];
   estado: EstadoOrdenTrabajo;
   motivoEstado: string;
   sesion: string;

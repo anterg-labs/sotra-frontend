@@ -17,6 +17,12 @@ export type Repuesto = {
   ubicacion: string;
   cantidad: number;
   cantidadMinima: number;
+  /** Reservadas por órdenes que todavía no empezaron: siguen en la empresa pero no se pueden asignar a otra orden. */
+  cantidadReservada: number;
+  /** Entregadas a órdenes en curso: se descuentan del stock al cerrar la orden. */
+  cantidadEntregada: number;
+  /** Lo que se puede asignar a una orden: el stock menos lo reservado y lo entregado. */
+  cantidadDisponible: number;
   estado: EstadoRepuesto;
   estadoStock: EstadoStock;
 };

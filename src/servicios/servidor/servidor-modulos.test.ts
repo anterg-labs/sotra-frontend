@@ -109,12 +109,12 @@ describe("servicios de servidor de documentos, activos y órdenes", () => {
 
   it("lista órdenes con los filtros no vacíos, consulta el detalle y resuelve los técnicos por el rol", async () => {
     await listarOrdenesTrabajoServidor({
-      buscar: " fuga ", clienteId: "1", activoId: "", tecnicoId: "7", estado: "pausada", prioridad: "", tipo: "",
+      buscar: " fuga ", clienteId: "1", activoId: "", tecnicoId: "7", estado: "pausado", prioridad: "", tipo: "",
       fechaDesde: "2026-01-01", fechaHasta: "", conSugerencias: true, pagina: 2,
     });
     await obtenerOrdenTrabajoServidor(11);
     expect(Object.fromEntries(new URL(String(fetchSimulado.mock.calls[0][0])).searchParams)).toEqual({
-      buscar: "fuga", clienteId: "1", tecnicoId: "7", estado: "pausada", fechaDesde: "2026-01-01", conSugerencias: "true", pagina: "2",
+      buscar: "fuga", clienteId: "1", tecnicoId: "7", estado: "pausado", fechaDesde: "2026-01-01", conSugerencias: "true", pagina: "2",
     });
     expect(rutas()[1]).toEqual(["GET", "/api/v1/ordenes-trabajo/11"]);
 
@@ -130,7 +130,7 @@ describe("servicios de servidor de documentos, activos y órdenes", () => {
 });
 
 describe("servicios de servidor de reportes", () => {
-  const filtros = { fechaDesde: "2026-01-01", fechaHasta: "2026-01-31", tecnicoId: "1", clienteId: "2", activoId: "3", estado: "cerrada", tipo: "correctivo" };
+  const filtros = { fechaDesde: "2026-01-01", fechaHasta: "2026-01-31", tecnicoId: "1", clienteId: "2", activoId: "3", estado: "cerrado", tipo: "correctivo" };
   const vacios = { fechaDesde: "", fechaHasta: "", tecnicoId: "", clienteId: "", activoId: "", estado: "", tipo: "" };
 
   it("los indicadores envían todos los filtros y los analíticos solo los que aplican", async () => {

@@ -29,7 +29,7 @@ describe("servicio-ordenes-trabajo", () => {
       descripcion: "Cambiar aceite del motor",
       observaciones: "",
       fechaPrevistaEjecucion: "2026-10-01",
-      estado: "creada",
+      estado: "pendiente",
       creadoEn: "2026-09-25T03:57:12.499Z",
       fechaInicio: null,
       fechaCierre: null,
@@ -89,7 +89,7 @@ describe("servicio-ordenes-trabajo", () => {
       clienteId: "1",
       activoId: "",
       tecnicoId: "",
-      estado: "creada",
+      estado: "pendiente",
       prioridad: "alta",
       tipo: "",
       fechaDesde: "",
@@ -101,7 +101,7 @@ describe("servicio-ordenes-trabajo", () => {
     await listarOrdenesTrabajo(filtros);
 
     expect(fetch).toHaveBeenCalledWith(
-      "/api/v1/ordenes-trabajo?buscar=aceite&clienteId=1&estado=creada&prioridad=alta&pagina=2",
+      "/api/v1/ordenes-trabajo?buscar=aceite&clienteId=1&estado=pendiente&prioridad=alta&pagina=2",
       { cache: "no-store" },
     );
   });
@@ -117,8 +117,8 @@ describe("servicio-ordenes-trabajo", () => {
       observaciones: "",
       fechaPrevistaEjecucion: "2026-10-01",
       sugerencias: [],
-      repuestosIds: [],
-      estado: "creada" as const,
+      repuestos: [],
+      estado: "pendiente" as const,
       motivoEstado: "",
       sesion: "",
     };
@@ -142,8 +142,8 @@ describe("servicio-ordenes-trabajo", () => {
       observaciones: "",
       fechaPrevistaEjecucion: "2026-10-01",
       sugerencias: [],
-      repuestosIds: [],
-      estado: "creada" as const,
+      repuestos: [],
+      estado: "pendiente" as const,
       motivoEstado: "",
       sesion: "",
     };
@@ -152,18 +152,18 @@ describe("servicio-ordenes-trabajo", () => {
   });
 
   it("no cambia el estado sin motivo cuando hace falta", async () => {
-    await expect(cambiarEstadoOrdenTrabajo(1, "pausada", "  ", true)).rejects.toThrow(
+    await expect(cambiarEstadoOrdenTrabajo(1, "pausado", "  ", true)).rejects.toThrow(
       "Indicá el motivo u observación del cambio de estado.",
     );
   });
 
   it("envía el cambio de estado con su motivo", async () => {
-    await cambiarEstadoOrdenTrabajo(1, "pausada", " Falta de repuestos ", true);
+    await cambiarEstadoOrdenTrabajo(1, "pausado", " Falta de repuestos ", true);
 
     expect(fetch).toHaveBeenCalledWith("/api/v1/ordenes-trabajo/1/estado", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ estado: "pausada", motivo: "Falta de repuestos" }),
+      body: JSON.stringify({ estado: "pausado", motivo: "Falta de repuestos" }),
     });
   });
 

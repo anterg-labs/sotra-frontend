@@ -28,6 +28,7 @@ function repuesto(id: number, estadoStock: "normal" | "bajo" | "sin_stock" = "no
   return {
     id, codigo: "R-" + id, nombre: "Filtro " + id, descripcion: "", marca: "CAT", ubicacion: "Depósito " + id,
     cantidad: estadoStock === "sin_stock" ? 0 : 10, cantidadMinima: 5, estado, estadoStock,
+    cantidadReservada: 2, cantidadEntregada: 1, cantidadDisponible: estadoStock === "sin_stock" ? 0 : 7,
   };
 }
 const pagina = (elementos: unknown[], totalPaginas = 1) => ({

@@ -7,7 +7,6 @@ import type { OrdenTrabajo } from "@/tipos/orden-trabajo";
 import { FormularioOrdenTrabajo } from "./formulario-orden-trabajo";
 import { SugerenciasOrdenTrabajo } from "./sugerencias-orden-trabajo";
 import { SelectorClienteActivoOrdenTrabajo } from "./selector-cliente-activo-orden-trabajo";
-import { SelectorRepuestosOrdenTrabajo } from "./selector-repuestos-orden-trabajo";
 import { CamposGeneralesOrdenTrabajo } from "./campos-generales-orden-trabajo";
 import { EstructuraTecnico } from "./estructura-tecnico";
 
@@ -55,17 +54,26 @@ const activos = [
   { id: 20, clienteId: 2, nombre: "Ajena", numSerie: "S9", estado: "activo" },
 ] as never[];
 const tecnicos = [{ id: 7, nombre: "Tomás", apellido: "Ruiz" }] as never[];
+/** Un repuesto como lo entrega la API, con su stock y lo reservado y entregado a órdenes. */
+function repuestoConStock(id: number, codigo: string, nombre: string, extra: Record<string, unknown> = {}) {
+  return {
+    id, codigo, nombre, descripcion: "", marca: "", ubicacion: "", cantidad: 10, cantidadMinima: 2, cantidadReservada: 0,
+    cantidadEntregada: 0, cantidadDisponible: 10, estado: "activo", estadoStock: "normal", ...extra,
+  };
+}
+
 const repuestos = [
-  { id: 3, codigo: "R3", nombre: "Filtro", estado: "activo" },
-  { id: 4, codigo: "R4", nombre: "Bomba", estado: "inactivo" },
+  repuestoConStock(3, "R3", "Filtro", { cantidadReservada: 2, cantidadDisponible: 8 }),
+  repuestoConStock(4, "R4", "Bomba", { estado: "inactivo" }),
 ] as never[];
 
 function ordenExistente(extra: Partial<OrdenTrabajo> = {}): OrdenTrabajo {
   return {
-    id: 11, clienteId: 1, nombreCliente: "ACME", activoId: 10, nombreActivo: "Retro 1", tecnicoId: 7, nombreTecnico: "Tomás Ruiz",
+    id: 11, clienteId: 1, nombreCliente: "ACME", activoId: 10, nombreActivo: "Retro 1", responsableId: 4, nombreResponsable: "Ana Pérez", tecnicoId: 7, nombreTecnico: "Tomás Ruiz",
     tipo: "correctivo", prioridad: "alta", descripcion: "Cambiar filtro", observaciones: "Obs", fechaPrevistaEjecucion: "2026-10-20",
-    estado: "en_ejecucion", creadoEn: "2026-10-01T10:00:00Z", fechaInicio: null, fechaCierre: null, sugerencias: ["Sugerida"],
-    repuestos: [{ id: 3, codigo: "R3", nombre: "Filtro" }], transiciones: transicionesDePrueba.en_ejecucion, historialEstados: [], version: "v1",
+    estado: "en_progreso", creadoEn: "2026-10-01T10:00:00Z", fechaInicio: null, fechaCierre: null, sugerencias: ["Sugerida"],
+    repuestos: [{ id: 3, codigo: "R3", nombre: "Filtro", cantidad: 2, estado: "reservado" }], transiciones: transicionesDePrueba.en_progreso,
+    historialEstados: [], historialTecnicos: [], historialRepuestos: [], version: "v1",
     ...extra,
   };
 }
@@ -144,15 +152,17 @@ describe("FormularioOrdenTrabajo (alta)", () => {
     fireEvent.change(screen.getByLabelText("Descripción de la tarea"), { target: { value: "Pierde aceite" } });
     fireEvent.change(screen.getByLabelText("Observaciones adicionales"), { target: { value: "Urgente" } });
     fireEvent.change(screen.getByLabelText("Fecha prevista de ejecución"), { target: { value: "2026-11-01" } });
-    fireEvent.focus(screen.getByRole("combobox", { name: "Repuestos" }));
-    expect(within(screen.getByRole("listbox")).getAllByRole("option").map((o) => o.textContent)).toEqual(["R3 - Filtro"]);
+    s.listarRepuestosPaginados.mockResolvedValue(pagina([repuestoConStock(3, "R3", "Filtro")]));
+    fireEvent.focus(screen.getByRole("combobox", { name: "Agregar repuesto" }));
+    expect(await screen.findByRole("option", { name: "R3 - Filtro (disponibles: 10)" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("option", { name: /R3 - Filtro/ }));
+    fireEvent.change(screen.getByLabelText("Cantidad de R3"), { target: { value: "4" } });
     fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
 
     await waitFor(() =>
       expect(alEnviar).toHaveBeenCalledWith({
         clienteId: 1, activoId: 10, tecnicoId: 7, tipo: "correctivo", prioridad: "alta", descripcion: "Pierde aceite",
-        observaciones: "Urgente", fechaPrevistaEjecucion: "2026-11-01", sugerencias: [], repuestosIds: [3], estado: "",
+        observaciones: "Urgente", fechaPrevistaEjecucion: "2026-11-01", sugerencias: [], repuestos: [{ repuestoId: 3, cantidad: 4 }], estado: "",
         motivoEstado: "", sesion: "sesion-fija",
       }),
     );
@@ -181,7 +191,7 @@ describe("FormularioOrdenTrabajo (modificación)", () => {
     expect(screen.getByLabelText("Descripción de la tarea")).toHaveValue("Cambiar filtro");
     expect(screen.getByLabelText("Fecha prevista de ejecución")).toHaveValue("2026-10-20");
     expect(within(screen.getByLabelText("Estado")).getAllByRole("option").map((o) => o.textContent)).toEqual([
-      "En ejecución", "Pausada", "Finalizada",
+      "En progreso", "En revisión", "Pausado",
     ]);
     expect(screen.getByLabelText("Sugerencia 1")).toHaveValue("Sugerida");
     expect(within(screen.getByRole("list", { name: "Repuestos seleccionados" })).getByText(/R3 - Filtro/)).toBeInTheDocument();
@@ -190,7 +200,7 @@ describe("FormularioOrdenTrabajo (modificación)", () => {
   it("exige motivo al pausar, lo enfoca y recién entonces envía", async () => {
     const alEnviar = dibujarFormulario({ ordenInicial: ordenExistente() });
     expect(screen.queryByLabelText("Motivo del cambio de estado")).not.toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "pausada" } });
+    fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "pausado" } });
     fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
     expect(await screen.findByText("Indicá el motivo del cambio de estado.")).toHaveAttribute("role", "alert");
     expect(screen.getByLabelText("Motivo del cambio de estado")).toHaveFocus();
@@ -198,7 +208,7 @@ describe("FormularioOrdenTrabajo (modificación)", () => {
 
     fireEvent.change(screen.getByLabelText("Motivo del cambio de estado"), { target: { value: "Falta repuesto" } });
     fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
-    await waitFor(() => expect(alEnviar).toHaveBeenCalledWith(expect.objectContaining({ estado: "pausada", motivoEstado: "Falta repuesto" })));
+    await waitFor(() => expect(alEnviar).toHaveBeenCalledWith(expect.objectContaining({ estado: "pausado", motivoEstado: "Falta repuesto" })));
   });
 
   it("recupera las sugerencias temporales guardadas y las borra al guardar", async () => {
@@ -342,19 +352,6 @@ describe("selectores y campos de la orden", () => {
       />,
     );
     expect(screen.getByRole("combobox", { name: /Activo/ })).toHaveValue("Vieja");
-  });
-
-  it("el selector de repuestos conserva el repuesto inactivo ya elegido y busca activos en la API", async () => {
-    s.listarRepuestosPaginados.mockResolvedValue(pagina([{ id: 9, codigo: "R9", nombre: "Nuevo" }]));
-    const alCambiar = vi.fn();
-    render(<SelectorRepuestosOrdenTrabajo alCambiarIdsRepuestos={alCambiar} idsRepuestos={[4]} repuestos={repuestos} />);
-    expect(within(screen.getByRole("list", { name: "Repuestos seleccionados" })).getByText(/R4 - Bomba/)).toBeInTheDocument();
-    fireEvent.change(screen.getByRole("combobox", { name: "Repuestos" }), { target: { value: "nue" } });
-    await waitFor(() =>
-      expect(s.listarRepuestosPaginados).toHaveBeenCalledWith({ buscar: "nue", estado: "activo", ubicacion: "", bajoStock: false, pagina: 1 }),
-    );
-    fireEvent.click(await screen.findByRole("option", { name: /R9 - Nuevo/ }));
-    expect(alCambiar).toHaveBeenCalledWith([4, 9]);
   });
 
   it("los campos generales buscan técnicos por texto", async () => {

@@ -31,7 +31,7 @@ function prepararRespuestas() {
   });
   obtenerTiempos.mockResolvedValue({
     duracion: { cantidad: 3, promedioHoras: 52, medianaHoras: 40, percentil90Horas: 130 },
-    etapas: [{ estado: "pausada", cantidad: 2, promedioHoras: 61 }],
+    etapas: [{ estado: "pausado", cantidad: 2, promedioHoras: 61 }],
     cumplimiento: { evaluadas: 4, enPlazo: 3, porcentajeEnPlazo: 75, atrasoPromedioDias: 2 },
   });
   obtenerRepuestosUsados.mockResolvedValue({ elementos: [{ repuestoId: 1, codigo: "FIL-1", nombre: "Filtro", ordenes: 3 }] });
@@ -48,7 +48,7 @@ function prepararRespuestas() {
     criticas: 1,
     alertas: [{
       tipo: "sin_asignar", gravedad: "critica", ordenId: 45, activoId: 4, nombreActivo: "Retroexcavadora 1",
-      cliente: "Constructora Sur", estado: "creada", prioridad: "alta", horasTranscurridas: 60, umbralHoras: 24,
+      cliente: "Constructora Sur", estado: "pendiente", prioridad: "alta", horasTranscurridas: 60, umbralHoras: 24,
     }],
   });
 }
@@ -68,7 +68,7 @@ describe("PanelAnalitica", () => {
     expect(within(alertas).getByText("Crítica")).toBeInTheDocument();
     expect(screen.getByText(/▲ \+50 % contra el período anterior \(4\)/)).toBeInTheDocument();
     expect(screen.getByText("2 d 4 h")).toBeInTheDocument();
-    expect(screen.getByText("Pausada")).toBeInTheDocument();
+    expect(screen.getByText("Pausado")).toBeInTheDocument();
     expect(screen.getByText("75 %")).toBeInTheDocument();
     expect(screen.getByText(/3 de 4 en plazo · atraso promedio 2 d/)).toBeInTheDocument();
     expect(screen.getByText("FIL-1 · Filtro")).toBeInTheDocument();

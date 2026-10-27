@@ -1,40 +1,22 @@
-import { FormularioTipoMaquina } from "@/componentes/formulario-tipo-maquina";
-import { obtenerTipoMaquinaServidor } from "@/servicios/servidor/tipos-maquina";
-import type { TipoMaquina } from "@/tipos/tipo-maquina";
-import { actualizarTipoMaquinaAccion } from "../../acciones";
+import { Suspense } from "react";
+import { EsqueletoFormulario, ModalDeRuta } from "@/componentes/modal-de-ruta";
+import PaginaDetalleTipoMaquina from "../page";
+import { ContenidoEditarTipo } from "./contenido-editar-tipo";
 
-async function cargarTipo(tipoMaquinaId: number): Promise<TipoMaquina | null> {
-  if (!Number.isInteger(tipoMaquinaId) || tipoMaquinaId <= 0) return null;
-  try {
-    return await obtenerTipoMaquinaServidor(tipoMaquinaId);
-  } catch {
-    return null;
-  }
-}
-
-export default async function PaginaEditarTipoMaquina(props: { params: Promise<{ id: string }> }) {
-  const tipoMaquina = await cargarTipo(Number((await props.params).id));
-
+/**
+ * Dirección abierta directamente (recarga o enlace): se ve la pantalla de origen con el formulario en un modal, igual que
+ * cuando se llega desde un enlace; al cerrarlo se vuelve a esa pantalla.
+ */
+export default async function PaginaEditarTipo(props: { params: Promise<{ id: string }> }) {
+  const { id } = await props.params;
   return (
-    <main className="page-content">
-      <header className="page-heading">
-        <div>
-          <p className="eyebrow">Gestión de tipos de máquina</p>
-          <h1>Modificar tipo de máquina</h1>
-        </div>
-      </header>
-
-      {tipoMaquina ? (
-        <section className="panel form-panel">
-          <FormularioTipoMaquina
-            accion={actualizarTipoMaquinaAccion.bind(null, tipoMaquina.id)}
-            etiquetaConfirmacion="Confirmar modificación"
-            tipoMaquinaInicial={tipoMaquina}
-          />
-        </section>
-      ) : (
-        <p className="form-error-banner">No se pudo obtener la información del tipo de máquina solicitado.</p>
-      )}
-    </main>
+    <>
+      <PaginaDetalleTipoMaquina params={props.params} />
+      <ModalDeRuta descripcion="Gestión de tipos de máquina" rutaDeRetorno={"/activos/tipos/" + id} titulo="Modificar tipo de máquina">
+        <Suspense fallback={<EsqueletoFormulario />}>
+          <ContenidoEditarTipo params={props.params} />
+        </Suspense>
+      </ModalDeRuta>
+    </>
   );
 }

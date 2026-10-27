@@ -55,7 +55,7 @@ export default async function PaginaDetalleUsuario(props: { params: Promise<{ id
       </header>
 
       {usuario ? (
-        <div className="grid gap-6">
+        <div className="detalle-con-actividad">
           <section className="panel detail-panel">
             <dl className="detail-list">
               <div>
@@ -63,7 +63,7 @@ export default async function PaginaDetalleUsuario(props: { params: Promise<{ id
                 <dd>{usuario.correo}</dd>
               </div>
               <div>
-                <dt>Número de teléfono</dt>
+                <dt>Teléfono o celular</dt>
                 <dd>{usuario.telefono}</dd>
               </div>
               <div>

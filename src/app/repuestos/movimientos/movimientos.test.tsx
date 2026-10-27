@@ -114,6 +114,7 @@ describe("barra de filtros de movimientos (en vivo)", () => {
   it("combina todos los filtros en la URL y los limpia", async () => {
     render(conNavegacion(<BarraFiltrosMovimientos filtros={vacios} repuestos={[repuesto as never]} usuarios={[usuario as never]} />));
     fireEvent.change(screen.getByLabelText("Buscar"), { target: { value: "filtro" } });
+    fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
     fireEvent.focus(screen.getByRole("combobox", { name: "Repuesto" }));
     fireEvent.click(await screen.findByRole("option", { name: "R-5 - Filtro" }));
     fireEvent.change(screen.getByLabelText("Tipo de movimiento"), { target: { value: "ingreso" } });

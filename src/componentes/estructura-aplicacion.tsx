@@ -60,7 +60,7 @@ const elementosMenu: ElementoMenu[] = [
     submenus: [
       {
         ruta: "/activos",
-        etiqueta: "Activos",
+        etiqueta: "Todos los activos",
         permiso: "activo.consultar",
         esActivo: (ruta) => ruta === "/activos" || /^\/activos\/(?:\d|nuevo)/.test(ruta),
       },
@@ -128,42 +128,93 @@ export function filtrarMenuPorRoles(roles: readonly string[]): ElementoMenu[] {
 
 type MenuLateralProps = {
   alElegirOpcion: () => void;
+  alAbrirMenu: () => void;
+  estaMenuAbierto: boolean;
 };
 
 function MenuLateral(props: MenuLateralProps) {
   const rutaActual = usePathname();
   const roles = useUsuarioEnSesion()?.roles ?? [];
   const alertasStock = useAlertasStock(tienePermiso(roles, "stock.consultar"));
+  // Los submenús desplegables empiezan siempre plegados: solo se abren si la persona los despliega.
+  const [submenusAbiertos, setSubmenusAbiertos] = useState<ReadonlySet<string>>(() => new Set());
+  const [menuAbiertoPrevio, setMenuAbiertoPrevio] = useState(props.estaMenuAbierto);
+
+  // Al retraer el menú lateral también se pliegan los submenús desplegables.
+  if (menuAbiertoPrevio !== props.estaMenuAbierto) {
+    setMenuAbiertoPrevio(props.estaMenuAbierto);
+    if (!props.estaMenuAbierto) setSubmenusAbiertos(new Set());
+  }
+
+  function alternarSubmenu(ruta: string) {
+    setSubmenusAbiertos((abiertos) => {
+      const siguientes = new Set(abiertos);
+      if (!siguientes.delete(ruta)) siguientes.add(ruta);
+      return siguientes;
+    });
+  }
 
   return (
     <>
       <nav aria-label="Navegación principal" className="app-menu">
         {filtrarMenuPorRoles(roles).map((elemento) => {
           const estaActivo = rutaActual.startsWith(elemento.ruta);
-          const mostrarSubmenu = elemento.submenuPermanente || estaActivo;
+          const mostrarSubmenu = elemento.submenuPermanente ? submenusAbiertos.has(elemento.ruta) : estaActivo;
+          const idSubmenu = "submenu-" + elemento.ruta.slice(1);
           return (
             <div key={elemento.ruta}>
-              <Link
-                aria-current={estaActivo && !elemento.submenus ? "page" : undefined}
-                aria-expanded={elemento.submenus && !elemento.submenuPermanente ? estaActivo : undefined}
-                aria-controls={elemento.submenus && mostrarSubmenu ? `submenu-${elemento.ruta.slice(1)}` : undefined}
-                className="app-menu-enlace"
-                href={elemento.ruta}
-                onClick={props.alElegirOpcion}
-                title={elemento.etiqueta}
-              >
-                {elemento.icono}
-                <span className="app-menu-texto">{elemento.etiqueta}</span>
-                <IndicadorNavegacion destino={elemento.etiqueta} />
-                {elemento.ruta === "/repuestos" && alertasStock && alertasStock.total > 0 ? (
-                  <span className="insignia-menu" title={alertasStock.total + " repuestos con alerta de stock"}>
-                    <span aria-hidden="true">{alertasStock.total > 99 ? "99+" : alertasStock.total}</span>
-                    <span className="sr-only">{alertasStock.total + " repuestos con alerta de stock"}</span>
-                  </span>
-                ) : null}
-              </Link>
-              {elemento.submenus && mostrarSubmenu ? (
-                <div className={elemento.submenuPermanente ? "app-submenu app-submenu-permanente" : "app-submenu"} id={`submenu-${elemento.ruta.slice(1)}`}>
+              {elemento.submenuPermanente && elemento.submenus ? (
+                <button
+                  aria-controls={idSubmenu}
+                  aria-expanded={mostrarSubmenu}
+                  className="app-menu-enlace app-menu-desplegable"
+                  data-actual={estaActivo}
+                  onClick={() => {
+                    if (!props.estaMenuAbierto) {
+                      props.alAbrirMenu();
+                      setSubmenusAbiertos((abiertos) => new Set(abiertos).add(elemento.ruta));
+                      return;
+                    }
+                    alternarSubmenu(elemento.ruta);
+                  }}
+                  title={elemento.etiqueta}
+                  type="button"
+                >
+                  {elemento.icono}
+                  <span className="app-menu-texto">{elemento.etiqueta}</span>
+                  <svg aria-hidden="true" className="app-menu-flecha" fill="none" height="14" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="14">
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </button>
+              ) : (
+                <Link
+                  aria-current={estaActivo && !elemento.submenus ? "page" : undefined}
+                  aria-expanded={elemento.submenus ? estaActivo : undefined}
+                  aria-controls={elemento.submenus && mostrarSubmenu ? idSubmenu : undefined}
+                  className="app-menu-enlace"
+                  href={elemento.ruta}
+                  onClick={props.alElegirOpcion}
+                  title={elemento.etiqueta}
+                >
+                  {elemento.icono}
+                  <span className="app-menu-texto">{elemento.etiqueta}</span>
+                  <IndicadorNavegacion destino={elemento.etiqueta} />
+                  {elemento.ruta === "/repuestos" && alertasStock && alertasStock.total > 0 ? (
+                    <span className="insignia-menu" title={alertasStock.total + " repuestos con alerta de stock"}>
+                      <span aria-hidden="true">{alertasStock.total > 99 ? "99+" : alertasStock.total}</span>
+                      <span className="sr-only">{alertasStock.total + " repuestos con alerta de stock"}</span>
+                    </span>
+                  ) : null}
+                </Link>
+              )}
+              {elemento.submenus && (mostrarSubmenu || elemento.submenuPermanente) ? (
+                <div
+                  aria-hidden={!mostrarSubmenu}
+                  className={elemento.submenuPermanente ? "app-submenu-animado" : undefined}
+                  data-abierto={elemento.submenuPermanente ? mostrarSubmenu : undefined}
+                  inert={!mostrarSubmenu}
+                >
+                <div className={elemento.submenuPermanente ? "app-submenu app-submenu-permanente" : "app-submenu"} id={idSubmenu}>
                   {elemento.submenus.map((submenu) => (
                     <Link
                       aria-current={submenu.esActivo(rutaActual) ? "page" : undefined}
@@ -176,6 +227,7 @@ function MenuLateral(props: MenuLateralProps) {
                       <IndicadorNavegacion destino={submenu.etiqueta} />
                     </Link>
                   ))}
+                </div>
                 </div>
               ) : null}
             </div>
@@ -272,6 +324,7 @@ function EstructuraEscritorio(props: EstructuraAplicacionProps) {
         aria-expanded={estaMenuAbierto}
         aria-label={estaMenuAbierto ? "Cerrar menú" : "Abrir menú"}
         className="app-boton-menu"
+        data-abierto={estaMenuAbierto}
         onClick={() => {
           setEstaMenuAbierto((abierto) => !abierto);
         }}
@@ -299,7 +352,9 @@ function EstructuraEscritorio(props: EstructuraAplicacionProps) {
 
         <Suspense fallback={null}>
           <MenuLateral
+            alAbrirMenu={() => setEstaMenuAbierto(true)}
             alElegirOpcion={retraerMenu}
+            estaMenuAbierto={estaMenuAbierto}
           />
         </Suspense>
       </aside>

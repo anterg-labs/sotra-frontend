@@ -92,10 +92,11 @@ describe("barra de filtros de tipos (en vivo)", () => {
   it("aplica texto y estado en la URL sin botón y los limpia", () => {
     render(conNavegacion(<BarraFiltrosTipos filtros={{ ...filtrosVacios, pagina: 3 }} />));
     fireEvent.change(screen.getByLabelText("Buscar tipo"), { target: { value: "gr" } });
+    fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
     fireEvent.change(screen.getByLabelText("Estado del tipo"), { target: { value: "inactivo" } });
     expect(screen.queryByRole("button", { name: "Filtrar tipos" })).not.toBeInTheDocument();
     expect(replace).toHaveBeenLastCalledWith("/activos/tipos?buscar=gr&estado=inactivo");
-    fireEvent.click(screen.getByRole("button", { name: "Limpiar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
     expect(replace).toHaveBeenLastCalledWith("/activos/tipos");
     expect(screen.getByLabelText("Buscar tipo")).toHaveValue("");
   });

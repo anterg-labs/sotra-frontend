@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { BotonCancelarFormulario, useSalidaDeFormulario } from "@/componentes/modal-de-ruta";
 import { useState } from "react";
 import { Combobox } from "@/componentes/combobox";
 import { InterruptorActivo } from "@/componentes/listado/interruptor-activo";
@@ -41,7 +40,7 @@ export function FormularioActivo(props: PropiedadesFormularioActivo) {
   const clienteIdInicial = activoInicial ? String(activoInicial.clienteId) : "";
   const modeloMaquinaIdInicial = activoInicial ? String(activoInicial.modeloMaquinaId) : "";
 
-  const enrutador = useRouter();
+  const { terminar } = useSalidaDeFormulario();
   const [nombre, setNombre] = useState(activoInicial?.nombre ?? "");
   const [numSerie, setNumSerie] = useState(activoInicial?.numSerie ?? "");
   const [descripcion, setDescripcion] = useState(activoInicial?.descripcion ?? "");
@@ -68,7 +67,7 @@ export function FormularioActivo(props: PropiedadesFormularioActivo) {
       if (alGuardar) {
         alGuardar(activo);
       } else {
-        enrutador.push("/activos");
+        terminar("/activos");
       }
     },
     idCampo: idDelCampo,
@@ -208,9 +207,7 @@ export function FormularioActivo(props: PropiedadesFormularioActivo) {
             Cancelar
           </button>
         ) : (
-          <Link className="secondary-button" href="/activos">
-            Cancelar
-          </Link>
+          <BotonCancelarFormulario href="/activos" />
         )}
         <button className="primary-button" disabled={estaEnviando} type="submit">
           {estaEnviando ? "Guardando…" : etiquetaConfirmacion}

@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { BotonCancelarFormulario, useSalidaDeFormulario } from "@/componentes/modal-de-ruta";
 import { useRef, useState } from "react";
 import { Combobox } from "@/componentes/combobox";
 import { listarActivosPaginados } from "@/servicios/servicio-activos";
@@ -30,7 +29,7 @@ export function FormularioDocumentoTecnico(props: PropiedadesFormularioDocumento
   const activos = props.activos;
   const alEnviar = props.alEnviar ?? crearDocumentoTecnico;
 
-  const enrutador = useRouter();
+  const { terminar } = useSalidaDeFormulario();
   const [archivo, setArchivo] = useState<File | null>(null);
   const [usaSugerenciasIA, setUsaSugerenciasIA] = useState(false);
   const [activoId, setActivoId] = useState("");
@@ -101,7 +100,7 @@ export function FormularioDocumentoTecnico(props: PropiedadesFormularioDocumento
 
     try {
       await alEnviar(documentoParaGuardar);
-      enrutador.push("/documentacion-tecnica");
+      terminar("/documentacion-tecnica");
     } catch (error) {
       if (error instanceof Error) {
         setErrorGeneral(error.message);
@@ -234,9 +233,7 @@ export function FormularioDocumentoTecnico(props: PropiedadesFormularioDocumento
       {mensajeError}
 
       <div className="form-actions">
-        <Link className="secondary-button" href="/documentacion-tecnica">
-          Cancelar
-        </Link>
+        <BotonCancelarFormulario href="/documentacion-tecnica" />
         <button className="primary-button" disabled={estaEnviando} type="submit">
           {textoBoton}
         </button>

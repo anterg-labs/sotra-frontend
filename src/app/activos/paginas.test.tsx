@@ -1,7 +1,8 @@
+import { resolverServidor } from "@/pruebas/resolver-servidor";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FormularioActivo } from "@/componentes/formulario-activo";
-import EditarActivo from "./[id]/editar/page";
+import { ContenidoEditarActivo as EditarActivo } from "./[id]/editar/contenido-editar-activo";
 import DetalleActivo from "./[id]/page";
 import PaginaActivos from "./page";
 import NuevoActivo from "./nuevo/page";
@@ -146,7 +147,7 @@ describe("edición y alta de activo", () => {
     s.obtenerClienteServidor.mockResolvedValue(clienteInactivo);
     s.obtenerModeloMaquinaServidor.mockResolvedValue(modelo);
     s.actualizarActivoAccion.mockResolvedValue({ exito: true, registro: activo });
-    render(await EditarActivo(parametros("5")));
+    render(await resolverServidor(await EditarActivo(parametros("5"))));
     expect(screen.getByLabelText("Número de serie")).toHaveValue("SN-5");
     expect(screen.getByRole("combobox", { name: /Cliente asociado/ })).toHaveValue("Vieja SA");
     fireEvent.click(screen.getByRole("switch", { name: "Activo" }));
@@ -161,13 +162,13 @@ describe("edición y alta de activo", () => {
 
   it("la edición informa el error de carga", async () => {
     s.obtenerActivoServidor.mockRejectedValue(new Error("x"));
-    render(await EditarActivo(parametros("5")));
+    render(await resolverServidor(await EditarActivo(parametros("5"))));
     expect(screen.getByText("No se pudo obtener la información del activo solicitado.")).toBeInTheDocument();
     expect(screen.queryByRole("switch")).not.toBeInTheDocument();
   });
 
   it("la página de alta carga clientes y modelos activos en el servidor", async () => {
-    render(await NuevoActivo());
+    render(await resolverServidor(await NuevoActivo()));
     expect(screen.getByLabelText("Número de serie")).toBeInTheDocument();
     expect(screen.queryByRole("switch")).not.toBeInTheDocument();
   });

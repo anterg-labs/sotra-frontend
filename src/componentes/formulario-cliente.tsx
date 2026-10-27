@@ -1,8 +1,7 @@
 "use client";
 
 import { useAvisos } from "@/componentes/avisos";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { BotonCancelarFormulario, useSalidaDeFormulario } from "@/componentes/modal-de-ruta";
 import { useState } from "react";
 import { useFormularioAccion } from "@/componentes/use-formulario-accion";
 import type { ResultadoGuardar } from "@/tipos/resultado-accion";
@@ -42,7 +41,7 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
   const clienteInicial = props.clienteInicial ?? clienteVacio;
   const esModificacion = props.clienteInicial !== undefined;
 
-  const enrutador = useRouter();
+  const { terminar } = useSalidaDeFormulario();
   const { mostrarAviso } = useAvisos();
   const [razonSocial, setRazonSocial] = useState(clienteInicial.razonSocial);
   const [nombreContacto, setNombreContacto] = useState(clienteInicial.nombreContacto);
@@ -65,7 +64,7 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
         alGuardar(cliente);
       } else {
         mostrarAviso("exito", esModificacion ? "Cliente actualizado." : "Cliente registrado.");
-        enrutador.push("/clientes");
+        terminar("/clientes");
       }
     },
     mensajeGeneral: "No se pudo guardar la información del cliente.",
@@ -148,7 +147,7 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
         </div>
 
         <div className="form-field">
-          <label htmlFor="telefono">Número telefónico (opcional)</label>
+          <label htmlFor="telefono">Número de teléfono o celular (opcional)</label>
           <input
             aria-describedby={errores.telefono ? "telefono-error" : undefined}
             aria-invalid={errores.telefono ? true : undefined}
@@ -187,9 +186,7 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
             Cancelar
           </button>
         ) : (
-          <Link className="secondary-button" href="/clientes">
-            Cancelar
-          </Link>
+          <BotonCancelarFormulario href="/clientes" />
         )}
         <button className="primary-button" disabled={estaEnviando} type="submit">
           {textoBoton}

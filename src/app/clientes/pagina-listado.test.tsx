@@ -19,7 +19,7 @@ describe("página del listado (Server Component)", () => {
     render(await PaginaClientes({ searchParams: Promise.resolve({ buscar: "acme", estado: "inactivo", pagina: "2" }) }));
     expect(screen.getByRole("heading", { level: 1, name: "Gestión de clientes" })).toBeInTheDocument();
     expect(screen.getByLabelText("Buscar")).toHaveValue("acme");
-    expect(screen.getByLabelText("Estado")).toHaveValue("inactivo");
+    expect(screen.getByLabelText("Mostrar")).toHaveValue("inactivo");
     expect(screen.getByRole("button", { name: "Registrar nuevo cliente" })).toBeInTheDocument();
     expect(await screen.findByText("Listado simulado")).toBeInTheDocument();
     expect(listado).toHaveBeenCalledWith({ filtros: expect.objectContaining({ buscar: "acme", estado: "inactivo", pagina: 2 }) });

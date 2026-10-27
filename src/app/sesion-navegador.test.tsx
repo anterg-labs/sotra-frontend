@@ -71,13 +71,13 @@ describe("401 y 403 en los pedidos del navegador", () => {
 
 describe("layout raíz según la sesión", () => {
   it("con acceso muestra la aplicación", async () => {
-    render(await LayoutRaiz({ children: <p>Contenido</p> }), { container: document.documentElement });
+    render(await LayoutRaiz({ children: <p>Contenido</p>, modal: null }), { container: document.documentElement });
     expect(screen.getByTestId("aplicacion")).toHaveTextContent("Contenido");
   });
 
   it("sin acceso a SOTRA reemplaza la aplicación por la pantalla «sin acceso»", async () => {
     vi.mocked(obtenerEstadoSesion).mockResolvedValueOnce({ estado: "sin-acceso", usuario: usuarioDePruebas([], { idUsuario: null, correo: "otra@sotra.test" }) });
-    render(await LayoutRaiz({ children: <p>Contenido</p> }), { container: document.documentElement });
+    render(await LayoutRaiz({ children: <p>Contenido</p>, modal: null }), { container: document.documentElement });
     expect(screen.getByRole("heading", { name: "Tu usuario no tiene acceso a SOTRA. Contactá al administrador." })).toBeInTheDocument();
     expect(screen.queryByText("Contenido")).not.toBeInTheDocument();
     expect(screen.queryByTestId("aplicacion")).not.toBeInTheDocument();
@@ -85,7 +85,7 @@ describe("layout raíz según la sesión", () => {
 
   it("sin sesión (páginas públicas como «sin conexión») muestra solo el contenido", async () => {
     vi.mocked(obtenerEstadoSesion).mockResolvedValueOnce({ estado: "sin-sesion" });
-    render(await LayoutRaiz({ children: <p>Contenido</p> }), { container: document.documentElement });
+    render(await LayoutRaiz({ children: <p>Contenido</p>, modal: null }), { container: document.documentElement });
     expect(screen.getByText("Contenido")).toBeInTheDocument();
     expect(screen.queryByTestId("aplicacion")).not.toBeInTheDocument();
   });

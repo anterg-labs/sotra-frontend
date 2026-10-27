@@ -1,10 +1,14 @@
 "use client";
 
 import { useRef, useState } from "react";
+
 import { Combobox } from "@/componentes/combobox";
 import { IconoPapelera } from "@/componentes/iconos";
 import { listarRepuestosPaginados } from "@/servicios/servicio-repuestos";
 import type { Repuesto } from "@/tipos/repuesto";
+
+/** Cuántos repuestos de la orden se muestran por página. */
+export const REPUESTOS_POR_PAGINA = 5;
 
 /** Un repuesto de la orden con la cantidad elegida; `repuesto` trae el stock para limitar el selector numérico. */
 export type LineaRepuestoOrden = {
@@ -59,6 +63,10 @@ export function EditorRepuestosOrden(props: PropiedadesEditorRepuestosOrden) {
   const encontrados = useRef(new Map<number, Repuesto>());
   const [seleccion, setSeleccion] = useState("");
   const [avisoAgregar, setAvisoAgregar] = useState("");
+  const [paginaElegida, setPaginaElegida] = useState(1);
+  const totalPaginas = Math.max(1, Math.ceil(lineas.length / REPUESTOS_POR_PAGINA));
+  const pagina = Math.min(paginaElegida, totalPaginas);
+  const lineasDeLaPagina = lineas.slice((pagina - 1) * REPUESTOS_POR_PAGINA, pagina * REPUESTOS_POR_PAGINA);
 
   async function buscar(consulta: string) {
     const pagina = await listarRepuestosPaginados({ buscar: consulta, estado: "activo", ubicacion: "", bajoStock: false, pagina: 1 });
@@ -81,6 +89,7 @@ export function EditorRepuestosOrden(props: PropiedadesEditorRepuestosOrden) {
     }
     setAvisoAgregar("");
     alCambiar([...lineas, { repuesto, cantidad: 1 }]);
+    setPaginaElegida(Math.ceil((lineas.length + 1) / REPUESTOS_POR_PAGINA));
   }
 
   function cambiarCantidad(repuestoId: number, texto: string) {
@@ -109,7 +118,7 @@ export function EditorRepuestosOrden(props: PropiedadesEditorRepuestosOrden) {
         <p className="texto-tenue">La orden no tiene repuestos.</p>
       ) : (
         <ul aria-label="Repuestos seleccionados" className="grid gap-3">
-          {lineas.map((linea) => {
+          {lineasDeLaPagina.map((linea) => {
             const maximo = cantidadMaximaDeLinea(linea, cantidadesDeLaOrden);
             const idCampo = `cantidad-repuesto-${linea.repuesto.id}`;
             const hayError = !Number.isInteger(linea.cantidad) || linea.cantidad < 1 || linea.cantidad > maximo;
@@ -151,6 +160,19 @@ export function EditorRepuestosOrden(props: PropiedadesEditorRepuestosOrden) {
           })}
         </ul>
       )}
+      {lineas.length > REPUESTOS_POR_PAGINA ? (
+        <nav aria-label="Páginas de repuestos de la orden" className="flex flex-wrap items-center justify-between gap-3">
+          <span className="texto-tenue text-sm">{`Página ${pagina} de ${totalPaginas} · ${lineas.length} repuestos`}</span>
+          <div className="flex gap-2">
+            <button className="secondary-button" disabled={pagina <= 1} onClick={() => setPaginaElegida(pagina - 1)} type="button">
+              Anterior
+            </button>
+            <button className="secondary-button" disabled={pagina >= totalPaginas} onClick={() => setPaginaElegida(pagina + 1)} type="button">
+              Siguiente
+            </button>
+          </div>
+        </nav>
+      ) : null}
       {props.mensajeError ? <p className="field-error" role="alert">{props.mensajeError}</p> : null}
     </div>
   );

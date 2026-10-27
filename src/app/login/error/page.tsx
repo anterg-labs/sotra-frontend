@@ -19,6 +19,8 @@ export default async function PaginaErrorInicioSesion() {
         <p className="eyebrow">Iniciar sesión</p>
         <h1>No se pudo completar el inicio de sesión</h1>
         <p>Puede pasar si la pantalla de ingreso quedó abierta mucho tiempo o si volviste a ella con «Atrás». Intentá de nuevo.</p>
+        {/* Enlace normal a propósito: /login inicia el flujo OAuth y no debe precargarse ni navegarse del lado del cliente. */}
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
         <a className="primary-button" href="/login">
           Volver a iniciar sesión
         </a>

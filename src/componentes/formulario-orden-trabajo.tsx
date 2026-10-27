@@ -1,11 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { BotonCancelarFormulario, useSalidaDeFormulario } from "@/componentes/modal-de-ruta";
 import { useRef, useState } from "react";
-import { useAvisos } from "@/componentes/avisos";
-import { FormularioCliente } from "@/componentes/formulario-cliente";
-import { Modal } from "@/componentes/modal";
 import { CamposEstadoFechasOrdenTrabajo } from "@/componentes/campos-estado-fechas-orden-trabajo";
 import { CamposGeneralesOrdenTrabajo } from "@/componentes/campos-generales-orden-trabajo";
 import { SelectorClienteActivoOrdenTrabajo } from "@/componentes/selector-cliente-activo-orden-trabajo";
@@ -20,7 +16,6 @@ import {
 } from "@/servicios/servicio-ordenes-trabajo";
 import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
-import { crearClienteAccion } from "@/app/clientes/acciones";
 import type {
   CrearOrdenTrabajoInput,
   EstadoOrdenTrabajo,
@@ -112,7 +107,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
     }
   }
 
-  const enrutador = useRouter();
+  const { terminar } = useSalidaDeFormulario();
   const [estado, setEstado] = useState(estadoInicial);
   const estadoExigeMotivo = ordenInicial?.transiciones.some((transicion) => transicion.estado === estado && transicion.exigeMotivo) ?? false;
   const [clienteId, setClienteId] = useState(clienteIdInicial);
@@ -133,17 +128,6 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
   const [errorGeneral, setErrorGeneral] = useState("");
   const [errores, setErrores] = useState<ReturnType<typeof obtenerErroresOrdenTrabajo> & { motivoEstado?: string }>({});
   const referenciaErrorGeneral = useRef<HTMLDivElement>(null);
-  const [estaAltaClienteAbierta, setEstaAltaClienteAbierta] = useState(false);
-  const [clientesAgregados, setClientesAgregados] = useState<Cliente[]>([]);
-  const { mostrarAviso } = useAvisos();
-
-  function guardarClienteNuevo(cliente: Cliente) {
-    setClientesAgregados((actuales) => [...actuales, cliente]);
-    setClienteId(String(cliente.id));
-    setActivoId("");
-    setEstaAltaClienteAbierta(false);
-    mostrarAviso("exito", "Cliente registrado y seleccionado.");
-  }
 
   function cambiarCliente(clienteIdNuevo: string) {
     setClienteId(clienteIdNuevo);
@@ -208,7 +192,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
     try {
       await alEnviar(ordenParaGuardar);
       borrarSugerenciasTemporales(claveSugerenciasTemporales);
-      enrutador.push("/ordenes-trabajo");
+      terminar("/ordenes-trabajo");
     } catch (error) {
       if (error instanceof Error) {
         setErrorGeneral(error.message);
@@ -247,9 +231,8 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
           activos={props.activos}
           alCambiarActivo={setActivoId}
           alCambiarCliente={cambiarCliente}
-          alRegistrarCliente={() => setEstaAltaClienteAbierta(true)}
           clienteId={clienteId}
-          clientes={[...props.clientes, ...clientesAgregados]}
+          clientes={props.clientes}
           errores={{ clienteId: errores.clienteId, activoId: errores.activoId }}
         />
 
@@ -323,19 +306,12 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
       {mensajeError}
 
       <div className="form-actions">
-        <Link className="secondary-button" href="/ordenes-trabajo" onClick={descartarSugerenciasTemporales}>
-          Cancelar
-        </Link>
+        <BotonCancelarFormulario href="/ordenes-trabajo" alHacerClic={descartarSugerenciasTemporales} />
         <button className="primary-button" disabled={estaEnviando} type="submit">
           {textoBoton}
         </button>
       </div>
     </form>
-    <Modal alCerrar={() => setEstaAltaClienteAbierta(false)} estaAbierto={estaAltaClienteAbierta} titulo="Registrar nuevo cliente">
-      <div className="form-panel">
-        <FormularioCliente alCancelar={() => setEstaAltaClienteAbierta(false)} accion={crearClienteAccion} alGuardar={guardarClienteNuevo} etiquetaConfirmacion="Registrar cliente" />
-      </div>
-    </Modal>
     </>
   );
 }

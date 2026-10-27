@@ -1,3 +1,4 @@
+import { resolverServidor } from "@/pruebas/resolver-servidor";
 import { fireEvent, render as renderBase, screen, waitFor, within } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { conEstadosOrden, estadosDePrueba, transicion } from "@/pruebas/estados-orden";
@@ -5,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { esperarRetardoDeBusqueda } from "@/pruebas/ayudas-filtros";
 import { ProveedorNavegacionListado } from "@/componentes/listado/navegacion-listado";
 import { OrdenesAsociadas } from "@/componentes/ordenes-asociadas";
-import EditarOrden from "./[id]/editar/page";
+import { ContenidoEditarOrden as EditarOrden } from "./[id]/editar/contenido-editar-orden";
 import DetalleOrden from "./[id]/page";
 import { DetalleOrdenTrabajo } from "./[id]/detalle-orden";
 import { BarraFiltrosOrdenes } from "./barra-filtros-ordenes";
@@ -154,7 +155,7 @@ const activo = { id: 2, clienteId: 1, nombre: "Retro 1", numSerie: "S1", estado:
 const resumen = { totalOrdenes: 30, ordenesPorEstado: [{ nombre: "pendiente", cantidad: 5 }, { nombre: "cerrado", cantidad: 9 }] };
 const filtrosVacios = {
   buscar: "", clienteId: "", activoId: "", tecnicoId: "", estado: "", fase: "", prioridad: "", tipo: "",
-  fechaDesde: "", fechaHasta: "", conSugerencias: false, pagina: 1,
+  fechaDesde: "", fechaHasta: "", soloActivas: false, conSugerencias: false, pagina: 1,
 };
 const conNavegacion = (ui: React.ReactNode) => <ProveedorNavegacionListado etiquetaCarga="Cargando…">{ui}</ProveedorNavegacionListado>;
 const parametros = (id: string) => ({ params: Promise.resolve({ id }) });
@@ -181,9 +182,12 @@ describe("filtros de la URL de órdenes", () => {
       }, estadosDePrueba),
     ).toEqual({
       buscar: "fuga", clienteId: "1", activoId: "2", tecnicoId: "7", estado: "pausado", fase: "", prioridad: "alta", tipo: "preventivo",
-      fechaDesde: "2026-10-01", fechaHasta: "2026-10-31", conSugerencias: true, pagina: 2,
+      fechaDesde: "2026-10-01", fechaHasta: "2026-10-31", soloActivas: false, conSugerencias: true, pagina: 2,
     });
     expect(leerFiltrosOrdenes({ fase: "en_curso" }, estadosDePrueba).fase).toBe("en_curso");
+    expect(leerFiltrosOrdenes({ soloActivas: "true" }, estadosDePrueba).soloActivas).toBe(true);
+    expect(leerFiltrosOrdenes({ soloActivas: "si" }, estadosDePrueba).soloActivas).toBe(false);
+    expect(construirUrlOrdenes({ ...filtrosVacios, clienteId: "3", soloActivas: true })).toBe("/ordenes-trabajo?clienteId=3&soloActivas=true");
     expect(leerFiltrosOrdenes({ fase: "inventada" }, estadosDePrueba).fase).toBe("");
     expect(construirUrlOrdenes({ ...filtrosVacios, fase: "por_validar" })).toBe("/ordenes-trabajo?fase=por_validar");
     expect(leerFiltrosOrdenes({ estado: "x", prioridad: "urgente", tipo: "otro", fechaDesde: "ayer", conSugerencias: "si", clienteId: "1;" }, estadosDePrueba)).toEqual(filtrosVacios);
@@ -277,6 +281,8 @@ describe("barra de filtros de órdenes (en vivo)", () => {
   it("combina todos los filtros en la URL y los limpia", async () => {
     render(conNavegacion(<BarraFiltrosOrdenes activos={[activo as never]} clientes={[cliente as never]} filtros={filtrosVacios} tecnicos={[tecnico as never]} />));
     fireEvent.change(screen.getByLabelText("Buscar"), { target: { value: "fuga" } });
+    expect(screen.queryByRole("combobox", { name: "Cliente" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
     fireEvent.focus(screen.getByRole("combobox", { name: "Cliente" }));
     fireEvent.click(screen.getByRole("option", { name: "ACME" }));
     fireEvent.focus(screen.getByRole("combobox", { name: "Activo" }));
@@ -596,7 +602,7 @@ describe("edición y alta de orden de trabajo (páginas)", () => {
     s.obtenerUsuarioServidor.mockResolvedValue(tecnico);
     s.obtenerRepuestoServidor.mockResolvedValue({ id: 3, codigo: "R3", nombre: "Filtro" });
     s.actualizarOrdenTrabajo.mockResolvedValue(orden(11));
-    render(await EditarOrden(parametros("11")));
+    render(await resolverServidor(await EditarOrden(parametros("11"))));
     const formulario = screen.getByRole("form", { name: "Formulario de orden" });
     expect(formulario).toHaveAttribute("data-orden", "11");
     expect(formulario).toHaveAttribute("data-clientes", "1");
@@ -609,14 +615,14 @@ describe("edición y alta de orden de trabajo (páginas)", () => {
 
   it("la edición informa el error de carga", async () => {
     s.obtenerOrdenTrabajoServidor.mockRejectedValue(new Error("x"));
-    render(await EditarOrden(parametros("11")));
+    render(await resolverServidor(await EditarOrden(parametros("11"))));
     expect(screen.getByText("No se pudo obtener la información de la orden solicitada.")).toBeInTheDocument();
     expect(screen.queryByRole("form", { name: "Formulario de orden" })).not.toBeInTheDocument();
   });
 
   it("la alta carga los datos del formulario en el servidor y crea la orden", async () => {
     s.crearOrdenTrabajo.mockResolvedValue(orden(12));
-    render(await NuevaOrden());
+    render(await resolverServidor(await NuevaOrden()));
     const formulario = screen.getByRole("form", { name: "Formulario de orden" });
     expect(formulario).toHaveAttribute("data-clientes", "1");
     expect(formulario).toHaveAttribute("data-repuestos", "1");
@@ -626,7 +632,7 @@ describe("edición y alta de orden de trabajo (páginas)", () => {
 
   it("la alta informa si faltan datos", async () => {
     s.listarClientesServidor.mockRejectedValue(new Error("x"));
-    render(await NuevaOrden());
+    render(await resolverServidor(await NuevaOrden()));
     expect(screen.getByText("No se pudieron obtener los datos necesarios para crear la orden.")).toBeInTheDocument();
   });
 });

@@ -1,7 +1,8 @@
+import { resolverServidor } from "@/pruebas/resolver-servidor";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FormularioTipoMaquina } from "@/componentes/formulario-tipo-maquina";
-import EditarTipo from "./[id]/editar/page";
+import { ContenidoEditarTipo as EditarTipo } from "./[id]/editar/contenido-editar-tipo";
 import DetalleTipo from "./[id]/page";
 import PaginaTipos from "./page";
 import NuevoTipo from "./nuevo/page";
@@ -88,7 +89,7 @@ describe("edición y alta de tipo", () => {
   it("la edición guarda nombre y estado con la acción ligada al id", async () => {
     s.obtenerTipoMaquinaServidor.mockResolvedValue(tipo);
     s.actualizarTipoMaquinaAccion.mockResolvedValue({ exito: true, registro: tipo });
-    render(await EditarTipo(parametros("5")));
+    render(await resolverServidor(await EditarTipo(parametros("5"))));
     fireEvent.change(screen.getByLabelText("Nombre del tipo de máquina"), { target: { value: "Excavadora XL" } });
     fireEvent.click(screen.getByRole("button", { name: "Confirmar modificación" }));
     await waitFor(() => expect(s.actualizarTipoMaquinaAccion).toHaveBeenCalledWith(5, { nombre: "Excavadora XL", estado: "activo" }));
@@ -98,7 +99,7 @@ describe("edición y alta de tipo", () => {
   it("el interruptor permite dar de baja al guardar", async () => {
     s.obtenerTipoMaquinaServidor.mockResolvedValue(tipo);
     s.actualizarTipoMaquinaAccion.mockResolvedValue({ exito: true, registro: tipo });
-    render(await EditarTipo(parametros("5")));
+    render(await resolverServidor(await EditarTipo(parametros("5"))));
     fireEvent.click(screen.getByRole("switch", { name: "Activo" }));
     fireEvent.click(screen.getByRole("button", { name: "Confirmar modificación" }));
     await waitFor(() => expect(s.actualizarTipoMaquinaAccion).toHaveBeenCalledWith(5, { nombre: "Excavadora", estado: "inactivo" }));
@@ -106,7 +107,7 @@ describe("edición y alta de tipo", () => {
 
   it("la edición informa el error de carga sin mostrar el interruptor", async () => {
     s.obtenerTipoMaquinaServidor.mockRejectedValue(new Error("x"));
-    render(await EditarTipo(parametros("5")));
+    render(await resolverServidor(await EditarTipo(parametros("5"))));
     expect(screen.getByText("No se pudo obtener la información del tipo de máquina solicitado.")).toBeInTheDocument();
     expect(screen.queryByRole("switch")).not.toBeInTheDocument();
   });

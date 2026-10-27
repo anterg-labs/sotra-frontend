@@ -187,11 +187,11 @@ describe("tabla de repuestos (baja y reactivación)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Reactivar repuesto" }));
     expect(cambiarEstadoRepuestoAccion).not.toHaveBeenCalled();
     fireEvent.click(within(await screen.findByRole("dialog", { name: "Reactivar repuesto" }, { timeout: 4000 })).getByRole("button", { name: "Reactivar" }));
-    await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("exito", "Repuesto reactivado."));
-    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("exito", "Repuesto reactivado."), { timeout: 4000 });
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument(), { timeout: 4000 });
     fireEvent.click(screen.getByRole("button", { name: "Reactivar repuesto" }));
     fireEvent.click(within(await screen.findByRole("dialog", { name: "Reactivar repuesto" }, { timeout: 4000 })).getByRole("button", { name: "Reactivar" }));
-    await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("error", "No se pudo reactivar el repuesto seleccionado."));
+    await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("error", "No se pudo reactivar el repuesto seleccionado."), { timeout: 4000 });
   });
 
   it("cancelar la baja no llama a la acción; resalta el repuesto nuevo", () => {

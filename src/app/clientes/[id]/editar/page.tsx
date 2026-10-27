@@ -1,48 +1,22 @@
-import { FormularioCliente } from "@/componentes/formulario-cliente";
-import { obtenerClienteServidor } from "@/servicios/servidor/clientes";
-import { actualizarClienteAccion } from "../../acciones";
+import { Suspense } from "react";
+import { EsqueletoFormulario, ModalDeRuta } from "@/componentes/modal-de-ruta";
+import PaginaDetalleCliente from "../page";
+import { ContenidoEditarCliente } from "./contenido-editar-cliente";
 
-const MENSAJE_ERROR = "No se pudo obtener la información del cliente solicitado.";
-
+/**
+ * Dirección abierta directamente (recarga o enlace): se ve la pantalla de origen con el formulario en un modal, igual que
+ * cuando se llega desde un enlace; al cerrarlo se vuelve a esa pantalla.
+ */
 export default async function PaginaEditarCliente(props: { params: Promise<{ id: string }> }) {
-  const clienteId = Number((await props.params).id);
-
-  let cliente = null;
-  if (Number.isInteger(clienteId) && clienteId > 0) {
-    try {
-      cliente = await obtenerClienteServidor(clienteId);
-    } catch {
-      cliente = null;
-    }
-  }
-
+  const { id } = await props.params;
   return (
-    <main className="page-content">
-      <header className="page-heading">
-        <div>
-          <p className="eyebrow">Gestión de clientes</p>
-          <h1>Modificar cliente</h1>
-        </div>
-      </header>
-
-      {cliente ? (
-        <section className="panel form-panel">
-          <FormularioCliente
-            accion={actualizarClienteAccion.bind(null, cliente.id)}
-            clienteInicial={{
-              razonSocial: cliente.razonSocial,
-              nombreContacto: cliente.nombreContacto,
-              correo: cliente.correo,
-              telefono: cliente.telefono,
-              direccion: cliente.direccion,
-              observaciones: cliente.observaciones,
-            }}
-            etiquetaConfirmacion="Confirmar modificación"
-          />
-        </section>
-      ) : (
-        <p className="form-error-banner">{MENSAJE_ERROR}</p>
-      )}
-    </main>
+    <>
+      <PaginaDetalleCliente params={props.params} />
+      <ModalDeRuta descripcion="Gestión de clientes" rutaDeRetorno={"/clientes/" + id} titulo="Modificar cliente">
+        <Suspense fallback={<EsqueletoFormulario />}>
+          <ContenidoEditarCliente params={props.params} />
+        </Suspense>
+      </ModalDeRuta>
+    </>
   );
 }

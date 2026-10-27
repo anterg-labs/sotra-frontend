@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { BotonCancelarFormulario, useSalidaDeFormulario } from "@/componentes/modal-de-ruta";
 import { useState } from "react";
 import { Combobox } from "@/componentes/combobox";
 import { InterruptorActivo } from "@/componentes/listado/interruptor-activo";
@@ -28,7 +27,7 @@ export function FormularioModeloMaquina(props: PropiedadesFormularioModeloMaquin
   const { modeloMaquinaInicial, tiposMaquina, etiquetaConfirmacion, accion, alGuardar, alCancelar } = props;
   const tipoMaquinaIdInicial = modeloMaquinaInicial ? String(modeloMaquinaInicial.tipoMaquinaId) : "";
 
-  const enrutador = useRouter();
+  const { terminar } = useSalidaDeFormulario();
   const [nombre, setNombre] = useState(modeloMaquinaInicial?.nombre ?? "");
   const [tipoMaquinaId, setTipoMaquinaId] = useState(tipoMaquinaIdInicial);
   const [descripcion, setDescripcion] = useState(modeloMaquinaInicial?.descripcion ?? "");
@@ -48,7 +47,7 @@ export function FormularioModeloMaquina(props: PropiedadesFormularioModeloMaquin
       if (alGuardar) {
         alGuardar(modelo);
       } else {
-        enrutador.push("/activos/modelos");
+        terminar("/activos/modelos");
       }
     },
     mensajeGeneral: "No se pudo guardar el modelo de máquina.",
@@ -128,9 +127,7 @@ export function FormularioModeloMaquina(props: PropiedadesFormularioModeloMaquin
             Cancelar
           </button>
         ) : (
-          <Link className="secondary-button" href="/activos/modelos">
-            Cancelar
-          </Link>
+          <BotonCancelarFormulario href="/activos/modelos" />
         )}
         <button className="primary-button" disabled={estaEnviando} type="submit">
           {estaEnviando ? "Guardando…" : etiquetaConfirmacion}

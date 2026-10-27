@@ -84,7 +84,19 @@ export function TablaClientes(props: { clientes: Cliente[]; filtros: FiltrosClie
                   <td>{cliente.correo}</td>
                   <td>{cliente.telefono}</td>
                   <td className="celda-numerica">{cliente.cantidadActivosAsociados}</td>
-                  <td className="celda-numerica">{cliente.cantidadOrdenesAsociadas}</td>
+                  <td className="celda-numerica">
+                    {cliente.cantidadOrdenesAsociadas > 0 ? (
+                      <Link
+                        aria-label={"Ver las " + cliente.cantidadOrdenesAsociadas + " órdenes activas de " + cliente.razonSocial}
+                        className="text-link"
+                        href={"/ordenes-trabajo?clienteId=" + cliente.id + "&soloActivas=true"}
+                      >
+                        {cliente.cantidadOrdenesAsociadas}
+                      </Link>
+                    ) : (
+                      0
+                    )}
+                  </td>
                   <td><EstadoRegistro estado={cliente.estado} /></td>
                   <td>
                     <div className="table-actions">

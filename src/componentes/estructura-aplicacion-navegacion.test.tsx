@@ -36,6 +36,7 @@ describe("EstructuraAplicacion: navegación de escritorio", () => {
     fireEvent.click(screen.getByRole("button", { name: "Abrir menú" }));
     const lateral = document.getElementById("menu-lateral")!;
     const botonMenu = screen.getByRole("button", { name: "Cerrar menú", expanded: true });
+    expect(botonMenu).toHaveAttribute("data-abierto", "true");
     expect(botonMenu.parentElement).toBe(lateral.parentElement);
     fireEvent.pointerLeave(lateral);
     fireEvent.keyDown(document, { key: "Escape" });
@@ -54,27 +55,62 @@ describe("EstructuraAplicacion: navegación de escritorio", () => {
     expect(screen.getByRole("button", { name: "Abrir menú" })).toHaveAttribute("aria-expanded", "false");
   });
 
+  it("los subítems de Activos empiezan retraídos y se despliegan y pliegan cuantas veces se quiera", () => {
+    render(<EstructuraAplicacion>x</EstructuraAplicacion>);
+    const menu = screen.getByRole("navigation", { name: "Navegación principal" });
+    const alternar = within(menu).getByRole("button", { name: "Activos" });
+    expect(alternar).toHaveAttribute("aria-expanded", "false");
+    expect(within(menu).queryByRole("link", { name: "Modelos de máquina" })).not.toBeInTheDocument();
+    for (let vez = 0; vez < 2; vez += 1) {
+      fireEvent.click(alternar);
+      expect(alternar).toHaveAttribute("aria-expanded", "true");
+      expect(within(menu).getByRole("link", { name: "Tipos de máquina" })).toBeInTheDocument();
+      fireEvent.click(alternar);
+      expect(alternar).toHaveAttribute("aria-expanded", "false");
+      expect(within(menu).queryByRole("link", { name: "Tipos de máquina" })).not.toBeInTheDocument();
+    }
+  });
+
+  it("con el menú retraído, pulsar Activos abre el menú y despliega sus subítems", () => {
+    render(<EstructuraAplicacion>x</EstructuraAplicacion>);
+    const menu = screen.getByRole("navigation", { name: "Navegación principal" });
+    expect(screen.getByRole("button", { name: "Abrir menú" })).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(within(menu).getByRole("button", { name: "Activos" }));
+    expect(screen.getByRole("button", { name: "Cerrar menú", expanded: true })).toBeInTheDocument();
+    expect(within(menu).getByRole("link", { name: "Todos los activos" })).toBeInTheDocument();
+  });
+
+  it("al retraer el menú lateral se pliega el submenú de Activos", () => {
+    render(<EstructuraAplicacion>x</EstructuraAplicacion>);
+    const menu = screen.getByRole("navigation", { name: "Navegación principal" });
+    fireEvent.click(screen.getByRole("button", { name: "Abrir menú" }));
+    fireEvent.click(within(menu).getByRole("button", { name: "Activos" }));
+    expect(within(menu).getByRole("link", { name: "Modelos de máquina" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Cerrar menú", expanded: true }));
+    expect(within(menu).queryByRole("link", { name: "Modelos de máquina" })).not.toBeInTheDocument();
+  });
+
   it("marca la sección actual y mantiene los subítems de Activos disponibles desde otras secciones", () => {
     render(<EstructuraAplicacion>x</EstructuraAplicacion>);
     const menu = screen.getByRole("navigation", { name: "Navegación principal" });
+    fireEvent.click(within(menu).getByRole("button", { name: "Activos" }));
     expect(within(menu).getByRole("link", { name: "Clientes" })).toHaveAttribute("aria-current", "page");
-    const enlacesActivos = within(menu).getAllByRole("link", { name: "Activos" });
-    expect(enlacesActivos).toHaveLength(2);
-    enlacesActivos.forEach((enlace) => expect(enlace).not.toHaveAttribute("aria-current"));
-    expect(enlacesActivos[0]).not.toHaveAttribute("aria-expanded");
+    expect(within(menu).queryByRole("link", { name: "Activos" })).not.toBeInTheDocument();
+    expect(within(menu).getByRole("link", { name: "Todos los activos" })).not.toHaveAttribute("aria-current");
     expect(within(menu).getByRole("link", { name: "Modelos de máquina" })).toHaveAttribute("href", "/activos/modelos");
     expect(within(menu).getByRole("link", { name: "Tipos de máquina" })).toHaveAttribute("href", "/activos/tipos");
     expect(within(menu).queryByRole("link", { name: "Movimientos de stock" })).not.toBeInTheDocument();
   });
 
   it.each([
-    ["/activos", "Activos"],
-    ["/activos/5", "Activos"],
+    ["/activos", "Todos los activos"],
+    ["/activos/5", "Todos los activos"],
     ["/activos/modelos/3", "Modelos de máquina"],
     ["/activos/tipos", "Tipos de máquina"],
   ])("en %s el submenú activo es %s", (ruta, activo) => {
     pathname.valor = ruta;
     render(<EstructuraAplicacion>x</EstructuraAplicacion>);
+    fireEvent.click(screen.getByRole("button", { name: "Activos" }));
     const submenu = within(document.getElementById("submenu-activos") as HTMLElement);
     const actuales = submenu.getAllByRole("link").filter((enlace) => enlace.getAttribute("aria-current") === "page");
     expect(actuales.map((e) => e.textContent)).toEqual([activo]);

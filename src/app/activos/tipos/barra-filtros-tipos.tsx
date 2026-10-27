@@ -3,6 +3,7 @@
 import { useFiltrosEnVivo } from "@/componentes/listado/use-filtros-en-vivo";
 import type { FiltrosTiposMaquina } from "@/tipos/tipo-maquina";
 import { construirUrlTipos } from "./filtros";
+import { FiltrosAvanzados, hayFiltrosAplicados } from "@/componentes/listado/filtros-avanzados";
 
 type ValoresTipos = Pick<FiltrosTiposMaquina, "buscar" | "estado" | "ordenarPor" | "direccionOrden">;
 const VACIOS: ValoresTipos = { buscar: "", estado: "" };
@@ -34,19 +35,16 @@ export function BarraFiltrosTipos(props: { filtros: FiltrosTiposMaquina }) {
           value={valores.buscar}
         />
       </div>
-      <div className="form-field">
-        <label htmlFor="estadoTipoFiltro">Estado del tipo</label>
-        <select id="estadoTipoFiltro" onChange={(evento) => cambiar({ estado: evento.target.value })} value={valores.estado}>
-          <option value="">Todos los estados</option>
-          <option value="activo">Activo</option>
-          <option value="inactivo">Inactivo</option>
-        </select>
-      </div>
-      <div className="barra-filtros-acciones">
-        <button className="secondary-button" onClick={() => limpiar(VACIOS)} type="button">
-          Limpiar
-        </button>
-      </div>
+      <FiltrosAvanzados alLimpiar={() => limpiar(VACIOS)} hayFiltros={hayFiltrosAplicados(valores)}>
+        <div className="form-field">
+          <label htmlFor="estadoTipoFiltro">Estado del tipo</label>
+          <select id="estadoTipoFiltro" onChange={(evento) => cambiar({ estado: evento.target.value })} value={valores.estado}>
+            <option value="">Todos los estados</option>
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+        </div>
+      </FiltrosAvanzados>
     </form>
   );
 }

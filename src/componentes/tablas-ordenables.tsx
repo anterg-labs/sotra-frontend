@@ -6,7 +6,7 @@ import { ContenedorTabla } from "@/componentes/contenedor-tabla";
 import { IconoOjo } from "@/componentes/iconos";
 import { InsigniaStock } from "@/componentes/indicador-stock";
 import { EncabezadoOrdenLocal, useOrdenLocal } from "@/componentes/listado/orden-local";
-import { useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
+import { EtiquetaEstadoOrden, etiquetaLegible, useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
 import type { MovimientoStock } from "@/tipos/movimiento-stock";
 import type { OrdenTrabajo } from "@/tipos/orden-trabajo";
 import type { CantidadPorGrupo } from "@/tipos/reporte";
@@ -53,7 +53,7 @@ export function TablaOrdenesResumen(props: { ordenes: OrdenTrabajo[]; etiqueta: 
             {encabezado("tecnico", "Técnico")}
             {encabezado("prioridad", "Prioridad")}
             {encabezado("estado", "Estado")}
-            <th>Acciones</th>
+            <th className="celda-centrada">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -63,9 +63,9 @@ export function TablaOrdenesResumen(props: { ordenes: OrdenTrabajo[]; etiqueta: 
               <td>{fila.nombreCliente}</td>
               <td>{fila.nombreActivo}</td>
               <td>{fila.nombreTecnico ?? "Sin asignar"}</td>
-              <td>{fila.prioridad}</td>
-              <td>{etiquetaEstado(fila.estado)}</td>
-              <td>
+              <td><span className={"status prioridad-" + fila.prioridad}>{etiquetaLegible(fila.prioridad)}</span></td>
+              <td><EtiquetaEstadoOrden estado={fila.estado} /></td>
+              <td className="celda-centrada">
                 <Link aria-label="Ver detalle" className="boton-icono" href={"/ordenes-trabajo/" + fila.id} title="Ver detalle">
                   <IconoOjo />
                 </Link>
@@ -88,10 +88,15 @@ const VALORES_GRUPOS = {
 /** Cantidades por estado, prioridad, tipo, técnico o activo (tablero de Reportes). */
 export function TablaCantidadesPorGrupo(props: { titulo: string; columna: string; grupos: CantidadPorGrupo[] }) {
   const { filasOrdenadas, orden, alternar } = useOrdenLocal(props.grupos, VALORES_GRUPOS);
+  const etiquetaEstado = useEtiquetaEstadoOrden();
+  const mostrarNombre = (nombre: string) => {
+    if (props.columna === "Estado") return etiquetaEstado(nombre);
+    return props.columna === "Prioridad" || props.columna === "Tipo" ? etiquetaLegible(nombre) : nombre;
+  };
 
   return (
     <ContenedorTabla etiqueta={props.titulo}>
-      <table>
+      <table className="tabla-compacta">
         <thead>
           <tr>
             <EncabezadoOrdenLocal alternar={alternar} columna="nombre" etiqueta={props.columna} orden={orden} />
@@ -101,7 +106,7 @@ export function TablaCantidadesPorGrupo(props: { titulo: string; columna: string
         <tbody>
           {filasOrdenadas.map((grupo) => (
             <tr key={grupo.nombre}>
-              <td>{grupo.nombre}</td>
+              <td>{mostrarNombre(grupo.nombre)}</td>
               <td className="celda-numerica">{grupo.cantidad}</td>
             </tr>
           ))}
@@ -138,7 +143,7 @@ export function TablaRepuestosBajoStock(props: { repuestos: Repuesto[] }) {
             {encabezado("cantidad", "Cantidad")}
             {encabezado("cantidadMinima", "Mínima")}
             {encabezado("estado", "Estado")}
-            <th>Acciones</th>
+            <th className="celda-centrada">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -149,7 +154,7 @@ export function TablaRepuestosBajoStock(props: { repuestos: Repuesto[] }) {
               <td className="celda-numerica">{repuesto.cantidad}</td>
               <td className="celda-numerica">{repuesto.cantidadMinima}</td>
               <td><InsigniaStock estadoStock={repuesto.estadoStock} /></td>
-              <td>
+              <td className="celda-centrada">
                 <Link aria-label="Ver detalle" className="boton-icono" href={"/repuestos/" + repuesto.id} title="Ver detalle">
                   <IconoOjo />
                 </Link>
@@ -191,7 +196,7 @@ export function TablaMovimientosRepuesto(props: { movimientos: MovimientoStock[]
             {encabezado("stock", "Stock")}
             {encabezado("usuario", "Usuario")}
             {encabezado("motivo", "Motivo")}
-            <th>Acciones</th>
+            <th className="celda-centrada">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -203,7 +208,7 @@ export function TablaMovimientosRepuesto(props: { movimientos: MovimientoStock[]
               <td className="celda-numerica">{movimiento.stockAnterior + " → " + movimiento.stockPosterior}</td>
               <td>{movimiento.nombreUsuario ?? "Sin registrar"}</td>
               <td>{movimiento.motivo}</td>
-              <td>
+              <td className="celda-centrada">
                 <Link aria-label="Ver detalle" className="boton-icono" href={"/repuestos/movimientos/" + movimiento.id} title="Ver detalle">
                   <IconoOjo />
                 </Link>

@@ -1,3 +1,4 @@
+import { resolverServidor } from "@/pruebas/resolver-servidor";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FormularioDocumentoTecnico } from "@/componentes/formulario-documento-tecnico";
@@ -7,7 +8,7 @@ import DetalleDocumento from "./[id]/page";
 import { BarraFiltrosDocumentos } from "./barra-filtros-documentos";
 import { construirUrlDocumentos, leerFiltrosDocumentos } from "./filtros";
 import { ListadoDocumentos } from "./listado-documentos";
-import EditarDocumento from "./[id]/editar/page";
+import { ContenidoEditarDocumento as EditarDocumento } from "./[id]/editar/contenido-editar-documento";
 import { FormularioEditarDocumento } from "@/componentes/formulario-editar-documento";
 import NuevoDocumento from "./nuevo/page";
 import { TablaDocumentos } from "./tabla-documentos";
@@ -141,6 +142,7 @@ describe("barra de filtros de documentos (en vivo)", () => {
   it("filtra por texto y activo (combobox) sin botón y limpia", async () => {
     render(conNavegacion(<BarraFiltrosDocumentos activos={[activo as never, { ...activo, id: 3, nombre: null, numSerie: "SN-3" } as never]} filtros={filtrosVacios} modelosMaquina={[]} />));
     fireEvent.change(screen.getByLabelText("Buscar"), { target: { value: "manual" } });
+    fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
     fireEvent.focus(screen.getByRole("combobox", { name: "Activo asociado" }));
     expect(screen.getByRole("option", { name: "SN-3" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("option", { name: "Retro 2" }));
@@ -209,14 +211,14 @@ describe("detalle de documento técnico (Server Component)", () => {
 
 describe("alta de documento técnico (página)", () => {
   it("carga los activos activos en el servidor y muestra el formulario", async () => {
-    render(await NuevoDocumento());
+    render(await resolverServidor(await NuevoDocumento()));
     expect(s.listarActivosServidor).toHaveBeenCalledWith(expect.objectContaining({ estado: "activo" }));
     expect(screen.getByLabelText("Archivo PDF")).toBeInTheDocument();
   });
 
   it("informa si no se pueden cargar los activos", async () => {
     s.listarActivosServidor.mockRejectedValue(new Error("x"));
-    render(await NuevoDocumento());
+    render(await resolverServidor(await NuevoDocumento()));
     expect(screen.getByText("No se pudo obtener el listado de activos.")).toBeInTheDocument();
   });
 });
@@ -336,6 +338,7 @@ describe("datos generales y vigencia de la documentación", () => {
 
   it("los filtros de tipo y vigencia actualizan la URL", async () => {
     render(conNavegacion(<BarraFiltrosDocumentos activos={[]} filtros={filtrosVacios} modelosMaquina={[]} />));
+    fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
     fireEvent.change(screen.getByLabelText("Tipo"), { target: { value: "normativa" } });
     await waitFor(() => expect(push.mock.calls.concat(replace.mock.calls).flat().join(" ")).toContain("tipo=normativa"));
     fireEvent.change(screen.getByLabelText("Vigencia"), { target: { value: "false" } });
@@ -369,8 +372,7 @@ describe("edición de un documento", () => {
 
   it("la página carga los datos del documento en el formulario", async () => {
     s.obtenerDocumentoTecnicoServidor.mockResolvedValue(documentoCompleto());
-    render(await EditarDocumento(parametros("11")));
-    expect(screen.getByRole("heading", { level: 1, name: "Modificar documento" })).toBeInTheDocument();
+    render(await resolverServidor(await EditarDocumento(parametros("11"))));
     expect(screen.getByLabelText("Título")).toHaveValue("Norma de EPP");
     expect(screen.getByLabelText("Tipo de documento")).toHaveValue("normativa");
     expect(screen.getByLabelText("Descripción")).toHaveValue("Uso obligatorio");
@@ -378,7 +380,7 @@ describe("edición de un documento", () => {
 
   it("la página informa si no se puede obtener el documento", async () => {
     s.obtenerDocumentoTecnicoServidor.mockRejectedValue(new Error("x"));
-    render(await EditarDocumento(parametros("11")));
+    render(await resolverServidor(await EditarDocumento(parametros("11"))));
     expect(screen.getByText("No se pudo obtener la información del documento solicitado.")).toBeInTheDocument();
   });
 

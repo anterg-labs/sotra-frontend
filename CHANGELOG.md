@@ -1,5 +1,79 @@
 # CHANGELOG
 
+## Version 1.0.70 (2026-10-27)
+
+- Altas y modificaciones: si la pantalla se recarga o se abre la dirección directamente, el formulario sigue viéndose en un modal sobre la pantalla de origen (listado o detalle) en lugar de como página completa; al cerrarlo se vuelve a esa pantalla.
+- Órdenes de trabajo: se quita el botón «Nuevo cliente» del formulario; la orden se asocia a un cliente ya registrado.
+
+## Version 1.0.69 (2026-10-27)
+
+- Listados: en Clientes, Órdenes, Activos, Modelos, Tipos, Documentación, Repuestos, Movimientos y Usuarios solo se ve el buscador; el resto de los filtros queda detrás del botón «Filtros avanzados» (se abre solo si hay uno aplicado y avisa con un punto).
+- Reportes: los bloques ya no tienen desplazamiento horizontal y se reparten de a tres por fila; en «Órdenes recientes» el ojito queda centrado y prioridad y estado se ven con mayúscula inicial y los mismos colores que en Órdenes de trabajo, igual que en los bloques por estado, prioridad y tipo.
+
+## Version 1.0.68 (2026-10-27)
+
+- Navegación: en las pantallas de segundo nivel (detalles, altas y modificaciones) aparece arriba la ruta, por ejemplo «Órdenes de trabajo / Orden N° 8», con los niveles anteriores como enlaces para volver.
+- Órdenes de trabajo: los filtros, salvo el buscador, quedan detrás del botón «Filtros avanzados» (se abren solos si hay alguno aplicado); el resumen pasa a una franja compacta; el estado y el técnico ya no saltan de línea; las fechas usan el mismo formato y los títulos de columna quedan alineados; el buscador deja de ocupar todo el ancho.
+- Órdenes de trabajo: el editor de repuestos de la orden muestra de a cinco, con «Anterior» y «Siguiente».
+- Detalles: la flecha de volver tiene el alto del bloque del título.
+- Listados: el buscador de todos los listados tiene un ancho máximo.
+
+## Version 1.0.67 (2026-10-27)
+
+- Menú: «Activos» ya no es un enlace; al pulsarlo despliega o pliega sus opciones (con el menú retraído, además lo abre). La lista de activos queda como «Todos los activos».
+
+## Version 1.0.66 (2026-10-27)
+
+- Menú: la primera opción del submenú de Activos pasa a llamarse «Todos los activos», para no repetir el nombre de la sección.
+
+## Version 1.0.65 (2026-10-27)
+
+- Menú: con el menú abierto, el logo de CVM se agranda de forma notable y ocupa casi todo el ancho del menú.
+
+## Version 1.0.64 (2026-10-27)
+
+- Navegación: mientras se abre una pantalla, el contenido de la derecha se atenúa y se desenfoca y no recibe clics; el menú lateral sigue disponible para elegir otra opción.
+- Menú: el submenú de Activos se despliega y se pliega con animación, y sus ítems entran de a uno.
+
+## Version 1.0.63 (2026-10-27)
+
+- Menú: las opciones con submenú desplegable (Activos) empiezan retraídas, se abren y se cierran con una flecha cuantas veces se quiera y se pliegan al retraer el menú.
+- Navegación: el aviso «Abriendo…» aparece ahora en el centro de la pantalla, en una tarjeta con spinner.
+- Menú: el logo de CVM se agranda un poco cuando el menú está abierto.
+
+## Version 1.0.62 (2026-10-27)
+
+- Menú: el número rojo de alertas de stock queda siempre pegado a la esquina del ícono de Repuestos, con el menú abierto o retraído, en lugar de irse a la derecha.
+
+## Version 1.0.61 (2026-10-27)
+
+- Reportes: los filtros de indicadores se ordenan en una cuadrícula pareja (ya no hay un desplegable que se estire por toda la fila) y «Descarga de reportes» ocupa todo el ancho, con los campos a la izquierda y los botones a la derecha, en lugar de quedar centrada en la pantalla.
+
+## Version 1.0.60 (2026-10-27)
+
+- Menú: al abrirse, el logo de CVM se desplaza al centro junto con el ensanche del menú y vuelve a la izquierda al retraerlo.
+
+## Version 1.0.59 (2026-10-27)
+
+- Listados: los selectores de fecha de los filtros (por ejemplo «Creada» en órdenes de trabajo) dejan de estirarse por toda la fila y quedan con un ancho razonable.
+
+## Version 1.0.58 (2026-10-27)
+
+- Clientes y usuarios: la cantidad de órdenes de cada fila abre el listado de órdenes filtrado por ese cliente o usuario y solo con órdenes activas, igual que la cifra. Los activos no lo necesitan: su detalle ya muestra el historial de órdenes.
+- Clientes: el listado muestra solo los activos al entrar; un botón discreto «Filtros avanzados» permite ver inactivos o todos y filtrar por activos asociados.
+- Usuarios: en el detalle, la actividad queda a la derecha de los datos en pantallas anchas.
+- Menú: con el menú abierto, el botón se ensancha con él y la flecha queda al centro.
+- Órdenes de trabajo: prioridad y estado se muestran con la primera letra en mayúscula.
+- Formularios: el teléfono de clientes y usuarios se llama «Número de teléfono o celular».
+
+## Version 1.0.57 (2026-10-27)
+
+- Interfaz: en los modales de confirmación (por ejemplo, dar de baja un cliente) y en los formularios, los textos largos, como un nombre sin espacios, saltan de línea en lugar de salirse de la ventana.
+
+## Version 1.0.56 (2026-10-27)
+
+- Interfaz: las altas y modificaciones (órdenes de trabajo, clientes, activos, modelos, tipos, repuestos, usuarios y documentos técnicos) se abren en un modal desde los listados y detalles, con foco en el primer campo, confirmación al descartar cambios, tamaño amplio para formularios extensos y pantalla completa en el móvil. Abiertas por enlace directo se ven como página.
+
 ## Version 1.0.55 (2026-10-27)
 
 - Reportes: se quitan el reporte de actividad por técnico, el cuadro de órdenes por técnico y el filtro «Técnico»; el análisis es de órdenes, procesos y maquinaria, sin evaluar personas.

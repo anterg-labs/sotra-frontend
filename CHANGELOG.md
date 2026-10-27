@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.62 (2026-10-27)
+
+- Menú: el número rojo de alertas de stock queda siempre pegado a la esquina del ícono de Repuestos, con el menú abierto o retraído, en lugar de irse a la derecha.
+
 ## Version 1.0.61 (2026-10-27)
 
 - Reportes: los filtros de indicadores se ordenan en una cuadrícula pareja (ya no hay un desplegable que se estire por toda la fila) y «Descarga de reportes» ocupa todo el ancho, con los campos a la izquierda y los botones a la derecha, en lugar de quedar centrada en la pantalla.

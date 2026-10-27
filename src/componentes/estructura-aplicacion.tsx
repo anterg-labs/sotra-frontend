@@ -128,6 +128,7 @@ export function filtrarMenuPorRoles(roles: readonly string[]): ElementoMenu[] {
 
 type MenuLateralProps = {
   alElegirOpcion: () => void;
+  alAbrirMenu: () => void;
   estaMenuAbierto: boolean;
 };
 
@@ -161,40 +162,51 @@ function MenuLateral(props: MenuLateralProps) {
           const mostrarSubmenu = elemento.submenuPermanente ? submenusAbiertos.has(elemento.ruta) : estaActivo;
           const idSubmenu = "submenu-" + elemento.ruta.slice(1);
           return (
-            <div className={elemento.submenuPermanente && elemento.submenus ? "app-menu-grupo" : undefined} key={elemento.ruta}>
-              <Link
-                aria-current={estaActivo && !elemento.submenus ? "page" : undefined}
-                aria-expanded={elemento.submenus && !elemento.submenuPermanente ? estaActivo : undefined}
-                aria-controls={elemento.submenus && mostrarSubmenu ? idSubmenu : undefined}
-                className="app-menu-enlace"
-                href={elemento.ruta}
-                onClick={props.alElegirOpcion}
-                title={elemento.etiqueta}
-              >
-                {elemento.icono}
-                <span className="app-menu-texto">{elemento.etiqueta}</span>
-                <IndicadorNavegacion destino={elemento.etiqueta} />
-                {elemento.ruta === "/repuestos" && alertasStock && alertasStock.total > 0 ? (
-                  <span className="insignia-menu" title={alertasStock.total + " repuestos con alerta de stock"}>
-                    <span aria-hidden="true">{alertasStock.total > 99 ? "99+" : alertasStock.total}</span>
-                    <span className="sr-only">{alertasStock.total + " repuestos con alerta de stock"}</span>
-                  </span>
-                ) : null}
-              </Link>
+            <div key={elemento.ruta}>
               {elemento.submenuPermanente && elemento.submenus ? (
                 <button
                   aria-controls={idSubmenu}
                   aria-expanded={mostrarSubmenu}
-                  aria-label={(mostrarSubmenu ? "Contraer" : "Desplegar") + " el submenú de " + elemento.etiqueta}
-                  className="app-menu-alternar"
-                  onClick={() => alternarSubmenu(elemento.ruta)}
+                  className="app-menu-enlace app-menu-desplegable"
+                  data-actual={estaActivo}
+                  onClick={() => {
+                    if (!props.estaMenuAbierto) {
+                      props.alAbrirMenu();
+                      setSubmenusAbiertos((abiertos) => new Set(abiertos).add(elemento.ruta));
+                      return;
+                    }
+                    alternarSubmenu(elemento.ruta);
+                  }}
+                  title={elemento.etiqueta}
                   type="button"
                 >
-                  <svg aria-hidden="true" fill="none" height="14" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="14">
+                  {elemento.icono}
+                  <span className="app-menu-texto">{elemento.etiqueta}</span>
+                  <svg aria-hidden="true" className="app-menu-flecha" fill="none" height="14" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="14">
                     <path d="m6 9 6 6 6-6" />
                   </svg>
                 </button>
-              ) : null}
+              ) : (
+                <Link
+                  aria-current={estaActivo && !elemento.submenus ? "page" : undefined}
+                  aria-expanded={elemento.submenus ? estaActivo : undefined}
+                  aria-controls={elemento.submenus && mostrarSubmenu ? idSubmenu : undefined}
+                  className="app-menu-enlace"
+                  href={elemento.ruta}
+                  onClick={props.alElegirOpcion}
+                  title={elemento.etiqueta}
+                >
+                  {elemento.icono}
+                  <span className="app-menu-texto">{elemento.etiqueta}</span>
+                  <IndicadorNavegacion destino={elemento.etiqueta} />
+                  {elemento.ruta === "/repuestos" && alertasStock && alertasStock.total > 0 ? (
+                    <span className="insignia-menu" title={alertasStock.total + " repuestos con alerta de stock"}>
+                      <span aria-hidden="true">{alertasStock.total > 99 ? "99+" : alertasStock.total}</span>
+                      <span className="sr-only">{alertasStock.total + " repuestos con alerta de stock"}</span>
+                    </span>
+                  ) : null}
+                </Link>
+              )}
               {elemento.submenus && (mostrarSubmenu || elemento.submenuPermanente) ? (
                 <div
                   aria-hidden={!mostrarSubmenu}
@@ -340,6 +352,7 @@ function EstructuraEscritorio(props: EstructuraAplicacionProps) {
 
         <Suspense fallback={null}>
           <MenuLateral
+            alAbrirMenu={() => setEstaMenuAbierto(true)}
             alElegirOpcion={retraerMenu}
             estaMenuAbierto={estaMenuAbierto}
           />

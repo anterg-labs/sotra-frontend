@@ -1262,45 +1262,31 @@ label:has(input:disabled) {
   }
 }
 
-.app-menu-grupo {
-  position: relative;
-}
-
-.app-menu-alternar {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
+/* «Activos» no es un enlace: al pulsarlo despliega o pliega su submenú. */
+.app-menu-desplegable {
+  width: 100%;
   background: transparent;
   border: 0;
-  border-radius: var(--radio-s);
-  color: var(--lateral-texto);
+  font: inherit;
+  text-align: left;
   cursor: pointer;
 }
 
-.app-menu-alternar:hover {
-  background: var(--lateral-hover);
+.app-menu-desplegable[data-actual="true"] {
   color: var(--lateral-texto-fuerte);
 }
 
-.app-menu-alternar:focus-visible {
-  outline: 2px solid var(--lateral-texto-fuerte);
-  outline-offset: 1px;
-}
-
-.app-menu-alternar svg {
+.app-menu-flecha {
+  flex-shrink: 0;
+  margin-left: auto;
   transition: transform var(--transicion);
 }
 
-.app-menu-alternar[aria-expanded="true"] svg {
+.app-menu-desplegable[aria-expanded="true"] .app-menu-flecha {
   transform: rotate(180deg);
 }
 
-.app-lateral[data-compacto="true"] .app-menu-alternar {
+.app-lateral[data-compacto="true"] .app-menu-flecha {
   display: none;
 }
 

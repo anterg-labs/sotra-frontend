@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.67 (2026-10-27)
+
+- Menú: «Activos» ya no es un enlace; al pulsarlo despliega o pliega sus opciones (con el menú retraído, además lo abre). La lista de activos queda como «Todos los activos».
+
 ## Version 1.0.66 (2026-10-27)
 
 - Menú: la primera opción del submenú de Activos pasa a llamarse «Todos los activos», para no repetir el nombre de la sección.

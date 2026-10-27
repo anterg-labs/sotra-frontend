@@ -8,7 +8,7 @@ import DetalleDocumento from "./[id]/page";
 import { BarraFiltrosDocumentos } from "./barra-filtros-documentos";
 import { construirUrlDocumentos, leerFiltrosDocumentos } from "./filtros";
 import { ListadoDocumentos } from "./listado-documentos";
-import EditarDocumento from "./[id]/editar/page";
+import { ContenidoEditarDocumento as EditarDocumento } from "./[id]/editar/contenido-editar-documento";
 import { FormularioEditarDocumento } from "@/componentes/formulario-editar-documento";
 import NuevoDocumento from "./nuevo/page";
 import { TablaDocumentos } from "./tabla-documentos";
@@ -373,7 +373,6 @@ describe("edición de un documento", () => {
   it("la página carga los datos del documento en el formulario", async () => {
     s.obtenerDocumentoTecnicoServidor.mockResolvedValue(documentoCompleto());
     render(await resolverServidor(await EditarDocumento(parametros("11"))));
-    expect(screen.getByRole("heading", { level: 1, name: "Modificar documento" })).toBeInTheDocument();
     expect(screen.getByLabelText("Título")).toHaveValue("Norma de EPP");
     expect(screen.getByLabelText("Tipo de documento")).toHaveValue("normativa");
     expect(screen.getByLabelText("Descripción")).toHaveValue("Uso obligatorio");

@@ -2,7 +2,7 @@ import { resolverServidor } from "@/pruebas/resolver-servidor";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FormularioActivo } from "@/componentes/formulario-activo";
-import EditarActivo from "./[id]/editar/page";
+import { ContenidoEditarActivo as EditarActivo } from "./[id]/editar/contenido-editar-activo";
 import DetalleActivo from "./[id]/page";
 import PaginaActivos from "./page";
 import NuevoActivo from "./nuevo/page";

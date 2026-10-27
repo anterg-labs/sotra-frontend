@@ -1,7 +1,7 @@
 import { resolverServidor } from "@/pruebas/resolver-servidor";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import EditarCliente from "./[id]/editar/page";
+import { ContenidoEditarCliente as EditarCliente } from "./[id]/editar/contenido-editar-cliente";
 import DetalleCliente from "./[id]/page";
 import NuevoCliente from "./nuevo/page";
 import CargandoClientes from "./loading";

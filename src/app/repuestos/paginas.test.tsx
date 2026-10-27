@@ -1,7 +1,7 @@
 import { resolverServidor } from "@/pruebas/resolver-servidor";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import EditarRepuesto from "./[id]/editar/page";
+import { ContenidoEditarRepuesto as EditarRepuesto } from "./[id]/editar/contenido-editar-repuesto";
 import DetalleRepuesto from "./[id]/page";
 import NuevoRepuesto from "./nuevo/page";
 import PaginaRepuestos from "./page";

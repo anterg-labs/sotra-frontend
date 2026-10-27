@@ -2,7 +2,7 @@ import { resolverServidor } from "@/pruebas/resolver-servidor";
 import { ProveedorNavegacionListado } from "@/componentes/listado/navegacion-listado";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import EditarUsuario from "./[id]/editar/page";
+import { ContenidoEditarUsuario as EditarUsuario } from "./[id]/editar/contenido-editar-usuario";
 import DetalleUsuario from "./[id]/page";
 import NuevoUsuario from "./nuevo/page";
 import { TablaUsuarios } from "./tabla-usuarios";

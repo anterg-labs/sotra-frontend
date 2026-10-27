@@ -55,6 +55,11 @@ type PropiedadesModalDeRuta = {
   titulo: string;
   descripcion?: string;
   tamano?: "normal" | "amplio";
+  /**
+   * Con la dirección abierta directamente (recarga o enlace) no hay pantalla anterior a la que volver: se indica la pantalla
+   * de origen, que se muestra de fondo, y el modal se cierra yendo a ella.
+   */
+  rutaDeRetorno?: string;
   children: React.ReactNode;
 };
 
@@ -64,16 +69,17 @@ type PropiedadesModalDeRuta = {
  */
 export function ModalDeRuta(props: PropiedadesModalDeRuta) {
   const enrutador = useRouter();
-  const cerrar = useCallback(() => enrutador.back(), [enrutador]);
+  const { rutaDeRetorno } = props;
+  const cerrar = useCallback(() => (rutaDeRetorno ? enrutador.replace(rutaDeRetorno) : enrutador.back()), [enrutador, rutaDeRetorno]);
   const valor = useMemo(() => ({ cerrar }), [cerrar]);
-
-  return (
-    <Contexto.Provider value={valor}>
-      <Modal alCerrar={cerrar} descripcion={props.descripcion} estaAbierto tamano={props.tamano} titulo={props.titulo}>
-        <div className="form-panel">{props.children}</div>
-      </Modal>
-    </Contexto.Provider>
+  const modal = (
+    <Modal alCerrar={cerrar} descripcion={props.descripcion} estaAbierto tamano={props.tamano} titulo={props.titulo}>
+      <div className="form-panel">{props.children}</div>
+    </Modal>
   );
+
+  // Con ruta de retorno los formularios se comportan como en una página (al guardar navegan a su destino).
+  return rutaDeRetorno ? modal : <Contexto.Provider value={valor}>{modal}</Contexto.Provider>;
 }
 
 /** Marcador de posición del formulario mientras el servidor trae los datos del modal. */

@@ -1,18 +1,21 @@
+import { Suspense } from "react";
+import { EsqueletoFormulario, ModalDeRuta } from "@/componentes/modal-de-ruta";
+import PaginaOrdenesTrabajo from "../page";
 import { ContenidoNuevaOrden } from "./contenido-nueva-orden";
 
+/**
+ * Dirección abierta directamente (recarga o enlace): se ve la pantalla de origen con el formulario en un modal, igual que
+ * cuando se llega desde un enlace; al cerrarlo se vuelve a esa pantalla.
+ */
 export default async function PaginaNuevaOrden() {
   return (
-    <main className="page-content">
-      <header className="page-heading">
-        <div>
-          <p className="eyebrow">Órdenes de trabajo</p>
-          <h1>Crear orden de trabajo</h1>
-        </div>
-      </header>
-
-      <section className="panel form-panel">
-        <ContenidoNuevaOrden />
-      </section>
-    </main>
+    <>
+      <PaginaOrdenesTrabajo searchParams={Promise.resolve({})} />
+      <ModalDeRuta descripcion="Órdenes de trabajo" tamano="amplio" rutaDeRetorno={"/ordenes-trabajo"} titulo="Crear orden de trabajo">
+        <Suspense fallback={<EsqueletoFormulario />}>
+          <ContenidoNuevaOrden />
+        </Suspense>
+      </ModalDeRuta>
+    </>
   );
 }

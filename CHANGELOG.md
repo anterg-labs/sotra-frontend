@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Version 1.0.70 (2026-10-27)
+
+- Altas y modificaciones: si la pantalla se recarga o se abre la dirección directamente, el formulario sigue viéndose en un modal sobre la pantalla de origen (listado o detalle) en lugar de como página completa; al cerrarlo se vuelve a esa pantalla.
+- Órdenes de trabajo: se quita el botón «Nuevo cliente» del formulario; la orden se asocia a un cliente ya registrado.
+
 ## Version 1.0.69 (2026-10-27)
 
 - Listados: en Clientes, Órdenes, Activos, Modelos, Tipos, Documentación, Repuestos, Movimientos y Usuarios solo se ve el buscador; el resto de los filtros queda detrás del botón «Filtros avanzados» (se abre solo si hay uno aplicado y avisa con un punto).

@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FormularioModeloMaquina } from "@/componentes/formulario-modelo-maquina";
 import type { TipoMaquina } from "@/tipos/tipo-maquina";
-import EditarModelo from "./[id]/editar/page";
+import { ContenidoEditarModelo as EditarModelo } from "./[id]/editar/contenido-editar-modelo";
 import DetalleModelo from "./[id]/page";
 import PaginaModelos from "./page";
 import NuevoModelo from "./nuevo/page";

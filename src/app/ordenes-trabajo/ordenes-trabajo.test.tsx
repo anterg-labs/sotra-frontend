@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { esperarRetardoDeBusqueda } from "@/pruebas/ayudas-filtros";
 import { ProveedorNavegacionListado } from "@/componentes/listado/navegacion-listado";
 import { OrdenesAsociadas } from "@/componentes/ordenes-asociadas";
-import EditarOrden from "./[id]/editar/page";
+import { ContenidoEditarOrden as EditarOrden } from "./[id]/editar/contenido-editar-orden";
 import DetalleOrden from "./[id]/page";
 import { DetalleOrdenTrabajo } from "./[id]/detalle-orden";
 import { BarraFiltrosOrdenes } from "./barra-filtros-ordenes";

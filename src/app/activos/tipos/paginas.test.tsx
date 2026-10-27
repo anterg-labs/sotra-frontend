@@ -2,7 +2,7 @@ import { resolverServidor } from "@/pruebas/resolver-servidor";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FormularioTipoMaquina } from "@/componentes/formulario-tipo-maquina";
-import EditarTipo from "./[id]/editar/page";
+import { ContenidoEditarTipo as EditarTipo } from "./[id]/editar/contenido-editar-tipo";
 import DetalleTipo from "./[id]/page";
 import PaginaTipos from "./page";
 import NuevoTipo from "./nuevo/page";

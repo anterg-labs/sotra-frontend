@@ -317,7 +317,6 @@ describe("selectores y campos de la orden", () => {
         activos={[]}
         alCambiarActivo={vi.fn()}
         alCambiarCliente={vi.fn()}
-        alRegistrarCliente={vi.fn()}
         clienteId="5"
         clientes={[]}
         errores={{ clienteId: "Falta cliente", activoId: "Falta activo" }}
@@ -346,7 +345,6 @@ describe("selectores y campos de la orden", () => {
         activos={activos}
         alCambiarActivo={vi.fn()}
         alCambiarCliente={vi.fn()}
-        alRegistrarCliente={vi.fn()}
         clienteId="1"
         clientes={clientes}
       />,

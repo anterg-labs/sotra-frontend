@@ -164,12 +164,12 @@ describe("EstructuraAplicacion: navegación de escritorio", () => {
     expect(lateral).toHaveAttribute("data-abierto", "false");
   });
 
-  it("incluye «Configuración > Términos y condiciones» en el menú y el enlace en el pie", () => {
+  it("incluye «Configuración» en el menú y el enlace de términos en el pie", () => {
     pathname.valor = "/configuracion/terminos";
     render(<EstructuraAplicacion>x</EstructuraAplicacion>);
     const menu = within(screen.getByRole("navigation", { name: "Navegación principal" }));
     expect(menu.getByRole("link", { name: "Configuración" })).toHaveAttribute("href", "/configuracion");
-    expect(menu.getByRole("link", { name: "Términos y condiciones" })).toHaveAttribute("aria-current", "page");
+    expect(menu.getByRole("link", { name: "Configuración" })).toHaveAttribute("aria-current", "page");
     expect(within(screen.getByRole("contentinfo")).getByRole("button", { name: "Términos y condiciones" })).toBeInTheDocument();
   });
 

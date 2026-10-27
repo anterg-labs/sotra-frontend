@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Version 1.0.71 (2026-10-27)
+
+- Perfil: nueva pantalla «Mi perfil» para cambiar nombre, apellido y teléfono; correo y contraseña se muestran bloqueados con el aviso «Depende de la integración con Keycloak». Se abre desde el menú del usuario y desde Configuración.
+- Configuración: ahora es un panel con opciones (Mi perfil y, con permiso, Términos y condiciones) y deja de saltar directo a los términos; el menú lateral la muestra a todas las personas.
+
 ## Version 1.0.70 (2026-10-27)
 
 - Altas y modificaciones: si la pantalla se recarga o se abre la dirección directamente, el formulario sigue viéndose en un modal sobre la pantalla de origen (listado o detalle) en lugar de como página completa; al cerrarlo se vuelve a esa pantalla.

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.50 (2026-10-26)
+
+- Clientes: el listado tiene el interruptor «Solo con activos asociados» para ver únicamente los clientes que tienen activos; la columna «Activos asociados» ya se podía ordenar.
+
 ## Version 1.0.49 (2026-10-26)
 
 - Órdenes de trabajo: la sugerencia de IA se pide con el activo de la orden (`activoId`), así la API busca solo en los manuales de esa máquina, de su modelo y en la documentación general.

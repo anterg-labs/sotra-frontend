@@ -11,11 +11,12 @@ export function leerFiltrosClientes(parametros: ParametrosBusqueda): FiltrosClie
   return {
     buscar: primerValor(parametros.buscar),
     estado: leerEstado(parametros),
+    conActivos: primerValor(parametros.conActivos) === "true",
     pagina: leerPagina(parametros),
     ...leerOrden(parametros, COLUMNAS_ORDENABLES_CLIENTES),
   };
 }
 
 export function construirUrlClientes(filtros: FiltrosClientes) {
-  return construirUrlListado(RUTA_CLIENTES, filtros);
+  return construirUrlListado(RUTA_CLIENTES, { ...filtros, conActivos: filtros.conActivos ? "true" : "" });
 }

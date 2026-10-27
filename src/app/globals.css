@@ -1585,7 +1585,7 @@ body:has(.navegacion-pendiente) .tecnico-contenido {
 
   /* Con el menú abierto, el logo acompaña el ensanche y queda al centro; al retraerlo vuelve a la izquierda. */
   .app-lateral[data-abierto="true"] .app-lateral-logo {
-    padding-left: calc((var(--lateral-ancho-abierto) - 192px) / 2);
+    padding-left: calc((var(--lateral-ancho-abierto) - 164px) / 2);
   }
 
   .app-lateral-logo span {
@@ -1598,8 +1598,8 @@ body:has(.navegacion-pendiente) .tecnico-contenido {
 
   /* Con el menú abierto el logo (apaisado) usa casi todo el ancho del menú. */
   .app-lateral[data-abierto="true"] .app-lateral-logo span {
-    width: 192px;
-    height: 52px;
+    width: 164px;
+    height: 48px;
   }
 
   .app-lateral-logo img {
@@ -1607,7 +1607,7 @@ body:has(.navegacion-pendiente) .tecnico-contenido {
   }
 
   .app-lateral[data-abierto="true"] .app-lateral-logo img {
-    width: 164px;
+    width: 138px;
   }
   .app-menu { padding-top: 64px; }
   .app-fondo-oscuro { display: none; }

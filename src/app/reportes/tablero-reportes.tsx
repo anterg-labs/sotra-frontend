@@ -7,16 +7,14 @@ import { useFiltrosEnVivo } from "@/componentes/listado/use-filtros-en-vivo";
 import { PanelAnalitica } from "@/componentes/panel-analitica";
 import { listarActivosPaginados } from "@/servicios/servicio-activos";
 import { listarClientesPaginados } from "@/servicios/servicio-clientes";
-import { listarTecnicosPaginados } from "@/servicios/servicio-ordenes-trabajo";
 import { obtenerUrlReporteCsv, obtenerUrlReportePdf, tiposDeReporte } from "@/servicios/servicio-reportes";
 import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
 import { useEstadosOrden } from "@/componentes/estados-orden";
 import type { FiltrosIndicadores } from "@/tipos/reporte";
-import type { Usuario } from "@/tipos/usuario";
 import { construirUrlReportes } from "./filtros";
 
-const VACIOS: FiltrosIndicadores = { fechaDesde: "", fechaHasta: "", tecnicoId: "", clienteId: "", activoId: "", estado: "", tipo: "" };
+const VACIOS: FiltrosIndicadores = { fechaDesde: "", fechaHasta: "", clienteId: "", activoId: "", estado: "", tipo: "" };
 
 function nombreVisibleDeActivo(activo: Activo) {
   return activo.nombre !== null && activo.nombre.trim() !== "" ? activo.nombre : activo.numSerie;
@@ -27,7 +25,6 @@ type PropiedadesTablero = {
   filtros: FiltrosIndicadores;
   clientes: Cliente[];
   activos: Activo[];
-  tecnicos: Usuario[];
   /** Resumen de indicadores renderizado en el servidor. */
   children: React.ReactNode;
 };
@@ -45,7 +42,7 @@ export function TableroReportes(props: PropiedadesTablero) {
     sonValidos: (v) => !rangoDeFechasInvalido(v.fechaDesde, v.fechaHasta),
     alInvalido: () => document.getElementById("fechaReporte-hasta")?.focus(),
   });
-  const { fechaDesde, fechaHasta, tecnicoId, clienteId, activoId, estado, tipo } = valores;
+  const { fechaDesde, fechaHasta, clienteId, activoId, estado, tipo } = valores;
   const [tipoReporte, setTipoReporte] = useState("ordenes-trabajo");
   const [prioridadReporte, setPrioridadReporte] = useState("");
   const [pestanaActiva, setPestanaActiva] = useState<"resumen" | "analisis">("resumen");
@@ -71,19 +68,6 @@ export function TableroReportes(props: PropiedadesTablero) {
           fechaDesde={fechaDesde}
           fechaHasta={fechaHasta}
           id="fechaReporte"
-        />
-
-        <Combobox
-          alCambiar={(nuevo) => cambiar({ tecnicoId: nuevo })}
-          buscarOpciones={async (consulta) => {
-            const tecnicos = await listarTecnicosPaginados(consulta);
-            return tecnicos.map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }));
-          }}
-          etiqueta="Técnico"
-          id="tecnicoId"
-          opciones={props.tecnicos.map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }))}
-          textoVacio="Todos los técnicos"
-          valor={tecnicoId}
         />
 
         <Combobox

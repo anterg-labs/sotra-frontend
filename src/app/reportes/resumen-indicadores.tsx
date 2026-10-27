@@ -86,7 +86,6 @@ export async function ResumenIndicadores(props: { filtros: FiltrosIndicadores; c
       <TablaGrupos columna="Estado" grupos={indicadores.ordenesPorEstado} titulo="Órdenes por estado" />
       <TablaGrupos columna="Prioridad" grupos={indicadores.ordenesPorPrioridad} titulo="Órdenes por prioridad" />
       <TablaGrupos columna="Tipo" grupos={indicadores.ordenesPorTipo} titulo="Órdenes por tipo de mantenimiento" />
-      <TablaGrupos columna="Técnico" grupos={indicadores.ordenesPorTecnico} titulo="Órdenes asignadas por técnico" />
       <TablaGrupos columna="Activo" grupos={indicadores.activosConMasIntervenciones} titulo="Activos con más intervenciones" />
       <section className="panel">
         <div className="panel-heading">

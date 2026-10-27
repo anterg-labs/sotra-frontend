@@ -1,7 +1,7 @@
 import type { FiltrosIndicadores } from "@/tipos/reporte";
 
-const CAMPOS_INDICADORES = ["fechaDesde", "fechaHasta", "tecnicoId", "clienteId", "activoId", "estado", "tipo"] as const;
-const CAMPOS_ANALISIS = ["fechaDesde", "fechaHasta", "clienteId", "activoId", "tecnicoId"] as const;
+const CAMPOS_INDICADORES = ["fechaDesde", "fechaHasta", "clienteId", "activoId", "estado", "tipo"] as const;
+const CAMPOS_ANALISIS = ["fechaDesde", "fechaHasta", "clienteId", "activoId"] as const;
 
 /** Texto de consulta (con `?` inicial o vacío) de los indicadores; omite los filtros vacíos. */
 export function construirConsultaIndicadores(filtros: FiltrosIndicadores, prioridad = "") {

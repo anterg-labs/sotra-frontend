@@ -9,7 +9,6 @@ export type CantidadPorGrupo = {
 export type FiltrosIndicadores = {
   fechaDesde: string;
   fechaHasta: string;
-  tecnicoId: string;
   clienteId: string;
   activoId: string;
   estado: string;
@@ -21,7 +20,6 @@ export type Indicadores = {
   ordenesPorEstado: CantidadPorGrupo[];
   ordenesPorPrioridad: CantidadPorGrupo[];
   ordenesPorTipo: CantidadPorGrupo[];
-  ordenesPorTecnico: CantidadPorGrupo[];
   activosConMasIntervenciones: CantidadPorGrupo[];
   repuestosBajoStock: Repuesto[];
   promedioHorasHastaInicio: number | null;

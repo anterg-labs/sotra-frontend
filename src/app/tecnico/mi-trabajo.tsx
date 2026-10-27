@@ -4,17 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Combobox } from "@/componentes/combobox";
-import { formatearFechaPrevista, listarTecnicosPaginados, obtenerEtiquetaEstadoOrdenTrabajo } from "@/servicios/servicio-ordenes-trabajo";
-import type { EstadoOrdenTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
-
-type FiltroEstado = "" | "asignada" | "en_ejecucion" | "pausada";
-
-const chips: { valor: FiltroEstado; etiqueta: string }[] = [
-  { valor: "", etiqueta: "Todas" },
-  { valor: "asignada", etiqueta: "Por iniciar" },
-  { valor: "en_ejecucion", etiqueta: "En curso" },
-  { valor: "pausada", etiqueta: "Pausadas" },
-];
+import { EtiquetaEstadoOrden, useEstadosOrden } from "@/componentes/estados-orden";
+import { formatearFechaPrevista, listarTecnicosPaginados } from "@/servicios/servicio-ordenes-trabajo";
+import type { OrdenTrabajo } from "@/tipos/orden-trabajo";
+import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
 type PropiedadesMiTrabajo = {
   tecnicoId: string;
@@ -30,15 +23,23 @@ type PropiedadesMiTrabajo = {
 /** «Mi trabajo»: el servidor trae las órdenes del técnico elegido en la URL; los chips y la búsqueda por número filtran en el navegador. */
 export function MiTrabajo(props: PropiedadesMiTrabajo) {
   const { tecnicoId, tecnicos, ordenes, error } = props;
+  const estados = useEstadosOrden();
   const enrutador = useRouter();
   const [estaPendiente, iniciarTransicion] = useTransition();
-  const [filtro, setFiltro] = useState<FiltroEstado>("");
+  const [filtro, setFiltro] = useState("");
   const [buscarNumero, setBuscarNumero] = useState("");
 
   function elegirTecnico(nuevoId: string) {
     iniciarTransicion(() => enrutador.replace(nuevoId === "" ? "/tecnico" : "/tecnico?tecnicoId=" + nuevoId));
   }
 
+  // Un chip por cada estado en que hay órdenes, en el orden del catálogo.
+  const chips = [
+    { valor: "", etiqueta: "Todas" },
+    ...estados
+      .filter((estado) => (ordenes ?? []).some((orden) => orden.estado === estado.valor))
+      .map((estado) => ({ valor: estado.valor, etiqueta: estado.etiqueta })),
+  ];
   const visibles = (ordenes ?? []).filter(
     (orden) => (filtro === "" || orden.estado === filtro) && (buscarNumero.trim() === "" || String(orden.id).includes(buscarNumero.trim())),
   );
@@ -64,7 +65,7 @@ export function MiTrabajo(props: PropiedadesMiTrabajo) {
         </div>
       ) : null}
 
-      {error ? <p className="form-error-banner" role="alert">{error}</p> : null}
+      {error ? <AvisoEnLinea>{error}</AvisoEnLinea> : null}
 
       {tecnicoId === "" ? (
         <p className="empty-state">Elegí un técnico para ver sus órdenes.</p>
@@ -76,7 +77,7 @@ export function MiTrabajo(props: PropiedadesMiTrabajo) {
                 {chip.etiqueta}
                 {ordenes !== null ? (
                   <span className="chip-filtro-contador">
-                    {chip.valor === "" ? ordenes.length : ordenes.filter((orden) => orden.estado === (chip.valor as EstadoOrdenTrabajo)).length}
+                    {chip.valor === "" ? ordenes.length : ordenes.filter((orden) => orden.estado === chip.valor).length}
                   </span>
                 ) : null}
               </button>
@@ -97,7 +98,7 @@ export function MiTrabajo(props: PropiedadesMiTrabajo) {
                 <Link className={"tecnico-tarjeta tecnico-tarjeta-prioridad-" + orden.prioridad} href={"/tecnico/" + orden.id}>
                   <span className="flex flex-wrap items-center justify-between gap-2">
                     <strong>{"Orden #" + orden.id}</strong>
-                    <span className={"status status-" + orden.estado}>{obtenerEtiquetaEstadoOrdenTrabajo(orden.estado)}</span>
+                    <EtiquetaEstadoOrden estado={orden.estado} />
                   </span>
                   <span>{orden.nombreActivo}</span>
                   <small>{orden.nombreCliente + " · prioridad " + orden.prioridad + " · prevista " + formatearFechaPrevista(orden.fechaPrevistaEjecucion)}</small>

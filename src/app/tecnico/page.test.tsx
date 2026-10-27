@@ -1,9 +1,15 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render as renderBase, screen, waitFor, within } from "@testing-library/react";
+import type { ReactElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MiTrabajo } from "./mi-trabajo";
 import PaginaMiTrabajo from "./page";
+import { conEstadosOrden } from "@/pruebas/estados-orden";
 import { usuarioDePruebas } from "@/pruebas/sesion-de-pruebas";
 import { obtenerEstadoSesion } from "@/servicios/servidor/sesion";
+
+function render(ui: ReactElement) {
+  return renderBase(conEstadosOrden(ui));
+}
 
 const replace = vi.hoisted(() => vi.fn());
 const listarOrdenesTrabajoServidor = vi.hoisted(() => vi.fn());
@@ -27,10 +33,9 @@ const tecnico = { id: 25, nombre: "Roberto", apellido: "Pérez" };
 beforeEach(() => {
   [replace, listarOrdenesTrabajoServidor, listarTecnicosServidor, obtenerUsuarioServidor].forEach((f) => f.mockReset());
   listarTecnicosServidor.mockResolvedValue([tecnico]);
-  listarOrdenesTrabajoServidor.mockImplementation(async (filtros: { estado: string }) => {
-    if (filtros.estado === "asignada") return pagina([orden(1, "asignada", "baja", "2026-11-01")]);
-    if (filtros.estado === "en_ejecucion") return pagina([orden(2, "en_ejecucion", "alta", "2026-12-01"), orden(3, "en_ejecucion", "alta", "2026-11-15")]);
-    return pagina([orden(4, "pausada", "media", "2026-11-05")]);
+  listarOrdenesTrabajoServidor.mockImplementation(async (filtros: { fase: string }) => {
+    if (filtros.fase === "pendiente") return pagina([orden(1, "asignada", "baja", "2026-11-01")]);
+    return pagina([orden(2, "en_ejecucion", "alta", "2026-12-01"), orden(3, "en_ejecucion", "alta", "2026-11-15"), orden(4, "pausada", "media", "2026-11-05")]);
   });
 });
 
@@ -45,8 +50,8 @@ describe("Mi trabajo (Server Component)", () => {
     render(await PaginaMiTrabajo({ searchParams: Promise.resolve({ tecnicoId: "25" }) }));
     const enlaces = screen.getAllByRole("link");
     expect(enlaces.map((enlace) => enlace.getAttribute("href"))).toEqual(["/tecnico/3", "/tecnico/2", "/tecnico/4", "/tecnico/1"]);
-    expect(listarOrdenesTrabajoServidor).toHaveBeenCalledWith(expect.objectContaining({ tecnicoId: "25", estado: "pausada" }));
-    expect(listarOrdenesTrabajoServidor).toHaveBeenCalledTimes(3);
+    expect(listarOrdenesTrabajoServidor).toHaveBeenCalledWith(expect.objectContaining({ tecnicoId: "25", fase: "en_curso" }));
+    expect(listarOrdenesTrabajoServidor).toHaveBeenCalledTimes(2);
     expect(screen.getByRole("combobox", { name: "Técnico" })).toHaveValue("Roberto Pérez");
   });
 
@@ -89,7 +94,7 @@ describe("Mi trabajo (isla)", () => {
 
   it("filtra por estado con los chips (con contadores) y busca por número", async () => {
     render(<MiTrabajo puedeElegirTecnico error="" ordenes={ordenes as never} tecnicoId="25" tecnicos={[{ valor: "25", etiqueta: "Roberto Pérez" }]} />);
-    const chipPausadas = screen.getByRole("button", { name: /Pausadas/ });
+    const chipPausadas = screen.getByRole("button", { name: /Pausada/ });
     expect(within(chipPausadas).getByText("1")).toBeInTheDocument();
     fireEvent.click(chipPausadas);
     expect(screen.getAllByRole("link")).toHaveLength(1);

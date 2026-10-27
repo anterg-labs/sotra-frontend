@@ -1,3 +1,4 @@
+import { parametrosDeOrden } from "@/componentes/listado/url-listado";
 import { leerDatosApi, leerPagina } from "@/servicios/api/solicitudes-http";
 import type { Pagina } from "@/tipos/pagina";
 import type { AlertasStock, FiltrosRepuestos, Repuesto } from "@/tipos/repuesto";
@@ -22,6 +23,7 @@ export async function apiListarRepuestosPaginados(filtros: FiltrosRepuestos) {
   if (filtros.orden) {
     parametros.append("orden", filtros.orden);
   }
+  for (const [nombre, valor] of parametrosDeOrden(filtros)) parametros.append(nombre, valor);
   parametros.append("pagina", String(filtros.pagina));
 
   const pagina = await leerPagina("/api/v1/repuestos", parametros, "No se pudo obtener el listado de repuestos.");

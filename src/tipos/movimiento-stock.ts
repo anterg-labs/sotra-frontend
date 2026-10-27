@@ -26,14 +26,14 @@ export type FiltrosMovimientosStock = {
   ubicacion: string;
   usuarioId: string;
   pagina: number;
+  ordenarPor?: string;
+  direccionOrden?: "asc" | "desc" | "";
 };
 
+/** Un ingreso solo pide la cantidad: la fecha la pone el sistema y la ubicación es la del repuesto. */
 export type IngresoStockInput = {
   cantidad: number;
-  fecha: string;
-  motivo: string;
-  ubicacion: string;
-  observaciones: string;
+  observaciones?: string;
 };
 
 export type EgresoStockInput = {

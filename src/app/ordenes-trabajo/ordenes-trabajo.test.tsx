@@ -1,10 +1,13 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render as renderBase, screen, waitFor, within } from "@testing-library/react";
+import type { ReactElement } from "react";
+import { conEstadosOrden, estadosDePrueba, transicion } from "@/pruebas/estados-orden";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { esperarRetardoDeBusqueda } from "@/pruebas/ayudas-filtros";
 import { ProveedorNavegacionListado } from "@/componentes/listado/navegacion-listado";
 import { OrdenesAsociadas } from "@/componentes/ordenes-asociadas";
 import EditarOrden from "./[id]/editar/page";
 import DetalleOrden from "./[id]/page";
+import { DetalleOrdenTrabajo } from "./[id]/detalle-orden";
 import { BarraFiltrosOrdenes } from "./barra-filtros-ordenes";
 import { construirUrlOrdenes, leerFiltrosOrdenes } from "./filtros";
 import { ListadoOrdenes } from "./listado-ordenes";
@@ -13,6 +16,10 @@ import PaginaOrdenes from "./page";
 import { ProveedorSesion } from "@/componentes/sesion/contexto-sesion";
 import { usuarioDePruebas } from "@/pruebas/sesion-de-pruebas";
 import { tienePermisoServidor } from "@/servicios/servidor/sesion";
+
+function render(ui: ReactElement) {
+  return renderBase(conEstadosOrden(ui));
+}
 
 const push = vi.hoisted(() => vi.fn());
 const replace = vi.hoisted(() => vi.fn());
@@ -29,6 +36,7 @@ const s = vi.hoisted(() => ({
   listarActivosPaginados: vi.fn(),
   // Servidor
   listarOrdenesTrabajoServidor: vi.fn(),
+  listarEstadosOrdenTrabajoOVacio: vi.fn(),
   obtenerOrdenTrabajoServidor: vi.fn(),
   listarTecnicosServidor: vi.fn(),
   obtenerIndicadoresServidor: vi.fn(),
@@ -59,6 +67,7 @@ vi.mock("@/servicios/servidor/ordenes-trabajo", async (importarReal) => ({
   listarOrdenesTrabajoServidor: s.listarOrdenesTrabajoServidor,
   obtenerOrdenTrabajoServidor: s.obtenerOrdenTrabajoServidor,
   listarTecnicosServidor: s.listarTecnicosServidor,
+  listarEstadosOrdenTrabajoOVacio: s.listarEstadosOrdenTrabajoOVacio,
 }));
 vi.mock("@/servicios/servidor/reportes", () => ({ obtenerIndicadoresServidor: s.obtenerIndicadoresServidor }));
 vi.mock("@/servicios/servidor/clientes", () => ({
@@ -113,7 +122,7 @@ const orden = (id: number, extra: Record<string, unknown> = {}) => ({
   id, clienteId: 1, nombreCliente: "ACME", activoId: 2, nombreActivo: "Retro 1", tecnicoId: null, nombreTecnico: null,
   tipo: "correctivo", prioridad: "alta", descripcion: "Cambiar filtro", observaciones: "", fechaPrevistaEjecucion: "2026-10-20",
   estado: "creada", creadoEn: "2026-10-01T10:00:00Z", fechaInicio: null, fechaCierre: null, sugerencias: [], repuestos: [],
-  estadosSiguientes: ["asignada", "pausada"],
+  transiciones: [transicion("asignada"), transicion("pausada", { exigeMotivo: true })],
   historialEstados: [
     { estado: "creada", fechaHora: "2026-10-01T10:00:00Z", observacion: "Alta" },
     { estado: "asignada", fechaHora: "2026-10-02T10:00:00Z", observacion: "Asignada a Tomás" },
@@ -126,7 +135,7 @@ const cliente = { id: 1, razonSocial: "ACME", estado: "activo" };
 const activo = { id: 2, clienteId: 1, nombre: "Retro 1", numSerie: "S1", estado: "activo" };
 const resumen = { totalOrdenes: 30, ordenesPorEstado: [{ nombre: "creada", cantidad: 5 }, { nombre: "cerrada", cantidad: 9 }] };
 const filtrosVacios = {
-  buscar: "", clienteId: "", activoId: "", tecnicoId: "", estado: "", prioridad: "", tipo: "",
+  buscar: "", clienteId: "", activoId: "", tecnicoId: "", estado: "", fase: "", prioridad: "", tipo: "",
   fechaDesde: "", fechaHasta: "", conSugerencias: false, pagina: 1,
 };
 const conNavegacion = (ui: React.ReactNode) => <ProveedorNavegacionListado etiquetaCarga="Cargando…">{ui}</ProveedorNavegacionListado>;
@@ -139,23 +148,27 @@ beforeEach(() => {
   s.listarClientesServidor.mockResolvedValue(pagina([cliente]));
   s.listarActivosServidor.mockResolvedValue(pagina([activo]));
   s.listarTecnicosServidor.mockResolvedValue([tecnico]);
+  s.listarEstadosOrdenTrabajoOVacio.mockResolvedValue(estadosDePrueba);
   s.listarRepuestosServidor.mockResolvedValue(pagina([{ id: 3, codigo: "R3", nombre: "Filtro" }]));
   s.listarTecnicosPaginados.mockResolvedValue([tecnico]);
 });
 
 describe("filtros de la URL de órdenes", () => {
   it("lee los filtros con valores seguros y arma la URL", () => {
-    expect(leerFiltrosOrdenes({})).toEqual(filtrosVacios);
+    expect(leerFiltrosOrdenes({}, estadosDePrueba)).toEqual(filtrosVacios);
     expect(
       leerFiltrosOrdenes({
         buscar: "fuga", clienteId: "1", activoId: "2", tecnicoId: "7", estado: "pausada", prioridad: "alta", tipo: "preventivo",
         fechaDesde: "2026-10-01", fechaHasta: "2026-10-31", conSugerencias: "true", pagina: "2",
-      }),
+      }, estadosDePrueba),
     ).toEqual({
-      buscar: "fuga", clienteId: "1", activoId: "2", tecnicoId: "7", estado: "pausada", prioridad: "alta", tipo: "preventivo",
+      buscar: "fuga", clienteId: "1", activoId: "2", tecnicoId: "7", estado: "pausada", fase: "", prioridad: "alta", tipo: "preventivo",
       fechaDesde: "2026-10-01", fechaHasta: "2026-10-31", conSugerencias: true, pagina: 2,
     });
-    expect(leerFiltrosOrdenes({ estado: "x", prioridad: "urgente", tipo: "otro", fechaDesde: "ayer", conSugerencias: "si", clienteId: "1;" })).toEqual(filtrosVacios);
+    expect(leerFiltrosOrdenes({ fase: "en_curso" }, estadosDePrueba).fase).toBe("en_curso");
+    expect(leerFiltrosOrdenes({ fase: "inventada" }, estadosDePrueba).fase).toBe("");
+    expect(construirUrlOrdenes({ ...filtrosVacios, fase: "por_validar" })).toBe("/ordenes-trabajo?fase=por_validar");
+    expect(leerFiltrosOrdenes({ estado: "x", prioridad: "urgente", tipo: "otro", fechaDesde: "ayer", conSugerencias: "si", clienteId: "1;" }, estadosDePrueba)).toEqual(filtrosVacios);
     expect(construirUrlOrdenes({ ...filtrosVacios, estado: "pausada", conSugerencias: true, pagina: 2 })).toBe(
       "/ordenes-trabajo?estado=pausada&conSugerencias=true&pagina=2",
     );
@@ -168,7 +181,9 @@ describe("página del listado de órdenes (Server Component)", () => {
     s.obtenerUsuarioServidor.mockResolvedValue({ id: 99, nombre: "Luis", apellido: "Gómez" });
     vi.doMock("./listado-ordenes", () => ({ ListadoOrdenes: (props: unknown) => { listadoSimulado(props); return <p>Listado simulado</p>; } }));
     const { default: Pagina } = await import("./page");
-    render(await Pagina({ searchParams: Promise.resolve({ tecnicoId: "99", estado: "pausada", pagina: "2" }) }));
+    // Tras `resetModules` el contexto es otro: el proveedor tiene que salir del mismo módulo que la página.
+    const { conEstadosOrden: conEstadosDeEstaCarga } = await import("@/pruebas/estados-orden");
+    renderBase(conEstadosDeEstaCarga(await Pagina({ searchParams: Promise.resolve({ tecnicoId: "99", estado: "pausada", pagina: "2" }) })));
     expect(s.obtenerUsuarioServidor).toHaveBeenCalledWith(99);
     expect(screen.getByRole("heading", { level: 1, name: "Órdenes de trabajo" })).toBeInTheDocument();
     const tarjetas = screen.getByRole("region", { name: "Resumen de órdenes de trabajo" });
@@ -274,6 +289,20 @@ describe("barra de filtros de órdenes (en vivo)", () => {
     expect(screen.queryByRole("option", { name: "Pala 9" })).not.toBeInTheDocument();
   });
 
+  it("busca un cliente fuera de la primera página y aplica su ID descartando el activo anterior", async () => {
+    s.listarClientesPaginados.mockResolvedValue(pagina([{ id: 99, razonSocial: "Cliente remoto" }]));
+    render(conNavegacion(<BarraFiltrosOrdenes activos={[activo as never]} clientes={[cliente as never]} filtros={{ ...filtrosVacios, activoId: "2", estado: "pausada" }} tecnicos={[]} />));
+    const entrada = screen.getByRole("combobox", { name: "Cliente" });
+    fireEvent.change(entrada, { target: { value: "Cliente remoto" } });
+    fireEvent.keyDown(entrada, { key: "Enter" });
+    expect(replace).not.toHaveBeenCalled();
+    fireEvent.click(await screen.findByRole("option", { name: "Cliente remoto" }));
+    expect(s.listarClientesPaginados).toHaveBeenCalledWith({ buscar: "Cliente remoto", estado: "", pagina: 1 });
+    expect(replace).toHaveBeenLastCalledWith("/ordenes-trabajo?clienteId=99&estado=pausada");
+    expect(entrada).toHaveValue("Cliente remoto");
+    expect(screen.getByRole("combobox", { name: "Activo" })).toHaveValue("");
+  });
+
   it("bloquea un rango de fechas invertido y enfoca la fecha final", () => {
     render(conNavegacion(<BarraFiltrosOrdenes activos={[]} clientes={[]} filtros={{ ...filtrosVacios, fechaDesde: "2026-06-10", fechaHasta: "2026-06-01" }} tecnicos={[]} />));
     fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "pausada" } });
@@ -307,7 +336,60 @@ describe("OrdenesAsociadas", () => {
   });
 });
 
+function elegirEstado(etiqueta: string) {
+  fireEvent.focus(screen.getByRole("combobox", { name: "Actualizar estado" }));
+  fireEvent.click(screen.getByRole("option", { name: etiqueta }));
+}
+
 describe("detalle de orden de trabajo", () => {
+  it("ofrece solo los estados a los que se puede pasar desde el actual, con las etiquetas y el orden del catálogo", () => {
+    render(<DetalleOrdenTrabajo ordenInicial={orden(11, { estado: "finalizada", transiciones: [transicion("asignada", { exigeMotivo: true }), transicion("cerrada", { exigeMotivo: true })] }) as never} tecnicosIniciales={[]} huboErrorTecnicos={false} />);
+    fireEvent.focus(screen.getByRole("combobox", { name: "Actualizar estado" }));
+
+    expect(screen.getAllByRole("option").map((opcion) => opcion.textContent)).toEqual(["Asignada", "Cerrada"]);
+    expect(screen.queryByRole("option", { name: "Pausada" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Confirmar estado" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("option", { name: "Cerrada" }));
+    expect(screen.getByRole("button", { name: "Confirmar estado" })).toBeEnabled();
+  });
+
+  it("excluye al técnico actual de las opciones iniciales y remotas", async () => {
+    const otro = { id: 8, nombre: "Ana", apellido: "Pérez" };
+    s.listarTecnicosPaginados.mockResolvedValue([tecnico, otro]);
+    render(<DetalleOrdenTrabajo ordenInicial={orden(11, { tecnicoId: 7, nombreTecnico: "Tomás Ruiz" }) as never} tecnicosIniciales={[tecnico, otro] as never} huboErrorTecnicos={false} />);
+    const entrada = screen.getByRole("combobox", { name: "Asignar o modificar técnico" });
+    expect(entrada).toHaveValue("");
+    expect(screen.getByRole("button", { name: "Confirmar técnico" })).toBeDisabled();
+    fireEvent.focus(entrada);
+    expect(screen.queryByRole("option", { name: "Tomás Ruiz" })).not.toBeInTheDocument();
+    fireEvent.change(entrada, { target: { value: "Tomás" } });
+    await waitFor(() => expect(s.listarTecnicosPaginados).toHaveBeenCalledWith("Tomás"));
+    await waitFor(() => expect(screen.queryByText("Buscando…")).not.toBeInTheDocument());
+    expect(screen.queryByRole("option", { name: "Tomás Ruiz" })).not.toBeInTheDocument();
+    expect(s.asignarTecnicoOrdenTrabajo).not.toHaveBeenCalled();
+  });
+
+  it("al cambiar de X a Y permite volver a X y vacía la selección tras cada asignación", async () => {
+    const otro = { id: 8, nombre: "Ana", apellido: "Pérez" };
+    s.listarTecnicosPaginados.mockResolvedValue([tecnico, otro]);
+    s.asignarTecnicoOrdenTrabajo.mockResolvedValueOnce(orden(11, { tecnicoId: 8, nombreTecnico: "Ana Pérez" }))
+      .mockResolvedValueOnce(orden(11, { tecnicoId: 7, nombreTecnico: "Tomás Ruiz" }));
+    render(<DetalleOrdenTrabajo ordenInicial={orden(11, { tecnicoId: 7 }) as never} tecnicosIniciales={[tecnico, otro] as never} huboErrorTecnicos={false} />);
+    const entrada = screen.getByRole("combobox", { name: "Asignar o modificar técnico" });
+    fireEvent.focus(entrada);
+    fireEvent.click(screen.getByRole("option", { name: "Ana Pérez" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar técnico" }));
+    await waitFor(() => expect(entrada).toHaveValue(""));
+    expect(s.asignarTecnicoOrdenTrabajo).toHaveBeenLastCalledWith(11, "8");
+    expect(screen.getByRole("button", { name: "Confirmar técnico" })).toBeDisabled();
+    fireEvent.focus(entrada);
+    expect(screen.queryByRole("option", { name: "Ana Pérez" })).not.toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("option", { name: "Tomás Ruiz" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar técnico" }));
+    await waitFor(() => expect(s.asignarTecnicoOrdenTrabajo).toHaveBeenLastCalledWith(11, "7"));
+    await waitFor(() => expect(entrada).toHaveValue(""));
+  });
+
   beforeEach(() => {
     s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11));
   });
@@ -339,7 +421,7 @@ describe("detalle de orden de trabajo", () => {
   });
 
   it("una orden cerrada es solo de consulta: sin modificar, sin técnico ni cambios de estado, sin registrar evidencias", async () => {
-    s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11, { estado: "cerrada", estadosSiguientes: [] }));
+    s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11, { estado: "cerrada", transiciones: [] }));
     render(await DetalleOrden(parametros("11")));
     expect(screen.getByText("La orden está cerrada o cancelada y solo queda disponible para consulta.")).toBeInTheDocument();
     expect(screen.getByText("No hay cambios de estado disponibles para esta orden.")).toBeInTheDocument();
@@ -364,6 +446,9 @@ describe("detalle de orden de trabajo", () => {
     s.obtenerUsuarioServidor.mockResolvedValue(tecnico);
     render(await DetalleOrden(parametros("11")));
     const boton = screen.getByRole("button", { name: "Confirmar técnico" });
+    s.listarTecnicosPaginados.mockResolvedValue([{ id: 8, nombre: "Ana", apellido: "Pérez" }]);
+    fireEvent.change(screen.getByRole("combobox", { name: "Asignar o modificar técnico" }), { target: { value: "Ana" } });
+    fireEvent.click(await screen.findByRole("option", { name: "Ana Pérez" }));
     expect(boton).toBeEnabled();
     fireEvent.click(boton);
     expect(await screen.findByText("El técnico no está activo.")).toBeInTheDocument();
@@ -374,25 +459,29 @@ describe("detalle de orden de trabajo", () => {
     render(await DetalleOrden(parametros("11")));
     expect(screen.getByRole("button", { name: "Confirmar estado" })).toBeDisabled();
 
-    fireEvent.change(screen.getByLabelText("Actualizar estado"), { target: { value: "pausada" } });
+    elegirEstado("Pausada");
     expect(screen.getByLabelText("Motivo u observación")).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Actualizar estado"), { target: { value: "asignada" } });
+    elegirEstado("Asignada");
     expect(screen.queryByLabelText("Motivo u observación")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Confirmar estado" }));
-    await waitFor(() => expect(s.cambiarEstadoOrdenTrabajo).toHaveBeenCalledWith(11, "creada", "asignada", ""));
+    await waitFor(() => expect(s.cambiarEstadoOrdenTrabajo).toHaveBeenCalledWith(11, "asignada", "", false));
     expect(await screen.findByText("Estado actualizado correctamente.")).toBeInTheDocument();
     expect(screen.getByLabelText("Actualizar estado")).toHaveValue("");
   });
 
-  it("muestra el error de validación del servicio al cambiar de estado sin motivo", async () => {
-    s.cambiarEstadoOrdenTrabajo.mockRejectedValue(new Error("Indicá el motivo u observación del cambio de estado."));
+  it("sin motivo, el error queda junto al campo de motivo, con el foco, y no llama a la API", async () => {
     render(await DetalleOrden(parametros("11")));
-    fireEvent.change(screen.getByLabelText("Actualizar estado"), { target: { value: "pausada" } });
+    elegirEstado("Pausada");
     fireEvent.click(screen.getByRole("button", { name: "Confirmar estado" }));
-    expect(await screen.findByText("Indicá el motivo u observación del cambio de estado.")).toBeInTheDocument();
+
+    const error = await screen.findByText("Indicá el motivo u observación del cambio de estado.");
+    expect(error).toHaveAttribute("id", "motivoCambioEstado-error");
+    expect(error).toHaveClass("field-error");
+    expect(screen.getByLabelText("Motivo u observación")).toHaveFocus();
+    expect(s.cambiarEstadoOrdenTrabajo).not.toHaveBeenCalled();
     fireEvent.change(screen.getByLabelText("Motivo u observación"), { target: { value: "Falta repuesto" } });
-    expect(screen.getByLabelText("Motivo u observación")).toHaveValue("Falta repuesto");
+    expect(screen.queryByText("Indicá el motivo u observación del cambio de estado.")).not.toBeInTheDocument();
   });
 
   it("informa si la orden no existe, si el id es inválido o si falla el listado de técnicos", async () => {
@@ -460,7 +549,7 @@ describe("edición y alta de orden de trabajo (páginas)", () => {
 describe("órdenes según el rol", () => {
   it("el técnico ve el detalle, cambia el estado y carga evidencias, pero no asigna técnico ni modifica", async () => {
     vi.mocked(tienePermisoServidor).mockImplementation(async (permiso) => permiso !== "ot.asignar_tecnico");
-    s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11, { tecnicoId: 30, nombreTecnico: "Técnico Prueba", estado: "asignada", estadosSiguientes: ["en_ejecucion"] }));
+    s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11, { tecnicoId: 30, nombreTecnico: "Técnico Prueba", estado: "asignada", transiciones: [transicion("en_ejecucion")] }));
     render(<ProveedorSesion usuario={usuarioDePruebas(["tecnico"])}>{await DetalleOrden(parametros("11"))}</ProveedorSesion>);
 
     expect(s.listarTecnicosServidor).not.toHaveBeenCalled();

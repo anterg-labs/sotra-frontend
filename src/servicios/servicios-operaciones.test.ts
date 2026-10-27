@@ -31,7 +31,6 @@ import {
   cambiarEstadoOrdenTrabajo,
   crearOrdenTrabajo,
   crearSesionDeSugerencias,
-  estadoNecesitaMotivo,
   formatearFechaPrevista,
   guardarSugerenciasTemporales,
   leerSugerenciasTemporales,
@@ -39,7 +38,6 @@ import {
   listarTecnicos,
   listarTecnicosPaginados,
   obtenerDetalleOrdenTrabajo,
-  obtenerEtiquetaEstadoOrdenTrabajo,
   obtenerErroresOrdenTrabajo,
   solicitarSugerenciaOrdenTrabajo,
 } from "@/servicios/servicio-ordenes-trabajo";
@@ -164,12 +162,12 @@ describe("servicio-documentos-tecnicos", () => {
 
   it("sube el documento como multipart con las banderas indicadas", async () => {
     const { llamadas } = simularFetch(() => ({ estado: 201, cuerpo: { id: 1 } }));
-    await expect(crearDocumentoTecnico({ archivo: null, activoId: null, usaSugerenciasIA: true })).rejects.toThrow("Seleccioná");
-    await expect(crearDocumentoTecnico({ archivo: new File(["x"], "a.pdf"), activoId: null, usaSugerenciasIA: true })).rejects.toThrow("no es un PDF válido");
+    await expect(crearDocumentoTecnico({ archivo: null, titulo: "", tipo: "manual_tecnico", descripcion: "", activoId: null, modeloMaquinaId: null, usaSugerenciasIA: true })).rejects.toThrow("Seleccioná");
+    await expect(crearDocumentoTecnico({ archivo: new File(["x"], "a.pdf"), titulo: "", tipo: "manual_tecnico", descripcion: "", activoId: null, modeloMaquinaId: null, usaSugerenciasIA: true })).rejects.toThrow("no es un PDF válido");
     expect(llamadas).toHaveLength(0);
 
-    await crearDocumentoTecnico({ archivo: pdfValido(), activoId: 7, usaSugerenciasIA: false });
-    await crearDocumentoTecnico({ archivo: pdfValido(), activoId: null, usaSugerenciasIA: true });
+    await crearDocumentoTecnico({ archivo: pdfValido(), titulo: "", tipo: "manual_tecnico", descripcion: "", activoId: 7, modeloMaquinaId: null, usaSugerenciasIA: false });
+    await crearDocumentoTecnico({ archivo: pdfValido(), titulo: "", tipo: "manual_tecnico", descripcion: "", activoId: null, modeloMaquinaId: null, usaSugerenciasIA: true });
     const primero = llamadas[0].cuerpo as FormData;
     expect(primero.get("activoId")).toBe("7");
     expect(primero.get("usaSugerenciasIA")).toBe("false");
@@ -281,6 +279,14 @@ describe("servicio-ordenes-trabajo", () => {
     });
   });
 
+  it("rechaza descripción y observaciones de más de 4000 caracteres", () => {
+    expect(obtenerErroresOrdenTrabajo({ ...orden, descripcion: "a".repeat(4000), observaciones: "b".repeat(4000) })).toEqual({});
+    expect(obtenerErroresOrdenTrabajo({ ...orden, descripcion: "a".repeat(4001), observaciones: "b".repeat(4001) })).toEqual({
+      descripcion: "La descripción no puede superar los 4000 caracteres.",
+      observaciones: "Las observaciones no pueden superar los 4000 caracteres.",
+    });
+  });
+
   it("crea y actualiza con validación, y envía If-Match entre comillas si hay versión", async () => {
     const { llamadas } = simularFetch(() => ({ cuerpo: { id: 1 } }));
     await expect(crearOrdenTrabajo({ ...orden, activoId: 0 })).rejects.toThrow("activo");
@@ -314,20 +320,13 @@ describe("servicio-ordenes-trabajo", () => {
     expect(llamadas[2].url).toBe("/api/v1/ordenes-trabajo/4");
   });
 
-  it("exige motivo solo en los cambios de estado que lo requieren", async () => {
-    expect(estadoNecesitaMotivo("creada", "creada")).toBe(false);
-    expect(estadoNecesitaMotivo("en_ejecucion", "pausada")).toBe(true);
-    expect(estadoNecesitaMotivo("asignada", "cancelada")).toBe(true);
-    expect(estadoNecesitaMotivo("finalizada", "cerrada")).toBe(true);
-    expect(estadoNecesitaMotivo("finalizada", "asignada")).toBe(true);
-    expect(estadoNecesitaMotivo("creada", "asignada")).toBe(false);
-
+  it("exige motivo solo cuando la transición lo pide", async () => {
     const { llamadas } = simularFetch(() => ({ cuerpo: { id: 1 } }));
-    await expect(cambiarEstadoOrdenTrabajo(1, "creada", "", "")).rejects.toThrow("Seleccioná el nuevo estado");
-    await expect(cambiarEstadoOrdenTrabajo(1, "en_ejecucion", "pausada", "  ")).rejects.toThrow("motivo");
+    await expect(cambiarEstadoOrdenTrabajo(1, "", "", false)).rejects.toThrow("Seleccioná el nuevo estado");
+    await expect(cambiarEstadoOrdenTrabajo(1, "pausada", "  ", true)).rejects.toThrow("motivo");
     expect(llamadas).toHaveLength(0);
-    await cambiarEstadoOrdenTrabajo(1, "en_ejecucion", "pausada", "  falta repuesto ");
-    await cambiarEstadoOrdenTrabajo(1, "creada", "asignada", "");
+    await cambiarEstadoOrdenTrabajo(1, "pausada", "  falta repuesto ", true);
+    await cambiarEstadoOrdenTrabajo(1, "asignada", "", false);
     expect(llamadas[0]).toMatchObject({ metodo: "PATCH", cuerpo: { estado: "pausada", motivo: "falta repuesto" } });
     expect(llamadas[0].url).toBe("/api/v1/ordenes-trabajo/1/estado");
   });
@@ -339,9 +338,7 @@ describe("servicio-ordenes-trabajo", () => {
     expect(llamadas[0]).toMatchObject({ url: "/api/v1/ordenes-trabajo/1/tecnico", cuerpo: { tecnicoId: 12 } });
   });
 
-  it("etiqueta estados y formatea la fecha prevista", () => {
-    expect(obtenerEtiquetaEstadoOrdenTrabajo("en_ejecucion")).toBe("En ejecución");
-    expect(obtenerEtiquetaEstadoOrdenTrabajo("cancelada")).toBe("Cancelada");
+  it("formatea la fecha prevista", () => {
     expect(formatearFechaPrevista("2026-10-05")).toBe("05/10/2026");
   });
 

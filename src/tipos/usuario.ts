@@ -3,6 +3,7 @@ export type EstadoUsuario = "activo" | "inactivo";
 export type Rol = {
   id: number;
   nombre: string;
+  estado: EstadoUsuario;
 };
 
 export type RolDeUsuario = {
@@ -20,6 +21,9 @@ export type Usuario = {
   roles: RolDeUsuario[];
   estado: EstadoUsuario;
   fechaIngreso: string;
+  cantidadOrdenesAsignadas: number;
+  /** Solo en el alta: resultado del envío informado por Keycloak; ausente si no corresponde enviar. */
+  correoDeContrasenaEnviado?: boolean | null;
 };
 
 export type UsuarioListado = Usuario;
@@ -49,4 +53,6 @@ export type FiltrosUsuarios = {
   rolId: string;
   estado: string;
   pagina: number;
+  ordenarPor?: string;
+  direccionOrden?: "asc" | "desc" | "";
 };

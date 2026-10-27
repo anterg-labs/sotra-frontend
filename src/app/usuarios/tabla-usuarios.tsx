@@ -1,16 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { IconoLapiz, IconoOjo, IconoPapelera } from "@/componentes/iconos";
+import { IconoLapiz, IconoOjo, IconoPapelera, IconoReactivar } from "@/componentes/iconos";
+import { EncabezadoOrdenable } from "@/componentes/listado/encabezado-ordenable";
 import { EstadoRegistro } from "@/componentes/listado/estado-registro";
 import { useUltimoCreado } from "@/componentes/listado/ultimo-creado";
-import { useCambioEstado } from "@/componentes/listado/use-cambio-estado";
-import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
+import { useCambioEstadoConfirmado } from "@/componentes/listado/use-cambio-estado-confirmado";
 import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import { esUsuarioAdministrador } from "@/seguridad/permisos";
-import type { UsuarioListado } from "@/tipos/usuario";
+import type { UsuarioListado, FiltrosUsuarios } from "@/tipos/usuario";
 import { cambiarEstadoUsuarioAccion } from "./acciones";
+import { construirUrlUsuarios } from "./filtros";
+import { ContenedorTabla } from "@/componentes/contenedor-tabla";
+import { useFilasConOrdenInstantaneo } from "@/componentes/listado/orden-instantaneo";
+import type { ValorOrdenable } from "@/componentes/listado/orden-local";
 
 function CeldaRoles(props: { roles: UsuarioListado["roles"] }) {
   const { roles } = props;
@@ -28,30 +31,59 @@ function CeldaRoles(props: { roles: UsuarioListado["roles"] }) {
   );
 }
 
-/** Tabla del listado: recibe los usuarios ya cargados en el servidor y maneja la baja con confirmación. */
-export function TablaUsuarios(props: { usuarios: UsuarioListado[] }) {
-  const [usuarioPendienteBaja, setUsuarioPendienteBaja] = useState<UsuarioListado | null>(null);
-  const { enProcesoId, error, ejecutar } = useCambioEstado(cambiarEstadoUsuarioAccion, () => setUsuarioPendienteBaja(null));
+/** Cómo ordenar las filas que ya están en pantalla (misma clave que `ordenarPor` de la API). */
+const VALORES_ORDEN = {
+  nombre: (fila: UsuarioListado): ValorOrdenable => fila.nombre + " " + fila.apellido,
+  correo: (fila: UsuarioListado): ValorOrdenable => fila.correo,
+  roles: (fila: UsuarioListado): ValorOrdenable => fila.roles.map((rol) => rol.nombre).join(", "),
+  cantidadOrdenesAsignadas: (fila: UsuarioListado): ValorOrdenable => fila.cantidadOrdenesAsignadas,
+  estado: (fila: UsuarioListado): ValorOrdenable => fila.estado === "activo",
+};
+
+/** Tabla del listado: recibe los usuarios ya cargados en el servidor y maneja la baja y la reactivación, ambas con confirmación. */
+export function TablaUsuarios(props: { usuarios: UsuarioListado[]; filtros: FiltrosUsuarios; unaSolaPagina?: boolean }) {
+  const usuarios = useFilasConOrdenInstantaneo(props.usuarios, VALORES_ORDEN, props.unaSolaPagina ?? false);
+  const { filtros } = props;
+  const columna = (clave: string, etiqueta: string) => (
+    <EncabezadoOrdenable
+      columna={clave}
+      construirUrl={(orden) => construirUrlUsuarios({ ...filtros, ...orden, pagina: 1 })}
+      etiqueta={etiqueta}
+      orden={filtros}
+    />
+  );
+  const { enProcesoId, pedirBaja, pedirReactivacion, modales } = useCambioEstadoConfirmado<UsuarioListado>(cambiarEstadoUsuarioAccion, {
+    mensajeBaja: "Usuario dado de baja.",
+    tituloBaja: "Desactivar usuario",
+    descripcionBaja: (usuario) =>
+      "¿Confirmás la desactivación de " + usuario.nombre + " " + usuario.apellido + "? Ya no podrá iniciar sesión mientras permanezca inactivo.",
+    reactivacion: {
+      mensaje: "Usuario reactivado.",
+      titulo: "Reactivar usuario",
+      descripcion: (usuario) =>
+        "¿Confirmás la reactivación de " + usuario.nombre + " " + usuario.apellido + "? Podrá volver a iniciar sesión con sus datos y roles.",
+    },
+  });
   const nuevoId = useUltimoCreado("usuarios");
   // El jefe ve a los administradores, pero no los modifica ni los da de baja.
   const puedeGestionarAdministradores = useTienePermiso("usuario.gestionar_administradores");
 
   return (
     <>
-      {error ? <p className="form-error-banner">{error}</p> : null}
-      <div className="table-container">
+      <ContenedorTabla etiqueta="Listado de usuarios">
         <table>
           <thead>
             <tr>
-              <th>Nombre y apellido</th>
-              <th>Correo electrónico</th>
-              <th>Roles asignados</th>
-              <th>Estado</th>
+              {columna("nombre", "Nombre y apellido")}
+              {columna("correo", "Correo electrónico")}
+              {columna("roles", "Roles asignados")}
+              {columna("cantidadOrdenesAsignadas", "Órdenes asignadas")}
+              {columna("estado", "Estado")}
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {props.usuarios.map((usuario) => {
+            {usuarios.map((usuario) => {
               const estaOcupado = enProcesoId === usuario.id;
               const puedeModificar = puedeGestionarAdministradores || !esUsuarioAdministrador(usuario);
               return (
@@ -65,6 +97,7 @@ export function TablaUsuarios(props: { usuarios: UsuarioListado[] }) {
                   </td>
                   <td>{usuario.correo}</td>
                   <td><CeldaRoles roles={usuario.roles} /></td>
+                  <td className="celda-numerica">{usuario.cantidadOrdenesAsignadas}</td>
                   <td><EstadoRegistro estado={usuario.estado} /></td>
                   <td>
                     <div className="table-actions">
@@ -86,13 +119,24 @@ export function TablaUsuarios(props: { usuarios: UsuarioListado[] }) {
                           aria-label="Dar de baja"
                           className="boton-icono boton-icono-peligro"
                           disabled={estaOcupado}
-                          onClick={() => setUsuarioPendienteBaja(usuario)}
+                          onClick={() => pedirBaja(usuario)}
                           title="Dar de baja"
                           type="button"
                         >
                           <IconoPapelera />
                         </button>
-                      ) : null}
+                      ) : (
+                        <button
+                          aria-label="Reactivar usuario"
+                          className="boton-icono"
+                          disabled={estaOcupado}
+                          onClick={() => pedirReactivacion(usuario)}
+                          title="Reactivar usuario"
+                          type="button"
+                        >
+                          <IconoReactivar />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -100,24 +144,10 @@ export function TablaUsuarios(props: { usuarios: UsuarioListado[] }) {
             })}
           </tbody>
         </table>
-      </div>
+      </ContenedorTabla>
 
-      {usuarioPendienteBaja ? (
-        <ModalConfirmacion
-          descripcion={
-            "¿Confirmás la desactivación de " +
-            usuarioPendienteBaja.nombre +
-            " " +
-            usuarioPendienteBaja.apellido +
-            "? Ya no podrá iniciar sesión mientras permanezca inactivo."
-          }
-          estaConfirmando={enProcesoId === usuarioPendienteBaja.id}
-          etiquetaConfirmar="Dar de baja"
-          onCancelar={() => setUsuarioPendienteBaja(null)}
-          onConfirmar={() => ejecutar(usuarioPendienteBaja.id, "inactivo")}
-          titulo="Desactivar usuario"
-        />
-      ) : null}
+
+      {modales}
     </>
   );
 }

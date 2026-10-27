@@ -25,9 +25,13 @@ function normalizar(texto: string) {
 export function Combobox(props: PropiedadesCombobox) {
   const [estaAbierto, setEstaAbierto] = useState(false);
   const [consulta, setConsulta] = useState("");
-  const [opcionesRemotas, setOpcionesRemotas] = useState<OpcionCombobox[] | null>(null);
+  const [respuestaRemota, setRespuestaRemota] = useState<{
+    consulta: string;
+    buscar: PropiedadesCombobox["buscarOpciones"];
+    opciones: OpcionCombobox[];
+    fallo: boolean;
+  } | null>(null);
   const [opcionElegidaRemota, setOpcionElegidaRemota] = useState<OpcionCombobox | null>(null);
-  const [estaCargando, setEstaCargando] = useState(false);
   const [indiceActivo, setIndiceActivo] = useState(0);
   const referenciaEntrada = useRef<HTMLInputElement>(null);
   const idLista = useId();
@@ -38,14 +42,11 @@ export function Combobox(props: PropiedadesCombobox) {
 
     let estaVigente = true;
     const temporizador = window.setTimeout(async () => {
-      setEstaCargando(true);
       try {
         const resultados = await buscarOpciones(consulta);
-        if (estaVigente) setOpcionesRemotas(resultados);
+        if (estaVigente) setRespuestaRemota({ consulta, buscar: buscarOpciones, opciones: resultados, fallo: false });
       } catch {
-        if (estaVigente) setOpcionesRemotas([]);
-      } finally {
-        if (estaVigente) setEstaCargando(false);
+        if (estaVigente) setRespuestaRemota({ consulta, buscar: buscarOpciones, opciones: [], fallo: true });
       }
     }, 250);
 
@@ -55,7 +56,12 @@ export function Combobox(props: PropiedadesCombobox) {
     };
   }, [estaAbierto, consulta, props.buscarOpciones, props.deshabilitado]);
 
-  const opcionesBase = props.buscarOpciones && opcionesRemotas !== null ? opcionesRemotas : props.opciones;
+  const respuestaVigente = respuestaRemota?.consulta === consulta && respuestaRemota.buscar === props.buscarOpciones
+    ? respuestaRemota : null;
+  const opcionesRemotas = respuestaVigente?.opciones ?? null;
+  const estaCargando = Boolean(props.buscarOpciones && !respuestaVigente && (consulta !== "" || respuestaRemota !== null));
+  const falloBusqueda = respuestaVigente?.fallo ?? false;
+  const opcionesBase = estaCargando ? [] : opcionesRemotas ?? props.opciones;
   const textoBuscado = normalizar(consulta.trim());
   const opcionesFiltradas = props.buscarOpciones && opcionesRemotas !== null
     ? opcionesBase
@@ -112,13 +118,13 @@ export function Combobox(props: PropiedadesCombobox) {
           id={props.id}
           onChange={(evento) => {
             setConsulta(evento.target.value);
-            setOpcionesRemotas(null);
+            setRespuestaRemota(null);
             setIndiceActivo(0);
             setEstaAbierto(true);
           }}
           onFocus={() => {
             setConsulta("");
-            setOpcionesRemotas(null);
+            setRespuestaRemota(null);
             setEstaAbierto(true);
             setIndiceActivo(0);
           }}
@@ -141,7 +147,8 @@ export function Combobox(props: PropiedadesCombobox) {
       {estaAbierto ? (
         <div className="combobox-panel" id={idLista} role="listbox">
           {estaCargando ? <p className="combobox-estado">Buscando…</p> : null}
-          {!estaCargando && opcionesFiltradas.length === 0 ? <p className="combobox-estado">Sin resultados</p> : null}
+          {falloBusqueda ? <p className="combobox-estado" role="alert">No se pudieron cargar las opciones. Volvé a intentar la búsqueda.</p> : null}
+          {!estaCargando && !falloBusqueda && opcionesFiltradas.length === 0 ? <p className="combobox-estado">Sin resultados</p> : null}
           {!estaCargando && opcionesFiltradas.map((opcion, indice) => (
             <button
               aria-selected={opcion.valor === props.valor}

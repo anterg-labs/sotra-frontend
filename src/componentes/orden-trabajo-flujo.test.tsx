@@ -1,4 +1,7 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render as renderBase, screen, waitFor, within } from "@testing-library/react";
+import { transicionesDePrueba } from "@/pruebas/estados-orden";
+import type { ReactElement } from "react";
+import { conEstadosOrden } from "@/pruebas/estados-orden";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { OrdenTrabajo } from "@/tipos/orden-trabajo";
 import { FormularioOrdenTrabajo } from "./formulario-orden-trabajo";
@@ -7,6 +10,10 @@ import { SelectorClienteActivoOrdenTrabajo } from "./selector-cliente-activo-ord
 import { SelectorRepuestosOrdenTrabajo } from "./selector-repuestos-orden-trabajo";
 import { CamposGeneralesOrdenTrabajo } from "./campos-generales-orden-trabajo";
 import { EstructuraTecnico } from "./estructura-tecnico";
+
+function render(ui: ReactElement) {
+  return renderBase(conEstadosOrden(ui));
+}
 
 const push = vi.hoisted(() => vi.fn());
 const pathname = vi.hoisted(() => ({ valor: "/tecnico" }));
@@ -58,7 +65,7 @@ function ordenExistente(extra: Partial<OrdenTrabajo> = {}): OrdenTrabajo {
     id: 11, clienteId: 1, nombreCliente: "ACME", activoId: 10, nombreActivo: "Retro 1", tecnicoId: 7, nombreTecnico: "Tomás Ruiz",
     tipo: "correctivo", prioridad: "alta", descripcion: "Cambiar filtro", observaciones: "Obs", fechaPrevistaEjecucion: "2026-10-20",
     estado: "en_ejecucion", creadoEn: "2026-10-01T10:00:00Z", fechaInicio: null, fechaCierre: null, sugerencias: ["Sugerida"],
-    repuestos: [{ id: 3, codigo: "R3", nombre: "Filtro" }], estadosSiguientes: ["pausada", "finalizada"], historialEstados: [], version: "v1",
+    repuestos: [{ id: 3, codigo: "R3", nombre: "Filtro" }], transiciones: transicionesDePrueba.en_ejecucion, historialEstados: [], version: "v1",
     ...extra,
   };
 }
@@ -145,7 +152,7 @@ describe("FormularioOrdenTrabajo (alta)", () => {
     await waitFor(() =>
       expect(alEnviar).toHaveBeenCalledWith({
         clienteId: 1, activoId: 10, tecnicoId: 7, tipo: "correctivo", prioridad: "alta", descripcion: "Pierde aceite",
-        observaciones: "Urgente", fechaPrevistaEjecucion: "2026-11-01", sugerencias: [], repuestosIds: [3], estado: "creada",
+        observaciones: "Urgente", fechaPrevistaEjecucion: "2026-11-01", sugerencias: [], repuestosIds: [3], estado: "",
         motivoEstado: "", sesion: "sesion-fija",
       }),
     );

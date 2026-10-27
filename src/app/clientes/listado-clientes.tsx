@@ -33,9 +33,9 @@ export async function ListadoClientes(props: { filtros: FiltrosClientes }) {
   return (
     <>
       <InformarResultados total={pagina.totalElementos} />
-      <TablaClientes clientes={pagina.elementos} />
+      <TablaClientes clientes={pagina.elementos} filtros={filtros} unaSolaPagina={pagina.totalPaginas <= 1} />
       <PaginacionListado
-        filtros={{ buscar: filtros.buscar, estado: filtros.estado }}
+        filtros={{ buscar: filtros.buscar, estado: filtros.estado, ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden }}
         pagina={pagina.pagina}
         plural="clientes"
         ruta={RUTA_CLIENTES}

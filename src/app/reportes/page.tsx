@@ -6,7 +6,7 @@ import { ProveedorNavegacionListado, ZonaListado } from "@/componentes/listado/n
 import type { ParametrosBusqueda } from "@/componentes/listado/url-listado";
 import { listarActivosServidor, obtenerActivoServidor } from "@/servicios/servidor/activos";
 import { listarClientesServidor, obtenerClienteServidor } from "@/servicios/servidor/clientes";
-import { listarTecnicosServidor } from "@/servicios/servidor/ordenes-trabajo";
+import { listarEstadosOrdenTrabajoOVacio, listarTecnicosServidor } from "@/servicios/servidor/ordenes-trabajo";
 import { conSeleccionado } from "@/servicios/servidor/opciones";
 import { obtenerUsuarioServidor } from "@/servicios/servidor/usuarios";
 import type { Activo } from "@/tipos/activo";
@@ -19,9 +19,8 @@ import { TableroReportes } from "./tablero-reportes";
 const ETIQUETA_CARGA = "Cargando indicadores…";
 
 export default async function PaginaReportes(props: { searchParams: Promise<ParametrosBusqueda> }) {
-  const filtros = leerFiltrosReportes(await props.searchParams);
+  const filtros = leerFiltrosReportes(await props.searchParams, await listarEstadosOrdenTrabajoOVacio());
   const consulta = anticiparConsulta(obtenerIndicadoresServidor(filtros));
-  const clave = Object.values(filtros).join("|");
 
   const [tecnicos, clientes, activos] = await Promise.all([
     listarTecnicosServidor()
@@ -46,7 +45,7 @@ export default async function PaginaReportes(props: { searchParams: Promise<Para
       <ProveedorNavegacionListado etiquetaCarga={ETIQUETA_CARGA}>
         <TableroReportes activos={activos} clientes={clientes} filtros={filtros} tecnicos={tecnicos}>
           <ZonaListado>
-            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />} key={clave}>
+            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />}>
               <ResumenIndicadores consulta={consulta} filtros={filtros} />
             </Suspense>
           </ZonaListado>

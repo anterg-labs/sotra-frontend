@@ -9,6 +9,7 @@ import type { EstadoTerminos } from "@/tipos/terminos";
 import type { UsuarioDetalle } from "@/tipos/usuario";
 import { formatearFechaNumerica } from "@/utilidades/fechas";
 import { BotonRestablecerContrasena } from "../boton-restablecer-contrasena";
+import { EnlaceVolver } from "@/componentes/enlace-volver";
 
 async function cargarUsuario(usuarioId: number): Promise<UsuarioDetalle | null> {
   if (!Number.isInteger(usuarioId) || usuarioId <= 0) return null;
@@ -44,13 +45,13 @@ export default async function PaginaDetalleUsuario(props: { params: Promise<{ id
   return (
     <main className="page-content">
       <header className="page-heading">
-        <div>
-          <p className="eyebrow">Gestión de usuarios</p>
-          <h1>{usuario ? usuario.nombre + " " + usuario.apellido : "Detalle de usuario"}</h1>
+        <div className="encabezado-volver">
+          <EnlaceVolver etiqueta="Volver al listado" href="/usuarios" />
+          <div>
+            <p className="eyebrow">Gestión de usuarios</p>
+            <h1>{usuario ? usuario.nombre + " " + usuario.apellido : "Detalle de usuario"}</h1>
+          </div>
         </div>
-        <Link className="secondary-button" href="/usuarios">
-          Volver al listado
-        </Link>
       </header>
 
       {usuario ? (
@@ -86,7 +87,7 @@ export default async function PaginaDetalleUsuario(props: { params: Promise<{ id
             </dl>
             {puedeModificar ? (
               <div className="form-actions">
-                <BotonRestablecerContrasena correo={usuario.correo} usuarioId={usuario.id} />
+                {usuario.estado === "activo" ? <BotonRestablecerContrasena correo={usuario.correo} usuarioId={usuario.id} /> : null}
                 <Link className="primary-button" href={"/usuarios/" + usuario.id + "/editar"}>
                   Modificar
                 </Link>

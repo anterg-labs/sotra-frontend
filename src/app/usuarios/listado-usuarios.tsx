@@ -34,9 +34,9 @@ export async function ListadoUsuarios(props: { filtros: FiltrosUsuarios; consult
   return (
     <>
       <InformarResultados total={pagina.totalElementos} />
-      <TablaUsuarios usuarios={pagina.elementos} />
+      <TablaUsuarios usuarios={pagina.elementos} filtros={filtros} unaSolaPagina={pagina.totalPaginas <= 1} />
       <PaginacionListado
-        filtros={{ buscar: filtros.buscar, rolId: filtros.rolId, estado: filtros.estado }}
+        filtros={{ buscar: filtros.buscar, rolId: filtros.rolId, estado: filtros.estado, ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden }}
         pagina={pagina.pagina}
         plural="usuarios"
         ruta={RUTA_USUARIOS}

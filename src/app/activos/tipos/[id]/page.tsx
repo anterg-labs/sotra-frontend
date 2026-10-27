@@ -5,6 +5,7 @@ import { obtenerTipoMaquinaServidor } from "@/servicios/servidor/tipos-maquina";
 import type { ModeloMaquina } from "@/tipos/modelo-maquina";
 import type { TipoMaquina } from "@/tipos/tipo-maquina";
 import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
+import { EnlaceVolver } from "@/componentes/enlace-volver";
 
 type DatosTipo = { tipoMaquina: TipoMaquina; modelos: ModeloMaquina[]; totalModelos: number };
 
@@ -27,13 +28,13 @@ export default async function PaginaDetalleTipoMaquina(props: { params: Promise<
   return (
     <main className="page-content">
       <header className="page-heading">
-        <div>
-          <p className="eyebrow">Tipos de máquina</p>
-          <h1>{datos ? datos.tipoMaquina.nombre : "Detalle del tipo de máquina"}</h1>
+        <div className="encabezado-volver">
+          <EnlaceVolver etiqueta="Volver a activos" href="/activos/tipos" />
+          <div>
+            <p className="eyebrow">Tipos de máquina</p>
+            <h1>{datos ? datos.tipoMaquina.nombre : "Detalle del tipo de máquina"}</h1>
+          </div>
         </div>
-        <Link className="secondary-button" href="/activos/tipos">
-          Volver a activos
-        </Link>
       </header>
 
       {datos ? (

@@ -1,5 +1,5 @@
 import { construirUrlListado, leerIdFiltro, primerValor, type ParametrosBusqueda } from "@/componentes/listado/url-listado";
-import { estadosOrdenTrabajo } from "@/tipos/orden-trabajo";
+import type { OpcionEstadoOrden } from "@/tipos/orden-trabajo";
 import type { FiltrosIndicadores } from "@/tipos/reporte";
 
 export const RUTA_REPORTES = "/reportes";
@@ -11,7 +11,8 @@ function leerFecha(parametros: ParametrosBusqueda, nombre: string) {
   return PATRON_FECHA.test(valor) ? valor : "";
 }
 
-export function leerFiltrosReportes(parametros: ParametrosBusqueda): FiltrosIndicadores {
+/** `estados` es el catálogo de la base: un estado de la URL que no esté ahí se descarta. */
+export function leerFiltrosReportes(parametros: ParametrosBusqueda, estados: readonly OpcionEstadoOrden[]): FiltrosIndicadores {
   const estado = primerValor(parametros.estado);
   const tipo = primerValor(parametros.tipo);
   return {
@@ -20,7 +21,7 @@ export function leerFiltrosReportes(parametros: ParametrosBusqueda): FiltrosIndi
     tecnicoId: leerIdFiltro(parametros, "tecnicoId"),
     clienteId: leerIdFiltro(parametros, "clienteId"),
     activoId: leerIdFiltro(parametros, "activoId"),
-    estado: (estadosOrdenTrabajo as string[]).includes(estado) ? estado : "",
+    estado: estados.some((opcion) => opcion.valor === estado) ? estado : "",
     tipo: tipo === "preventivo" || tipo === "correctivo" ? tipo : "",
   };
 }

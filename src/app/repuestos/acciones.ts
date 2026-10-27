@@ -37,15 +37,21 @@ function leerRepuesto(datos: unknown): CrearRepuestoInput | null {
   if (
     typeof codigo !== "string" ||
     typeof nombre !== "string" ||
-    typeof descripcion !== "string" ||
-    typeof marca !== "string" ||
-    typeof ubicacion !== "string" ||
+    !(descripcion === null || typeof descripcion === "string") ||
+    !(marca === null || typeof marca === "string") ||
+    !(ubicacion === null || typeof ubicacion === "string") ||
     typeof cantidad !== "number" ||
     typeof cantidadMinima !== "number"
   ) {
     return null;
   }
-  return { codigo, nombre, descripcion, marca, ubicacion, cantidad, cantidadMinima };
+  return {
+    codigo, nombre,
+    descripcion: descripcion?.trim() === "" ? null : descripcion,
+    marca: marca?.trim() === "" ? null : marca,
+    ubicacion: ubicacion?.trim() === "" ? null : ubicacion,
+    cantidad, cantidadMinima,
+  };
 }
 
 async function guardarRepuesto(
@@ -127,14 +133,11 @@ async function registrarMovimiento(
 export async function registrarIngresoStockAccion(repuestoId: number, datos: IngresoStockInput) {
   const mensaje = "No se pudo registrar el ingreso de stock.";
   const d = leerDatos(datos);
-  if (!d || typeof d.cantidad !== "number" || typeof d.fecha !== "string" || typeof d.motivo !== "string" || typeof d.ubicacion !== "string") {
+  if (!d || typeof d.cantidad !== "number") {
     return { exito: false, errores: {}, mensaje } satisfies ResultadoGuardar<MovimientoStock>;
   }
   const ingreso: IngresoStockInput = {
     cantidad: d.cantidad,
-    fecha: d.fecha,
-    motivo: d.motivo,
-    ubicacion: d.ubicacion,
     observaciones: typeof d.observaciones === "string" ? d.observaciones : "",
   };
   return registrarMovimiento(repuestoId, obtenerErroresIngresoStock(ingreso), mensaje, () =>

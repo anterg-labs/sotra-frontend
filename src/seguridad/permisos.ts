@@ -76,6 +76,7 @@ const reglasDeRuta: ReglaDeRuta[] = [
   { patron: /^\/repuestos\/nuevo$/, permiso: "repuesto.gestionar" },
   { patron: /^\/repuestos\/\d+\/editar$/, permiso: "repuesto.gestionar" },
   { patron: /^\/repuestos(\/|$)/, permiso: "stock.consultar" },
+  { patron: /^\/inicio(\/|$)/, permiso: "reporte.consultar" },
   { patron: /^\/reportes(\/|$)/, permiso: "reporte.consultar" },
   { patron: /^\/configuracion(\/|$)/, permiso: "configuracion.gestionar" },
   { patron: /^\/documentacion-tecnica\/nuevo$/, permiso: "documento.gestionar" },
@@ -124,9 +125,9 @@ export function rolesAsignables<T extends { nombre: string }>(roles: T[], puedeG
   return puedeGestionarAdministradores ? roles : roles.filter((rol) => rol.nombre !== NOMBRE_ROL_ADMINISTRADOR);
 }
 
-/** Página de inicio según el rol: el tablero si puede ver reportes, «Mi trabajo» si es técnico, si no, repuestos u órdenes. */
+/** Página de inicio según el rol: «Inicio» si puede ver reportes, «Mi trabajo» si es técnico, si no, repuestos u órdenes. */
 export function paginaDeInicio(roles: readonly string[]): string {
-  if (tienePermiso(roles, "reporte.consultar")) return "/reportes";
+  if (tienePermiso(roles, "reporte.consultar")) return "/inicio";
   if (tienePermiso(roles, "ot.registrar_avance")) return "/tecnico";
   if (tienePermiso(roles, "stock.consultar")) return "/repuestos";
   return "/ordenes-trabajo";

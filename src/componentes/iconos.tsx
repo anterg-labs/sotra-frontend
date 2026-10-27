@@ -38,13 +38,15 @@ export function IconoDescarga() {
   );
 }
 
+/** Restaurar: lo opuesto a la papelera de «dar de baja». Se usa en todos los listados para reactivar un registro. */
 export function IconoReactivar() {
   return (
     <svg aria-hidden="true" fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="16">
-      <path d="M3 12a9 9 0 0 1 15.5-6.2L21 8" />
-      <path d="M21 3v5h-5" />
-      <path d="M21 12a9 9 0 0 1-15.5 6.2L3 16" />
-      <path d="M3 21v-5h5" />
+      <rect height="5" rx="1" width="20" x="2" y="3" />
+      <path d="M4 8v11a2 2 0 0 0 2 2h2" />
+      <path d="M20 8v11a2 2 0 0 1-2 2h-2" />
+      <path d="m9 15 3-3 3 3" />
+      <path d="M12 12v9" />
     </svg>
   );
 }
@@ -83,12 +85,14 @@ export function IconoOrdenesTrabajo(props: PropiedadesIconoMenu) {
   );
 }
 
+/** Tarjeta de contacto: un cliente con sus datos (distinta de la casa de Inicio y del grupo de personas de Usuarios). */
 export function IconoClientes(props: PropiedadesIconoMenu) {
   return (
     <IconoMenuBase {...props}>
-      <path d="M4 21V7l8-4 8 4v14" />
-      <path d="M9 21v-5h6v5" />
-      <path d="M9 10h.01M12 10h.01M15 10h.01" />
+      <rect height="18" rx="2" width="18" x="3" y="4" />
+      <circle cx="12" cy="11" r="3" />
+      <path d="M7 22v-2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2" />
+      <path d="M8 2v4M16 2v4" />
     </IconoMenuBase>
   );
 }
@@ -135,12 +139,30 @@ export function IconoUsuarios(props: PropiedadesIconoMenu) {
   );
 }
 
+export function IconoInicio(props: PropiedadesIconoMenu) {
+  return (
+    <IconoMenuBase {...props}>
+      <path d="M4 11l8-7 8 7" />
+      <path d="M6 10v10h12V10" />
+      <path d="M10 20v-6h4v6" />
+    </IconoMenuBase>
+  );
+}
+
 export function IconoReportes(props: PropiedadesIconoMenu) {
   return (
     <IconoMenuBase {...props}>
       <path d="M4 20V4" />
       <path d="M4 20h16" />
       <path d="M8 16v-5M12 16V8M16 16v-8" />
+    </IconoMenuBase>
+  );
+}
+
+export function IconoFlechaIzquierda(props: PropiedadesIconoMenu) {
+  return (
+    <IconoMenuBase {...props}>
+      <path d="m12 5-7 7 7 7M5 12h14" />
     </IconoMenuBase>
   );
 }

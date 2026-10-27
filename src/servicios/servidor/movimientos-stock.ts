@@ -1,4 +1,5 @@
 import "server-only";
+import { parametrosDeOrden } from "@/componentes/listado/url-listado";
 import { leerJsonServidor, opcionesJsonServidor } from "@/servicios/servidor/cliente-http-servidor";
 import type {
   AjusteStockInput,
@@ -18,6 +19,7 @@ export function listarMovimientosStockServidor(filtros: FiltrosMovimientosStock)
   if (filtros.fechaHasta !== "") parametros.append("fechaHasta", filtros.fechaHasta);
   if (filtros.ubicacion.trim() !== "") parametros.append("ubicacion", filtros.ubicacion.trim());
   if (filtros.usuarioId !== "") parametros.append("usuarioId", filtros.usuarioId);
+  for (const [nombre, valor] of parametrosDeOrden(filtros)) parametros.append(nombre, valor);
   parametros.append("pagina", String(filtros.pagina));
   return leerJsonServidor<Pagina<MovimientoStock>>(
     "/api/v1/movimientos-stock?" + parametros.toString(),

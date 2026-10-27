@@ -153,7 +153,7 @@ export function SugerenciasOrdenTrabajo(props: PropiedadesSugerenciasOrdenTrabaj
             Verificá los valores con la fuente indicada.
           </p>
         ) : null}
-        {errorSugerencia ?<p className="field-error" ref={referenciaError} role="alert" tabIndex={-1}>{errorSugerencia}</p> : null}
+        {errorSugerencia ? <p className="field-error" ref={referenciaError} role="alert" tabIndex={-1}>{errorSugerencia}</p> : null}
       </div>
 
       {props.sugerencias.map((textoSugerencia, indice) => (

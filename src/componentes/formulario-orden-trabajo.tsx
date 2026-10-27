@@ -15,7 +15,6 @@ import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import {
   borrarSugerenciasTemporales,
   crearSesionDeSugerencias,
-  estadoNecesitaMotivo,
   leerSugerenciasTemporales,
   obtenerErroresOrdenTrabajo,
 } from "@/servicios/servicio-ordenes-trabajo";
@@ -31,6 +30,7 @@ import type {
 } from "@/tipos/orden-trabajo";
 import type { Repuesto } from "@/tipos/repuesto";
 import type { Usuario } from "@/tipos/usuario";
+import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
 type PropiedadesFormularioOrdenTrabajo = {
   ordenInicial?: OrdenTrabajo;
@@ -52,7 +52,8 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
   let tecnicoIdInicial = "";
   let tipoInicial = "preventivo";
   let prioridadInicial = "media";
-  let estadoInicial = "creada";
+  // En el alta el servidor asigna el estado inicial del catálogo; solo hay estado que mostrar al modificar.
+  let estadoInicial = "";
   let descripcionInicial = "";
   let observacionesInicial = "";
   let fechaPrevistaInicial = "";
@@ -84,8 +85,8 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
     }
 
     estadosDisponibles.push(ordenInicial.estado);
-    for (const estadoSiguiente of ordenInicial.estadosSiguientes) {
-      estadosDisponibles.push(estadoSiguiente);
+    for (const transicion of ordenInicial.transiciones) {
+      estadosDisponibles.push(transicion.estado);
     }
   }
 
@@ -97,12 +98,13 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
   }
 
   const enrutador = useRouter();
+  const [estado, setEstado] = useState(estadoInicial);
+  const estadoExigeMotivo = ordenInicial?.transiciones.some((transicion) => transicion.estado === estado && transicion.exigeMotivo) ?? false;
   const [clienteId, setClienteId] = useState(clienteIdInicial);
   const [activoId, setActivoId] = useState(activoIdInicial);
   const [tecnicoId, setTecnicoId] = useState(tecnicoIdInicial);
   const [tipo, setTipo] = useState(tipoInicial);
   const [prioridad, setPrioridad] = useState(prioridadInicial);
-  const [estado, setEstado] = useState(estadoInicial);
   const [motivoEstado, setMotivoEstado] = useState("");
   const [sesionSugerencias] = useState(crearSesionDeSugerencias);
   const [descripcion, setDescripcion] = useState(descripcionInicial);
@@ -115,7 +117,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
   const [estaEnviando, setEstaEnviando] = useState(false);
   const [errorGeneral, setErrorGeneral] = useState("");
   const [errores, setErrores] = useState<ReturnType<typeof obtenerErroresOrdenTrabajo> & { motivoEstado?: string }>({});
-  const referenciaErrorGeneral = useRef<HTMLParagraphElement>(null);
+  const referenciaErrorGeneral = useRef<HTMLDivElement>(null);
   const [estaAltaClienteAbierta, setEstaAltaClienteAbierta] = useState(false);
   const [clientesAgregados, setClientesAgregados] = useState<Cliente[]>([]);
   const { mostrarAviso } = useAvisos();
@@ -165,13 +167,13 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
       fechaPrevistaEjecucion,
       sugerencias,
       repuestosIds: idsRepuestos,
-      estado: estado as EstadoOrdenTrabajo,
+      estado: estado,
       motivoEstado: motivoEstado,
       sesion: sesionSugerencias,
     };
 
     const erroresDetectados: typeof errores = obtenerErroresOrdenTrabajo(ordenParaGuardar);
-    if (estadoNecesitaMotivo(estadoInicial, estado) && !motivoEstado.trim()) {
+    if (estadoExigeMotivo && !motivoEstado.trim()) {
       erroresDetectados.motivoEstado = "Indicá el motivo del cambio de estado.";
     }
     setErrores(erroresDetectados);
@@ -200,7 +202,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
 
   let mensajeError = null;
   if (errorGeneral) {
-    mensajeError = <p className="form-error-banner" ref={referenciaErrorGeneral} role="alert" tabIndex={-1}>{errorGeneral}</p>;
+    mensajeError = <AvisoEnLinea ref={referenciaErrorGeneral}>{errorGeneral}</AvisoEnLinea>;
   }
 
   let textoBoton = etiquetaConfirmacion;
@@ -250,7 +252,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
           motivoEstado={motivoEstado}
           errorFechaPrevista={errores.fechaPrevistaEjecucion}
           errorMotivo={errores.motivoEstado}
-          necesitaMotivo={estadoNecesitaMotivo(estadoInicial, estado)}
+          necesitaMotivo={estadoExigeMotivo}
           permiteCambiarEstado={permiteCambiarEstado}
         />
       </div>
@@ -263,7 +265,8 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
 
       <div className="form-field form-field-full">
         <label htmlFor="observaciones">Observaciones adicionales</label>
-        <textarea id="observaciones" onChange={cambiarObservaciones} rows={3} value={observaciones} />
+        <textarea aria-describedby={errores.observaciones ? "observaciones-error" : undefined} aria-invalid={errores.observaciones ? true : undefined} id="observaciones" onChange={cambiarObservaciones} rows={3} value={observaciones} />
+        {errores.observaciones ? <p className="field-error" id="observaciones-error" role="alert">{errores.observaciones}</p> : null}
       </div>
 
       {puedeVerRepuestos ? (

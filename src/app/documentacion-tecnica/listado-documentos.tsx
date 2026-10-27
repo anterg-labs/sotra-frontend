@@ -34,9 +34,9 @@ export async function ListadoDocumentos(props: { filtros: FiltrosDocumentosTecni
   return (
     <>
       <InformarResultados total={pagina.totalElementos} />
-      <TablaDocumentos documentos={pagina.elementos} />
+      <TablaDocumentos documentos={pagina.elementos} filtros={filtros} unaSolaPagina={pagina.totalPaginas <= 1} />
       <PaginacionListado
-        filtros={{ buscar: filtros.buscar, activoId: filtros.activoId }}
+        filtros={{ buscar: filtros.buscar, activoId: filtros.activoId, modeloMaquinaId: filtros.modeloMaquinaId, tipo: filtros.tipo, vigente: filtros.vigente, ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden }}
         pagina={pagina.pagina}
         plural="documentos"
         ruta={RUTA_DOCUMENTOS}

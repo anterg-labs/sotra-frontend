@@ -23,5 +23,12 @@ async function validarArchivoPdf(archivo: File | null) {
 /** La subida del PDF (multipart) sale directo del navegador a la API: ver la nota en el formulario de documentos. */
 export async function crearDocumentoTecnico(input: CrearDocumentoTecnicoInput) {
   const archivoValidado = await validarArchivoPdf(input.archivo);
-  return apiCrearDocumentoTecnico(archivoValidado, input.activoId, input.usaSugerenciasIA);
+  return apiCrearDocumentoTecnico(archivoValidado, {
+    titulo: input.titulo,
+    tipo: input.tipo,
+    descripcion: input.descripcion,
+    activoId: input.activoId,
+    modeloMaquinaId: input.modeloMaquinaId,
+    usaSugerenciasIA: input.usaSugerenciasIA,
+  });
 }

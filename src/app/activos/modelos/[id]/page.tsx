@@ -6,6 +6,7 @@ import { obtenerTipoMaquinaServidor } from "@/servicios/servidor/tipos-maquina";
 import type { Activo } from "@/tipos/activo";
 import type { ModeloMaquina } from "@/tipos/modelo-maquina";
 import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
+import { EnlaceVolver } from "@/componentes/enlace-volver";
 
 type DatosModelo = { modelo: ModeloMaquina; nombreTipo: string; activos: Activo[]; totalActivos: number };
 
@@ -29,13 +30,13 @@ export default async function PaginaDetalleModeloMaquina(props: { params: Promis
   return (
     <main className="page-content">
       <header className="page-heading">
-        <div>
-          <p className="eyebrow">Modelos de máquina</p>
-          <h1>{datos ? datos.modelo.nombre : "Detalle del modelo de máquina"}</h1>
+        <div className="encabezado-volver">
+          <EnlaceVolver etiqueta="Volver a activos" href="/activos/modelos" />
+          <div>
+            <p className="eyebrow">Modelos de máquina</p>
+            <h1>{datos ? datos.modelo.nombre : "Detalle del modelo de máquina"}</h1>
+          </div>
         </div>
-        <Link className="secondary-button" href="/activos/modelos">
-          Volver a activos
-        </Link>
       </header>
 
       {datos ? (
@@ -48,7 +49,7 @@ export default async function PaginaDetalleModeloMaquina(props: { params: Promis
                   <Link className="text-link" href={"/activos/tipos/" + datos.modelo.tipoMaquinaId}>{datos.nombreTipo}</Link>
                 </dd>
               </div>
-              <div>
+              <div className="detail-wide">
                 <dt>Descripción</dt>
                 <dd>{datos.modelo.descripcion ? datos.modelo.descripcion : "Sin descripción"}</dd>
               </div>

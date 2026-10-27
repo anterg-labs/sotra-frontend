@@ -34,9 +34,9 @@ export async function ListadoModelos(props: { filtros: FiltrosModelosMaquina; co
   return (
     <>
       <InformarResultados total={pagina.totalElementos} />
-      <TablaModelos modelos={pagina.elementos} />
+      <TablaModelos modelos={pagina.elementos} filtros={filtros} unaSolaPagina={pagina.totalPaginas <= 1} />
       <PaginacionListado
-        filtros={{ buscar: filtros.buscar, tipoMaquinaId: filtros.tipoMaquinaId, estado: filtros.estado }}
+        filtros={{ buscar: filtros.buscar, tipoMaquinaId: filtros.tipoMaquinaId, estado: filtros.estado, ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden }}
         pagina={pagina.pagina}
         plural="modelos"
         ruta={RUTA_MODELOS}

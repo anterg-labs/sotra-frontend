@@ -112,6 +112,11 @@ td {
   text-align: left;
 }
 
+.celda-numerica {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
 th {
   background: var(--superficie-suave);
   color: var(--texto-tenue);
@@ -119,6 +124,47 @@ th {
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+
+.zona-listado {
+  transition: opacity 0.15s ease;
+}
+
+.zona-listado[data-cargando="true"] {
+  opacity: 0.55;
+  pointer-events: none;
+  transition-delay: 0.2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zona-listado,
+  .zona-listado[data-cargando="true"] {
+    transition: none;
+  }
+}
+
+.encabezado-ordenable {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.encabezado-ordenable:hover:not(:disabled) { color: var(--texto); }
+.encabezado-ordenable:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 3px;
+  border-radius: var(--radio-s);
+}
+.encabezado-ordenable .indicador-orden { font-size: 10px; opacity: 0.55; }
+th[aria-sort="ascending"] .indicador-orden,
+th[aria-sort="descending"] .indicador-orden { opacity: 1; color: var(--acento); }
 
 tbody tr:hover td {
   background: var(--superficie-suave);
@@ -161,6 +207,29 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* Todo lo que se acciona sin escribir texto muestra la mano; los campos de texto conservan el cursor de texto. */
+a[href],
+select,
+summary,
+label:has(input:is([type="checkbox"], [type="radio"])),
+input:is([type="checkbox"], [type="radio"], [type="date"], [type="file"], [type="button"], [type="submit"], [type="reset"]),
+input[type="file"]::file-selector-button,
+input[type="date"]::-webkit-calendar-picker-indicator,
+[role="button"],
+[role="option"],
+[role="tab"],
+[role="switch"],
+[role="menuitem"],
+[role="combobox"] {
+  cursor: pointer;
+}
+
+:is(button, select, input, a, [role="button"], [role="option"], [role="tab"], [role="menuitem"]):disabled,
+[aria-disabled="true"],
+label:has(input:disabled) {
+  cursor: not-allowed;
+}
+
 .page-content {
   max-width: 1500px;
   margin: 0 auto;
@@ -173,6 +242,32 @@ button:disabled {
   justify-content: space-between;
   gap: 24px;
   margin-bottom: 28px;
+}
+
+.encabezado-volver {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.enlace-volver {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-m);
+  background: var(--superficie);
+  color: var(--texto);
+  transition: background-color var(--transicion), border-color var(--transicion);
+}
+
+.enlace-volver:hover {
+  border-color: var(--borde-fuerte);
+  background: var(--superficie-suave);
 }
 
 .panel-heading {
@@ -274,6 +369,11 @@ button:disabled {
   box-shadow: var(--sombra-s);
 }
 
+/* El menú de un selector abierto sobresale de la tarjeta en lugar de quedar recortado por el overflow de .panel. */
+.panel:has(.combobox-panel) {
+  overflow: visible;
+}
+
 .text-link {
   color: var(--texto);
   font-size: 12px;
@@ -301,37 +401,36 @@ button:disabled {
 }
 
 .status-activo,
-.status-cerrada {
+.status-tono-exito {
   background: var(--exito-fondo);
   color: var(--exito-texto);
 }
 
 .status-inactivo,
+.status-tono-peligro,
 .prioridad-alta {
   background: var(--peligro-fondo);
   color: var(--peligro-texto);
 }
 
-.status-creada,
-.status-cancelada {
+.status-tono-neutro {
   background: var(--neutro-fondo);
   color: var(--neutro-texto);
 }
 
-.status-asignada,
-.status-en_ejecucion,
+.status-tono-info,
 .prioridad-baja {
   background: var(--info-fondo);
   color: var(--info-texto);
 }
 
-.status-pausada,
+.status-tono-alerta,
 .prioridad-media {
   background: var(--alerta-fondo);
   color: var(--alerta-texto);
 }
 
-.status-finalizada {
+.status-tono-destacado {
   background: var(--finalizada-fondo);
   color: var(--finalizada-texto);
 }
@@ -597,6 +696,12 @@ button:disabled {
   margin-top: 20px;
 }
 
+/* Dentro de una grilla, «ancho completo» ocupa todas las columnas; el espacio lo da el `gap`, no un margen que lo desalinea. */
+.form-grid > .form-field-full {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
 .campo-contrasena-usuario,
 .roles-usuario {
   grid-column: 1 / -1;
@@ -755,6 +860,11 @@ button:disabled {
   margin-top: 26px;
 }
 
+/* Dentro de una grilla con su propio espacio entre bloques, el margen propio sobra. */
+.grid > .form-actions {
+  margin-top: 0;
+}
+
 .formulario-evidencia,
 .campo-archivo-evidencia {
   width: 100%;
@@ -830,8 +940,21 @@ button:disabled {
 
 .detail-list {
   display: grid;
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 18px 32px;
   margin: 22px 0;
+}
+
+.detail-list > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Los datos largos (descripción, observaciones, listas) ocupan todo el ancho; los cortos se reparten en columnas. */
+.detail-list > .detail-wide {
+  grid-column: 1 / -1;
+  padding-top: 16px;
+  border-top: 1px solid var(--borde);
 }
 
 .detail-list dt {
@@ -956,6 +1079,15 @@ button:disabled {
   font-size: 13px;
 }
 
+.app-submenu-permanente .app-menu-enlace {
+  min-height: 40px;
+  font-weight: 500;
+}
+
+.app-submenu-permanente .app-menu-enlace[aria-current="page"] {
+  font-weight: 600;
+}
+
 .app-lateral[data-compacto="true"] .app-menu-texto,
 .app-lateral[data-compacto="true"] .app-submenu {
   display: none;
@@ -977,6 +1109,7 @@ button:disabled {
   min-height: 100vh;
   flex-direction: column;
   margin-left: var(--lateral-ancho);
+  transition: margin-left var(--transicion);
 }
 
 .app-cabecera {
@@ -1062,6 +1195,10 @@ button:disabled {
 .app-pie-version { padding-left: 18px; border-left: 1px solid rgb(242 246 251 / 30%); white-space: nowrap; }
 
 .app-boton-menu {
+  position: fixed;
+  top: calc((var(--cabecera-alto) - 42px) / 2);
+  left: calc((var(--lateral-ancho) - 42px) / 2);
+  z-index: 50;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1109,7 +1246,7 @@ button:disabled {
 
   .app-cabecera {
     height: var(--cabecera-alto);
-    padding: 0 16px;
+    padding: 0 16px 0 var(--lateral-ancho);
   }
 
   .app-cabecera-fecha { font-size: 11px; line-height: 1.5; }
@@ -1148,21 +1285,35 @@ button:disabled {
 }
 
 @media (min-width: 761px) {
+  .app-boton-menu {
+    position: fixed;
+    top: calc(var(--cabecera-alto) + 8px);
+    left: calc((var(--lateral-ancho) - 42px) / 2);
+    z-index: 50;
+    background: var(--lateral-fondo);
+    color: var(--lateral-texto-fuerte);
+  }
+
+  .app-boton-menu:hover {
+    background: var(--acento-suave);
+  }
+
+  .app-lateral-logo {
+    justify-content: flex-start;
+    padding-left: calc((var(--lateral-ancho) - 48px) / 2);
+  }
+
+  .app-lateral-logo span { flex-shrink: 0; }
+  .app-menu { padding-top: 64px; }
+  .app-fondo-oscuro { display: none; }
+
+  .app-lateral[data-abierto="true"] ~ .app-principal {
+    margin-left: var(--lateral-ancho-abierto);
+  }
+
   .app-lateral[data-abierto="false"] {
     transform: none;
   }
-
-  .app-lateral[data-compacto="true"][data-retraido="false"]:focus-within { width: var(--lateral-ancho-abierto); }
-  .app-lateral[data-compacto="true"][data-retraido="false"]:focus-within .app-menu-texto { display: inline; }
-  .app-lateral[data-compacto="true"][data-retraido="false"]:focus-within .app-submenu { display: flex; }
-  .app-lateral[data-compacto="true"][data-retraido="false"]:focus-within .insignia-menu { position: static; margin-left: auto; padding: 1px 6px; }
-}
-
-@media (min-width: 761px) and (hover: hover) and (pointer: fine) {
-  .app-lateral[data-compacto="true"][data-retraido="false"]:hover { width: var(--lateral-ancho-abierto); }
-  .app-lateral[data-compacto="true"][data-retraido="false"]:hover .app-menu-texto { display: inline; }
-  .app-lateral[data-compacto="true"][data-retraido="false"]:hover .app-submenu { display: flex; }
-  .app-lateral[data-compacto="true"][data-retraido="false"]:hover .insignia-menu { position: static; margin-left: auto; padding: 1px 6px; }
 }
 
 /* Utilidades de color basadas en los tokens, para usar junto a las utilidades de Tailwind. */
@@ -1279,52 +1430,92 @@ button:disabled {
 .dialogo-descartar-acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--borde); background: var(--superficie-suave); }
 @media (max-width: 480px) { .dialogo-descartar-acciones > button { flex: 1 1 100%; } }
 
-/* Avisos (toasts). */
+/*
+ * Avisos (toasts) de toda la aplicación: arriba a la derecha y con el color del resultado, para que se noten:
+ * verde si se hizo, rojo si falló, amarillo si es una advertencia y azul si es información. Texto con contraste AA.
+ */
 .avisos-contenedor {
   position: fixed;
+  top: 16px;
   right: 20px;
-  bottom: calc(var(--pie-alto) + 16px);
-  z-index: 80;
+  z-index: 90;
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 10px;
-  width: min(380px, calc(100vw - 40px));
+  max-width: min(420px, calc(100vw - 40px));
+  pointer-events: none;
 }
 
 .aviso {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 12px 14px;
-  border: 1px solid var(--borde);
-  border-left-width: 4px;
+  gap: 16px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 14px 16px;
   border-radius: var(--radio-m);
-  background: var(--superficie);
-  box-shadow: var(--sombra-m);
-  color: var(--texto);
-  font-size: 13px;
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.28);
+  color: #fff;
+  font-size: 14px;
   font-weight: 600;
   animation: modal-entrada 160ms ease;
+  pointer-events: auto;
 }
 
 .aviso-exito {
-  border-left-color: var(--exito-texto);
+  background: #15803d;
 }
 
 .aviso-error {
-  border-left-color: var(--peligro-texto);
+  background: #b91c1c;
+}
+
+.aviso-advertencia {
+  background: #facc15;
+  color: #422006;
 }
 
 .aviso-info {
-  border-left-color: var(--info-texto);
+  background: var(--acento);
 }
 
 .aviso-cerrar {
   background: transparent;
   border: 0;
-  color: var(--texto-tenue);
-  font-size: 12px;
+  color: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.aviso-cerrar:hover,
+.aviso-cerrar:focus-visible {
+  opacity: 1;
+}
+
+.aviso-cerrar:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Aviso que queda dentro de un formulario o de una pantalla: no es un toast, pero se puede cerrar con la cruz. */
+.aviso-en-linea {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.aviso-en-linea > span {
+  flex: 1;
+}
+
+.aviso-en-linea .aviso-cerrar {
+  flex: none;
+  padding: 0 2px;
+  line-height: 1.4;
 }
 
 /* Resaltado del registro recién guardado. */
@@ -2045,7 +2236,7 @@ input[type="checkbox"][role="switch"]:disabled {
   line-height: 1.8;
   outline: none;
 }
-.editor-visual-contenido:focus { border-color: var(--borde-fuerte); box-shadow: 0 0 0 2px var(--superficie-suave); }
+.editor-visual-contenido:focus-visible { border-color: var(--acento); box-shadow: var(--anillo-foco); }
 .editor-visual-contenido[aria-invalid="true"] { border-color: var(--peligro-texto); }
 .editor-visual-contenido h2 { font-size: 25px; font-weight: 700; }
 .editor-visual-contenido h3 { font-size: 20px; font-weight: 650; }

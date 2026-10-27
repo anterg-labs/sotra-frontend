@@ -45,7 +45,7 @@ export function AlertaStock(props: { alertas: AlertasStock; repuestos: Repuesto[
       </ul>
       {alertas.total > CANTIDAD_DE_AVISOS_VISIBLES ? (
         <button
-          className="text-link mt-3"
+          className="text-link mt-3 inline-flex min-h-6 items-center"
           onClick={() => navegar(construirUrlRepuestos({ buscar: "", estado: "", ubicacion: "", stock: "alerta", pagina: 1 }))}
           type="button"
         >

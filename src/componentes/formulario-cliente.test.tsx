@@ -11,8 +11,13 @@ vi.mock("@/componentes/avisos", () => ({ useAvisos: () => ({ mostrarAviso }) }))
 
 const clienteGuardado: Cliente = {
   id: 9, razonSocial: "Cliente prueba", nombreContacto: "Ana Pérez", correo: null, telefono: "99123456", direccion: null,
-  observaciones: null, cantidadActivosAsociados: 0, estado: "activo", creadoEn: "2026-01-01T00:00:00Z",
+  observaciones: null, cantidadActivosAsociados: 0, cantidadOrdenesAsociadas: 0, estado: "activo", creadoEn: "2026-01-01T00:00:00Z",
 };
+
+it("muestra como ejemplo un celular con cero inicial", () => {
+  render(<FormularioCliente accion={vi.fn()} etiquetaConfirmacion="Guardar" />);
+  expect(screen.getByLabelText("Número telefónico (opcional)")).toHaveAttribute("placeholder", "099123456");
+});
 
 function completar(telefono = "") {
   fireEvent.change(screen.getByLabelText("Nombre o razón social"), { target: { value: "Cliente prueba" } });
@@ -47,7 +52,7 @@ describe("formulario de clientes", () => {
 
     await waitFor(() => expect(screen.getByText("El número telefónico ya está registrado.")).toHaveAttribute("id", "telefono-error"));
     expect(screen.getByLabelText("Número telefónico (opcional)")).toHaveAttribute("aria-invalid", "true");
-    expect(screen.getByLabelText("Número telefónico (opcional)")).toHaveFocus();
+    await waitFor(() => expect(screen.getByLabelText("Número telefónico (opcional)")).toHaveFocus());
     expect(screen.getByLabelText("Nombre o razón social")).toHaveValue("Cliente prueba");
     expect(screen.queryByText("No se pudo guardar la información del cliente.")).toBeNull();
   });
@@ -65,12 +70,21 @@ describe("formulario de clientes", () => {
     expect(mostrarAviso).toHaveBeenCalledWith("exito", "Cliente registrado.");
   });
 
+  it("envía el celular con cero inicial tal como se ingresó", async () => {
+    const accion = vi.fn().mockResolvedValue({ exito: true, registro: clienteGuardado });
+    render(<FormularioCliente accion={accion} etiquetaConfirmacion="Guardar" />);
+    completar("099123456");
+    fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
+
+    await waitFor(() => expect(accion).toHaveBeenCalledWith(expect.objectContaining({ telefono: "099123456" })));
+  });
+
   it("al modificar avisa «Cliente actualizado.» y precarga los datos", async () => {
     const accion = vi.fn().mockResolvedValue({ exito: true, registro: clienteGuardado });
     render(
       <FormularioCliente
         accion={accion}
-        clienteInicial={{ razonSocial: "ACME", nombreContacto: "Luis", correo: null, telefono: "099", direccion: null, observaciones: null }}
+        clienteInicial={{ razonSocial: "ACME", nombreContacto: "Luis", correo: null, telefono: "99123456", direccion: null, observaciones: null }}
         etiquetaConfirmacion="Confirmar modificación"
       />,
     );

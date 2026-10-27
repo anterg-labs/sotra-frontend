@@ -12,28 +12,22 @@ import { listarUsuarios } from "@/servicios/servicio-usuarios";
 import type {
   ActualizarOrdenTrabajoInput,
   CrearOrdenTrabajoInput,
-  EstadoOrdenTrabajo,
   FiltrosOrdenesTrabajo,
   SolicitarSugerenciaInput,
   SugerenciaObtenida,
 } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
 
-const etiquetasEstado = {
-  creada: "Creada",
-  asignada: "Asignada",
-  en_ejecucion: "En ejecución",
-  pausada: "Pausada",
-  finalizada: "Finalizada",
-  cerrada: "Cerrada",
-  cancelada: "Cancelada",
-};
+/** Decisión D12 (2026-10-21): la API rechaza descripciones y observaciones de más de 4000 caracteres. */
+export const LARGO_MAXIMO_TEXTO_ORDEN = 4000;
 
 export function obtenerErroresOrdenTrabajo(input: CrearOrdenTrabajoInput) {
-  const errores: Partial<Record<"clienteId" | "activoId" | "descripcion" | "fechaPrevistaEjecucion", string>> = {};
+  const errores: Partial<Record<"clienteId" | "activoId" | "descripcion" | "observaciones" | "fechaPrevistaEjecucion", string>> = {};
   if (input.clienteId <= 0) errores.clienteId = "El cliente es obligatorio.";
   if (input.activoId <= 0) errores.activoId = "El activo es obligatorio.";
   if (!input.descripcion.trim()) errores.descripcion = "La descripción de la tarea es obligatoria.";
+  else if (input.descripcion.length > LARGO_MAXIMO_TEXTO_ORDEN) errores.descripcion = `La descripción no puede superar los ${LARGO_MAXIMO_TEXTO_ORDEN} caracteres.`;
+  if (input.observaciones.length > LARGO_MAXIMO_TEXTO_ORDEN) errores.observaciones = `Las observaciones no pueden superar los ${LARGO_MAXIMO_TEXTO_ORDEN} caracteres.`;
   if (!input.fechaPrevistaEjecucion) errores.fechaPrevistaEjecucion = "La fecha prevista de ejecución es obligatoria.";
   return errores;
 }
@@ -41,10 +35,6 @@ export function obtenerErroresOrdenTrabajo(input: CrearOrdenTrabajoInput) {
 function validarOrdenTrabajo(input: CrearOrdenTrabajoInput) {
   const primerError = Object.values(obtenerErroresOrdenTrabajo(input))[0];
   if (primerError) throw new Error(primerError);
-}
-
-export function obtenerEtiquetaEstadoOrdenTrabajo(estado: EstadoOrdenTrabajo) {
-  return etiquetasEstado[estado];
 }
 
 export function formatearFechaPrevista(fechaPrevista: string) {
@@ -121,33 +111,18 @@ export function crearSesionDeSugerencias() {
   return identificador;
 }
 
-export function estadoNecesitaMotivo(estadoActual: string, estadoNuevo: string) {
-  if (estadoNuevo === estadoActual) {
-    return false;
-  }
-
-  if (estadoNuevo === "pausada" || estadoNuevo === "cancelada" || estadoNuevo === "cerrada") {
-    return true;
-  }
-
-  if (estadoActual === "finalizada" && estadoNuevo === "asignada") {
-    return true;
-  }
-
-  return false;
-}
-
+/** `exigeMotivo` viene de la transición que entrega la API; la validación definitiva la hace el servidor. */
 export async function cambiarEstadoOrdenTrabajo(
   ordenTrabajoId: number,
-  estadoActual: string,
   estadoNuevo: string,
   motivo: string,
+  exigeMotivo: boolean,
 ) {
   if (estadoNuevo === "") {
     throw new Error("Seleccioná el nuevo estado.");
   }
 
-  if (estadoNecesitaMotivo(estadoActual, estadoNuevo) && motivo.trim() === "") {
+  if (exigeMotivo && motivo.trim() === "") {
     throw new Error("Indicá el motivo u observación del cambio de estado.");
   }
 

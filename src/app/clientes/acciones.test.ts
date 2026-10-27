@@ -20,6 +20,13 @@ beforeEach(() => {
 });
 
 describe("acciones de alta y modificación de clientes", () => {
+  it("rechaza una edición incompleta sin convertir un opcional omitido en null", async () => {
+    const { direccion: omitida, ...incompleto } = datos;
+    void omitida;
+    await expect(actualizarClienteAccion(7, incompleto as never)).resolves.toMatchObject({ exito: false });
+    expect(s.actualizarClienteServidor).not.toHaveBeenCalled();
+  });
+
   it("crea el cliente, revalida el listado y devuelve el cliente guardado", async () => {
     s.crearClienteServidor.mockResolvedValue(guardado);
     await expect(crearClienteAccion(datos)).resolves.toEqual({ exito: true, registro: guardado });

@@ -16,12 +16,16 @@ import type {
   AgrupacionTendencias,
   AlertasMaquinaria,
   FiltrosIndicadores,
+  Reincidencia,
   Reincidencias,
   RepuestosUsados,
   Tendencias,
   Tiempos,
 } from "@/tipos/reporte";
 import { formatearFechaCorta } from "@/utilidades/fechas";
+import { ContenedorTabla } from "@/componentes/contenedor-tabla";
+import { useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
+import { EncabezadoOrdenLocal, useOrdenLocal } from "@/componentes/listado/orden-local";
 
 type PropiedadesPanelAnalitica = {
   filtros: FiltrosIndicadores;
@@ -29,13 +33,53 @@ type PropiedadesPanelAnalitica = {
 
 type Resultado<T> = { datos: T | null; error: string };
 
-const etiquetasDeEstado: Record<string, string> = {
-  creada: "Sin asignar",
-  asignada: "Asignada, sin iniciar",
-  en_ejecucion: "En ejecución",
-  pausada: "Pausada",
-  finalizada: "En validación",
-};
+type ColumnaReincidencias = "activo" | "cliente" | "correctivas" | "reincidencias" | "dias" | "ultima";
+
+const VALORES_REINCIDENCIAS = {
+  activo: (fila: Reincidencia) => fila.nombreActivo,
+  cliente: (fila: Reincidencia) => fila.cliente,
+  correctivas: (fila: Reincidencia) => fila.correctivas,
+  reincidencias: (fila: Reincidencia) => fila.reincidencias,
+  dias: (fila: Reincidencia) => fila.diasPromedioEntreIntervenciones,
+  ultima: (fila: Reincidencia) => Date.parse(fila.ultimaIntervencion),
+} satisfies Record<ColumnaReincidencias, (fila: Reincidencia) => string | number | null>;
+
+/** Máquinas con correctivas repetidas; se ordena en el navegador al hacer clic en el título de una columna. */
+function TablaReincidencias({ elementos }: { elementos: Reincidencia[] }) {
+  const { filasOrdenadas, orden, alternar } = useOrdenLocal(elementos, VALORES_REINCIDENCIAS);
+  const encabezado = (columna: ColumnaReincidencias, etiqueta: string) => (
+    <EncabezadoOrdenLocal alternar={alternar} columna={columna} etiqueta={etiqueta} orden={orden} />
+  );
+
+  return (
+    <ContenedorTabla etiqueta="Máquinas con correctivas repetidas">
+      <table>
+        <thead>
+          <tr>
+            {encabezado("activo", "Activo")}
+            {encabezado("cliente", "Cliente")}
+            {encabezado("correctivas", "Correctivas")}
+            {encabezado("reincidencias", "Reincidencias")}
+            {encabezado("dias", "Días entre intervenciones")}
+            {encabezado("ultima", "Última")}
+          </tr>
+        </thead>
+        <tbody>
+          {filasOrdenadas.map((fila) => (
+            <tr key={fila.activoId}>
+              <td><Link className="text-link" href={"/activos/" + fila.activoId}>{fila.nombreActivo}</Link></td>
+              <td>{fila.cliente}</td>
+              <td className="celda-numerica">{fila.correctivas}</td>
+              <td className="celda-numerica"><strong>{fila.reincidencias}</strong></td>
+              <td className="celda-numerica">{fila.diasPromedioEntreIntervenciones ?? "—"}</td>
+              <td>{formatearFechaCorta(fila.ultimaIntervencion)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </ContenedorTabla>
+  );
+}
 
 function mensajeDeError(razon: unknown, porDefecto: string) {
   return razon instanceof Error ? razon.message : porDefecto;
@@ -51,6 +95,7 @@ function describirVariacion(actual: number, anterior: number | null) {
 
 /** Análisis del mantenimiento: tendencias, tiempos, reincidencias y alertas de maquinaria, con los filtros del tablero. */
 export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
+  const etiquetaEstado = useEtiquetaEstadoOrden();
   const [agrupacion, setAgrupacion] = useState<AgrupacionTendencias>("semana");
   const [tendencias, setTendencias] = useState<Resultado<Tendencias> | null>(null);
   const [tiempos, setTiempos] = useState<Resultado<Tiempos> | null>(null);
@@ -213,7 +258,7 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
             </div>
             <GraficoBarras
               datos={datos.etapas.map((etapa) => ({
-                etiqueta: etiquetasDeEstado[etapa.estado] ?? etapa.estado,
+                etiqueta: etiquetaEstado(etapa.estado),
                 valor: etapa.promedioHoras,
                 valorTexto: formatearDuracion(etapa.promedioHoras),
                 detalle: "Promedio de " + etapa.cantidad + (etapa.cantidad === 1 ? " tramo" : " tramos"),
@@ -248,32 +293,7 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
           datos.elementos.length === 0 ? (
             <p className="empty-state">{"Ningún activo tiene correctivas repetidas en " + datos.dias + " días."}</p>
           ) : (
-            <div className="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Activo</th>
-                    <th>Cliente</th>
-                    <th>Correctivas</th>
-                    <th>Reincidencias</th>
-                    <th>Días entre intervenciones</th>
-                    <th>Última</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {datos.elementos.map((fila) => (
-                    <tr key={fila.activoId}>
-                      <td><Link className="text-link" href={"/activos/" + fila.activoId}>{fila.nombreActivo}</Link></td>
-                      <td>{fila.cliente}</td>
-                      <td>{fila.correctivas}</td>
-                      <td><strong>{fila.reincidencias}</strong></td>
-                      <td>{fila.diasPromedioEntreIntervenciones ?? "—"}</td>
-                      <td>{formatearFechaCorta(fila.ultimaIntervencion)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <TablaReincidencias elementos={datos.elementos} />
           ),
         )}
       </section>

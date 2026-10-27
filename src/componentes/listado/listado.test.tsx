@@ -43,7 +43,7 @@ describe("navegación del listado", () => {
     silencio.mockRestore();
   });
 
-  it("reemplaza el contenido por el esqueleto accesible mientras navega y lo devuelve al terminar", async () => {
+  it("deja a la vista el contenido anterior (sin esqueleto) mientras navega y lo anuncia como ocupado", async () => {
     let terminar: () => void = () => undefined;
     push.mockImplementation(() => new Promise<void>((resolver) => { terminar = resolver; }));
     function Prueba() {
@@ -57,12 +57,14 @@ describe("navegación del listado", () => {
       </ProveedorNavegacionListado>,
     );
     fireEvent.click(screen.getByRole("button", { name: "Ir" }));
-    const esqueleto = await screen.findByRole("status", { name: "Cargando cosas…" });
-    expect(esqueleto).toHaveAttribute("aria-busy", "true");
+    const anuncio = await screen.findByRole("status", { name: "Cargando cosas…" });
+    expect(anuncio).toHaveTextContent("Cargando cosas…");
     expect(push).toHaveBeenCalledWith("/x?p=2");
-    expect(screen.queryByText("Contenido anterior")).not.toBeInTheDocument();
+    expect(screen.getByText("Contenido anterior")).toBeVisible();
+    expect(screen.getByText("Contenido anterior").parentElement).toHaveAttribute("aria-busy", "true");
     await act(async () => terminar());
     expect(await screen.findByText("Contenido anterior")).toBeInTheDocument();
+    expect(screen.getByText("Contenido anterior").parentElement).toHaveAttribute("aria-busy", "false");
   });
 
   it("la pantalla de carga genérica es accesible", () => {

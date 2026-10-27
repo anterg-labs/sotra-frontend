@@ -1,5 +1,13 @@
 # sotra-frontend
 
+La versión 1.0.15 muestra en el alta de usuarios el resultado del correo informado por la API (`correoDeContrasenaEnviado`) y acepta teléfonos de ocho dígitos o nueve con cero inicial. El aviso de fallo indica cómo reenviar el enlace desde el detalle del usuario.
+
+## Corrección de integración con Keycloak
+
+Desde 1.0.13, Next.js y `eslint-config-next` están fijados en 16.4.1 para corregir el bloqueo de seguridad que Trivy detectó sobre Next.js 16.3.8. La versión 1.0.14 completa el lockfile con las dependencias necesarias para Linux y CI. Se regeneró sin reutilizar `node_modules`, con npm 11.19.0, y se comprobó mediante `npm ci --dry-run --ignore-scripts --os=linux --cpu=x64`. Los controles del CI siguen habilitados.
+
+Desde 1.0.12, el proxy conserva la sesión de Auth.js y agrega una CSP efectiva con un nonce nuevo por solicitud. También cubre `/login`, sus errores, `/logout` y `/sin-conexion`, sin exigirles sesión. El origen de Keycloak está permitido para completar las redirecciones de login y logout. El layout usa renderizado por solicitud para conservar el nonce; se retira la política anterior de solo reporte y se mantienen las demás cabeceras y protecciones de la imagen Docker. La prueba del reenvío multipart corre en Node, que implementa los flujos de archivos usados por el Route Handler.
+
 Frontend de SOTRA. Usa la API que indica `API_URL` (en desarrollo, `http://localhost:8081`) e inicia sesión con Keycloak (`http://localhost:9080`, realm `sotra`). Necesita el backend y Keycloak levantados (`compose.yml` del backend).
 
 ## Requisitos
@@ -127,7 +135,7 @@ docker compose --profile tools run --rm sotra-frontend-lint
 docker exec sotra-frontend-dev npm run test:run
 ```
 
-La imagen de desarrollo usa Node 26 con su Web Storage experimental desactivada para que las pruebas usen `localStorage` de jsdom. El navegador conserva su propio almacenamiento local.
+La imagen de desarrollo usa Node 26.12.1 con su Web Storage experimental desactivada para que las pruebas usen `localStorage` de jsdom. El `Dockerfile` de producción usa la misma versión corregida; `.nvmrc` fija Node 24.22.1 para CI y ejecución directa. Estas versiones corrigen CVE-2026-111497. Al actualizarlas, reconstruir la imagen, recrear el contenedor y verificar `node -v` dentro de él. El navegador conserva su propio almacenamiento local.
 
 ## Detener
 

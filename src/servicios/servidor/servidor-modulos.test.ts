@@ -73,7 +73,7 @@ describe("servicios de servidor de repuestos y movimientos de stock", () => {
       buscar: "x", repuestoId: "3", tipo: "egreso", fechaDesde: "2026-01-01", fechaHasta: "2026-02-01", ubicacion: "Pañol", usuarioId: "9", pagina: "2",
     });
     await obtenerMovimientoStockServidor(5);
-    await registrarIngresoStockServidor(1, { cantidad: 1, fecha: "2026-01-01", motivo: "x", ubicacion: "y", observaciones: "" });
+    await registrarIngresoStockServidor(1, { cantidad: 1, observaciones: "" });
     await registrarEgresoStockServidor(1, { cantidad: 1, motivo: "x" });
     await registrarAjusteStockServidor(1, { cantidadReal: 1, motivo: "x" });
     expect(rutas().slice(1)).toEqual([
@@ -87,12 +87,12 @@ describe("servicios de servidor de repuestos y movimientos de stock", () => {
 
 describe("servicios de servidor de documentos, activos y órdenes", () => {
   it("lista y consulta documentos técnicos y elimina con DELETE aunque la respuesta venga vacía", async () => {
-    await listarDocumentosTecnicosServidor({ buscar: " manual ", activoId: "3", pagina: 2 });
+    await listarDocumentosTecnicosServidor({ buscar: " manual ", activoId: "3", modeloMaquinaId: "5", tipo: "normativa", vigente: "false", pagina: 2 });
     await obtenerDocumentoTecnicoServidor(8);
     fetchSimulado.mockResolvedValueOnce(new Response(null, { status: 204 }));
     await expect(eliminarDocumentoTecnicoServidor(8)).resolves.toBeUndefined();
     expect(rutas()).toEqual([
-      ["GET", "/api/v1/documentos-tecnicos?buscar=manual&activoId=3&pagina=2"],
+      ["GET", "/api/v1/documentos-tecnicos?buscar=manual&activoId=3&modeloMaquinaId=5&tipo=normativa&vigente=false&pagina=2"],
       ["GET", "/api/v1/documentos-tecnicos/8"],
       ["DELETE", "/api/v1/documentos-tecnicos/8"],
     ]);

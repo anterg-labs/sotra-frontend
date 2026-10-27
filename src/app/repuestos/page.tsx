@@ -7,6 +7,7 @@ import type { ParametrosBusqueda } from "@/componentes/listado/url-listado";
 import { listarRepuestosServidor, obtenerAlertasStockServidor } from "@/servicios/servidor/repuestos";
 import type { AlertasStock, Repuesto } from "@/tipos/repuesto";
 import { AltaRepuesto } from "./alta-repuesto";
+import { IngresoRapidoStock } from "./ingreso-rapido-stock";
 import { AlertaStock } from "./alerta-stock";
 import { BarraFiltrosRepuestos } from "./barra-filtros-repuestos";
 import { aFiltrosApiRepuestos, leerFiltrosRepuestos } from "./filtros";
@@ -32,7 +33,6 @@ async function cargarAlertas(): Promise<{ alertas: AlertasStock | null; repuesto
 export default async function PaginaRepuestos(props: { searchParams: Promise<ParametrosBusqueda> }) {
   const filtros = leerFiltrosRepuestos(await props.searchParams);
   const consulta = anticiparConsulta(listarRepuestosServidor(aFiltrosApiRepuestos(filtros)));
-  const clave = [filtros.buscar, filtros.estado, filtros.ubicacion, filtros.stock, filtros.pagina].join("|");
   const { alertas, repuestos } = await cargarAlertas();
 
   return (
@@ -45,6 +45,7 @@ export default async function PaginaRepuestos(props: { searchParams: Promise<Par
           <Link className="secondary-button" href="/repuestos/movimientos">
             Movimientos de stock
           </Link>
+          <IngresoRapidoStock />
           <AltaRepuesto />
         </div>
       </header>
@@ -56,7 +57,7 @@ export default async function PaginaRepuestos(props: { searchParams: Promise<Par
 
         <section className="panel">
           <ZonaListado>
-            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />} key={clave}>
+            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />}>
               <ListadoRepuestos consulta={consulta} filtros={filtros} />
             </Suspense>
           </ZonaListado>

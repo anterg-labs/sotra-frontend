@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ErrorDeApi } from "@/servicios/api/solicitudes-http";
-import { obtenerFechaDeHoy } from "@/validaciones/fecha";
 import {
   actualizarRepuestoAccion,
   actualizarStockMinimoAccion,
@@ -36,10 +35,20 @@ beforeEach(() => {
 });
 
 describe("acciones de repuestos", () => {
+  it("permite borrar opcionales con null y rechaza una edición que los omite", async () => {
+    r.actualizarRepuestoServidor.mockResolvedValue(guardado);
+    const vaciado = { ...datos, descripcion: null, marca: null, ubicacion: null };
+    await expect(actualizarRepuestoAccion(5, vaciado)).resolves.toMatchObject({ exito: true });
+    expect(r.actualizarRepuestoServidor).toHaveBeenCalledWith(5, vaciado);
+    r.actualizarRepuestoServidor.mockClear();
+    await expect(actualizarRepuestoAccion(5, { codigo: "R-1", nombre: "Filtro" } as never)).resolves.toMatchObject({ exito: false });
+    expect(r.actualizarRepuestoServidor).not.toHaveBeenCalled();
+  });
+
   it("crea el repuesto y revalida /repuestos", async () => {
     r.crearRepuestoServidor.mockResolvedValue(guardado);
     await expect(crearRepuestoAccion(datos)).resolves.toEqual({ exito: true, registro: guardado });
-    expect(r.crearRepuestoServidor).toHaveBeenCalledWith(datos);
+    expect(r.crearRepuestoServidor).toHaveBeenCalledWith({ ...datos, descripcion: null, marca: null, ubicacion: null });
     expect(revalidatePath).toHaveBeenCalledWith("/repuestos", "layout");
   });
 
@@ -64,7 +73,7 @@ describe("acciones de repuestos", () => {
   it("modifica el repuesto indicado y rechaza ids inválidos", async () => {
     r.actualizarRepuestoServidor.mockResolvedValue(guardado);
     await expect(actualizarRepuestoAccion(5, datos)).resolves.toMatchObject({ exito: true });
-    expect(r.actualizarRepuestoServidor).toHaveBeenCalledWith(5, datos);
+    expect(r.actualizarRepuestoServidor).toHaveBeenCalledWith(5, { ...datos, descripcion: null, marca: null, ubicacion: null });
     await expect(actualizarRepuestoAccion(0, datos)).resolves.toMatchObject({ exito: false });
   });
 
@@ -89,21 +98,20 @@ describe("acciones de repuestos", () => {
 });
 
 describe("acciones de movimientos de stock", () => {
-  const hoy = obtenerFechaDeHoy();
 
   it("registra un ingreso válido y revalida", async () => {
     m.registrarIngresoStockServidor.mockResolvedValue(movimiento);
-    const ingreso = { cantidad: 4, fecha: hoy, motivo: "Compra", ubicacion: "A1", observaciones: "" };
+    const ingreso = { cantidad: 4, observaciones: "" };
     await expect(registrarIngresoStockAccion(5, ingreso)).resolves.toEqual({ exito: true, registro: movimiento });
     expect(m.registrarIngresoStockServidor).toHaveBeenCalledWith(5, ingreso);
     expect(revalidatePath).toHaveBeenCalledWith("/repuestos", "layout");
   });
 
   it("valida el ingreso por campo y rechaza datos mal formados", async () => {
-    const resultado = await registrarIngresoStockAccion(5, { cantidad: 0, fecha: "", motivo: " ", ubicacion: "", observaciones: "" });
-    expect(resultado).toMatchObject({ exito: false, errores: { cantidad: expect.any(String), fecha: expect.any(String), motivo: expect.any(String), ubicacion: expect.any(String) } });
+    const resultado = await registrarIngresoStockAccion(5, { cantidad: 0, observaciones: "" });
+    expect(resultado).toMatchObject({ exito: false, errores: { cantidad: expect.any(String) } });
     await expect(registrarIngresoStockAccion(5, { cantidad: "1" } as never)).resolves.toMatchObject({ exito: false });
-    await expect(registrarIngresoStockAccion(0, { cantidad: 1, fecha: hoy, motivo: "x", ubicacion: "y", observaciones: "" })).resolves.toMatchObject({ exito: false });
+    await expect(registrarIngresoStockAccion(0, { cantidad: 1, observaciones: "" })).resolves.toMatchObject({ exito: false });
     expect(m.registrarIngresoStockServidor).not.toHaveBeenCalled();
   });
 

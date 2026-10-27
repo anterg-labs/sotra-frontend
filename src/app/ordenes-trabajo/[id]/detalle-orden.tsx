@@ -8,14 +8,15 @@ import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import {
   asignarTecnicoOrdenTrabajo,
   cambiarEstadoOrdenTrabajo,
-  estadoNecesitaMotivo,
   formatearFechaPrevista,
   listarTecnicosPaginados,
-  obtenerEtiquetaEstadoOrdenTrabajo,
 } from "@/servicios/servicio-ordenes-trabajo";
+import { EtiquetaEstadoOrden, useEtiquetaEstadoOrden, useFaseEstadoOrden } from "@/componentes/estados-orden";
 import type { HistorialEstadoOrdenTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
 import { formatearFechaCorta, formatearFechaHora } from "@/utilidades/fechas";
+import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
+import { EnlaceVolver } from "@/componentes/enlace-volver";
 
 type PropiedadesDetalleOrden = {
   ordenInicial: OrdenTrabajo;
@@ -27,31 +28,34 @@ type PropiedadesDetalleOrden = {
 /** Detalle de la orden: los datos llegan del servidor; el cambio de estado, la asignación y las evidencias siguen en el navegador. */
 export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
   const ordenTrabajoId = props.ordenInicial.id;
+  const etiquetaEstado = useEtiquetaEstadoOrden();
+  const faseDelEstado = useFaseEstadoOrden();
   const [orden, setOrden] = useState<OrdenTrabajo | null>(props.ordenInicial);
   const puedeEditar = useTienePermiso("ot.editar");
   const puedeAsignarTecnico = useTienePermiso("ot.asignar_tecnico");
   const puedeRegistrarAvance = useTienePermiso("ot.registrar_avance");
   const errorCarga = puedeAsignarTecnico && props.huboErrorTecnicos ? "No se pudo obtener el listado de técnicos." : "";
   const tecnicos = props.tecnicosIniciales;
-  const [tecnicoSeleccionadoId, setTecnicoSeleccionadoId] = useState(
-    props.ordenInicial.tecnicoId === null ? "" : String(props.ordenInicial.tecnicoId),
-  );
+  const [tecnicoSeleccionadoId, setTecnicoSeleccionadoId] = useState("");
   const [estadoSeleccionado, setEstadoSeleccionado] = useState("");
   const [motivoEstado, setMotivoEstado] = useState("");
   const [estaGuardandoTecnico, setEstaGuardandoTecnico] = useState(false);
   const [estaGuardandoEstado, setEstaGuardandoEstado] = useState(false);
   const [errorAccion, setErrorAccion] = useState("");
+  const [errorMotivo, setErrorMotivo] = useState("");
   const [mensajeExito, setMensajeExito] = useState("");
-
-  function cambiarEstadoSeleccionado(evento: React.ChangeEvent<HTMLSelectElement>) {
-    setEstadoSeleccionado(evento.target.value);
-  }
 
   function cambiarMotivoEstado(evento: React.ChangeEvent<HTMLTextAreaElement>) {
     setMotivoEstado(evento.target.value);
+    setErrorMotivo("");
   }
 
   async function confirmarTecnico() {
+    if (orden === null || estaGuardandoTecnico) return;
+    if (tecnicoSeleccionadoId === String(orden.tecnicoId)) {
+      setErrorAccion("El técnico ya está asignado a esta orden de trabajo.");
+      return;
+    }
     setErrorAccion("");
     setMensajeExito("");
     setEstaGuardandoTecnico(true);
@@ -59,6 +63,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
     try {
       const ordenActualizada = await asignarTecnicoOrdenTrabajo(ordenTrabajoId, tecnicoSeleccionadoId);
       setOrden(ordenActualizada);
+      setTecnicoSeleccionadoId("");
       setMensajeExito("Técnico asignado correctamente.");
     } catch (error) {
       let mensaje = "No se pudo asignar el técnico a la orden de trabajo.";
@@ -78,18 +83,20 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
 
     setErrorAccion("");
     setMensajeExito("");
+    const exigeMotivo = orden.transiciones.find((transicion) => transicion.estado === estadoSeleccionado)?.exigeMotivo ?? false;
+    if (exigeMotivo && motivoEstado.trim() === "") {
+      setErrorMotivo("Indicá el motivo u observación del cambio de estado.");
+      document.getElementById("motivoCambioEstado")?.focus();
+      return;
+    }
     setEstaGuardandoEstado(true);
 
     try {
-      const ordenActualizada = await cambiarEstadoOrdenTrabajo(
-        ordenTrabajoId,
-        orden.estado,
-        estadoSeleccionado,
-        motivoEstado,
-      );
+      const ordenActualizada = await cambiarEstadoOrdenTrabajo(ordenTrabajoId, estadoSeleccionado, motivoEstado, exigeMotivo);
       setOrden(ordenActualizada);
       setEstadoSeleccionado("");
       setMotivoEstado("");
+      setErrorMotivo("");
       setMensajeExito("Estado actualizado correctamente.");
     } catch (error) {
       let mensaje = "No se pudo cambiar el estado de la orden de trabajo.";
@@ -146,7 +153,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
     const fechaCreacion = formatearFechaCorta(orden.creadoEn);
 
     let enlaceModificar = null;
-    if (orden.estado !== "cerrada" && puedeEditar) {
+    if (faseDelEstado(orden.estado) !== "cerrada" && puedeEditar) {
       enlaceModificar = (
         <Link className="primary-button" href={"/ordenes-trabajo/" + orden.id + "/editar"}>
           Modificar
@@ -154,11 +161,12 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
       );
     }
 
-    const ordenEstaTerminada = orden.estado === "cerrada" || orden.estado === "cancelada";
+    // Un estado sin transiciones de salida es final: la orden queda solo para consulta.
+    const ordenEstaTerminada = orden.transiciones.length === 0;
 
     let mensajeAccionError = null;
     if (errorAccion) {
-      mensajeAccionError = <p className="form-error-banner">{errorAccion}</p>;
+      mensajeAccionError = <AvisoEnLinea>{errorAccion}</AvisoEnLinea>;
     }
 
     let mensajeAccionExito = null;
@@ -183,18 +191,20 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
             alCambiar={setTecnicoSeleccionadoId}
             buscarOpciones={async (consulta) => {
               const pagina = await listarTecnicosPaginados(consulta);
-              return pagina.map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }));
+              return pagina.filter((tecnico) => tecnico.id !== orden.tecnicoId)
+                .map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }));
             }}
             etiqueta="Asignar o modificar técnico"
             id="tecnicoAsignado"
-            opciones={tecnicos.map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }))}
+            opciones={tecnicos.filter((tecnico) => tecnico.id !== orden.tecnicoId)
+              .map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }))}
             textoVacio="Seleccioná un técnico"
             valor={tecnicoSeleccionadoId}
           />
           <div className="form-actions">
             <button
               className="primary-button"
-              disabled={estaGuardandoTecnico || tecnicoSeleccionadoId === ""}
+              disabled={estaGuardandoTecnico || tecnicoSeleccionadoId === "" || tecnicoSeleccionadoId === String(orden.tecnicoId)}
               onClick={confirmarTecnico}
               type="button"
             >
@@ -207,14 +217,23 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
 
     let seccionEstado = <p className="empty-state">No hay cambios de estado disponibles para esta orden.</p>;
     if (!puedeRegistrarAvance) {
-      seccionEstado = <p className="empty-state">{"Estado actual: " + obtenerEtiquetaEstadoOrdenTrabajo(orden.estado) + "."}</p>;
-    } else if (orden.estadosSiguientes.length > 0) {
+      seccionEstado = <p className="empty-state">{"Estado actual: " + etiquetaEstado(orden.estado) + "."}</p>;
+    } else if (orden.transiciones.length > 0) {
       let campoMotivo = null;
-      if (estadoNecesitaMotivo(orden.estado, estadoSeleccionado)) {
+      if (orden.transiciones.some((transicion) => transicion.estado === estadoSeleccionado && transicion.exigeMotivo)) {
         campoMotivo = (
           <div className="form-field">
             <label htmlFor="motivoCambioEstado">Motivo u observación</label>
-            <textarea id="motivoCambioEstado" onChange={cambiarMotivoEstado} rows={3} value={motivoEstado} />
+            <textarea
+              aria-describedby={errorMotivo ? "motivoCambioEstado-error" : undefined}
+              aria-invalid={errorMotivo ? true : undefined}
+              id="motivoCambioEstado"
+              onChange={cambiarMotivoEstado}
+              required
+              rows={3}
+              value={motivoEstado}
+            />
+            {errorMotivo ? <p className="field-error" id="motivoCambioEstado-error" role="alert">{errorMotivo}</p> : null}
           </div>
         );
       }
@@ -225,18 +244,18 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
       }
 
       seccionEstado = (
-        <>
-          <div className="form-field">
-            <label htmlFor="nuevoEstado">Actualizar estado</label>
-            <select id="nuevoEstado" onChange={cambiarEstadoSeleccionado} value={estadoSeleccionado}>
-              <option value="">Seleccioná el nuevo estado</option>
-              {orden.estadosSiguientes.map((estadoSiguiente) => (
-                <option key={estadoSiguiente} value={estadoSiguiente}>
-                  {obtenerEtiquetaEstadoOrdenTrabajo(estadoSiguiente)}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="grid gap-4">
+          <Combobox
+            alCambiar={(estado) => {
+              setEstadoSeleccionado(estado);
+              setErrorMotivo("");
+            }}
+            etiqueta="Actualizar estado"
+            id="nuevoEstado"
+            opciones={orden.transiciones.map((transicion) => ({ valor: transicion.estado, etiqueta: etiquetaEstado(transicion.estado) }))}
+            textoVacio="Seleccioná el nuevo estado"
+            valor={estadoSeleccionado}
+          />
           {campoMotivo}
           <div className="form-actions">
             <button
@@ -248,7 +267,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
               {textoBotonEstado}
             </button>
           </div>
-        </>
+        </div>
       );
     }
 
@@ -286,7 +305,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
           </div>
           <div>
             <dt>Estado</dt>
-            <dd>{obtenerEtiquetaEstadoOrdenTrabajo(orden.estado)}</dd>
+            <dd><EtiquetaEstadoOrden estado={orden.estado} /></dd>
           </div>
           <div>
             <dt>Fecha de creación</dt>
@@ -296,19 +315,19 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
             <dt>Fecha prevista de ejecución</dt>
             <dd>{formatearFechaPrevista(orden.fechaPrevistaEjecucion)}</dd>
           </div>
-          <div>
+          <div className="detail-wide">
             <dt>Descripción de la tarea</dt>
             <dd>{orden.descripcion}</dd>
           </div>
-          <div>
+          <div className="detail-wide">
             <dt>Observaciones</dt>
             <dd>{textoObservaciones}</dd>
           </div>
-          <div>
+          <div className="detail-wide">
             <dt>Repuestos</dt>
             <dd>{textoRepuestos}</dd>
           </div>
-          <div>
+          <div className="detail-wide">
             <dt>Sugerencias</dt>
             <dd>{textoSugerencias}</dd>
           </div>
@@ -331,7 +350,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
         <section className="panel detail-panel">
           <h2>Estado de la orden</h2>
           <p className="mb-4 mt-2">
-            <span className={"status status-" + orden.estado}>{obtenerEtiquetaEstadoOrdenTrabajo(orden.estado)}</span>
+            <EtiquetaEstadoOrden estado={orden.estado} />
           </p>
           {seccionEstado}
         </section>
@@ -341,7 +360,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
           <ul className="mt-4 grid gap-3">
             {historialMasNuevoPrimero.map((cambio, indice) => (
               <li className="border-b u-borde pb-3 text-sm" key={indice}>
-                <strong>{obtenerEtiquetaEstadoOrdenTrabajo(cambio.estado)}</strong>
+                <strong>{etiquetaEstado(cambio.estado)}</strong>
                 <span className="block text-xs texto-tenue">{formatearFechaHora(cambio.fechaHora)}</span>
                 <span className="block">{cambio.observacion}</span>
               </li>
@@ -361,13 +380,13 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
   return (
     <main className="page-content">
       <header className="page-heading">
-        <div>
-          <p className="eyebrow">Órdenes de trabajo</p>
-          <h1>{titulo}</h1>
+        <div className="encabezado-volver">
+          <EnlaceVolver etiqueta="Volver al listado" href="/ordenes-trabajo" />
+          <div>
+            <p className="eyebrow">Órdenes de trabajo</p>
+            <h1>{titulo}</h1>
+          </div>
         </div>
-        <Link className="secondary-button" href="/ordenes-trabajo">
-          Volver al listado
-        </Link>
       </header>
 
       {mensajeError}

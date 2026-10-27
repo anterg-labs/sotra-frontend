@@ -27,10 +27,11 @@ function usuario(id: number, roles: string[], estado: "activo" | "inactivo" = "a
     nombre: "Nombre" + id,
     apellido: "Apellido" + id,
     correo: `u${id}@sotra.com`,
-    telefono: "099111222",
+    telefono: "99111222",
     roles: roles.map((nombre, i) => ({ id: i + 1, nombre, activo: true })),
     estado,
     fechaIngreso: "2026-01-01",
+    cantidadOrdenesAsignadas: 0,
   };
 }
 
@@ -42,7 +43,7 @@ const pagina = (elementos: ReturnType<typeof usuario>[], totalPaginas = 1) => ({
   totalPaginas,
 });
 
-const roles = [{ id: 1, nombre: "Administrador" }, { id: 2, nombre: "Técnico" }];
+const roles = [{ id: 1, nombre: "Administrador", estado: "activo" as const }, { id: 2, nombre: "Técnico", estado: "activo" as const }];
 const filtrosVacios = { buscar: "", rolId: "", estado: "", pagina: 1 };
 const conNavegacion = (ui: React.ReactNode) => <ProveedorNavegacionListado etiquetaCarga="Cargando usuarios…">{ui}</ProveedorNavegacionListado>;
 
@@ -55,6 +56,15 @@ beforeEach(() => {
 });
 
 describe("filtros de la URL de usuarios", () => {
+  it("muestra cero y el total de órdenes asignadas y permite ordenar por esa columna", () => {
+    render(conNavegacion(<TablaUsuarios filtros={filtrosVacios} usuarios={[usuario(1, []), { ...usuario(2, ["Técnico"]), cantidadOrdenesAsignadas: 4 }]} />));
+    const filas = screen.getAllByRole("row");
+    expect(within(filas[1]).getByRole("cell", { name: "0" })).toBeInTheDocument();
+    expect(within(filas[2]).getByRole("cell", { name: "4" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Órdenes asignadas/ }));
+    expect(push).toHaveBeenLastCalledWith(expect.stringContaining("ordenarPor=cantidadOrdenesAsignadas"));
+    expect(leerFiltrosUsuarios({ ordenarPor: "cantidadOrdenesAsignadas" }).ordenarPor).toBe("cantidadOrdenesAsignadas");
+  });
   it("lee los filtros con valores seguros y arma la URL", () => {
     expect(leerFiltrosUsuarios({})).toEqual(filtrosVacios);
     expect(leerFiltrosUsuarios({ buscar: "ana", rolId: "2", estado: "activo", pagina: "3" })).toEqual({
@@ -75,6 +85,8 @@ describe("listado de usuarios (Server Component)", () => {
     expect(within(filas[3]).getByText("2 roles")).toBeInTheDocument();
     expect(within(filas[3]).getByText("Inactivo")).toBeInTheDocument();
     expect(within(filas[3]).queryByRole("button", { name: "Dar de baja" })).not.toBeInTheDocument();
+    expect(within(filas[3]).getByRole("button", { name: "Reactivar usuario" })).toBeInTheDocument();
+    expect(within(filas[2]).queryByRole("button", { name: "Reactivar usuario" })).not.toBeInTheDocument();
     expect(within(filas[2]).getByRole("link", { name: "Modificar usuario" })).toHaveAttribute("href", "/usuarios/2/editar");
     expect(within(filas[2]).getByRole("link", { name: "Ver detalle" })).toHaveAttribute("href", "/usuarios/2");
   });
@@ -134,30 +146,61 @@ describe("tabla de usuarios (baja)", () => {
 
   it("confirma la desactivación mostrando el nombre y llama a la acción", async () => {
     cambiarEstadoUsuarioAccion.mockResolvedValue({ exito: true });
-    render(<TablaUsuarios usuarios={usuarios} />);
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaUsuarios usuarios={usuarios} filtros={{ buscar: "", rolId: "", estado: "", pagina: 1 }} /></ProveedorNavegacionListado>);
     fireEvent.click(screen.getByRole("button", { name: "Dar de baja" }));
     const dialogo = screen.getByRole("dialog", { name: "Desactivar usuario" });
     expect(dialogo).toHaveTextContent("Nombre1 Apellido1");
     expect(cambiarEstadoUsuarioAccion).not.toHaveBeenCalled();
     fireEvent.click(within(dialogo).getByRole("button", { name: "Dar de baja" }));
     await waitFor(() => expect(cambiarEstadoUsuarioAccion).toHaveBeenCalledWith(1, "inactivo"));
+    await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("exito", "Usuario dado de baja."));
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   });
 
   it("cancelar no llama a la acción y un fallo muestra el error", async () => {
     cambiarEstadoUsuarioAccion.mockResolvedValue({ exito: false, mensaje: "No se pudo desactivar el usuario seleccionado." });
-    render(<TablaUsuarios usuarios={usuarios} />);
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaUsuarios usuarios={usuarios} filtros={{ buscar: "", rolId: "", estado: "", pagina: 1 }} /></ProveedorNavegacionListado>);
     fireEvent.click(screen.getByRole("button", { name: "Dar de baja" }));
     fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
     expect(cambiarEstadoUsuarioAccion).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole("button", { name: "Dar de baja" }));
     fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Dar de baja" }));
-    expect(await screen.findByText("No se pudo desactivar el usuario seleccionado.")).toBeInTheDocument();
+    await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("error", "No se pudo desactivar el usuario seleccionado."));
+    expect(mostrarAviso).not.toHaveBeenCalledWith("exito", expect.anything(), expect.anything());
+  });
+
+  it("pide confirmación antes de reactivar un usuario inactivo y luego llama a la acción con el estado activo", async () => {
+    cambiarEstadoUsuarioAccion.mockResolvedValue({ exito: true });
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaUsuarios usuarios={usuarios} filtros={{ buscar: "", rolId: "", estado: "", pagina: 1 }} /></ProveedorNavegacionListado>);
+    fireEvent.click(screen.getByRole("button", { name: "Reactivar usuario" }));
+    const dialogo = screen.getByRole("dialog", { name: "Reactivar usuario" });
+    expect(dialogo).toHaveTextContent("Nombre2 Apellido2");
+    expect(cambiarEstadoUsuarioAccion).not.toHaveBeenCalled();
+    fireEvent.click(within(dialogo).getByRole("button", { name: "Reactivar" }));
+    await waitFor(() => expect(cambiarEstadoUsuarioAccion).toHaveBeenCalledWith(2, "activo"));
+    await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("exito", "Usuario reactivado."));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  });
+
+  it("cancelar la reactivación no llama a la acción", () => {
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaUsuarios usuarios={usuarios} filtros={{ buscar: "", rolId: "", estado: "", pagina: 1 }} /></ProveedorNavegacionListado>);
+    fireEvent.click(screen.getByRole("button", { name: "Reactivar usuario" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+    expect(cambiarEstadoUsuarioAccion).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("si falla la reactivación muestra el error", async () => {
+    cambiarEstadoUsuarioAccion.mockResolvedValue({ exito: false, mensaje: "No se pudo reactivar el usuario." });
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaUsuarios usuarios={usuarios} filtros={{ buscar: "", rolId: "", estado: "", pagina: 1 }} /></ProveedorNavegacionListado>);
+    fireEvent.click(screen.getByRole("button", { name: "Reactivar usuario" }));
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Reactivar" }));
+    await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("error", "No se pudo reactivar el usuario."));
   });
 
   it("resalta el usuario recién creado", () => {
-    render(<TablaUsuarios usuarios={usuarios} />);
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaUsuarios usuarios={usuarios} filtros={{ buscar: "", rolId: "", estado: "", pagina: 1 }} /></ProveedorNavegacionListado>);
     act(() => marcarCreado("usuarios", 2));
     expect(screen.getAllByRole("row")[2]).toHaveClass("fila-nueva");
   });
@@ -165,20 +208,36 @@ describe("tabla de usuarios (baja)", () => {
 
 describe("alta de usuario en modal", () => {
   it("abre el formulario y, al guardar, cierra, resalta y avisa", async () => {
-    crearUsuarioAccion.mockResolvedValue({ exito: true, registro: usuario(9, ["Técnico"]) });
+    crearUsuarioAccion.mockResolvedValue({ exito: true, registro: { ...usuario(9, ["Técnico"]), correoDeContrasenaEnviado: true } });
     render(<AltaUsuarioModal roles={roles} />);
     fireEvent.click(screen.getByRole("button", { name: "Crear nuevo usuario" }));
     const dialogo = await screen.findByRole("dialog", { name: "Crear nuevo usuario" });
     fireEvent.change(within(dialogo).getByLabelText("Nombre"), { target: { value: "Ana" } });
     fireEvent.change(within(dialogo).getByLabelText("Apellido"), { target: { value: "Pérez" } });
     fireEvent.change(within(dialogo).getByLabelText("Correo electrónico"), { target: { value: "ana@sotra.com" } });
-    fireEvent.change(within(dialogo).getByLabelText("Número de teléfono"), { target: { value: "099111222" } });
+    fireEvent.change(within(dialogo).getByLabelText("Número de teléfono"), { target: { value: "99111222" } });
     expect(within(dialogo).queryByLabelText("Contraseña")).not.toBeInTheDocument();
     fireEvent.click(within(dialogo).getByRole("button", { name: "Confirmar creación" }));
     await waitFor(() =>
       expect(mostrarAviso).toHaveBeenCalledWith("exito", "Usuario creado. Se envió un correo a " + usuario(9, ["Técnico"]).correo + " para que elija su contraseña."),
     );
-    expect(crearUsuarioAccion).toHaveBeenCalledWith({ nombre: "Ana", apellido: "Pérez", correo: "ana@sotra.com", telefono: "099111222", idsRol: [] });
+    expect(crearUsuarioAccion).toHaveBeenCalledWith({ nombre: "Ana", apellido: "Pérez", correo: "ana@sotra.com", telefono: "99111222", idsRol: [] });
+  });
+
+  it.each([false, undefined, null])("el modal informa el correo %s sin anunciar un envío ni repetir el alta", async (correoDeContrasenaEnviado) => {
+    crearUsuarioAccion.mockResolvedValue({ exito: true, registro: { ...usuario(9, ["Técnico"]), correoDeContrasenaEnviado } });
+    render(<AltaUsuarioModal roles={roles} />);
+    fireEvent.click(screen.getByRole("button", { name: "Crear nuevo usuario" }));
+    const dialogo = await screen.findByRole("dialog", { name: "Crear nuevo usuario" });
+    fireEvent.change(within(dialogo).getByLabelText("Nombre"), { target: { value: "Ana" } });
+    fireEvent.change(within(dialogo).getByLabelText("Apellido"), { target: { value: "Pérez" } });
+    fireEvent.change(within(dialogo).getByLabelText("Correo electrónico"), { target: { value: "ana@sotra.com" } });
+    fireEvent.change(within(dialogo).getByLabelText("Número de teléfono"), { target: { value: "99111222" } });
+    fireEvent.click(within(dialogo).getByRole("button", { name: "Confirmar creación" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(mostrarAviso).toHaveBeenCalledWith(correoDeContrasenaEnviado === false ? "advertencia" : "info", expect.stringContaining("Usuario creado"));
+    expect(mostrarAviso).not.toHaveBeenCalledWith("exito", expect.stringContaining("Se envió un correo"));
+    expect(crearUsuarioAccion).toHaveBeenCalledTimes(1);
   });
 
   it("sin roles o con error de roles lo informa en lugar del formulario", () => {

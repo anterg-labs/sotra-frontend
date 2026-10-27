@@ -4,13 +4,13 @@ import { useFiltrosEnVivo } from "@/componentes/listado/use-filtros-en-vivo";
 import type { FiltrosTiposMaquina } from "@/tipos/tipo-maquina";
 import { construirUrlTipos } from "./filtros";
 
-type ValoresTipos = Pick<FiltrosTiposMaquina, "buscar" | "estado">;
+type ValoresTipos = Pick<FiltrosTiposMaquina, "buscar" | "estado" | "ordenarPor" | "direccionOrden">;
 const VACIOS: ValoresTipos = { buscar: "", estado: "" };
 
 /** Filtros del listado en vivo: el texto espera un instante y el estado aplica al instante. */
 export function BarraFiltrosTipos(props: { filtros: FiltrosTiposMaquina }) {
   const { valores, cambiar, aplicarAhora, limpiar, estaPendiente } = useFiltrosEnVivo<ValoresTipos>({
-    inicial: { buscar: props.filtros.buscar, estado: props.filtros.estado },
+    inicial: { buscar: props.filtros.buscar, estado: props.filtros.estado, ordenarPor: props.filtros.ordenarPor, direccionOrden: props.filtros.direccionOrden },
     construirUrl: (v) => construirUrlTipos({ ...v, pagina: 1 }),
   });
 

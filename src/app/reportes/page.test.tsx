@@ -1,4 +1,6 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render as renderBase, screen, within } from "@testing-library/react";
+import type { ReactElement } from "react";
+import { conEstadosOrden, estadosDePrueba } from "@/pruebas/estados-orden";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ProveedorNavegacionListado } from "@/componentes/listado/navegacion-listado";
 import { construirUrlReportes, leerFiltrosReportes } from "./filtros";
@@ -6,11 +8,16 @@ import PaginaReportes from "./page";
 import { ResumenIndicadores } from "./resumen-indicadores";
 import { TableroReportes } from "./tablero-reportes";
 
+function render(ui: ReactElement) {
+  return renderBase(conEstadosOrden(ui));
+}
+
 const push = vi.hoisted(() => vi.fn());
 const replace = vi.hoisted(() => vi.fn());
 const s = vi.hoisted(() => ({
   obtenerIndicadoresServidor: vi.fn(),
   listarTecnicosServidor: vi.fn(),
+  listarEstadosOrdenTrabajoOVacio: vi.fn(),
   listarClientesServidor: vi.fn(),
   obtenerClienteServidor: vi.fn(),
   listarActivosServidor: vi.fn(),
@@ -23,7 +30,10 @@ const s = vi.hoisted(() => ({
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace }) }));
 vi.mock("@/servicios/servidor/reportes", () => ({ obtenerIndicadoresServidor: s.obtenerIndicadoresServidor }));
-vi.mock("@/servicios/servidor/ordenes-trabajo", () => ({ listarTecnicosServidor: s.listarTecnicosServidor }));
+vi.mock("@/servicios/servidor/ordenes-trabajo", () => ({
+  listarTecnicosServidor: s.listarTecnicosServidor,
+  listarEstadosOrdenTrabajoOVacio: s.listarEstadosOrdenTrabajoOVacio,
+}));
 vi.mock("@/servicios/servidor/clientes", () => ({ listarClientesServidor: s.listarClientesServidor, obtenerClienteServidor: s.obtenerClienteServidor }));
 vi.mock("@/servicios/servidor/activos", () => ({ listarActivosServidor: s.listarActivosServidor, obtenerActivoServidor: s.obtenerActivoServidor }));
 vi.mock("@/servicios/servidor/usuarios", () => ({ obtenerUsuarioServidor: s.obtenerUsuarioServidor }));
@@ -80,6 +90,7 @@ function tablero(filtros = filtrosVacios) {
 
 beforeEach(() => {
   Object.values(s).forEach((f) => f.mockReset());
+  s.listarEstadosOrdenTrabajoOVacio.mockResolvedValue(estadosDePrueba);
   push.mockReset();
   replace.mockReset();
   s.obtenerIndicadoresServidor.mockResolvedValue(indicadores);
@@ -90,11 +101,11 @@ beforeEach(() => {
 
 describe("filtros de la URL de reportes", () => {
   it("lee los filtros con valores seguros y arma la URL", () => {
-    expect(leerFiltrosReportes({})).toEqual(filtrosVacios);
+    expect(leerFiltrosReportes({}, estadosDePrueba)).toEqual(filtrosVacios);
     expect(
-      leerFiltrosReportes({ fechaDesde: "2026-05-01", fechaHasta: "2026-05-31", tecnicoId: "7", clienteId: "1", activoId: "5", estado: "cerrada", tipo: "preventivo" }),
+      leerFiltrosReportes({ fechaDesde: "2026-05-01", fechaHasta: "2026-05-31", tecnicoId: "7", clienteId: "1", activoId: "5", estado: "cerrada", tipo: "preventivo" }, estadosDePrueba),
     ).toEqual({ fechaDesde: "2026-05-01", fechaHasta: "2026-05-31", tecnicoId: "7", clienteId: "1", activoId: "5", estado: "cerrada", tipo: "preventivo" });
-    expect(leerFiltrosReportes({ fechaDesde: "ayer", tecnicoId: "x", estado: "otro", tipo: "raro" })).toEqual(filtrosVacios);
+    expect(leerFiltrosReportes({ fechaDesde: "ayer", tecnicoId: "x", estado: "otro", tipo: "raro" }, estadosDePrueba)).toEqual(filtrosVacios);
     expect(construirUrlReportes({ ...filtrosVacios, estado: "cerrada" })).toBe("/reportes?estado=cerrada");
   });
 });
@@ -104,7 +115,9 @@ describe("página de reportes (Server Component)", () => {
     vi.resetModules();
     vi.doMock("./resumen-indicadores", () => ({ ResumenIndicadores: () => <p>Resumen simulado</p> }));
     const { default: Pagina } = await import("./page");
-    render(await Pagina({ searchParams: Promise.resolve({ estado: "cerrada", clienteId: "1" }) }));
+    // Tras `resetModules` el contexto es otro: el proveedor tiene que salir del mismo módulo que la página.
+    const { conEstadosOrden: conEstadosDeEstaCarga } = await import("@/pruebas/estados-orden");
+    renderBase(conEstadosDeEstaCarga(await Pagina({ searchParams: Promise.resolve({ estado: "cerrada", clienteId: "1" }) })));
     expect(screen.getByRole("heading", { level: 1, name: "Reportes e indicadores" })).toBeInTheDocument();
     expect(screen.getByLabelText("Estado")).toHaveValue("cerrada");
     expect(screen.getByRole("combobox", { name: "Cliente" })).toHaveValue("ACME");
@@ -120,6 +133,13 @@ describe("página de reportes (Server Component)", () => {
 });
 
 describe("resumen de indicadores (Server Component)", () => {
+  it("lleva cada punto de «Atención necesaria» a su listado", async () => {
+    render(await ResumenIndicadores({ filtros: filtrosVacios }));
+    expect(screen.getByRole("link", { name: /órdenes de prioridad alta pendientes/ })).toHaveAttribute("href", "/ordenes-trabajo?prioridad=alta");
+    expect(screen.getByRole("link", { name: /pendientes de validación/ })).toHaveAttribute("href", "/ordenes-trabajo?fase=por_validar");
+    expect(screen.getByRole("link", { name: /repuestos con bajo stock/ })).toHaveAttribute("href", "/repuestos?stock=alerta");
+  });
+
   it("muestra los indicadores, tablas y alertas", async () => {
     render(await ResumenIndicadores({ filtros: { ...filtrosVacios, estado: "cerrada" } }));
     expect(s.obtenerIndicadoresServidor).toHaveBeenCalledWith({ ...filtrosVacios, estado: "cerrada" });

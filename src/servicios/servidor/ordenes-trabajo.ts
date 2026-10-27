@@ -1,8 +1,10 @@
 import "server-only";
+import { cache } from "react";
+import { ErrorDeApi } from "@/servicios/api/solicitudes-http";
 import { construirConsultaOrdenes } from "@/servicios/api/consultas-ordenes";
 import { leerJsonServidor } from "@/servicios/servidor/cliente-http-servidor";
 import { construirConsultaTecnicos, esTecnicoActivo } from "@/servicios/api/api-usuarios";
-import type { FiltrosOrdenesTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
+import type { FiltrosOrdenesTrabajo, OpcionEstadoOrden, OrdenTrabajo } from "@/tipos/orden-trabajo";
 import type { Pagina } from "@/tipos/pagina";
 import type { Usuario } from "@/tipos/usuario";
 
@@ -11,6 +13,24 @@ export function listarOrdenesTrabajoServidor(filtros: FiltrosOrdenesTrabajo) {
     "/api/v1/ordenes-trabajo?" + construirConsultaOrdenes(filtros),
     "No se pudo obtener el listado de órdenes de trabajo.",
   );
+}
+
+/** Catálogo de estados de la base (`estado_ot`): única fuente de los estados y sus etiquetas. Una consulta por pedido. */
+export const listarEstadosOrdenTrabajoServidor = cache(() =>
+  leerJsonServidor<OpcionEstadoOrden[]>(
+    "/api/v1/ordenes-trabajo/estados",
+    "No se pudo obtener el catálogo de estados de las órdenes de trabajo.",
+  ),
+);
+
+/** Igual que el anterior, pero si la API no lo entrega (por ejemplo, un rol sin acceso a órdenes) devuelve una lista vacía. */
+export async function listarEstadosOrdenTrabajoOVacio(): Promise<OpcionEstadoOrden[]> {
+  try {
+    return await listarEstadosOrdenTrabajoServidor();
+  } catch (error) {
+    if (error instanceof ErrorDeApi) return [];
+    throw error;
+  }
 }
 
 export function obtenerOrdenTrabajoServidor(ordenTrabajoId: number) {
@@ -35,6 +55,7 @@ export function conTecnicoDeLaOrden(orden: OrdenTrabajo, tecnicos: Usuario[]): U
     roles: [],
     estado: "inactivo",
     fechaIngreso: "",
+    cantidadOrdenesAsignadas: 0,
   };
   return [actual, ...tecnicos.filter((tecnico) => tecnico.id !== actual.id)];
 }

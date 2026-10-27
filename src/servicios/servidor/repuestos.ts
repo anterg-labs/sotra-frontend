@@ -1,4 +1,5 @@
 import "server-only";
+import { parametrosDeOrden } from "@/componentes/listado/url-listado";
 import { leerJsonServidor, opcionesJsonServidor } from "@/servicios/servidor/cliente-http-servidor";
 import type { Pagina } from "@/tipos/pagina";
 import type {
@@ -18,6 +19,7 @@ export function listarRepuestosServidor(filtros: FiltrosRepuestos) {
   if (filtros.bajoStock) parametros.append("bajoStock", "true");
   if (filtros.estadoStock) parametros.append("estadoStock", filtros.estadoStock);
   if (filtros.orden) parametros.append("orden", filtros.orden);
+  for (const [nombre, valor] of parametrosDeOrden(filtros)) parametros.append(nombre, valor);
   parametros.append("pagina", String(filtros.pagina));
   return leerJsonServidor<Pagina<Repuesto>>(
     "/api/v1/repuestos?" + parametros.toString(),

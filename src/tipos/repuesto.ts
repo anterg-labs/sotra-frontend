@@ -24,9 +24,9 @@ export type Repuesto = {
 export type CrearRepuestoInput = {
   codigo: string;
   nombre: string;
-  descripcion: string;
-  marca: string;
-  ubicacion: string;
+  descripcion: string | null;
+  marca: string | null;
+  ubicacion: string | null;
   cantidad: number;
   cantidadMinima: number;
 };
@@ -40,5 +40,7 @@ export type FiltrosRepuestos = {
   bajoStock: boolean;
   estadoStock?: EstadoStock | "";
   orden?: "criticidad";
+  ordenarPor?: string;
+  direccionOrden?: "asc" | "desc" | "";
   pagina: number;
 };

@@ -1,13 +1,17 @@
 import type { Metadata, Viewport } from "next";
+import { connection } from "next/server";
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 import { ProveedorDeAvisos } from "@/componentes/avisos";
+import { ProveedorEstadosOrden } from "@/componentes/estados-orden";
 import { EstructuraAplicacion } from "@/componentes/estructura-aplicacion";
 import { RegistroServiceWorker } from "@/componentes/registro-service-worker";
 import { ProveedorSesion } from "@/componentes/sesion/contexto-sesion";
 import { PantallaSinAcceso } from "@/componentes/sesion/pantalla-sin-acceso";
 import { COOKIE_VISTA, leerModoVista } from "@/seguridad/vista";
+import { listarEstadosOrdenTrabajoOVacio } from "@/servicios/servidor/ordenes-trabajo";
 import { obtenerEstadoSesion } from "@/servicios/servidor/sesion";
+import type { OpcionEstadoOrden } from "@/tipos/orden-trabajo";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -32,8 +36,14 @@ type PropiedadesLayoutRaiz = {
  * si no está registrado en SOTRA o no tiene roles, se muestra «sin acceso» en lugar de la aplicación.
  */
 export default async function LayoutRaiz(props: PropiedadesLayoutRaiz) {
+  await connection();
   const sesion = await obtenerEstadoSesion();
   const modoVista = leerModoVista((await cookies()).get(COOKIE_VISTA)?.value);
+
+  // Si la API no lo entrega (por ejemplo, un rol sin acceso a órdenes), la aplicación sigue y los estados se muestran por su valor.
+  const estadosOrden: OpcionEstadoOrden[] = sesion.estado === "con-acceso"
+    ? await listarEstadosOrdenTrabajoOVacio()
+    : [];
 
   let contenido: ReactNode;
   if (sesion.estado === "sin-sesion") {
@@ -49,7 +59,9 @@ export default async function LayoutRaiz(props: PropiedadesLayoutRaiz) {
       <body>
         <RegistroServiceWorker />
         <ProveedorSesion usuario={sesion.estado === "con-acceso" ? sesion.usuario : null}>
-          <ProveedorDeAvisos>{contenido}</ProveedorDeAvisos>
+          <ProveedorEstadosOrden estados={estadosOrden}>
+            <ProveedorDeAvisos>{contenido}</ProveedorDeAvisos>
+          </ProveedorEstadosOrden>
         </ProveedorSesion>
       </body>
     </html>

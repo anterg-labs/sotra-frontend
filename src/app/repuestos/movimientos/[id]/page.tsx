@@ -3,6 +3,7 @@ import { obtenerMovimientoStockServidor } from "@/servicios/servidor/movimientos
 import type { MovimientoStock } from "@/tipos/movimiento-stock";
 import { obtenerEtiquetaTipoMovimiento } from "@/validaciones/movimiento-stock";
 import { formatearFechaHora } from "@/utilidades/fechas";
+import { EnlaceVolver } from "@/componentes/enlace-volver";
 
 async function cargarMovimiento(movimientoId: number): Promise<MovimientoStock | null> {
   if (!Number.isInteger(movimientoId) || movimientoId <= 0) return null;
@@ -20,13 +21,13 @@ export default async function PaginaDetalleMovimientoStock(props: { params: Prom
   return (
     <main className="page-content">
       <header className="page-heading">
-        <div>
-          <p className="eyebrow">Movimientos de stock</p>
-          <h1>{"Movimiento N° " + (Number.isNaN(movimientoId) ? "" : movimientoId)}</h1>
+        <div className="encabezado-volver">
+          <EnlaceVolver etiqueta="Volver a movimientos" href="/repuestos/movimientos" />
+          <div>
+            <p className="eyebrow">Movimientos de stock</p>
+            <h1>{"Movimiento N° " + (Number.isNaN(movimientoId) ? "" : movimientoId)}</h1>
+          </div>
         </div>
-        <Link className="secondary-button" href="/repuestos/movimientos">
-          Volver a movimientos
-        </Link>
       </header>
 
       {movimiento ? (
@@ -68,11 +69,11 @@ export default async function PaginaDetalleMovimientoStock(props: { params: Prom
               <dt>Usuario responsable</dt>
               <dd>{movimiento.nombreUsuario ?? "Sin registrar (todavía no hay login)"}</dd>
             </div>
-            <div>
+            <div className="detail-wide">
               <dt>Motivo</dt>
               <dd>{movimiento.motivo}</dd>
             </div>
-            <div>
+            <div className="detail-wide">
               <dt>Observaciones</dt>
               <dd>{movimiento.observaciones !== "" ? movimiento.observaciones : "Sin observaciones"}</dd>
             </div>

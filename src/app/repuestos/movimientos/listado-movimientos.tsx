@@ -1,13 +1,10 @@
 import { anticiparConsulta, resolverConsulta, type ConsultaAnticipada } from "@/servicios/servidor/consulta-anticipada";
-import Link from "next/link";
-import { IconoOjo } from "@/componentes/iconos";
 import { InformarResultados } from "@/componentes/listado/navegacion-listado";
 import { PaginacionListado } from "@/componentes/listado/paginacion-listado";
 import { listarMovimientosStockServidor } from "@/servicios/servidor/movimientos-stock";
 import type { FiltrosMovimientosStock } from "@/tipos/movimiento-stock";
-import { obtenerEtiquetaTipoMovimiento } from "@/validaciones/movimiento-stock";
 import { RUTA_MOVIMIENTOS } from "./filtros";
-import { formatearFechaCorta } from "@/utilidades/fechas";
+import { TablaMovimientos } from "./tabla-movimientos";
 
 /** Trae la página de movimientos en el servidor; si falla, el error queda en línea y los filtros siguen disponibles. */
 export async function ListadoMovimientos(props: { filtros: FiltrosMovimientosStock; consulta?: ConsultaAnticipada<Awaited<ReturnType<typeof listarMovimientosStockServidor>>> }) {
@@ -41,42 +38,7 @@ export async function ListadoMovimientos(props: { filtros: FiltrosMovimientosSto
   return (
     <>
       <InformarResultados total={pagina.totalElementos} />
-      <div className="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Código</th>
-              <th>Repuesto</th>
-              <th>Tipo</th>
-              <th>Cantidad</th>
-              <th>Ubicación</th>
-              <th>Usuario</th>
-              <th>Motivo</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pagina.elementos.map((movimiento) => (
-              <tr key={movimiento.id}>
-                <td>{formatearFechaCorta(movimiento.fecha)}</td>
-                <td><strong>{movimiento.codigoRepuesto}</strong></td>
-                <td>{movimiento.nombreRepuesto}</td>
-                <td>{obtenerEtiquetaTipoMovimiento(movimiento.tipo)}</td>
-                <td>{movimiento.cantidad}</td>
-                <td>{movimiento.ubicacion}</td>
-                <td>{movimiento.nombreUsuario ?? "Sin registrar"}</td>
-                <td>{movimiento.motivo}</td>
-                <td>
-                  <Link aria-label="Ver detalle" className="boton-icono" href={"/repuestos/movimientos/" + movimiento.id} title="Ver detalle">
-                    <IconoOjo />
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <TablaMovimientos filtros={filtros} movimientos={pagina.elementos} unaSolaPagina={pagina.totalPaginas <= 1} />
       <PaginacionListado
         filtros={filtrosSinPagina}
         pagina={pagina.pagina}

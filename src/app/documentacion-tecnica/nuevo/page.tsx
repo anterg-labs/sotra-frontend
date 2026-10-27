@@ -10,7 +10,7 @@ export default async function PaginaNuevoDocumentoTecnico() {
     <main className="page-content">
       <header className="page-heading">
         <div>
-          <p className="eyebrow">Documentación técnica</p>
+          <p className="eyebrow">Documentación</p>
           <h1>Cargar documento técnico</h1>
         </div>
       </header>

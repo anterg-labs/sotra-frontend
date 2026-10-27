@@ -41,6 +41,8 @@ export type FiltrosActivos = {
   modeloMaquinaId: string;
   estado: string;
   pagina: number;
+  ordenarPor?: string;
+  direccionOrden?: "asc" | "desc" | "";
 };
 
 /** Datos que envía el formulario: en el alta el estado es siempre `activo` y la acción lo ignora. */

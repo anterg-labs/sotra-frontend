@@ -1,14 +1,14 @@
 import Link from "next/link";
-import { IconoOjo } from "@/componentes/iconos";
 import type { ParametrosBusqueda } from "@/componentes/listado/url-listado";
 import { primerValor } from "@/componentes/listado/url-listado";
 import { listarMovimientosStockServidor } from "@/servicios/servidor/movimientos-stock";
 import { obtenerRepuestoServidor } from "@/servicios/servidor/repuestos";
 import type { MovimientoStock } from "@/tipos/movimiento-stock";
+import type { Pagina } from "@/tipos/pagina";
 import type { Repuesto } from "@/tipos/repuesto";
-import { obtenerEtiquetaTipoMovimiento } from "@/validaciones/movimiento-stock";
 import { PanelStock } from "./panel-stock";
-import { formatearFechaCorta } from "@/utilidades/fechas";
+import { TablaMovimientosRepuesto } from "@/componentes/tablas-ordenables";
+import { EnlaceVolver } from "@/componentes/enlace-volver";
 
 async function cargarRepuesto(repuestoId: number): Promise<Repuesto | null> {
   if (!Number.isInteger(repuestoId) || repuestoId <= 0) return null;
@@ -19,13 +19,13 @@ async function cargarRepuesto(repuestoId: number): Promise<Repuesto | null> {
   }
 }
 
-async function cargarMovimientos(repuestoId: number): Promise<MovimientoStock[] | null> {
+async function cargarMovimientos(repuestoId: number): Promise<Pagina<MovimientoStock> | null> {
   if (!Number.isInteger(repuestoId) || repuestoId <= 0) return null;
   try {
     const pagina = await listarMovimientosStockServidor({
       buscar: "", repuestoId: String(repuestoId), tipo: "", fechaDesde: "", fechaHasta: "", ubicacion: "", usuarioId: "", pagina: 1,
     });
-    return pagina.elementos;
+    return pagina;
   } catch {
     return null;
   }
@@ -42,13 +42,13 @@ export default async function PaginaDetalleRepuesto(props: {
   return (
     <main className="page-content">
       <header className="page-heading">
-        <div>
-          <p className="eyebrow">Repuestos</p>
-          <h1>{repuesto ? repuesto.codigo + " - " + repuesto.nombre : "Detalle del repuesto"}</h1>
+        <div className="encabezado-volver">
+          <EnlaceVolver etiqueta="Volver al listado" href="/repuestos" />
+          <div>
+            <p className="eyebrow">Repuestos</p>
+            <h1>{repuesto ? repuesto.codigo + " - " + repuesto.nombre : "Detalle del repuesto"}</h1>
+          </div>
         </div>
-        <Link className="secondary-button" href="/repuestos">
-          Volver al listado
-        </Link>
       </header>
 
       {repuesto ? (
@@ -57,45 +57,19 @@ export default async function PaginaDetalleRepuesto(props: {
 
           <section className="panel">
             <div className="panel-heading">
-              <h2>Movimientos de stock</h2>
+              <h2>Historial de movimientos</h2>
+              {movimientos !== null && movimientos.totalElementos > movimientos.elementos.length ? (
+                <Link className="text-link" href={"/repuestos/movimientos?repuestoId=" + repuesto.id}>
+                  {"Ver los " + movimientos.totalElementos + " movimientos"}
+                </Link>
+              ) : null}
             </div>
             {movimientos === null ? (
               <p className="form-error-banner">No se pudieron obtener los movimientos de stock de este repuesto.</p>
-            ) : movimientos.length === 0 ? (
+            ) : movimientos.elementos.length === 0 ? (
               <p className="empty-state">Este repuesto todavía no tiene movimientos de stock.</p>
             ) : (
-              <div className="table-container">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Fecha</th>
-                      <th>Tipo</th>
-                      <th>Cantidad</th>
-                      <th>Stock</th>
-                      <th>Ubicación</th>
-                      <th>Motivo</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {movimientos.map((movimiento) => (
-                      <tr key={movimiento.id}>
-                        <td>{formatearFechaCorta(movimiento.fecha)}</td>
-                        <td>{obtenerEtiquetaTipoMovimiento(movimiento.tipo)}</td>
-                        <td>{movimiento.cantidad}</td>
-                        <td>{movimiento.stockAnterior + " → " + movimiento.stockPosterior}</td>
-                        <td>{movimiento.ubicacion}</td>
-                        <td>{movimiento.motivo}</td>
-                        <td>
-                          <Link aria-label="Ver detalle" className="boton-icono" href={"/repuestos/movimientos/" + movimiento.id} title="Ver detalle">
-                            <IconoOjo />
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <TablaMovimientosRepuesto movimientos={movimientos.elementos} />
             )}
           </section>
         </div>

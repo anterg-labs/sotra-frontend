@@ -2,6 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import type { ReactNode } from "react";
 import { vi } from "vitest";
 import type { Permiso } from "@/seguridad/permisos";
+vi.mock("next/server", async (importarReal) => ({ ...(await importarReal<typeof import("next/server")>()), connection: vi.fn(async () => undefined) }));
 // jsdom no implementa <dialog>.showModal/close; las pruebas de modales dependen de esto.
 if (typeof HTMLDialogElement !== "undefined") {
   HTMLDialogElement.prototype.showModal ??= function showModal(this: HTMLDialogElement) {

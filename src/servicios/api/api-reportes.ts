@@ -8,6 +8,7 @@ import type {
   Reincidencias,
   RepuestosUsados,
   Tendencias,
+  DesempenoOperativo,
   Tiempos,
 } from "@/tipos/reporte";
 
@@ -37,6 +38,11 @@ export async function apiObtenerTendencias(filtros: FiltrosIndicadores, agrupaci
 export async function apiObtenerTiempos(filtros: FiltrosIndicadores) {
   const ruta = "/api/v1/reportes/tiempos" + construirConsultaAnalisis(filtros);
   return (await leerDatosApi(ruta, { cache: "no-store" }, "No se pudieron obtener los tiempos.")) as Tiempos;
+}
+
+export async function apiObtenerDesempeno(filtros: FiltrosIndicadores) {
+  const ruta = "/api/v1/reportes/desempeno" + construirConsultaAnalisis(filtros);
+  return (await leerDatosApi(ruta, { cache: "no-store" }, "No se pudo obtener el desempeño operativo.")) as DesempenoOperativo;
 }
 
 export async function apiObtenerReincidencias(filtros: FiltrosIndicadores) {

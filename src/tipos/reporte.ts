@@ -73,6 +73,39 @@ export type Tiempos = {
   cumplimiento: Cumplimiento;
 };
 
+/** Desempeño operativo (RD-10): órdenes, procesos y maquinaria. No evalúa personas. */
+export type DesempenoOperativo = {
+  ordenes: {
+    creadas: number;
+    cerradas: number;
+    eliminadas: number;
+    abiertas: number;
+    preventivas: number;
+    correctivas: number;
+    porcentajePreventivas: number | null;
+  };
+  tiempos: { respuesta: Duracion; ejecucion: Duracion; revision: Duracion };
+  flujo: {
+    pausas: { cantidad: number; ordenesConPausa: number; duracionPromedioHoras: number | null; motivos: MotivoDeProceso[] };
+    devoluciones: { cantidad: number; ordenesDevueltas: number; porcentajeDeOrdenes: number | null; motivos: MotivoDeProceso[] };
+    reasignaciones: { cantidad: number; ordenesReasignadas: number };
+  };
+  maquinaria: { porTipo: MaquinariaDesempeno[]; activos: MaquinariaDesempeno[] };
+};
+
+export type MotivoDeProceso = { texto: string; cantidad: number };
+
+export type MaquinariaDesempeno = {
+  id: number;
+  nombre: string;
+  cliente: string | null;
+  ordenes: number;
+  correctivas: number;
+  preventivas: number;
+  horasPromedioEjecucion: number | null;
+  horasParada: number;
+};
+
 export type RepuestoUsado = {
   repuestoId: number;
   codigo: string;

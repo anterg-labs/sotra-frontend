@@ -1,5 +1,6 @@
 import {
   apiObtenerAlertasMaquinaria,
+  apiObtenerDesempeno,
   apiObtenerIndicadores,
   apiObtenerReincidencias,
   apiObtenerRepuestosUsados,
@@ -35,6 +36,10 @@ export async function obtenerTendencias(filtros: FiltrosIndicadores, agrupacion:
 
 export async function obtenerTiempos(filtros: FiltrosIndicadores) {
   return apiObtenerTiempos(filtros);
+}
+
+export async function obtenerDesempeno(filtros: FiltrosIndicadores) {
+  return apiObtenerDesempeno(filtros);
 }
 
 export async function obtenerReincidencias(filtros: FiltrosIndicadores) {

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.65 (2026-10-27)
+
+- Menú: con el menú abierto, el logo de CVM se agranda de forma notable y ocupa casi todo el ancho del menú.
+
 ## Version 1.0.64 (2026-10-27)
 
 - Navegación: mientras se abre una pantalla, el contenido de la derecha se atenúa y se desenfoca y no recibe clics; el menú lateral sigue disponible para elegir otra opción.

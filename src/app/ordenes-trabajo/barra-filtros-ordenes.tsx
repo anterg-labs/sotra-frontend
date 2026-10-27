@@ -50,7 +50,7 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
     },
     construirUrl: (v) => construirUrlOrdenes({ ...v, pagina: 1 }),
     sonValidos: (v) => !rangoDeFechasInvalido(v.fechaDesde, v.fechaHasta),
-    alInvalido: () => document.getElementById("fechaCreacion-hasta")?.focus(),
+    alInvalido: () => document.getElementById("fechaCreacion")?.focus(),
   });
 
   const fasesDelCatalogo = [...new Set(estados.map((estado) => estado.fase))];

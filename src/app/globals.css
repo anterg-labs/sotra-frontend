@@ -3533,7 +3533,11 @@ input[type="checkbox"][role="switch"]:disabled {
 .calendario-titulo {
   margin: 0 0 0 8px;
   font-size: 18px;
-  text-transform: capitalize;
+}
+
+.calendario-titulo::first-letter,
+.calendario-mes caption::first-letter {
+  text-transform: uppercase;
 }
 
 .calendario-casilla {
@@ -3588,7 +3592,6 @@ input[type="checkbox"][role="switch"]:disabled {
   padding: 4px 0 6px;
   font-weight: 700;
   text-align: left;
-  text-transform: capitalize;
 }
 
 .calendario-mes th {
@@ -3717,4 +3720,316 @@ input[type="checkbox"][role="switch"]:disabled {
   .calendario-acciones {
     display: inline-flex;
   }
+}
+
+/* Una tabla solo para lectores de pantalla ensanchaba la página: la regla global de `table` (ancho completo, sin capa) le ganaba al ancho de 1 px de `sr-only`. Se repite aquí con prioridad suficiente. */
+table.sr-only {
+  display: block;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Los elementos de una grilla no deben crecer por el contenido (tablas anchas): la tabla se desplaza dentro de su panel. */
+.seccion-plegable,
+.seccion-plegable-cuerpo,
+.seccion-grilla > *,
+.grafico-contenedor {
+  min-width: 0;
+}
+
+.grafico-contenedor > div {
+  overflow-x: auto;
+}
+
+/* Filtros más modernos: etiquetas legibles, campos del mismo alto con foco claro y un selector de fechas de un solo control. */
+.barra-filtros {
+  gap: 14px 16px;
+  padding: 16px 18px;
+  border-radius: var(--radio-l);
+}
+
+.barra-filtros .form-field label {
+  color: var(--texto-suave);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.barra-filtros .form-field:focus-within > label {
+  color: var(--acento);
+}
+
+.barra-filtros .form-field input:not([type="checkbox"], [type="radio"]),
+.barra-filtros .form-field select,
+.filtro-fecha-boton {
+  height: 40px;
+  padding: 6px 12px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-m);
+  font-size: 13.5px;
+  transition: border-color var(--transicion), box-shadow var(--transicion);
+}
+
+.barra-filtros .form-field input:not([type="checkbox"], [type="radio"]):hover,
+.barra-filtros .form-field select:hover,
+.filtro-fecha-boton:hover {
+  border-color: var(--borde-fuerte);
+}
+
+.barra-filtros .form-field input:not([type="checkbox"], [type="radio"]):focus-visible,
+.barra-filtros .form-field select:focus-visible,
+.filtro-fecha-boton:focus-visible {
+  outline: none;
+  border-color: var(--acento);
+  box-shadow: var(--anillo-foco);
+}
+
+.filtro-fecha {
+  position: relative;
+}
+
+.barra-filtros .filtro-fecha,
+.barra-filtros-reportes .filtro-fecha {
+  flex: 0 1 236px;
+  min-width: 0;
+}
+
+.filtro-fecha-control {
+  position: relative;
+  display: flex;
+}
+
+.filtro-fecha-boton {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  color: var(--texto);
+  text-align: left;
+  cursor: pointer;
+}
+
+.filtro-fecha-boton svg {
+  flex: none;
+  color: var(--texto-tenue);
+}
+
+.filtro-fecha-control:has(.filtro-fecha-quitar) .filtro-fecha-boton {
+  padding-right: 38px;
+}
+
+.filtro-fecha-vacio span {
+  color: var(--texto-tenue);
+}
+
+.filtro-fecha-quitar {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  color: var(--texto-tenue);
+  font-size: 16px;
+  line-height: 1;
+  background: var(--neutro-fondo);
+  border: 0;
+  border-radius: 9999px;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.filtro-fecha-quitar:hover {
+  color: var(--texto);
+}
+
+.filtro-fecha-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  display: flex;
+  gap: 16px;
+  max-width: calc(100vw - 32px);
+  padding: 14px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-l);
+  box-shadow: var(--sombra-l);
+}
+
+.filtro-fecha-atajos {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  min-width: 140px;
+  margin: 0;
+  padding: 0 14px 0 0;
+  border-right: 1px solid var(--borde);
+  list-style: none;
+}
+
+.filtro-fecha-atajos .boton-texto {
+  width: 100%;
+  text-align: left;
+}
+
+.filtro-fecha-navegacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.filtro-fecha-navegacion p {
+  margin: 0;
+  font-size: 12px;
+  text-align: center;
+}
+
+.filtro-fecha-meses {
+  display: flex;
+  gap: 18px;
+}
+
+.rango-mes {
+  width: 238px;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12.5px;
+}
+
+.rango-mes caption {
+  padding-bottom: 4px;
+  font-weight: 700;
+}
+
+.rango-mes caption::first-letter {
+  text-transform: uppercase;
+}
+
+.rango-mes th {
+  padding: 2px 0;
+  color: var(--texto-tenue);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.rango-mes td {
+  padding: 1px 0;
+  text-align: center;
+}
+
+.rango-dia {
+  width: 100%;
+  height: 30px;
+  color: var(--texto);
+  background: none;
+  border: 0;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.rango-dia:hover {
+  background: var(--acento-suave);
+}
+
+.rango-dia:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--acento);
+}
+
+.rango-dia-en-rango {
+  background: var(--acento-suave);
+}
+
+.rango-dia-extremo {
+  color: #fff;
+  font-weight: 700;
+  background: var(--acento);
+  border-radius: 8px;
+}
+
+.rango-dia-hoy:not(.rango-dia-extremo) {
+  font-weight: 700;
+  box-shadow: inset 0 -2px 0 var(--acento);
+}
+
+@media (max-width: 720px) {
+  .filtro-fecha-panel {
+    position: fixed;
+    top: auto;
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    max-height: 85vh;
+    flex-direction: column;
+    overflow: auto;
+  }
+
+  .filtro-fecha-atajos {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 0 0 10px;
+    border-right: 0;
+    border-bottom: 1px solid var(--borde);
+  }
+
+  .filtro-fecha-meses {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+/* Que nada ensanche la página: los calendarios y las tablas se desplazan dentro de su panel. */
+.page-content,
+.calendario {
+  min-width: 0;
+}
+
+.calendario {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.calendario-meses {
+  overflow-x: auto;
+}
+
+.seccion-plegable-cuerpo {
+  overflow-x: auto;
+}
+
+/* Los textos solo para lectores de pantalla van en posición absoluta: sin un contenedor posicionado escapaban del recorte de su panel y creaban desplazamiento horizontal. */
+.calendario-meses,
+.seccion-plegable-cuerpo,
+.grafico-contenedor,
+.table-container {
+  position: relative;
+}
+
+/* La regla global de `table` (ancho mínimo de 720 px, relleno amplio y líneas) es para los listados: los calendarios y las tablas de gráficas la desactivan. */
+table.rango-mes,
+table.calendario-mes,
+table.tabla-grafico {
+  min-width: 0;
+}
+
+.rango-mes th,
+.rango-mes td {
+  padding: 1px 0;
+  background: none;
+  border-bottom: 0;
+  text-align: center;
+}
+
+.rango-mes tbody tr:hover td {
+  background: none;
+}
+
+.rango-mes th {
+  padding: 3px 0;
 }

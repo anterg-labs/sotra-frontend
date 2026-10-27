@@ -330,11 +330,11 @@ describe("barra de filtros de órdenes (en vivo)", () => {
     expect(screen.getByRole("combobox", { name: "Activo" })).toHaveValue("");
   });
 
-  it("bloquea un rango de fechas invertido y enfoca la fecha final", () => {
+  it("bloquea un rango de fechas invertido (por ejemplo desde la URL) y enfoca el selector de fecha", () => {
     render(conNavegacion(<BarraFiltrosOrdenes activos={[]} clientes={[]} filtros={{ ...filtrosVacios, fechaDesde: "2026-06-10", fechaHasta: "2026-06-01" }} tecnicos={[]} />));
     fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "pausado" } });
     expect(replace).not.toHaveBeenCalled();
-    expect(screen.getByLabelText("Creada hasta")).toHaveFocus();
+    expect(document.getElementById("fechaCreacion")).toHaveFocus();
   });
 });
 

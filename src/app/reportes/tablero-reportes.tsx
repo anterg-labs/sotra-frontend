@@ -48,7 +48,7 @@ export function TableroReportes(props: PropiedadesTablero) {
     inicial: filtros,
     construirUrl: construirUrlReportes,
     sonValidos: (v) => !rangoDeFechasInvalido(v.fechaDesde, v.fechaHasta),
-    alInvalido: () => document.getElementById("fechaReporte-hasta")?.focus(),
+    alInvalido: () => document.getElementById("fechaReporte")?.focus(),
   });
   const { fechaDesde, fechaHasta, clienteId, activoId, estado, tipo } = valores;
   const [tipoReporte, setTipoReporte] = useState("ordenes-trabajo");
@@ -178,6 +178,9 @@ export function TableroReportes(props: PropiedadesTablero) {
       <SeccionPlegable abiertaInicial id="resumen" resumen="Totales, estados, prioridades, activos con más intervenciones y repuestos con bajo stock." titulo="Resumen general">
         {children}
       </SeccionPlegable>
+      <SeccionPlegable id="alertas" resumen="Alertas de maquinaria, desempeño operativo, tiempos, repuestos más usados y reincidencias." titulo="Alertas y desempeño operativo">
+        <PanelAnalitica filtros={filtros} />
+      </SeccionPlegable>
       <SeccionPlegable id="maquinaria" resumen="Qué máquinas concentran la parada, cuánto tardan en repararse y cuánto del trabajo es preventivo." titulo="Maquinaria">
         <SeccionMaquinaria filtros={filtros} />
       </SeccionPlegable>
@@ -186,9 +189,6 @@ export function TableroReportes(props: PropiedadesTablero) {
       </SeccionPlegable>
       <SeccionPlegable id="analisis-avanzado" resumen="Este período frente al anterior, reparaciones atípicas y señales de desgaste." titulo="Análisis avanzado">
         <SeccionAnalisisAvanzado filtros={filtros} />
-      </SeccionPlegable>
-      <SeccionPlegable id="alertas" resumen="Alertas de maquinaria, desempeño operativo, tiempos, repuestos más usados y reincidencias." titulo="Alertas y desempeño operativo">
-        <PanelAnalitica filtros={filtros} />
       </SeccionPlegable>
     </>
   );

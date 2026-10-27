@@ -181,13 +181,15 @@ describe("tablero de reportes (isla)", () => {
   });
 
   it("aplica los filtros en la URL y los limpia", () => {
+    vi.setSystemTime(new Date(2026, 4, 10, 12));
     render(tablero());
     expect(screen.queryByRole("combobox", { name: "Técnico" })).not.toBeInTheDocument();
     fireEvent.focus(screen.getByRole("combobox", { name: "Cliente" }));
     fireEvent.click(screen.getByRole("option", { name: "ACME" }));
     fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "cerrado" } });
     fireEvent.change(screen.getByLabelText("Tipo de mantenimiento"), { target: { value: "preventivo" } });
-    fireEvent.change(screen.getByLabelText("Fecha"), { target: { value: "2026-05-01" } });
+    fireEvent.click(screen.getByRole("button", { name: "Fecha" }));
+    fireEvent.click(screen.getByRole("button", { name: "1 de mayo de 2026" }));
     expect(screen.queryByRole("button", { name: "Aplicar filtros" })).not.toBeInTheDocument();
     expect(replace).toHaveBeenLastCalledWith(
       "/reportes?fechaDesde=2026-05-01&fechaHasta=2026-05-01&clienteId=1&estado=cerrado&tipo=preventivo",
@@ -212,15 +214,11 @@ describe("tablero de reportes (isla)", () => {
     expect(within(screen.getByRole("listbox")).getAllByRole("option").map((o) => o.textContent)).toEqual(["Retro 1"]);
   });
 
-  it("no navega con un rango de fechas invertido y enfoca la fecha final", () => {
-    render(tablero());
-    fireEvent.click(screen.getByRole("switch", { name: "Rango de fechas" }));
-    fireEvent.change(screen.getByLabelText("Fecha desde"), { target: { value: "2026-06-10" } });
-    fireEvent.change(screen.getByLabelText("Fecha hasta"), { target: { value: "2026-06-01" } });
-    const navegacionesValidas = replace.mock.calls.length;
-    fireEvent.change(screen.getByLabelText("Fecha hasta"), { target: { value: "2026-06-01" } });
-    expect(screen.getByLabelText("Fecha hasta")).toHaveFocus();
-    expect(replace).toHaveBeenCalledTimes(navegacionesValidas);
+  it("no navega con un rango de fechas invertido (por ejemplo desde la URL) y enfoca el selector de fecha", () => {
+    render(tablero({ ...filtrosVacios, fechaDesde: "2026-06-10", fechaHasta: "2026-06-01" }));
+    fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "cerrado" } });
+    expect(replace).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Fecha" })).toHaveFocus();
   });
 
   it("los enlaces de descarga reflejan el tipo de reporte, la prioridad y los filtros", () => {

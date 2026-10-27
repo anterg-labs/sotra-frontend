@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Version 1.0.75 (2026-10-27)
+
+- Filtros: la fecha es un solo selector con un calendario de dos meses y atajos (hoy, últimos 7 o 30 días, este mes, mes pasado, este año) en Reportes, Órdenes de trabajo y Movimientos de stock; desaparece el interruptor de rango y el segundo campo de fecha. Campos más prolijos, del mismo alto y con foco claro.
+- Reportes: la sección «Alertas y desempeño operativo» pasa a ir justo debajo del resumen general.
+- Pantallas: se corrige el desplazamiento horizontal de más en Reportes y en el calendario de órdenes, causado por tablas solo para lectores de pantalla y por un ancho mínimo de las tablas.
+
 ## Version 1.0.74 (2026-10-27)
 
 - Reportes: pantalla más limpia, con tres tarjetas de indicadores clave arriba, una franja de avisos que solo aparece si hay y secciones plegables (Resumen, Maquinaria, Proceso, Análisis avanzado y Alertas) que cargan al abrirse. Nuevas gráficas con alternativa en tabla y explicación de su cálculo: Pareto de la parada, tiempo de reparación, preventivo frente a reactivo, órdenes creadas frente a cerradas, antigüedad de las órdenes, cumplimiento preventivo, horas en pausa por motivo, comparación de períodos, órdenes atípicas y desgaste.

@@ -147,7 +147,7 @@ export function FormularioCliente(props: PropiedadesFormularioCliente) {
         </div>
 
         <div className="form-field">
-          <label htmlFor="telefono">Número telefónico (opcional)</label>
+          <label htmlFor="telefono">Número de teléfono o celular (opcional)</label>
           <input
             aria-describedby={errores.telefono ? "telefono-error" : undefined}
             aria-invalid={errores.telefono ? true : undefined}

@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## Version 1.0.58 (2026-10-27)
+
+- Clientes y usuarios: la cantidad de órdenes de cada fila abre el listado de órdenes filtrado por ese cliente o usuario y solo con órdenes activas, igual que la cifra. Los activos no lo necesitan: su detalle ya muestra el historial de órdenes.
+- Clientes: el listado muestra solo los activos al entrar; un botón discreto «Filtros avanzados» permite ver inactivos o todos y filtrar por activos asociados.
+- Usuarios: en el detalle, la actividad queda a la derecha de los datos en pantallas anchas.
+- Menú: con el menú abierto, el botón se ensancha con él y la flecha queda al centro.
+- Órdenes de trabajo: prioridad y estado se muestran con la primera letra en mayúscula.
+- Formularios: el teléfono de clientes y usuarios se llama «Número de teléfono o celular».
+
 ## Version 1.0.57 (2026-10-27)
 
 - Interfaz: en los modales de confirmación (por ejemplo, dar de baja un cliente) y en los formularios, los textos largos, como un nombre sin espacios, saltan de línea en lugar de salirse de la ventana.

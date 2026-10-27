@@ -272,6 +272,7 @@ function EstructuraEscritorio(props: EstructuraAplicacionProps) {
         aria-expanded={estaMenuAbierto}
         aria-label={estaMenuAbierto ? "Cerrar menú" : "Abrir menú"}
         className="app-boton-menu"
+        data-abierto={estaMenuAbierto}
         onClick={() => {
           setEstaMenuAbierto((abierto) => !abierto);
         }}

@@ -36,6 +36,7 @@ describe("EstructuraAplicacion: navegación de escritorio", () => {
     fireEvent.click(screen.getByRole("button", { name: "Abrir menú" }));
     const lateral = document.getElementById("menu-lateral")!;
     const botonMenu = screen.getByRole("button", { name: "Cerrar menú", expanded: true });
+    expect(botonMenu).toHaveAttribute("data-abierto", "true");
     expect(botonMenu.parentElement).toBe(lateral.parentElement);
     fireEvent.pointerLeave(lateral);
     fireEvent.keyDown(document, { key: "Escape" });

@@ -155,7 +155,7 @@ const activo = { id: 2, clienteId: 1, nombre: "Retro 1", numSerie: "S1", estado:
 const resumen = { totalOrdenes: 30, ordenesPorEstado: [{ nombre: "pendiente", cantidad: 5 }, { nombre: "cerrado", cantidad: 9 }] };
 const filtrosVacios = {
   buscar: "", clienteId: "", activoId: "", tecnicoId: "", estado: "", fase: "", prioridad: "", tipo: "",
-  fechaDesde: "", fechaHasta: "", conSugerencias: false, pagina: 1,
+  fechaDesde: "", fechaHasta: "", soloActivas: false, conSugerencias: false, pagina: 1,
 };
 const conNavegacion = (ui: React.ReactNode) => <ProveedorNavegacionListado etiquetaCarga="Cargando…">{ui}</ProveedorNavegacionListado>;
 const parametros = (id: string) => ({ params: Promise.resolve({ id }) });
@@ -182,9 +182,12 @@ describe("filtros de la URL de órdenes", () => {
       }, estadosDePrueba),
     ).toEqual({
       buscar: "fuga", clienteId: "1", activoId: "2", tecnicoId: "7", estado: "pausado", fase: "", prioridad: "alta", tipo: "preventivo",
-      fechaDesde: "2026-10-01", fechaHasta: "2026-10-31", conSugerencias: true, pagina: 2,
+      fechaDesde: "2026-10-01", fechaHasta: "2026-10-31", soloActivas: false, conSugerencias: true, pagina: 2,
     });
     expect(leerFiltrosOrdenes({ fase: "en_curso" }, estadosDePrueba).fase).toBe("en_curso");
+    expect(leerFiltrosOrdenes({ soloActivas: "true" }, estadosDePrueba).soloActivas).toBe(true);
+    expect(leerFiltrosOrdenes({ soloActivas: "si" }, estadosDePrueba).soloActivas).toBe(false);
+    expect(construirUrlOrdenes({ ...filtrosVacios, clienteId: "3", soloActivas: true })).toBe("/ordenes-trabajo?clienteId=3&soloActivas=true");
     expect(leerFiltrosOrdenes({ fase: "inventada" }, estadosDePrueba).fase).toBe("");
     expect(construirUrlOrdenes({ ...filtrosVacios, fase: "por_validar" })).toBe("/ordenes-trabajo?fase=por_validar");
     expect(leerFiltrosOrdenes({ estado: "x", prioridad: "urgente", tipo: "otro", fechaDesde: "ayer", conSugerencias: "si", clienteId: "1;" }, estadosDePrueba)).toEqual(filtrosVacios);

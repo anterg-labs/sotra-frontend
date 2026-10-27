@@ -16,13 +16,13 @@ const clienteGuardado: Cliente = {
 
 it("muestra como ejemplo un celular con cero inicial", () => {
   render(<FormularioCliente accion={vi.fn()} etiquetaConfirmacion="Guardar" />);
-  expect(screen.getByLabelText("Número telefónico (opcional)")).toHaveAttribute("placeholder", "099123456");
+  expect(screen.getByLabelText("Número de teléfono o celular (opcional)")).toHaveAttribute("placeholder", "099123456");
 });
 
 function completar(telefono = "") {
   fireEvent.change(screen.getByLabelText("Nombre o razón social"), { target: { value: "Cliente prueba" } });
   fireEvent.change(screen.getByLabelText("Nombre de contacto"), { target: { value: "Ana Pérez" } });
-  if (telefono) fireEvent.change(screen.getByLabelText("Número telefónico (opcional)"), { target: { value: telefono } });
+  if (telefono) fireEvent.change(screen.getByLabelText("Número de teléfono o celular (opcional)"), { target: { value: telefono } });
 }
 
 describe("formulario de clientes", () => {
@@ -51,8 +51,8 @@ describe("formulario de clientes", () => {
     fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
 
     await waitFor(() => expect(screen.getByText("El número telefónico ya está registrado.")).toHaveAttribute("id", "telefono-error"));
-    expect(screen.getByLabelText("Número telefónico (opcional)")).toHaveAttribute("aria-invalid", "true");
-    await waitFor(() => expect(screen.getByLabelText("Número telefónico (opcional)")).toHaveFocus());
+    expect(screen.getByLabelText("Número de teléfono o celular (opcional)")).toHaveAttribute("aria-invalid", "true");
+    await waitFor(() => expect(screen.getByLabelText("Número de teléfono o celular (opcional)")).toHaveFocus());
     expect(screen.getByLabelText("Nombre o razón social")).toHaveValue("Cliente prueba");
     expect(screen.queryByText("No se pudo guardar la información del cliente.")).toBeNull();
   });

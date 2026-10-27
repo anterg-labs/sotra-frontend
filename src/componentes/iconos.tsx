@@ -194,3 +194,13 @@ export function IconoConfiguracion(props: PropiedadesIconoMenu) {
     </IconoMenuBase>
   );
 }
+
+export function IconoFiltrosAvanzados() {
+  return (
+    <svg aria-hidden="true" fill="none" height="16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="16">
+      <path d="M9 3h6" />
+      <path d="M10 3v6.2L4.6 18a2 2 0 0 0 1.7 3h11.4a2 2 0 0 0 1.7-3L14 9.2V3" />
+      <path d="M7.5 15h9" />
+    </svg>
+  );
+}

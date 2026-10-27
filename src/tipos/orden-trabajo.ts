@@ -169,6 +169,8 @@ export type FiltrosOrdenesTrabajo = {
   estado: string;
   /** Fase del estado: trae las órdenes de todos los estados de esa fase. */
   fase?: string;
+  /** Solo órdenes pendientes, en curso o por validar (las que cuentan los listados de clientes y usuarios). */
+  soloActivas?: boolean;
   prioridad: string;
   tipo: string;
   fechaDesde: string;

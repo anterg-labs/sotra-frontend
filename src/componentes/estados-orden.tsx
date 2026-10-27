@@ -41,5 +41,5 @@ export function EtiquetaEstadoOrden(props: { estado: string }) {
   const etiqueta = useEtiquetaEstadoOrden();
   const tono = estados.find((estado) => estado.valor === props.estado)?.tono;
   const tonoVisible = tono !== undefined && TONOS_CON_ESTILO.includes(tono) ? tono : "neutro";
-  return <span className={"status status-tono-" + tonoVisible}>{etiqueta(props.estado)}</span>;
+  return <span className={"status status-tono-" + tonoVisible}>{etiquetaLegible(etiqueta(props.estado))}</span>;
 }

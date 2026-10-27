@@ -7,7 +7,7 @@ import { EncabezadoOrdenable } from "@/componentes/listado/encabezado-ordenable"
 import { useFilasConOrdenInstantaneo } from "@/componentes/listado/orden-instantaneo";
 import type { ValorOrdenable } from "@/componentes/listado/orden-local";
 import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
-import { EtiquetaEstadoOrden, useFaseEstadoOrden } from "@/componentes/estados-orden";
+import { EtiquetaEstadoOrden, etiquetaLegible, useFaseEstadoOrden } from "@/componentes/estados-orden";
 import { formatearFechaPrevista } from "@/servicios/servicio-ordenes-trabajo";
 import type { FiltrosOrdenesTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
 import { formatearFechaCorta } from "@/utilidades/fechas";
@@ -62,7 +62,7 @@ export function TablaOrdenes(props: { ordenes: OrdenTrabajo[]; filtros: FiltrosO
               <td>{orden.nombreActivo}</td>
               <td>{orden.tipo}</td>
               <td>
-                <span className={"status prioridad-" + orden.prioridad}>{orden.prioridad}</span>
+                <span className={"status prioridad-" + orden.prioridad}>{etiquetaLegible(orden.prioridad)}</span>
               </td>
               <td>{orden.nombreTecnico ? orden.nombreTecnico : "Sin asignar"}</td>
               <td>

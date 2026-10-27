@@ -16,7 +16,7 @@ function completar() {
   fireEvent.change(screen.getByLabelText("Nombre"), { target: { value: "Ana" } });
   fireEvent.change(screen.getByLabelText("Apellido"), { target: { value: "Pérez" } });
   fireEvent.change(screen.getByLabelText("Correo electrónico"), { target: { value: "ana@ejemplo.com" } });
-  fireEvent.change(screen.getByLabelText("Número de teléfono"), { target: { value: "99123456" } });
+  fireEvent.change(screen.getByLabelText("Número de teléfono o celular"), { target: { value: "99123456" } });
 }
 
 describe("formulario de usuarios", () => {
@@ -44,25 +44,25 @@ describe("formulario de usuarios", () => {
 
   it("sugiere el formato del teléfono con un texto de ejemplo", () => {
     render(<FormularioUsuario accion={vi.fn()} etiquetaConfirmacion="Guardar" rutaCancelar="/usuarios" rutaExito="/usuarios" />);
-    expect(screen.getByLabelText("Número de teléfono")).toHaveAttribute("placeholder", "099123456");
-    expect(screen.getByLabelText("Número de teléfono")).not.toHaveAccessibleDescription();
+    expect(screen.getByLabelText("Número de teléfono o celular")).toHaveAttribute("placeholder", "099123456");
+    expect(screen.getByLabelText("Número de teléfono o celular")).not.toHaveAccessibleDescription();
   });
 
   it.each(["99123456", "099123456", "092624911"])("envía el alta con el teléfono válido %s sin truncarlo", async (telefono) => {
     const accion = vi.fn().mockResolvedValue({ exito: true, registro: usuario });
     render(<FormularioUsuario accion={accion} etiquetaConfirmacion="Guardar" rutaCancelar="/usuarios" rutaExito="/usuarios" />);
     completar();
-    fireEvent.change(screen.getByLabelText("Número de teléfono"), { target: { value: telefono } });
+    fireEvent.change(screen.getByLabelText("Número de teléfono o celular"), { target: { value: telefono } });
     fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
     await waitFor(() => expect(accion).toHaveBeenCalledWith(expect.objectContaining({ telefono })));
-    expect(screen.getByLabelText("Número de teléfono")).not.toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByLabelText("Número de teléfono o celular")).not.toHaveAttribute("aria-invalid", "true");
   });
 
   it.each(["9912345", "991234567", "0991234567"])("rechaza el teléfono %s que no cumple la excepción del cero inicial", async (telefono) => {
     const accion = vi.fn();
     render(<FormularioUsuario accion={accion} etiquetaConfirmacion="Guardar" rutaCancelar="/usuarios" rutaExito="/usuarios" />);
     completar();
-    fireEvent.change(screen.getByLabelText("Número de teléfono"), { target: { value: telefono } });
+    fireEvent.change(screen.getByLabelText("Número de teléfono o celular"), { target: { value: telefono } });
     fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
     expect(await screen.findByText("El campo teléfono debe tener 8 dígitos (o 9 si empieza con 0).")).toHaveAttribute("role", "alert");
     expect(accion).not.toHaveBeenCalled();
@@ -87,8 +87,8 @@ describe("formulario de usuarios", () => {
     fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
 
     await waitFor(() => expect(screen.getByText("El número de teléfono ya está registrado.")).toHaveAttribute("id", "telefono-error"));
-    expect(screen.getByLabelText("Número de teléfono")).toHaveAttribute("aria-invalid", "true");
-    await waitFor(() => expect(screen.getByLabelText("Número de teléfono")).toHaveFocus());
+    expect(screen.getByLabelText("Número de teléfono o celular")).toHaveAttribute("aria-invalid", "true");
+    await waitFor(() => expect(screen.getByLabelText("Número de teléfono o celular")).toHaveFocus());
   });
 
   it("lleva el foco al primer campo inválido sin llamar a la acción", async () => {

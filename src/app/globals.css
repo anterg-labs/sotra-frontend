@@ -587,6 +587,68 @@ label:has(input:disabled) {
   margin-left: auto;
 }
 
+.boton-filtros-avanzados {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radio-m);
+  color: var(--texto-tenue);
+  cursor: pointer;
+}
+
+.boton-filtros-avanzados:hover,
+.boton-filtros-avanzados[aria-expanded="true"] {
+  background: var(--superficie-suave);
+  border-color: var(--borde);
+  color: var(--texto);
+}
+
+/* Punto discreto: avisa que hay un filtro avanzado distinto del valor por defecto. */
+.boton-filtros-avanzados[data-activo="true"] {
+  position: relative;
+  color: var(--texto);
+}
+
+.boton-filtros-avanzados[data-activo="true"]::after {
+  content: "";
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  background: var(--primario, currentColor);
+  border-radius: 50%;
+}
+
+.filtros-avanzados {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 16px;
+  min-width: 0;
+  margin: 0;
+  padding: 12px 0 0;
+  border: 0;
+  border-top: 1px solid var(--borde);
+}
+
+.filtros-avanzados legend {
+  float: left;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 0;
+  color: var(--texto-tenue);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .barra-filtros-acciones .primary-button,
 .barra-filtros-acciones .secondary-button {
   height: 38px;
@@ -935,6 +997,24 @@ label:has(input:disabled) {
   color: var(--texto-tenue);
   font-size: 13px;
   line-height: 1.6;
+}
+
+/* Detalle con actividad: los datos a la izquierda y la actividad a la derecha; en pantallas angostas se apilan. */
+.detalle-con-actividad {
+  display: grid;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (min-width: 1100px) {
+  .detalle-con-actividad {
+    grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  }
+
+  .detalle-con-actividad > .detail-panel .detail-list {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
 }
 
 .detail-panel {
@@ -1299,6 +1379,19 @@ label:has(input:disabled) {
 
   .app-boton-menu:hover {
     background: var(--acento-suave);
+  }
+
+  /* Con el menú abierto, el botón ocupa el ancho del menú (mismo margen que cuando está compacto) y la flecha queda al centro. */
+  .app-boton-menu {
+    transition:
+      width var(--transicion),
+      left var(--transicion),
+      background-color var(--transicion);
+  }
+
+  .app-boton-menu[data-abierto="true"] {
+    left: calc((var(--lateral-ancho) - 42px) / 2);
+    width: calc(var(--lateral-ancho-abierto) - (var(--lateral-ancho) - 42px));
   }
 
   .app-lateral-logo {

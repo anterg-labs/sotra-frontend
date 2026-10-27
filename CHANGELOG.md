@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.66 (2026-10-27)
+
+- Menú: la primera opción del submenú de Activos pasa a llamarse «Todos los activos», para no repetir el nombre de la sección.
+
 ## Version 1.0.65 (2026-10-27)
 
 - Menú: con el menú abierto, el logo de CVM se agranda de forma notable y ocupa casi todo el ancho del menú.

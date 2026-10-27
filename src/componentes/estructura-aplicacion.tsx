@@ -60,7 +60,7 @@ const elementosMenu: ElementoMenu[] = [
     submenus: [
       {
         ruta: "/activos",
-        etiqueta: "Activos",
+        etiqueta: "Todos los activos",
         permiso: "activo.consultar",
         esActivo: (ruta) => ruta === "/activos" || /^\/activos\/(?:\d|nuevo)/.test(ruta),
       },

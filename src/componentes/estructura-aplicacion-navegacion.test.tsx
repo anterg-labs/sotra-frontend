@@ -86,8 +86,7 @@ describe("EstructuraAplicacion: navegación de escritorio", () => {
     const menu = screen.getByRole("navigation", { name: "Navegación principal" });
     fireEvent.click(within(menu).getByRole("button", { name: "Desplegar el submenú de Activos" }));
     expect(within(menu).getByRole("link", { name: "Clientes" })).toHaveAttribute("aria-current", "page");
-    const enlacesActivos = within(menu).getAllByRole("link", { name: "Activos" });
-    expect(enlacesActivos).toHaveLength(2);
+    const enlacesActivos = [within(menu).getByRole("link", { name: "Activos" }), within(menu).getByRole("link", { name: "Todos los activos" })];
     enlacesActivos.forEach((enlace) => expect(enlace).not.toHaveAttribute("aria-current"));
     expect(enlacesActivos[0]).not.toHaveAttribute("aria-expanded");
     expect(within(menu).getByRole("link", { name: "Modelos de máquina" })).toHaveAttribute("href", "/activos/modelos");
@@ -96,8 +95,8 @@ describe("EstructuraAplicacion: navegación de escritorio", () => {
   });
 
   it.each([
-    ["/activos", "Activos"],
-    ["/activos/5", "Activos"],
+    ["/activos", "Todos los activos"],
+    ["/activos/5", "Todos los activos"],
     ["/activos/modelos/3", "Modelos de máquina"],
     ["/activos/tipos", "Tipos de máquina"],
   ])("en %s el submenú activo es %s", (ruta, activo) => {

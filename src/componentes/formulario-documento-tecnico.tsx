@@ -123,7 +123,7 @@ export function FormularioDocumentoTecnico(props: PropiedadesFormularioDocumento
   if (estaEnviando && usaSugerenciasIA) {
     mensajeProcesando = (
       <p className="empty-state">
-        Procesando el documento para las sugerencias de IA. Puede tardar varios minutos; no cierres esta pantalla.
+        Subiendo el documento. Al terminar, se procesa para las sugerencias de IA en segundo plano: podés seguir usando el sistema.
       </p>
     );
   }

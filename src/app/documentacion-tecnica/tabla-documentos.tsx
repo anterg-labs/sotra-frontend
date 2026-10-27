@@ -7,6 +7,7 @@ import { useCambioEstadoConfirmado } from "@/componentes/listado/use-cambio-esta
 import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import { apiObtenerUrlDescargaDocumentoTecnico } from "@/servicios/api/api-documentos-tecnicos";
 import { obtenerEtiquetaTipoDocumento, type DocumentoTecnico, type FiltrosDocumentosTecnicos } from "@/tipos/documento-tecnico";
+import { EstadoSugerenciasIa } from "./estado-procesamiento";
 import { eliminarDocumentoTecnicoAccion } from "./acciones";
 import { construirUrlDocumentos } from "./filtros";
 import { formatearFechaCorta } from "@/utilidades/fechas";
@@ -82,9 +83,7 @@ export function TablaDocumentos(props: { documentos: DocumentoTecnico[]; filtros
                   </td>
                   <td>{descripcionDeAsociacion(documento)}</td>
                   <td>
-                    <span className={documento.usaSugerenciasIA ? "status status-activo" : "status status-inactivo"}>
-                      {documento.usaSugerenciasIA ? "Sí" : "No"}
-                    </span>
+                    <EstadoSugerenciasIa documento={documento} />
                   </td>
                   <td>{formatearFechaCorta(documento.creadoEn)}</td>
                   <td>

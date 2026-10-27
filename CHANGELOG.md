@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Version 1.0.50 (2026-10-27)
+
+- Documentación técnica: al subir un documento para las sugerencias de IA ya no hay que esperar a que se procese; el listado y el detalle muestran si está «En cola», «Procesando…», listo o con «Error al procesar», y se actualizan solos cada 5 segundos mientras haya alguno en proceso.
+- Documentación técnica: si el procesamiento falló, el detalle muestra el motivo y el botón «Volver a procesar».
+
 ## Version 1.0.49 (2026-10-26)
 
 - Órdenes de trabajo: la sugerencia de IA se pide con el activo de la orden (`activoId`), así la API busca solo en los manuales de esa máquina, de su modelo y en la documentación general.

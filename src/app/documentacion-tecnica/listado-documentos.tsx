@@ -2,7 +2,8 @@ import { anticiparConsulta, resolverConsulta, type ConsultaAnticipada } from "@/
 import { InformarResultados } from "@/componentes/listado/navegacion-listado";
 import { PaginacionListado } from "@/componentes/listado/paginacion-listado";
 import { listarDocumentosTecnicosServidor } from "@/servicios/servidor/documentos-tecnicos";
-import type { FiltrosDocumentosTecnicos } from "@/tipos/documento-tecnico";
+import { seEstaProcesando, type FiltrosDocumentosTecnicos } from "@/tipos/documento-tecnico";
+import { ActualizarMientrasProcesa } from "./estado-procesamiento";
 import { RUTA_DOCUMENTOS } from "./filtros";
 import { TablaDocumentos } from "./tabla-documentos";
 
@@ -34,6 +35,7 @@ export async function ListadoDocumentos(props: { filtros: FiltrosDocumentosTecni
   return (
     <>
       <InformarResultados total={pagina.totalElementos} />
+      <ActualizarMientrasProcesa activo={pagina.elementos.some(seEstaProcesando)} />
       <TablaDocumentos documentos={pagina.elementos} filtros={filtros} unaSolaPagina={pagina.totalPaginas <= 1} />
       <PaginacionListado
         filtros={{ buscar: filtros.buscar, activoId: filtros.activoId, modeloMaquinaId: filtros.modeloMaquinaId, tipo: filtros.tipo, vigente: filtros.vigente, ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden }}

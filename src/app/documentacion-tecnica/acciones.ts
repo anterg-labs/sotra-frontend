@@ -5,6 +5,7 @@ import {
   actualizarDocumentoTecnicoServidor,
   cambiarVigenciaDocumentoTecnicoServidor,
   eliminarDocumentoTecnicoServidor,
+  reprocesarDocumentoTecnicoServidor,
 } from "@/servicios/servidor/documentos-tecnicos";
 import { esIdValido, resultadoFallido } from "@/servicios/servidor/resultado-accion";
 import {
@@ -39,6 +40,20 @@ export async function cambiarVigenciaDocumentoAccion(documentoId: number, vigent
     return { exito: true };
   } catch {
     return { exito: false, mensaje };
+  }
+}
+
+/** Vuelve a poner el documento en la cola de procesamiento, por ejemplo después de un error. */
+export async function reprocesarDocumentoAccion(documentoId: number): Promise<ResultadoCambiarEstado> {
+  const mensaje = "No se pudo volver a procesar el documento.";
+  if (!esIdValido(documentoId)) return { exito: false, mensaje };
+
+  try {
+    await reprocesarDocumentoTecnicoServidor(documentoId);
+    revalidatePath("/documentacion-tecnica", "layout");
+    return { exito: true };
+  } catch (excepcion) {
+    return { exito: false, mensaje: excepcion instanceof Error && excepcion.message ? excepcion.message : mensaje };
   }
 }
 

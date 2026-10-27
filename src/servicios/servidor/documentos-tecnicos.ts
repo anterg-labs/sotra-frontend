@@ -42,6 +42,14 @@ export function actualizarDocumentoTecnicoServidor(documentoId: number, datos: A
   );
 }
 
+export function reprocesarDocumentoTecnicoServidor(documentoId: number) {
+  return leerJsonServidor<DocumentoTecnico>(
+    "/api/v1/documentos-tecnicos/" + documentoId + "/reprocesar",
+    "No se pudo volver a procesar el documento.",
+    { method: "POST" },
+  );
+}
+
 export async function eliminarDocumentoTecnicoServidor(documentoId: number) {
   await solicitarApiServidor(
     "/api/v1/documentos-tecnicos/" + documentoId,

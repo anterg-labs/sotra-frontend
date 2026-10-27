@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.53 (2026-10-26)
+
+- Órdenes de trabajo: el detalle muestra quién creó la orden («Creada por»).
+
 ## Version 1.0.52 (2026-10-26)
 
 - Órdenes de trabajo: cada repuesto se asigna con una cantidad mediante un selector numérico limitado a las unidades disponibles; si no hay, avisa por qué (sin stock, reservado o entregado). Quien gestiona repuestos (administrador, jefe y pañolero) los cambia también desde el detalle, donde se ve la cantidad, el estado (reservado, entregado, descontado) y quién hizo cada cambio.

@@ -318,6 +318,10 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
             <dd>{fechaCreacion}</dd>
           </div>
           <div>
+            <dt>Creada por</dt>
+            <dd>{orden.nombreResponsable ?? "Sin identificar"}</dd>
+          </div>
+          <div>
             <dt>Fecha prevista de ejecución</dt>
             <dd>{formatearFechaPrevista(orden.fechaPrevistaEjecucion)}</dd>
           </div>

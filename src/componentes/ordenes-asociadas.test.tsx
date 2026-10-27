@@ -12,7 +12,7 @@ vi.mock("@/servicios/servicio-ordenes-trabajo", async (importarReal) => ({
 
 function orden(id: number, cliente: string): OrdenTrabajo {
   return {
-    id, clienteId: 1, nombreCliente: cliente, activoId: 1, nombreActivo: "Excavadora", tecnicoId: null, nombreTecnico: null,
+    id, clienteId: 1, nombreCliente: cliente, activoId: 1, nombreActivo: "Excavadora", responsableId: 4, nombreResponsable: null, tecnicoId: null, nombreTecnico: null,
     tipo: "correctivo", prioridad: "media", descripcion: "", observaciones: "", fechaPrevistaEjecucion: "2026-10-30", estado: "pendiente",
     creadoEn: "2026-10-20T10:00:00Z", fechaInicio: null, fechaCierre: null, sugerencias: [], repuestos: [], transiciones: [],
     historialEstados: [], historialTecnicos: [], historialRepuestos: [], version: "v",

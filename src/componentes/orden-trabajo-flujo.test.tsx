@@ -69,7 +69,7 @@ const repuestos = [
 
 function ordenExistente(extra: Partial<OrdenTrabajo> = {}): OrdenTrabajo {
   return {
-    id: 11, clienteId: 1, nombreCliente: "ACME", activoId: 10, nombreActivo: "Retro 1", tecnicoId: 7, nombreTecnico: "Tomás Ruiz",
+    id: 11, clienteId: 1, nombreCliente: "ACME", activoId: 10, nombreActivo: "Retro 1", responsableId: 4, nombreResponsable: "Ana Pérez", tecnicoId: 7, nombreTecnico: "Tomás Ruiz",
     tipo: "correctivo", prioridad: "alta", descripcion: "Cambiar filtro", observaciones: "Obs", fechaPrevistaEjecucion: "2026-10-20",
     estado: "en_progreso", creadoEn: "2026-10-01T10:00:00Z", fechaInicio: null, fechaCierre: null, sugerencias: ["Sugerida"],
     repuestos: [{ id: 3, codigo: "R3", nombre: "Filtro", cantidad: 2, estado: "reservado" }], transiciones: transicionesDePrueba.en_progreso,

@@ -127,7 +127,8 @@ const pagina = (elementos: unknown[], totalPaginas = 1) => ({
   elementos, pagina: 1, tamanoPagina: 20, totalElementos: elementos.length, totalPaginas,
 });
 const orden = (id: number, extra: Record<string, unknown> = {}) => ({
-  id, clienteId: 1, nombreCliente: "ACME", activoId: 2, nombreActivo: "Retro 1", tecnicoId: null, nombreTecnico: null,
+  id, clienteId: 1, nombreCliente: "ACME", activoId: 2, nombreActivo: "Retro 1", responsableId: 4, nombreResponsable: "Ana Pérez",
+  tecnicoId: null, nombreTecnico: null,
   tipo: "correctivo", prioridad: "alta", descripcion: "Cambiar filtro", observaciones: "", fechaPrevistaEjecucion: "2026-10-20",
   estado: "pendiente", creadoEn: "2026-10-01T10:00:00Z", fechaInicio: null, fechaCierre: null, sugerencias: [], repuestos: [],
   transiciones: [transicion("en_progreso"), transicion("pausado", { exigeMotivo: true })],
@@ -417,6 +418,8 @@ describe("detalle de orden de trabajo", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Orden de trabajo N° 11" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Retro 1" })).toHaveAttribute("href", "/activos/2");
     expect(screen.getByText("Sin observaciones")).toBeInTheDocument();
+    expect(screen.getByText("Creada por")).toBeInTheDocument();
+    expect(within(screen.getByText("Creada por").closest("div") as HTMLElement).getByText("Ana Pérez")).toBeInTheDocument();
     expect(screen.getByText("Sin repuestos asociados")).toBeInTheDocument();
     expect(screen.getByText("Sin sugerencias")).toBeInTheDocument();
     const historial = screen.getByRole("heading", { name: "Historial de estados" }).closest("section") as HTMLElement;

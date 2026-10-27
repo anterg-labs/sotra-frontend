@@ -98,6 +98,9 @@ export type OrdenTrabajo = {
   nombreCliente: string;
   activoId: number;
   nombreActivo: string;
+  /** Quién creó la orden (el responsable). */
+  responsableId: number;
+  nombreResponsable: string | null;
   tecnicoId: number | null;
   nombreTecnico: string | null;
   tipo: TipoOrdenTrabajo;

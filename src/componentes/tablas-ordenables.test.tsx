@@ -8,7 +8,7 @@ import type { Repuesto } from "@/tipos/repuesto";
 
 function orden(id: number, cliente: string, prioridad: OrdenTrabajo["prioridad"], tecnico: string | null): OrdenTrabajo {
   return {
-    id, clienteId: id, nombreCliente: cliente, activoId: id, nombreActivo: "Activo " + id, tecnicoId: tecnico ? id : null,
+    id, clienteId: id, nombreCliente: cliente, activoId: id, nombreActivo: "Activo " + id, responsableId: 4, nombreResponsable: null, tecnicoId: tecnico ? id : null,
     nombreTecnico: tecnico, tipo: "correctivo", prioridad, descripcion: "", observaciones: "", fechaPrevistaEjecucion: "2026-10-30",
     estado: "pendiente", creadoEn: "2026-10-20T10:00:00Z", fechaInicio: null, fechaCierre: null, sugerencias: [], repuestos: [],
     transiciones: [], historialEstados: [], historialTecnicos: [], historialRepuestos: [], version: "v",

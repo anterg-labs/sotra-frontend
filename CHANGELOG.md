@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.72 (2026-10-27)
+
+- Contratos: se pueden generar los tipos de la API desde su documento OpenAPI (`npm run api:tipos`) y una comprobación de compilación verifica que los contratos de usuarios y clientes del frontend tengan los mismos campos que la API.
+
 ## Version 1.0.71 (2026-10-27)
 
 - Perfil: nueva pantalla «Mi perfil» para cambiar nombre, apellido y teléfono; correo y contraseña se muestran bloqueados con el aviso «Depende de la integración con Keycloak». Se abre desde el menú del usuario y desde Configuración.

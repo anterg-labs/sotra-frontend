@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Version 1.0.73 (2026-10-27)
+
+- Documentación técnica: al subir un documento para las sugerencias de IA ya no hay que esperar a que se procese; el listado y el detalle muestran si está «En cola», «Procesando…», listo o con «Error al procesar», y se actualizan solos cada 5 segundos mientras haya alguno en proceso.
+- Documentación técnica: si el procesamiento falló, el detalle muestra el motivo y el botón «Volver a procesar».
+
 ## Version 1.0.72 (2026-10-27)
 
 - Contratos: se pueden generar los tipos de la API desde su documento OpenAPI (`npm run api:tipos`) y una comprobación de compilación verifica que los contratos de usuarios y clientes del frontend tengan los mismos campos que la API.

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { apiObtenerUrlDescargaDocumentoTecnico } from "@/servicios/api/api-documentos-tecnicos";
 import { obtenerDocumentoTecnicoServidor } from "@/servicios/servidor/documentos-tecnicos";
-import { obtenerEtiquetaTipoDocumento, type DocumentoTecnico } from "@/tipos/documento-tecnico";
+import { obtenerEtiquetaTipoDocumento, seEstaProcesando, type DocumentoTecnico } from "@/tipos/documento-tecnico";
+import { ActualizarMientrasProcesa, BotonReprocesar, EstadoSugerenciasIa } from "../estado-procesamiento";
 import { formatearFechaHora } from "@/utilidades/fechas";
 import { BotonVigencia } from "./boton-vigencia";
 import { EnlaceVolver } from "@/componentes/enlace-volver";
@@ -74,9 +75,11 @@ export default async function PaginaDetalleDocumentoTecnico(props: { params: Pro
             <div className="detail-wide">
               <dt>Sugerencias de IA</dt>
               <dd>
-                {documento.usaSugerenciasIA
-                  ? "Se usa para sugerencias de IA (" + documento.cantidadFragmentos + " fragmentos procesados)"
-                  : "No se usa para sugerencias de IA"}
+                <ActualizarMientrasProcesa activo={seEstaProcesando(documento)} />
+                <EstadoSugerenciasIa conDetalle documento={documento} />
+                {documento.usaSugerenciasIA && documento.estadoProcesamiento === "error" ? (
+                  <BotonReprocesar documentoId={documento.id} />
+                ) : null}
               </dd>
             </div>
             <div>

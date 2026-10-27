@@ -28,6 +28,14 @@ export function esTipoDocumento(valor: string): valor is TipoDocumento {
   return (TIPOS_DOCUMENTO as readonly string[]).includes(valor);
 }
 
+/** Procesamiento para las sugerencias de IA: se hace en segundo plano después de subir el PDF. */
+export type EstadoProcesamiento = "pendiente" | "procesando" | "listo" | "error";
+
+/** El documento todavía no terminó de procesarse: conviene volver a consultarlo. */
+export function seEstaProcesando(documento: Pick<DocumentoTecnico, "usaSugerenciasIA" | "estadoProcesamiento">) {
+  return documento.usaSugerenciasIA && (documento.estadoProcesamiento === "pendiente" || documento.estadoProcesamiento === "procesando");
+}
+
 export type DocumentoTecnico = {
   id: number;
   nombreArchivo: string;
@@ -42,6 +50,9 @@ export type DocumentoTecnico = {
   usaSugerenciasIA: boolean;
   cantidadFragmentos: number;
   creadoEn: string;
+  estadoProcesamiento: EstadoProcesamiento;
+  codigoErrorProcesamiento: string | null;
+  mensajeErrorProcesamiento: string | null;
 };
 
 export type CrearDocumentoTecnicoInput = {

@@ -24,6 +24,7 @@ const s = vi.hoisted(() => ({
   eliminarDocumentoTecnicoAccion: vi.fn(),
   cambiarVigenciaDocumentoAccion: vi.fn(),
   actualizarDocumentoAccion: vi.fn(),
+  reprocesarDocumentoAccion: vi.fn(),
 }));
 
 const refresh = vi.hoisted(() => vi.fn());
@@ -38,6 +39,7 @@ vi.mock("./acciones", () => ({
   eliminarDocumentoTecnicoAccion: s.eliminarDocumentoTecnicoAccion,
   cambiarVigenciaDocumentoAccion: s.cambiarVigenciaDocumentoAccion,
   actualizarDocumentoAccion: s.actualizarDocumentoAccion,
+  reprocesarDocumentoAccion: s.reprocesarDocumentoAccion,
 }));
 
 const documento = (id: number, extra: Record<string, unknown> = {}) => ({
@@ -54,6 +56,9 @@ const documento = (id: number, extra: Record<string, unknown> = {}) => ({
   usaSugerenciasIA: true,
   cantidadFragmentos: 12,
   creadoEn: "2026-03-04T10:00:00Z",
+  estadoProcesamiento: "listo",
+  codigoErrorProcesamiento: null,
+  mensajeErrorProcesamiento: null,
   ...extra,
 });
 const pagina = (elementos: unknown[], totalPaginas = 1) => ({
@@ -178,6 +183,69 @@ describe("tabla de documentos (eliminación)", () => {
   });
 });
 
+describe("estado del procesamiento de los documentos", () => {
+  const parametros = (id: string) => ({ params: Promise.resolve({ id }) });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("el listado muestra los documentos en cola, procesándose o con error, y se actualiza mientras procesa", async () => {
+    vi.useFakeTimers();
+    s.listarDocumentosTecnicosServidor.mockResolvedValue(pagina([
+      documento(1, { estadoProcesamiento: "pendiente", cantidadFragmentos: 0 }),
+      documento(2, { estadoProcesamiento: "procesando", cantidadFragmentos: 0 }),
+      documento(3, { estadoProcesamiento: "error", codigoErrorProcesamiento: "PDF_SIN_TEXTO", mensajeErrorProcesamiento: "El PDF no tiene texto." }),
+    ]));
+    render(conNavegacion(await ListadoDocumentos({ filtros: filtrosVacios })));
+    const filas = screen.getAllByRole("row");
+    expect(within(filas[1]).getByText("En cola")).toBeInTheDocument();
+    expect(within(filas[2]).getByText("Procesando…")).toBeInTheDocument();
+    expect(within(filas[3]).getByText("Error al procesar")).toBeInTheDocument();
+
+    refresh.mockClear();
+    vi.advanceTimersByTime(5000);
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("el listado no se vuelve a pedir cuando ningún documento se está procesando", async () => {
+    vi.useFakeTimers();
+    s.listarDocumentosTecnicosServidor.mockResolvedValue(pagina([documento(1)]));
+    render(conNavegacion(await ListadoDocumentos({ filtros: filtrosVacios })));
+    refresh.mockClear();
+    vi.advanceTimersByTime(15000);
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it("el detalle explica que se está preparando y muestra el error con la opción de volver a procesar", async () => {
+    s.obtenerDocumentoTecnicoServidor.mockResolvedValue(documento(7, { estadoProcesamiento: "procesando", cantidadFragmentos: 0 }));
+    const { unmount } = render(await DetalleDocumento(parametros("7")));
+    expect(screen.getByText("Procesando…")).toBeInTheDocument();
+    expect(screen.getByText(/Puede tardar varios minutos/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Volver a procesar" })).not.toBeInTheDocument();
+    unmount();
+
+    s.obtenerDocumentoTecnicoServidor.mockResolvedValue(documento(8, {
+      estadoProcesamiento: "error",
+      codigoErrorProcesamiento: "PDF_SIN_TEXTO",
+      mensajeErrorProcesamiento: "El PDF no tiene texto que se pueda leer.",
+      cantidadFragmentos: 0,
+    }));
+    s.reprocesarDocumentoAccion.mockResolvedValueOnce({ exito: false, mensaje: "No se pudo volver a procesar el documento." });
+    s.reprocesarDocumentoAccion.mockResolvedValueOnce({ exito: true });
+    render(await DetalleDocumento(parametros("8")));
+    expect(screen.getByText("Error al procesar")).toBeInTheDocument();
+    expect(screen.getByText("El PDF no tiene texto que se pueda leer.")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Volver a procesar" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("No se pudo volver a procesar el documento.");
+    refresh.mockClear();
+    fireEvent.click(await screen.findByRole("button", { name: "Volver a procesar" }));
+    await waitFor(() => expect(refresh).toHaveBeenCalled());
+    expect(s.reprocesarDocumentoAccion).toHaveBeenCalledWith(8);
+  });
+});
+
 describe("detalle de documento técnico (Server Component)", () => {
   const parametros = (id: string) => ({ params: Promise.resolve({ id }) });
 
@@ -258,14 +326,14 @@ describe("FormularioDocumentoTecnico", () => {
     await waitFor(() => expect(push).toHaveBeenCalledWith("/documentacion-tecnica"));
   });
 
-  it("sin activo envía null; muestra el aviso de procesamiento largo y el error del servidor", async () => {
+  it("sin activo envía null; avisa que el procesamiento sigue en segundo plano y muestra el error del servidor", async () => {
     let rechazar: (e: Error) => void = () => undefined;
     const alEnviar = vi.fn().mockImplementation(() => new Promise((_, rej) => (rechazar = rej)));
     render(<FormularioDocumentoTecnico activos={[]} alEnviar={alEnviar} />);
     elegirArchivo(pdf());
     fireEvent.click(screen.getByRole("switch", { name: /sugerencias de IA/ }));
     fireEvent.click(screen.getByRole("button", { name: "Guardar documento" }));
-    expect(await screen.findByText(/Puede tardar varios minutos/)).toBeInTheDocument();
+    expect(await screen.findByText(/en segundo plano/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Guardando…" })).toBeDisabled();
     expect(alEnviar).toHaveBeenCalledWith(expect.objectContaining({ activoId: null }));
 

@@ -6,6 +6,7 @@ import { ContenedorGrafico, GraficoPareto } from "@/componentes/graficos-avanzad
 import { GraficoBarras } from "@/componentes/graficos";
 import { apiObtenerDesempeno } from "@/servicios/api/api-reportes";
 import type { FiltrosIndicadores, MaquinariaDesempeno } from "@/tipos/reporte";
+import { PlanificacionEnHoras, PlanificacionPorTipo } from "./planificacion-en-horas";
 
 function porcentajeDePreventivas(elemento: MaquinariaDesempeno) {
   return elemento.ordenes === 0 ? 0 : (elemento.preventivas * 100) / elemento.ordenes;
@@ -136,6 +137,8 @@ export function SeccionMaquinaria({ filtros }: { filtros: FiltrosIndicadores }) 
         <div className="seccion-grilla">
           <Pareto activos={datos.maquinaria.activos} />
           <PlanificadoFrenteAReactivo elementos={datos.maquinaria.porTipo} />
+          <PlanificacionEnHoras datos={datos.planificacion} filtros={filtros} />
+          <PlanificacionPorTipo datos={datos.planificacion} />
           <TiempoDeReparacion elementos={datos.maquinaria.porTipo} titulo="Tiempo medio de reparación por tipo de máquina" />
           <TiempoDeReparacion elementos={datos.maquinaria.porModelo} titulo="Tiempo medio de reparación por modelo" />
         </div>

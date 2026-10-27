@@ -44,10 +44,17 @@ const desempeno = {
     porModelo: [maquina({ id: 9, nombre: "BHL75 (Retroexcavadora)", cliente: null, activosEnServicio: 3 })],
   },
   estimacion: { ordenes: 0, horasEstimadas: null, horasReales: null, desviacionPromedioPorcentaje: null },
+  planificacion: {
+    periodo: { desde: "2026-10-01", hasta: "2026-10-31" },
+    resumen: { ordenesCerradas: 2, horasPreventivas: 10, horasCorrectivas: 30, horasTotales: 40, porcentajePlanificado: 25 },
+    porMes: [{ periodo: "2026-10-01", resumen: { ordenesCerradas: 2, horasPreventivas: 10, horasCorrectivas: 30, horasTotales: 40, porcentajePlanificado: 25 } }],
+    porTipo: [{ id: 7, nombre: "Retroexcavadora", resumen: { ordenesCerradas: 2, horasPreventivas: 10, horasCorrectivas: 30, horasTotales: 40, porcentajePlanificado: 25 } }],
+  },
 } as unknown as DesempenoOperativo;
 
 beforeEach(() => {
   Object.values(api).forEach((funcion) => funcion.mockReset());
+  api.apiObtenerComparativa.mockResolvedValue({ periodo: { desde: "2026-10-01", hasta: "2026-10-31" }, metricas: [] });
   window.history.replaceState(null, "", "/reportes");
 });
 

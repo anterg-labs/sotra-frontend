@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.77 (2026-10-27)
+
+- Reportes A17: tarjeta de mantenimiento planificado en horas dentro de Maquinaria, variación frente al período anterior y tendencia de seis meses, barras apiladas mensuales y desglose por tipo de máquina con alternativa tabular. Se explica que son horas transcurridas de creación a cierre con pausas, y se distingue «Sin dato» de 0 %.
+
 ## Version 1.0.76 (2026-10-27)
 
 - Reportes: franja de avisos con ícono, conteos por gravedad y control «Ver detalle / Ocultar»; lista agrupada en críticos y de atención, con encabezado adaptado a móvil.

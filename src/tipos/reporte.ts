@@ -109,6 +109,22 @@ export type DesempenoOperativo = {
   };
   maquinaria: { porTipo: MaquinariaDesempeno[]; activos: MaquinariaDesempeno[]; porModelo: MaquinariaDesempeno[] };
   estimacion: Estimacion;
+  planificacion: Planificacion;
+};
+
+export type HorasMantenimiento = {
+  ordenesCerradas: number;
+  horasPreventivas: number;
+  horasCorrectivas: number;
+  horasTotales: number;
+  porcentajePlanificado: number | null;
+};
+
+export type Planificacion = {
+  periodo: RangoDeFechas;
+  resumen: HorasMantenimiento;
+  porMes: { periodo: string; resumen: HorasMantenimiento }[];
+  porTipo: { id: number; nombre: string; resumen: HorasMantenimiento }[];
 };
 
 export type PausaPorMotivo = { codigo: string; motivo: string; cantidad: number; horas: number; horasPromedio: number | null };
@@ -193,6 +209,7 @@ export type PuntoDeSerie = { periodo: string; valor: number | null };
 
 export type CodigoMetrica =
   | "preventivas_porcentaje"
+  | "planificado_horas_porcentaje"
   | "cumplimiento_preventivo"
   | "tiempo_reparacion_horas"
   | "horas_parada"

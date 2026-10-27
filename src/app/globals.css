@@ -3159,6 +3159,26 @@ input[type="checkbox"][role="switch"]:disabled {
 }
 
 
+.planificacion-barra {
+  display: block;
+  width: 100%;
+  height: 24px;
+}
+
+.planificacion-barras {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.planificacion-preventivas {
+  fill: var(--grafico-preventivo);
+}
+
+.planificacion-correctivas {
+  fill: var(--grafico-correctivo);
+}
+
 /* Franja de avisos: encabezado que se ve como un botón (ícono, conteos y «Ver detalle») y lista agrupada por gravedad. */
 .franja-avisos {
   margin-bottom: 18px;

@@ -287,6 +287,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
       ) : null}
 
       <SugerenciasOrdenTrabajo
+        activoId={activoId}
         alCambiarSugerencias={setSugerencias}
         claveSugerenciasTemporales={claveSugerenciasTemporales}
         descripcion={descripcion}

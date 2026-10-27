@@ -11,6 +11,7 @@ describe("errores de sugerencias de órdenes", () => {
   it("anuncia el error junto a la acción de solicitar", async () => {
     render(
       <SugerenciasOrdenTrabajo
+        activoId=""
         alCambiarSugerencias={vi.fn()}
         claveSugerenciasTemporales=""
         descripcion="Revisar la máquina"

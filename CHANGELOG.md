@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Version 1.0.49 (2026-10-26)
+
+- Órdenes de trabajo: la sugerencia de IA se pide con el activo de la orden (`activoId`), así la API busca solo en los manuales de esa máquina, de su modelo y en la documentación general.
+- Órdenes de trabajo: si el asistente de IA no está disponible (`modo = sin_ia`), un aviso indica que se muestra el texto original del manual sin resumir y pide verificar los valores con la fuente.
+
 ## Version 1.0.48 (2026-10-26)
 
 - Órdenes de trabajo: si falta el motivo al cambiar el estado desde el detalle, el aviso aparece debajo del campo «Motivo u observación» y lleva el cursor allí, en lugar de mostrarse arriba de la página.

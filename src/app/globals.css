@@ -1646,6 +1646,17 @@ tr.fila-stock-sin-stock td:first-child {
   color: var(--alerta-texto);
 }
 
+/* La última sugerencia es el texto del manual porque el asistente de IA no respondió. */
+.aviso-sin-ia {
+  margin-top: 8px;
+  padding: 12px 14px;
+  background: var(--alerta-fondo);
+  border: 1px solid var(--alerta-texto);
+  border-radius: var(--radio-m);
+  color: var(--alerta-texto);
+  font-size: 13px;
+}
+
 .aviso-stock-critico {
   background: var(--peligro-fondo);
   border-color: var(--peligro-borde);

@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## Version 1.0.74 (2026-10-27)
+
+- Reportes: pantalla más limpia, con tres tarjetas de indicadores clave arriba, una franja de avisos que solo aparece si hay y secciones plegables (Resumen, Maquinaria, Proceso, Análisis avanzado y Alertas) que cargan al abrirse. Nuevas gráficas con alternativa en tabla y explicación de su cálculo: Pareto de la parada, tiempo de reparación, preventivo frente a reactivo, órdenes creadas frente a cerradas, antigüedad de las órdenes, cumplimiento preventivo, horas en pausa por motivo, comparación de períodos, órdenes atípicas y desgaste.
+- Órdenes: interruptor Lista/Calendario con un calendario de uno a tres meses, filtros, leyenda y vencidas que filtran, íconos de ver y modificar y detalle en un modal; línea de tiempo de etapas y recorrido con flechas en el detalle de cada orden, sin mostrar personas.
+- Órdenes: el formulario suma tiempo estimado, causa de falla, lectura de uso (horómetro u odómetro según el activo) y tipo de motivo; el detalle muestra el historial de la lectura.
+- Activos: nueva unidad de uso (horas o kilómetros).
+- Configuración: nueva pantalla de avisos de ineficiencia para ajustar los umbrales.
+
 ## Version 1.0.73 (2026-10-27)
 
 - Documentación técnica: al subir un documento para las sugerencias de IA ya no hay que esperar a que se procese; el listado y el detalle muestran si está «En cola», «Procesando…», listo o con «Error al procesar», y se actualizan solos cada 5 segundos mientras haya alguno en proceso.

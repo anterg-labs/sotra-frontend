@@ -16,6 +16,8 @@ const push = vi.hoisted(() => vi.fn());
 const replace = vi.hoisted(() => vi.fn());
 const s = vi.hoisted(() => ({
   obtenerIndicadoresServidor: vi.fn(),
+  obtenerComparativaServidor: vi.fn(),
+  obtenerAvisosServidor: vi.fn(),
   listarEstadosOrdenTrabajoOVacio: vi.fn(),
   listarClientesServidor: vi.fn(),
   obtenerClienteServidor: vi.fn(),
@@ -28,7 +30,11 @@ const s = vi.hoisted(() => ({
 }));
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace }) }));
-vi.mock("@/servicios/servidor/reportes", () => ({ obtenerIndicadoresServidor: s.obtenerIndicadoresServidor }));
+vi.mock("@/servicios/servidor/reportes", () => ({
+  obtenerIndicadoresServidor: s.obtenerIndicadoresServidor,
+  obtenerComparativaServidor: s.obtenerComparativaServidor,
+  obtenerAvisosServidor: s.obtenerAvisosServidor,
+}));
 vi.mock("@/servicios/servidor/ordenes-trabajo", () => ({
   listarEstadosOrdenTrabajoOVacio: s.listarEstadosOrdenTrabajoOVacio,
 }));
@@ -78,7 +84,7 @@ const activos = [{ id: 5, clienteId: 1, nombre: "Retro 1", numSerie: "S1" }, { i
 function tablero(filtros = filtrosVacios) {
   return (
     <ProveedorNavegacionListado etiquetaCarga="Cargando indicadores…">
-      <TableroReportes activos={activos as never} clientes={clientes as never} filtros={filtros}>
+      <TableroReportes activos={activos as never} avisos={null} clientes={clientes as never} filtros={filtros} kpis={null}>
         <p>Resumen simulado</p>
       </TableroReportes>
     </ProveedorNavegacionListado>
@@ -91,6 +97,8 @@ beforeEach(() => {
   push.mockReset();
   replace.mockReset();
   s.obtenerIndicadoresServidor.mockResolvedValue(indicadores);
+  s.obtenerComparativaServidor.mockResolvedValue({ periodo: { desde: "", hasta: "" }, periodoAnterior: { desde: "", hasta: "" }, periodoAnioAnterior: { desde: "", hasta: "" }, metricas: [] });
+  s.obtenerAvisosServidor.mockResolvedValue({ total: 0, criticos: 0, avisos: [] });
   s.listarClientesServidor.mockResolvedValue(pagina(clientes));
   s.listarActivosServidor.mockResolvedValue(pagina(activos));
 });
@@ -226,20 +234,22 @@ describe("tablero de reportes (isla)", () => {
     expect(screen.getByRole("link", { name: "Descargar PDF" })).toHaveAttribute("rel", "noreferrer");
   });
 
-  it("las pestañas alternan entre resumen y análisis, pasando los filtros aplicados", () => {
+  it("las secciones se abren y se cierran a pedido, pasando los filtros aplicados", () => {
     render(tablero({ ...filtrosVacios, estado: "cerrado" }));
-    const resumen = screen.getByRole("tab", { name: "Resumen" });
-    const analisis = screen.getByRole("tab", { name: "Análisis y alertas" });
-    expect(resumen).toHaveAttribute("aria-selected", "true");
+    const resumen = screen.getByRole("button", { name: /Resumen general/ });
+    const alertas = screen.getByRole("button", { name: /Alertas y desempeño operativo/ });
+    expect(resumen).toHaveAttribute("aria-expanded", "true");
+    expect(alertas).toHaveAttribute("aria-expanded", "false");
     expect(screen.queryByTestId("panel-analitica")).not.toBeInTheDocument();
 
-    fireEvent.click(analisis);
-    expect(analisis).toHaveAttribute("aria-selected", "true");
+    fireEvent.click(alertas);
+    expect(alertas).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByTestId("panel-analitica")).toHaveTextContent(JSON.stringify({ ...filtrosVacios, estado: "cerrado" }));
-    expect(document.getElementById("panel-resumen")).toHaveAttribute("hidden");
+    expect(window.location.search).toContain("abiertas=alertas");
 
-    fireEvent.click(resumen);
-    expect(screen.queryByTestId("panel-analitica")).not.toBeInTheDocument();
+    fireEvent.click(alertas);
+    expect(alertas).toHaveAttribute("aria-expanded", "false");
+    expect(window.location.search).not.toContain("abiertas");
     expect(screen.getByText("Resumen simulado")).toBeInTheDocument();
   });
 });

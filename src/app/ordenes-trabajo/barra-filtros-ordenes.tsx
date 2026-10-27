@@ -17,7 +17,7 @@ import { FiltrosAvanzados, hayFiltrosAplicados } from "@/componentes/listado/fil
 type ValoresOrdenes = Omit<FiltrosOrdenesTrabajo, "pagina">;
 const VACIOS: ValoresOrdenes = {
   buscar: "", clienteId: "", activoId: "", tecnicoId: "", estado: "", fase: "", prioridad: "", tipo: "",
-  fechaDesde: "", fechaHasta: "", soloActivas: false, conSugerencias: false,
+  fechaDesde: "", fechaHasta: "", soloActivas: false, conSugerencias: false, vista: "", mes: "", meses: "", eliminadas: false,
 };
 
 function nombreVisibleDeActivo(activo: Activo) {
@@ -46,6 +46,7 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
       estado: filtros.estado, fase: filtros.fase ?? "", prioridad: filtros.prioridad, tipo: filtros.tipo, fechaDesde: filtros.fechaDesde,
       fechaHasta: filtros.fechaHasta, soloActivas: filtros.soloActivas ?? false, conSugerencias: filtros.conSugerencias,
       ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden,
+      vista: filtros.vista ?? "", mes: filtros.mes ?? "", meses: filtros.meses ?? "", eliminadas: filtros.eliminadas ?? false,
     },
     construirUrl: (v) => construirUrlOrdenes({ ...v, pagina: 1 }),
     sonValidos: (v) => !rangoDeFechasInvalido(v.fechaDesde, v.fechaHasta),
@@ -77,7 +78,7 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
         />
       </div>
 
-      <FiltrosAvanzados alLimpiar={() => limpiar(VACIOS)} hayFiltros={hayFiltrosAplicados(valores)}>
+      <FiltrosAvanzados alLimpiar={() => limpiar({ ...VACIOS, vista: valores.vista, mes: valores.mes, meses: valores.meses, eliminadas: valores.eliminadas })} hayFiltros={hayFiltrosAplicados(valores)}>
         <Combobox
           alCambiar={(clienteId) => cambiar({ clienteId, activoId: "" })}
           buscarOpciones={async (consulta) => {

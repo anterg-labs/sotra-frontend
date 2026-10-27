@@ -7,6 +7,7 @@ import {
   apiListarOrdenesTrabajo,
   apiObtenerOrdenTrabajo,
   apiSolicitarSugerenciaOrdenTrabajo,
+  type DatosExtraDeEstado,
 } from "@/servicios/api/api-ordenes-trabajo";
 import { apiListarTecnicos } from "@/servicios/api/api-usuarios";
 import { listarUsuarios } from "@/servicios/servicio-usuarios";
@@ -24,13 +25,17 @@ import type { Usuario } from "@/tipos/usuario";
 export const LARGO_MAXIMO_TEXTO_ORDEN = 4000;
 
 export function obtenerErroresOrdenTrabajo(input: CrearOrdenTrabajoInput) {
-  const errores: Partial<Record<"clienteId" | "activoId" | "descripcion" | "observaciones" | "fechaPrevistaEjecucion", string>> = {};
+  const errores: Partial<Record<"clienteId" | "activoId" | "descripcion" | "observaciones" | "fechaPrevistaEjecucion" | "tiempoEstimadoHoras" | "lecturaUso", string>> = {};
   if (input.clienteId <= 0) errores.clienteId = "El cliente es obligatorio.";
   if (input.activoId <= 0) errores.activoId = "El activo es obligatorio.";
   if (!input.descripcion.trim()) errores.descripcion = "La descripción de la tarea es obligatoria.";
   else if (input.descripcion.length > LARGO_MAXIMO_TEXTO_ORDEN) errores.descripcion = `La descripción no puede superar los ${LARGO_MAXIMO_TEXTO_ORDEN} caracteres.`;
   if (input.observaciones.length > LARGO_MAXIMO_TEXTO_ORDEN) errores.observaciones = `Las observaciones no pueden superar los ${LARGO_MAXIMO_TEXTO_ORDEN} caracteres.`;
   if (!input.fechaPrevistaEjecucion) errores.fechaPrevistaEjecucion = "La fecha prevista de ejecución es obligatoria.";
+  if (input.tiempoEstimadoHoras !== undefined && !(input.tiempoEstimadoHoras > 0 && input.tiempoEstimadoHoras <= 10000)) {
+    errores.tiempoEstimadoHoras = "El tiempo estimado debe estar entre 0,01 y 10000 horas.";
+  }
+  if (input.lecturaUso !== undefined && !(input.lecturaUso >= 0)) errores.lecturaUso = "La lectura no puede ser negativa.";
   return errores;
 }
 
@@ -133,6 +138,7 @@ export async function cambiarEstadoOrdenTrabajo(
   estadoNuevo: string,
   motivo: string,
   exigeMotivo: boolean,
+  extra: DatosExtraDeEstado = {},
 ) {
   if (estadoNuevo === "") {
     throw new Error("Seleccioná el nuevo estado.");
@@ -142,7 +148,7 @@ export async function cambiarEstadoOrdenTrabajo(
     throw new Error("Indicá el motivo u observación del cambio de estado.");
   }
 
-  return apiCambiarEstadoOrdenTrabajo(ordenTrabajoId, estadoNuevo, motivo.trim());
+  return apiCambiarEstadoOrdenTrabajo(ordenTrabajoId, estadoNuevo, motivo.trim(), extra);
 }
 
 export async function asignarTecnicoOrdenTrabajo(ordenTrabajoId: number, tecnicoId: string) {

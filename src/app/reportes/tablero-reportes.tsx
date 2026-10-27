@@ -13,6 +13,10 @@ import type { Cliente } from "@/tipos/cliente";
 import { useEstadosOrden } from "@/componentes/estados-orden";
 import type { FiltrosIndicadores } from "@/tipos/reporte";
 import { construirUrlReportes } from "./filtros";
+import { SeccionAnalisisAvanzado } from "./seccion-analisis-avanzado";
+import { SeccionMaquinaria } from "./seccion-maquinaria";
+import { SeccionPlegable } from "./seccion-plegable";
+import { SeccionProceso } from "./seccion-proceso";
 
 const VACIOS: FiltrosIndicadores = { fechaDesde: "", fechaHasta: "", clienteId: "", activoId: "", estado: "", tipo: "" };
 
@@ -25,6 +29,10 @@ type PropiedadesTablero = {
   filtros: FiltrosIndicadores;
   clientes: Cliente[];
   activos: Activo[];
+  /** Tarjetas de indicadores clave (renderizadas en el servidor). */
+  kpis: React.ReactNode;
+  /** Franja de avisos de ineficiencia (renderizada en el servidor). */
+  avisos: React.ReactNode;
   /** Resumen de indicadores renderizado en el servidor. */
   children: React.ReactNode;
 };
@@ -45,7 +53,6 @@ export function TableroReportes(props: PropiedadesTablero) {
   const { fechaDesde, fechaHasta, clienteId, activoId, estado, tipo } = valores;
   const [tipoReporte, setTipoReporte] = useState("ordenes-trabajo");
   const [prioridadReporte, setPrioridadReporte] = useState("");
-  const [pestanaActiva, setPestanaActiva] = useState<"resumen" | "analisis">("resumen");
 
   const activosDelCliente = props.activos.filter((activo) => clienteId === "" || String(activo.clienteId) === clienteId);
   const filtrosParaReporte: FiltrosIndicadores = valores;
@@ -124,11 +131,12 @@ export function TableroReportes(props: PropiedadesTablero) {
         </div>
       </form>
 
-      <section className="panel panel-descarga mb-6">
-        <div className="panel-descarga-texto">
-          <h2>Descarga de reportes</h2>
-          <p className="texto-tenue">Los reportes en PDF y CSV usan los criterios elegidos en los filtros de arriba, más la prioridad.</p>
-        </div>
+      <details className="panel panel-descarga-plegable mb-6">
+        <summary className="panel-descarga-resumen">
+          <span>Descargar reportes</span>
+          <span className="texto-tenue">PDF o CSV con los filtros de arriba</span>
+        </summary>
+        <div className="panel-descarga">
         <div className="panel-descarga-campos">
           <div className="form-field">
             <label htmlFor="tipoReporte">Tipo de reporte</label>
@@ -161,39 +169,27 @@ export function TableroReportes(props: PropiedadesTablero) {
             Descargar CSV
           </a>
         </div>
-      </section>
-
-      <div aria-label="Secciones del tablero" className="pestanas" role="tablist">
-        <button
-          aria-controls="panel-resumen"
-          aria-selected={pestanaActiva === "resumen"}
-          className="pestana"
-          id="pestana-resumen"
-          onClick={() => setPestanaActiva("resumen")}
-          role="tab"
-          type="button"
-        >
-          Resumen
-        </button>
-        <button
-          aria-controls="panel-analisis"
-          aria-selected={pestanaActiva === "analisis"}
-          className="pestana"
-          id="pestana-analisis"
-          onClick={() => setPestanaActiva("analisis")}
-          role="tab"
-          type="button"
-        >
-          Análisis y alertas
-        </button>
       </div>
+      </details>
 
-      <div aria-labelledby="pestana-resumen" hidden={pestanaActiva !== "resumen"} id="panel-resumen" role="tabpanel">
+      {props.kpis}
+      {props.avisos}
+
+      <SeccionPlegable abiertaInicial id="resumen" resumen="Totales, estados, prioridades, activos con más intervenciones y repuestos con bajo stock." titulo="Resumen general">
         {children}
-      </div>
-      <div aria-labelledby="pestana-analisis" hidden={pestanaActiva !== "analisis"} id="panel-analisis" role="tabpanel">
-        {pestanaActiva === "analisis" ? <PanelAnalitica filtros={filtros} /> : null}
-      </div>
+      </SeccionPlegable>
+      <SeccionPlegable id="maquinaria" resumen="Qué máquinas concentran la parada, cuánto tardan en repararse y cuánto del trabajo es preventivo." titulo="Maquinaria">
+        <SeccionMaquinaria filtros={filtros} />
+      </SeccionPlegable>
+      <SeccionPlegable id="proceso" resumen="Si el trabajo se acumula, cuánto llevan abiertas las órdenes, el cumplimiento de fechas y las demoras por motivo." titulo="Proceso">
+        <SeccionProceso filtros={filtros} />
+      </SeccionPlegable>
+      <SeccionPlegable id="analisis-avanzado" resumen="Este período frente al anterior, reparaciones atípicas y señales de desgaste." titulo="Análisis avanzado">
+        <SeccionAnalisisAvanzado filtros={filtros} />
+      </SeccionPlegable>
+      <SeccionPlegable id="alertas" resumen="Alertas de maquinaria, desempeño operativo, tiempos, repuestos más usados y reincidencias." titulo="Alertas y desempeño operativo">
+        <PanelAnalitica filtros={filtros} />
+      </SeccionPlegable>
     </>
   );
 }

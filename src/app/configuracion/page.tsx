@@ -23,6 +23,12 @@ export default async function PaginaConfiguracion() {
       descripcion: "Editá el documento que se muestra a las personas usuarias.",
       icono: <IconoConfiguracion />,
     });
+    opciones.push({
+      ruta: "/configuracion/avisos",
+      titulo: "Avisos de ineficiencia",
+      descripcion: "Ajustá los umbrales de las reglas que avisan cuando algo se hace mal en el mantenimiento.",
+      icono: <IconoConfiguracion />,
+    });
   }
 
   return (

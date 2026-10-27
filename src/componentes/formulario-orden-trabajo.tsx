@@ -3,6 +3,7 @@
 import { BotonCancelarFormulario, useSalidaDeFormulario } from "@/componentes/modal-de-ruta";
 import { useRef, useState } from "react";
 import { CamposEstadoFechasOrdenTrabajo } from "@/componentes/campos-estado-fechas-orden-trabajo";
+import { CamposDatosOrden } from "@/componentes/campos-datos-orden";
 import { CamposGeneralesOrdenTrabajo } from "@/componentes/campos-generales-orden-trabajo";
 import { SelectorClienteActivoOrdenTrabajo } from "@/componentes/selector-cliente-activo-orden-trabajo";
 import { EditorRepuestosOrden, obtenerErrorDeLineas, type LineaRepuestoOrden } from "@/componentes/editor-repuestos-orden";
@@ -36,6 +37,11 @@ type PropiedadesFormularioOrdenTrabajo = {
   etiquetaConfirmacion: string;
   alEnviar: (orden: CrearOrdenTrabajoInput) => Promise<OrdenTrabajo>;
 };
+
+/** Número escrito con punto o coma decimal; `undefined` si el campo está vacío y `NaN` si no es un número. */
+function numeroOpcional(texto: string) {
+  return texto.trim() === "" ? undefined : Number(texto.trim().replace(",", "."));
+}
 
 /** Si el catálogo no trae el repuesto de una orden, se muestra con lo que se sabe y sin margen para subir la cantidad. */
 function repuestoSinStockConocido(repuesto: OrdenTrabajo["repuestos"][number]): Repuesto {
@@ -120,6 +126,11 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
   const [descripcion, setDescripcion] = useState(descripcionInicial);
   const [observaciones, setObservaciones] = useState(observacionesInicial);
   const [fechaPrevistaEjecucion, setFechaPrevistaEjecucion] = useState(fechaPrevistaInicial);
+  const [tiempoEstimado, setTiempoEstimado] = useState(ordenInicial?.tiempoEstimadoHoras ? String(ordenInicial.tiempoEstimadoHoras) : "");
+  const [causaFallaId, setCausaFallaId] = useState(ordenInicial?.causaFallaId ? String(ordenInicial.causaFallaId) : "");
+  const [lecturaUso, setLecturaUso] = useState(ordenInicial?.lecturaUso !== null && ordenInicial?.lecturaUso !== undefined ? String(ordenInicial.lecturaUso) : "");
+  const [motivoCodigo, setMotivoCodigo] = useState("");
+  const unidadUso = props.activos.find((activo) => String(activo.id) === activoId)?.unidadUso ?? ordenInicial?.unidadUso ?? "horas";
   const [sugerencias, setSugerencias] = useState(sugerenciasIniciales);
   const puedeGestionarRepuestos = useTienePermiso("ot.gestionar_repuestos");
   const [lineasRepuestos, setLineasRepuestos] = useState(lineasRepuestosIniciales);
@@ -169,6 +180,10 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
       estado: estado,
       motivoEstado: motivoEstado,
       sesion: sesionSugerencias,
+      ...(numeroOpcional(tiempoEstimado) === undefined ? {} : { tiempoEstimadoHoras: numeroOpcional(tiempoEstimado) }),
+      ...(tipo === "correctivo" && causaFallaId !== "" ? { causaFallaId: Number(causaFallaId) } : {}),
+      ...(numeroOpcional(lecturaUso) === undefined ? {} : { lecturaUso: numeroOpcional(lecturaUso) }),
+      ...(estadoExigeMotivo && motivoCodigo !== "" ? { motivoCodigo } : {}),
     };
 
     const erroresDetectados: typeof errores = obtenerErroresOrdenTrabajo(ordenParaGuardar);
@@ -258,6 +273,22 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
           errorMotivo={errores.motivoEstado}
           necesitaMotivo={estadoExigeMotivo}
           permiteCambiarEstado={permiteCambiarEstado}
+        />
+
+        <CamposDatosOrden
+          alCambiarCausaFalla={setCausaFallaId}
+          alCambiarLecturaUso={setLecturaUso}
+          alCambiarMotivo={setMotivoCodigo}
+          alCambiarTiempoEstimado={setTiempoEstimado}
+          causaFallaId={causaFallaId}
+          errorLecturaUso={errores.lecturaUso}
+          errorTiempoEstimado={errores.tiempoEstimadoHoras}
+          lecturaUso={lecturaUso}
+          motivoCodigo={motivoCodigo}
+          mostrarMotivo={estadoExigeMotivo}
+          tiempoEstimado={tiempoEstimado}
+          tipo={tipo}
+          unidadUso={unidadUso}
         />
       </div>
 

@@ -50,6 +50,7 @@ export function FormularioActivo(props: PropiedadesFormularioActivo) {
     activoInicial?.anioFabricacion !== null && activoInicial?.anioFabricacion !== undefined ? String(activoInicial.anioFabricacion) : "",
   );
   const [ubicacion, setUbicacion] = useState(activoInicial?.ubicacion ?? "");
+  const [unidadUso, setUnidadUso] = useState<"horas" | "kilometros">(activoInicial?.unidadUso ?? "horas");
   const [estaActivo, setEstaActivo] = useState((activoInicial?.estado ?? "activo") === "activo");
 
   const { errores, errorGeneral, estaEnviando, enviar, referenciaErrorGeneral } = useFormularioAccion({
@@ -84,6 +85,7 @@ export function FormularioActivo(props: PropiedadesFormularioActivo) {
       anioFabricacion: anioFabricacion ? Number(anioFabricacion) : null,
       nombre: textoOpcional(nombre),
       ubicacion: textoOpcional(ubicacion),
+      ...(unidadUso === (activoInicial?.unidadUso ?? "horas") && !activoInicial?.unidadUso ? {} : { unidadUso }),
       estado: estaActivo ? "activo" : "inactivo",
     });
   }
@@ -193,6 +195,14 @@ export function FormularioActivo(props: PropiedadesFormularioActivo) {
             value={ubicacion}
           />
           {mostrarError("ubicacion", errores.ubicacion)}
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="unidadUso">Cómo se mide el uso de la máquina</label>
+          <select id="unidadUso" onChange={(evento) => setUnidadUso(evento.target.value as "horas" | "kilometros")} value={unidadUso}>
+            <option value="horas">Horas (horómetro)</option>
+            <option value="kilometros">Kilómetros (odómetro)</option>
+          </select>
         </div>
       </div>
 

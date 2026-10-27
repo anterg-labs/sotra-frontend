@@ -19,7 +19,9 @@ import { ETIQUETAS_FASE_ORDEN } from "@/tipos/orden-trabajo";
 import { contarPorFase } from "@/utilidades/estados-orden";
 import { BarraFiltrosOrdenes } from "./barra-filtros-ordenes";
 import { leerFiltrosOrdenes } from "./filtros";
+import { CalendarioOrdenes } from "./calendario-ordenes";
 import { ListadoOrdenes } from "./listado-ordenes";
+import { SelectorDeVista } from "./selector-de-vista";
 
 const ETIQUETA_CARGA = "Cargando órdenes de trabajo…";
 
@@ -37,7 +39,8 @@ function TarjetaResumen(props: { etiqueta: string; valor: number }) {
 export default async function PaginaOrdenesTrabajo(props: { searchParams: Promise<ParametrosBusqueda> }) {
   const estados = await listarEstadosOrdenTrabajoOVacio();
   const filtros = leerFiltrosOrdenes(await props.searchParams, estados);
-  const consulta = anticiparConsulta(listarOrdenesTrabajoServidor(filtros));
+  const esCalendario = filtros.vista === "calendario";
+  const consulta = esCalendario ? null : anticiparConsulta(listarOrdenesTrabajoServidor(filtros));
 
   // El resumen sale de reportes y la lista de técnicos, de usuarios: solo se piden si el rol los puede ver.
   const [puedeVerResumen, puedeFiltrarPorTecnico] = await Promise.all([
@@ -65,6 +68,7 @@ export default async function PaginaOrdenesTrabajo(props: { searchParams: Promis
         <div>
           <h1>Órdenes de trabajo</h1>
         </div>
+        <SelectorDeVista filtros={filtros} />
         <SiTienePermiso permiso="ot.crear">
           <Link className="primary-button" href="/ordenes-trabajo/nuevo">
             Crear orden
@@ -90,13 +94,17 @@ export default async function PaginaOrdenesTrabajo(props: { searchParams: Promis
           tecnicos={tecnicos}
         />
 
-        <section className="panel">
-          <ZonaListado>
-            <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />}>
-              <ListadoOrdenes consulta={consulta} filtros={filtros} />
-            </Suspense>
-          </ZonaListado>
-        </section>
+        {esCalendario || consulta === null ? (
+          <CalendarioOrdenes filtros={filtros} />
+        ) : (
+          <section className="panel">
+            <ZonaListado>
+              <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />}>
+                <ListadoOrdenes consulta={consulta} filtros={filtros} />
+              </Suspense>
+            </ZonaListado>
+          </section>
+        )}
       </ProveedorNavegacionListado>
     </main>
   );

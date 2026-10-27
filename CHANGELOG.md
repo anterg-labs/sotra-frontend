@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## Version 1.0.63 (2026-10-27)
+
+- Menú: las opciones con submenú desplegable (Activos) empiezan retraídas, se abren y se cierran con una flecha cuantas veces se quiera y se pliegan al retraer el menú.
+- Navegación: el aviso «Abriendo…» aparece ahora en el centro de la pantalla, en una tarjeta con spinner.
+- Menú: el logo de CVM se agranda un poco cuando el menú está abierto.
+
 ## Version 1.0.62 (2026-10-27)
 
 - Menú: el número rojo de alertas de stock queda siempre pegado a la esquina del ícono de Repuestos, con el menú abierto o retraído, en lugar de irse a la derecha.

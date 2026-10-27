@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## Version 1.0.55 (2026-10-27)
+
+- Reportes: se quitan el reporte de actividad por técnico, el cuadro de órdenes por técnico y el filtro «Técnico»; el análisis es de órdenes, procesos y maquinaria, sin evaluar personas.
+
+## Version 1.0.54 (2026-10-27)
+
+- Reportes: la pestaña «Análisis y alertas» suma la sección «Desempeño operativo» con las órdenes, los tiempos de respuesta, ejecución y revisión, las pausas y devoluciones con sus motivos, las reasignaciones y la maquinaria por tipo y por activo con sus horas de parada. No compara personas.
+
 ## Version 1.0.53 (2026-10-26)
 
 - Órdenes de trabajo: el detalle muestra quién creó la orden («Creada por»).

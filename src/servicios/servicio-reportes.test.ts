@@ -35,7 +35,6 @@ describe("servicio-reportes", () => {
     const filtrosVacios = {
       fechaDesde: "",
       fechaHasta: "",
-      tecnicoId: "",
       clienteId: "",
       activoId: "",
       estado: "",
@@ -53,7 +52,6 @@ describe("servicio-reportes", () => {
     const filtros = {
       fechaDesde: "2026-01-01",
       fechaHasta: "2026-12-31",
-      tecnicoId: "",
       clienteId: "4",
       activoId: "",
       estado: "en_progreso",
@@ -72,7 +70,6 @@ describe("servicio-reportes", () => {
     const filtros = {
       fechaDesde: "2026-01-01",
       fechaHasta: "",
-      tecnicoId: "",
       clienteId: "4",
       activoId: "",
       estado: "",
@@ -90,7 +87,6 @@ describe("servicio-reportes", () => {
     const filtros = {
       fechaDesde: "",
       fechaHasta: "2026-12-31",
-      tecnicoId: "",
       clienteId: "",
       activoId: "",
       estado: "cerrado",

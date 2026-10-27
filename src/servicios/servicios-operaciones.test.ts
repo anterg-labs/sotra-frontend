@@ -180,11 +180,10 @@ describe("servicio-documentos-tecnicos", () => {
 });
 
 describe("servicio-reportes", () => {
-  const vacios: FiltrosIndicadores = { fechaDesde: "", fechaHasta: "", tecnicoId: "", clienteId: "", activoId: "", estado: "", tipo: "" };
+  const vacios: FiltrosIndicadores = { fechaDesde: "", fechaHasta: "", clienteId: "", activoId: "", estado: "", tipo: "" };
   const completos: FiltrosIndicadores = {
     fechaDesde: "2026-01-01",
     fechaHasta: "2026-01-31",
-    tecnicoId: "1",
     clienteId: "2",
     activoId: "3",
     estado: "cerrado",
@@ -199,8 +198,7 @@ describe("servicio-reportes", () => {
     expect(Object.fromEntries(urlRelativa(llamadas[1].url).searchParams)).toEqual({
       fechaDesde: "2026-01-01",
       fechaHasta: "2026-01-31",
-      tecnicoId: "1",
-      clienteId: "2",
+        clienteId: "2",
       activoId: "3",
       estado: "cerrado",
       tipo: "correctivo",
@@ -234,7 +232,7 @@ describe("servicio-reportes", () => {
     expect(csv.pathname).toBe("/api/v1/reportes/indicadores/csv");
     expect(csv.searchParams.get("prioridad")).toBe("alta");
     expect(csv.searchParams.get("estado")).toBe("cerrado");
-    expect(tiposDeReporte.map((t) => t.valor)).toContain("actividad-tecnicos");
+    expect(tiposDeReporte.map((t) => t.valor)).not.toContain("actividad-tecnicos");
   });
 
   it("traduce las alertas y formatea duraciones", () => {

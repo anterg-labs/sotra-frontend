@@ -16,7 +16,6 @@ const push = vi.hoisted(() => vi.fn());
 const replace = vi.hoisted(() => vi.fn());
 const s = vi.hoisted(() => ({
   obtenerIndicadoresServidor: vi.fn(),
-  listarTecnicosServidor: vi.fn(),
   listarEstadosOrdenTrabajoOVacio: vi.fn(),
   listarClientesServidor: vi.fn(),
   obtenerClienteServidor: vi.fn(),
@@ -31,7 +30,6 @@ const s = vi.hoisted(() => ({
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace }) }));
 vi.mock("@/servicios/servidor/reportes", () => ({ obtenerIndicadoresServidor: s.obtenerIndicadoresServidor }));
 vi.mock("@/servicios/servidor/ordenes-trabajo", () => ({
-  listarTecnicosServidor: s.listarTecnicosServidor,
   listarEstadosOrdenTrabajoOVacio: s.listarEstadosOrdenTrabajoOVacio,
 }));
 vi.mock("@/servicios/servidor/clientes", () => ({ listarClientesServidor: s.listarClientesServidor, obtenerClienteServidor: s.obtenerClienteServidor }));
@@ -73,15 +71,14 @@ const indicadores = {
   ],
 };
 const pagina = (elementos: unknown[]) => ({ elementos, pagina: 1, tamanoPagina: 20, totalElementos: elementos.length, totalPaginas: 1 });
-const filtrosVacios = { fechaDesde: "", fechaHasta: "", tecnicoId: "", clienteId: "", activoId: "", estado: "", tipo: "" };
-const tecnicos = [{ id: 7, nombre: "Tomás", apellido: "Ruiz" }];
+const filtrosVacios = { fechaDesde: "", fechaHasta: "", clienteId: "", activoId: "", estado: "", tipo: "" };
 const clientes = [{ id: 1, razonSocial: "ACME" }, { id: 2, razonSocial: "Otro" }];
 const activos = [{ id: 5, clienteId: 1, nombre: "Retro 1", numSerie: "S1" }, { id: 6, clienteId: 2, nombre: null, numSerie: "S2" }];
 
 function tablero(filtros = filtrosVacios) {
   return (
     <ProveedorNavegacionListado etiquetaCarga="Cargando indicadores…">
-      <TableroReportes activos={activos as never} clientes={clientes as never} filtros={filtros} tecnicos={tecnicos as never}>
+      <TableroReportes activos={activos as never} clientes={clientes as never} filtros={filtros}>
         <p>Resumen simulado</p>
       </TableroReportes>
     </ProveedorNavegacionListado>
@@ -94,7 +91,6 @@ beforeEach(() => {
   push.mockReset();
   replace.mockReset();
   s.obtenerIndicadoresServidor.mockResolvedValue(indicadores);
-  s.listarTecnicosServidor.mockResolvedValue(tecnicos);
   s.listarClientesServidor.mockResolvedValue(pagina(clientes));
   s.listarActivosServidor.mockResolvedValue(pagina(activos));
 });
@@ -103,8 +99,8 @@ describe("filtros de la URL de reportes", () => {
   it("lee los filtros con valores seguros y arma la URL", () => {
     expect(leerFiltrosReportes({}, estadosDePrueba)).toEqual(filtrosVacios);
     expect(
-      leerFiltrosReportes({ fechaDesde: "2026-05-01", fechaHasta: "2026-05-31", tecnicoId: "7", clienteId: "1", activoId: "5", estado: "cerrado", tipo: "preventivo" }, estadosDePrueba),
-    ).toEqual({ fechaDesde: "2026-05-01", fechaHasta: "2026-05-31", tecnicoId: "7", clienteId: "1", activoId: "5", estado: "cerrado", tipo: "preventivo" });
+      leerFiltrosReportes({ fechaDesde: "2026-05-01", fechaHasta: "2026-05-31", tecnicoId: "7", clienteId: "1", activoId: "5", estado: "cerrado", tipo: "preventivo" } as never, estadosDePrueba),
+    ).toEqual({ fechaDesde: "2026-05-01", fechaHasta: "2026-05-31", clienteId: "1", activoId: "5", estado: "cerrado", tipo: "preventivo" });
     expect(leerFiltrosReportes({ fechaDesde: "ayer", tecnicoId: "x", estado: "otro", tipo: "raro" }, estadosDePrueba)).toEqual(filtrosVacios);
     expect(construirUrlReportes({ ...filtrosVacios, estado: "cerrado" })).toBe("/reportes?estado=cerrado");
   });
@@ -125,7 +121,6 @@ describe("página de reportes (Server Component)", () => {
   });
 
   it("si fallan las opciones de los filtros la pantalla sigue funcionando", async () => {
-    s.listarTecnicosServidor.mockRejectedValue(new Error("x"));
     s.listarClientesServidor.mockRejectedValue(new Error("x"));
     render(await PaginaReportes({ searchParams: Promise.resolve({}) }));
     expect(screen.getByRole("heading", { level: 1, name: "Reportes e indicadores" })).toBeInTheDocument();
@@ -179,8 +174,7 @@ describe("tablero de reportes (isla)", () => {
 
   it("aplica los filtros en la URL y los limpia", () => {
     render(tablero());
-    fireEvent.focus(screen.getByRole("combobox", { name: "Técnico" }));
-    fireEvent.click(screen.getByRole("option", { name: "Tomás Ruiz" }));
+    expect(screen.queryByRole("combobox", { name: "Técnico" })).not.toBeInTheDocument();
     fireEvent.focus(screen.getByRole("combobox", { name: "Cliente" }));
     fireEvent.click(screen.getByRole("option", { name: "ACME" }));
     fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "cerrado" } });
@@ -188,7 +182,7 @@ describe("tablero de reportes (isla)", () => {
     fireEvent.change(screen.getByLabelText("Fecha"), { target: { value: "2026-05-01" } });
     expect(screen.queryByRole("button", { name: "Aplicar filtros" })).not.toBeInTheDocument();
     expect(replace).toHaveBeenLastCalledWith(
-      "/reportes?fechaDesde=2026-05-01&fechaHasta=2026-05-01&tecnicoId=7&clienteId=1&estado=cerrado&tipo=preventivo",
+      "/reportes?fechaDesde=2026-05-01&fechaHasta=2026-05-01&clienteId=1&estado=cerrado&tipo=preventivo",
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));

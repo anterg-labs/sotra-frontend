@@ -6,7 +6,7 @@ import type { FiltrosIndicadores, Indicadores } from "@/tipos/reporte";
 import { armarAccesos, type Acceso } from "./accesos";
 
 const SIN_FILTROS: FiltrosIndicadores = {
-  fechaDesde: "", fechaHasta: "", tecnicoId: "", clienteId: "", activoId: "", estado: "", tipo: "",
+  fechaDesde: "", fechaHasta: "", clienteId: "", activoId: "", estado: "", tipo: "",
 };
 
 function TarjetaAcceso(props: { acceso: Acceso }) {

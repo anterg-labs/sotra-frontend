@@ -130,8 +130,8 @@ describe("servicios de servidor de documentos, activos y órdenes", () => {
 });
 
 describe("servicios de servidor de reportes", () => {
-  const filtros = { fechaDesde: "2026-01-01", fechaHasta: "2026-01-31", tecnicoId: "1", clienteId: "2", activoId: "3", estado: "cerrado", tipo: "correctivo" };
-  const vacios = { fechaDesde: "", fechaHasta: "", tecnicoId: "", clienteId: "", activoId: "", estado: "", tipo: "" };
+  const filtros = { fechaDesde: "2026-01-01", fechaHasta: "2026-01-31", clienteId: "2", activoId: "3", estado: "cerrado", tipo: "correctivo" };
+  const vacios = { fechaDesde: "", fechaHasta: "", clienteId: "", activoId: "", estado: "", tipo: "" };
 
   it("los indicadores envían todos los filtros y los analíticos solo los que aplican", async () => {
     await obtenerIndicadoresServidor(vacios);

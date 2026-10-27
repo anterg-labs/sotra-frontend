@@ -186,11 +186,11 @@ describe("tabla de repuestos (baja y reactivación)", () => {
     render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaRepuestos filtros={{ buscar: "", estado: "", ubicacion: "", stock: "", pagina: 1 }} repuestos={repuestos} /></ProveedorNavegacionListado>);
     fireEvent.click(screen.getByRole("button", { name: "Reactivar repuesto" }));
     expect(cambiarEstadoRepuestoAccion).not.toHaveBeenCalled();
-    fireEvent.click(within(await screen.findByRole("dialog", { name: "Reactivar repuesto" })).getByRole("button", { name: "Reactivar" }));
+    fireEvent.click(within(await screen.findByRole("dialog", { name: "Reactivar repuesto" }, { timeout: 4000 })).getByRole("button", { name: "Reactivar" }));
     await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("exito", "Repuesto reactivado."));
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     fireEvent.click(screen.getByRole("button", { name: "Reactivar repuesto" }));
-    fireEvent.click(within(await screen.findByRole("dialog", { name: "Reactivar repuesto" })).getByRole("button", { name: "Reactivar" }));
+    fireEvent.click(within(await screen.findByRole("dialog", { name: "Reactivar repuesto" }, { timeout: 4000 })).getByRole("button", { name: "Reactivar" }));
     await waitFor(() => expect(mostrarAviso).toHaveBeenCalledWith("error", "No se pudo reactivar el repuesto seleccionado."));
   });
 

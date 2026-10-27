@@ -56,7 +56,7 @@ vi.mock("@/componentes/panel-analitica", () => ({
 
 const indicadores = {
   totalOrdenes: 14,
-  ordenesPorEstado: [{ nombre: "Creada", cantidad: 3 }],
+  ordenesPorEstado: [{ nombre: "Pendiente", cantidad: 3 }],
   ordenesPorPrioridad: [],
   ordenesPorTipo: [{ nombre: "Correctivo", cantidad: 9 }],
   ordenesPorTecnico: [],
@@ -69,7 +69,7 @@ const indicadores = {
   ordenesAltaPrioridadPendientes: 2,
   ordenesPendientesDeValidacion: 1,
   ordenesRecientes: [
-    { id: 11, nombreCliente: "ACME", nombreActivo: "Retro 1", nombreTecnico: null, prioridad: "alta", estado: "en_ejecucion" },
+    { id: 11, nombreCliente: "ACME", nombreActivo: "Retro 1", nombreTecnico: null, prioridad: "alta", estado: "en_progreso" },
   ],
 };
 const pagina = (elementos: unknown[]) => ({ elementos, pagina: 1, tamanoPagina: 20, totalElementos: elementos.length, totalPaginas: 1 });
@@ -103,10 +103,10 @@ describe("filtros de la URL de reportes", () => {
   it("lee los filtros con valores seguros y arma la URL", () => {
     expect(leerFiltrosReportes({}, estadosDePrueba)).toEqual(filtrosVacios);
     expect(
-      leerFiltrosReportes({ fechaDesde: "2026-05-01", fechaHasta: "2026-05-31", tecnicoId: "7", clienteId: "1", activoId: "5", estado: "cerrada", tipo: "preventivo" }, estadosDePrueba),
-    ).toEqual({ fechaDesde: "2026-05-01", fechaHasta: "2026-05-31", tecnicoId: "7", clienteId: "1", activoId: "5", estado: "cerrada", tipo: "preventivo" });
+      leerFiltrosReportes({ fechaDesde: "2026-05-01", fechaHasta: "2026-05-31", tecnicoId: "7", clienteId: "1", activoId: "5", estado: "cerrado", tipo: "preventivo" }, estadosDePrueba),
+    ).toEqual({ fechaDesde: "2026-05-01", fechaHasta: "2026-05-31", tecnicoId: "7", clienteId: "1", activoId: "5", estado: "cerrado", tipo: "preventivo" });
     expect(leerFiltrosReportes({ fechaDesde: "ayer", tecnicoId: "x", estado: "otro", tipo: "raro" }, estadosDePrueba)).toEqual(filtrosVacios);
-    expect(construirUrlReportes({ ...filtrosVacios, estado: "cerrada" })).toBe("/reportes?estado=cerrada");
+    expect(construirUrlReportes({ ...filtrosVacios, estado: "cerrado" })).toBe("/reportes?estado=cerrado");
   });
 });
 
@@ -117,9 +117,9 @@ describe("página de reportes (Server Component)", () => {
     const { default: Pagina } = await import("./page");
     // Tras `resetModules` el contexto es otro: el proveedor tiene que salir del mismo módulo que la página.
     const { conEstadosOrden: conEstadosDeEstaCarga } = await import("@/pruebas/estados-orden");
-    renderBase(conEstadosDeEstaCarga(await Pagina({ searchParams: Promise.resolve({ estado: "cerrada", clienteId: "1" }) })));
+    renderBase(conEstadosDeEstaCarga(await Pagina({ searchParams: Promise.resolve({ estado: "cerrado", clienteId: "1" }) })));
     expect(screen.getByRole("heading", { level: 1, name: "Reportes e indicadores" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Estado")).toHaveValue("cerrada");
+    expect(screen.getByLabelText("Estado")).toHaveValue("cerrado");
     expect(screen.getByRole("combobox", { name: "Cliente" })).toHaveValue("ACME");
     expect(await screen.findByText("Resumen simulado")).toBeInTheDocument();
   });
@@ -141,15 +141,15 @@ describe("resumen de indicadores (Server Component)", () => {
   });
 
   it("muestra los indicadores, tablas y alertas", async () => {
-    render(await ResumenIndicadores({ filtros: { ...filtrosVacios, estado: "cerrada" } }));
-    expect(s.obtenerIndicadoresServidor).toHaveBeenCalledWith({ ...filtrosVacios, estado: "cerrada" });
+    render(await ResumenIndicadores({ filtros: { ...filtrosVacios, estado: "cerrado" } }));
+    expect(s.obtenerIndicadoresServidor).toHaveBeenCalledWith({ ...filtrosVacios, estado: "cerrado" });
     expect(screen.getByText("14")).toBeInTheDocument();
     expect(screen.getByText("2.5 h")).toBeInTheDocument();
     expect(screen.getByText("Sin datos")).toBeInTheDocument();
     expect(screen.getByText(/órdenes de prioridad alta pendientes/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Ver todas" })).toHaveAttribute("href", "/ordenes-trabajo");
     const recientes = screen.getByRole("heading", { name: "Órdenes recientes" }).closest("section") as HTMLElement;
-    expect(within(recientes).getByText("En ejecución")).toBeInTheDocument();
+    expect(within(recientes).getByText("En progreso")).toBeInTheDocument();
     expect(within(recientes).getByText("Sin asignar")).toBeInTheDocument();
     const grupo = screen.getByRole("heading", { name: "Órdenes por prioridad" }).closest("section") as HTMLElement;
     expect(within(grupo).getByText("No hay datos registrados.")).toBeInTheDocument();
@@ -183,12 +183,12 @@ describe("tablero de reportes (isla)", () => {
     fireEvent.click(screen.getByRole("option", { name: "Tomás Ruiz" }));
     fireEvent.focus(screen.getByRole("combobox", { name: "Cliente" }));
     fireEvent.click(screen.getByRole("option", { name: "ACME" }));
-    fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "cerrada" } });
+    fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "cerrado" } });
     fireEvent.change(screen.getByLabelText("Tipo de mantenimiento"), { target: { value: "preventivo" } });
     fireEvent.change(screen.getByLabelText("Fecha"), { target: { value: "2026-05-01" } });
     expect(screen.queryByRole("button", { name: "Aplicar filtros" })).not.toBeInTheDocument();
     expect(replace).toHaveBeenLastCalledWith(
-      "/reportes?fechaDesde=2026-05-01&fechaHasta=2026-05-01&tecnicoId=7&clienteId=1&estado=cerrada&tipo=preventivo",
+      "/reportes?fechaDesde=2026-05-01&fechaHasta=2026-05-01&tecnicoId=7&clienteId=1&estado=cerrado&tipo=preventivo",
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
@@ -226,14 +226,14 @@ describe("tablero de reportes (isla)", () => {
     expect(screen.getByRole("link", { name: "Descargar PDF" })).toHaveAttribute("href", "pdf:ordenes-trabajo:::");
     fireEvent.change(screen.getByLabelText("Tipo de reporte"), { target: { value: "indicadores" } });
     fireEvent.change(screen.getByLabelText("Prioridad"), { target: { value: "alta" } });
-    fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "pausada" } });
-    expect(screen.getByRole("link", { name: "Descargar PDF" })).toHaveAttribute("href", "pdf:indicadores:pausada::alta");
-    expect(screen.getByRole("link", { name: "Descargar CSV" })).toHaveAttribute("href", "csv:indicadores:pausada::alta");
+    fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "pausado" } });
+    expect(screen.getByRole("link", { name: "Descargar PDF" })).toHaveAttribute("href", "pdf:indicadores:pausado::alta");
+    expect(screen.getByRole("link", { name: "Descargar CSV" })).toHaveAttribute("href", "csv:indicadores:pausado::alta");
     expect(screen.getByRole("link", { name: "Descargar PDF" })).toHaveAttribute("rel", "noreferrer");
   });
 
   it("las pestañas alternan entre resumen y análisis, pasando los filtros aplicados", () => {
-    render(tablero({ ...filtrosVacios, estado: "cerrada" }));
+    render(tablero({ ...filtrosVacios, estado: "cerrado" }));
     const resumen = screen.getByRole("tab", { name: "Resumen" });
     const analisis = screen.getByRole("tab", { name: "Análisis y alertas" });
     expect(resumen).toHaveAttribute("aria-selected", "true");
@@ -241,7 +241,7 @@ describe("tablero de reportes (isla)", () => {
 
     fireEvent.click(analisis);
     expect(analisis).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByTestId("panel-analitica")).toHaveTextContent(JSON.stringify({ ...filtrosVacios, estado: "cerrada" }));
+    expect(screen.getByTestId("panel-analitica")).toHaveTextContent(JSON.stringify({ ...filtrosVacios, estado: "cerrado" }));
     expect(document.getElementById("panel-resumen")).toHaveAttribute("hidden");
 
     fireEvent.click(resumen);

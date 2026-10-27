@@ -26,7 +26,7 @@ export async function crearRepuesto(request: APIRequestContext, cantidad: number
   });
 }
 
-/** Crea un cliente, un activo y una orden asignada al técnico de prueba; devuelve sus identificadores. */
+/** Crea un cliente, un activo y una orden pendiente asignada al técnico de prueba; devuelve sus identificadores. */
 export async function crearOrdenAsignada(request: APIRequestContext) {
   const id = sufijo();
   const cliente = await crear<{ id: number }>(request, "/api/v1/clientes", {
@@ -46,7 +46,5 @@ export async function crearOrdenAsignada(request: APIRequestContext) {
     descripcion: "Cambiar el filtro hidráulico (e2e)", observaciones: "",
     fechaPrevistaEjecucion: new Date().toISOString().slice(0, 10), sugerencias: [], repuestosIds: [],
   });
-  const asignada = await request.patch(`${apiBase}/api/v1/ordenes-trabajo/${orden.id}/estado`, { data: { estado: "asignada" } });
-  if (!asignada.ok()) throw new Error("No se pudo asignar la orden: " + (await asignada.text()));
   return { ordenId: orden.id, tecnicoId, nombreActivo: activo.nombre };
 }

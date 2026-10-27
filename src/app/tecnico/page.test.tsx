@@ -34,8 +34,8 @@ beforeEach(() => {
   [replace, listarOrdenesTrabajoServidor, listarTecnicosServidor, obtenerUsuarioServidor].forEach((f) => f.mockReset());
   listarTecnicosServidor.mockResolvedValue([tecnico]);
   listarOrdenesTrabajoServidor.mockImplementation(async (filtros: { fase: string }) => {
-    if (filtros.fase === "pendiente") return pagina([orden(1, "asignada", "baja", "2026-11-01")]);
-    return pagina([orden(2, "en_ejecucion", "alta", "2026-12-01"), orden(3, "en_ejecucion", "alta", "2026-11-15"), orden(4, "pausada", "media", "2026-11-05")]);
+    if (filtros.fase === "pendiente") return pagina([orden(1, "en_progreso", "baja", "2026-11-01")]);
+    return pagina([orden(2, "en_progreso", "alta", "2026-12-01"), orden(3, "en_progreso", "alta", "2026-11-15"), orden(4, "pausado", "media", "2026-11-05")]);
   });
 });
 
@@ -90,11 +90,11 @@ describe("Mi trabajo con la sesión de un técnico", () => {
 });
 
 describe("Mi trabajo (isla)", () => {
-  const ordenes = [orden(3, "en_ejecucion", "alta", "2026-11-15"), orden(2, "en_ejecucion", "alta", "2026-12-01"), orden(4, "pausada", "media", "2026-11-05"), orden(1, "asignada", "baja", "2026-11-01")];
+  const ordenes = [orden(3, "en_progreso", "alta", "2026-11-15"), orden(2, "en_progreso", "alta", "2026-12-01"), orden(4, "pausado", "media", "2026-11-05"), orden(1, "en_progreso", "baja", "2026-11-01")];
 
   it("filtra por estado con los chips (con contadores) y busca por número", async () => {
     render(<MiTrabajo puedeElegirTecnico error="" ordenes={ordenes as never} tecnicoId="25" tecnicos={[{ valor: "25", etiqueta: "Roberto Pérez" }]} />);
-    const chipPausadas = screen.getByRole("button", { name: /Pausada/ });
+    const chipPausadas = screen.getByRole("button", { name: /Pausado/ });
     expect(within(chipPausadas).getByText("1")).toBeInTheDocument();
     fireEvent.click(chipPausadas);
     expect(screen.getAllByRole("link")).toHaveLength(1);

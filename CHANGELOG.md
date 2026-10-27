@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.51 (2026-10-26)
+
+- Órdenes de trabajo: los estados pasan a ser Pendiente, En progreso, En revisión, Cerrado, Pausado y Eliminado (baja lógica). El detalle muestra de qué estado a cuál se pasó, quién lo hizo y el motivo, y suma un historial de técnicos; una orden eliminada queda solo para consulta.
+
 ## Version 1.0.50 (2026-10-26)
 
 - Clientes: el listado tiene el interruptor «Solo con activos asociados» para ver únicamente los clientes que tienen activos; la columna «Activos asociados» ya se podía ordenar.

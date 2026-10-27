@@ -75,7 +75,7 @@ export function TablaOrdenes(props: { ordenes: OrdenTrabajo[]; filtros: FiltrosO
                   <Link aria-label="Ver detalle" className="boton-icono" href={"/ordenes-trabajo/" + orden.id} title="Ver detalle">
                     <IconoOjo />
                   </Link>
-                  {faseDelEstado(orden.estado) !== "cerrada" ? (
+                  {faseDelEstado(orden.estado) !== "cerrada" && faseDelEstado(orden.estado) !== "eliminada" ? (
                     <SiTienePermiso permiso="ot.editar">
                       <Link aria-label="Modificar orden" className="boton-icono" href={"/ordenes-trabajo/" + orden.id + "/editar"} title="Modificar orden">
                         <IconoLapiz />

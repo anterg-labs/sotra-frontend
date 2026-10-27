@@ -11,7 +11,7 @@ import {
   formatearFechaPrevista,
   listarTecnicosPaginados,
 } from "@/servicios/servicio-ordenes-trabajo";
-import { EtiquetaEstadoOrden, useEtiquetaEstadoOrden, useFaseEstadoOrden } from "@/componentes/estados-orden";
+import { EtiquetaEstadoOrden, useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
 import type { HistorialEstadoOrdenTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
 import { formatearFechaCorta, formatearFechaHora } from "@/utilidades/fechas";
@@ -29,7 +29,6 @@ type PropiedadesDetalleOrden = {
 export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
   const ordenTrabajoId = props.ordenInicial.id;
   const etiquetaEstado = useEtiquetaEstadoOrden();
-  const faseDelEstado = useFaseEstadoOrden();
   const [orden, setOrden] = useState<OrdenTrabajo | null>(props.ordenInicial);
   const puedeEditar = useTienePermiso("ot.editar");
   const puedeAsignarTecnico = useTienePermiso("ot.asignar_tecnico");
@@ -152,17 +151,17 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
 
     const fechaCreacion = formatearFechaCorta(orden.creadoEn);
 
+    // Un estado sin transiciones de salida es final (cerrado o eliminado): la orden queda solo para consulta.
+    const ordenEstaTerminada = orden.transiciones.length === 0;
+
     let enlaceModificar = null;
-    if (faseDelEstado(orden.estado) !== "cerrada" && puedeEditar) {
+    if (!ordenEstaTerminada && puedeEditar) {
       enlaceModificar = (
         <Link className="primary-button" href={"/ordenes-trabajo/" + orden.id + "/editar"}>
           Modificar
         </Link>
       );
     }
-
-    // Un estado sin transiciones de salida es final: la orden queda solo para consulta.
-    const ordenEstaTerminada = orden.transiciones.length === 0;
 
     let mensajeAccionError = null;
     if (errorAccion) {
@@ -175,7 +174,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
     }
 
     let seccionTecnico: React.ReactNode = (
-      <p className="empty-state">La orden está cerrada o cancelada y solo queda disponible para consulta.</p>
+      <p className="empty-state">La orden está cerrada o eliminada y solo queda disponible para consulta.</p>
     );
     if (!puedeAsignarTecnico) {
       seccionTecnico = null;
@@ -360,13 +359,40 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
           <ul className="mt-4 grid gap-3">
             {historialMasNuevoPrimero.map((cambio, indice) => (
               <li className="border-b u-borde pb-3 text-sm" key={indice}>
-                <strong>{etiquetaEstado(cambio.estado)}</strong>
-                <span className="block text-xs texto-tenue">{formatearFechaHora(cambio.fechaHora)}</span>
+                <strong>
+                  {cambio.estadoAnterior ? etiquetaEstado(cambio.estadoAnterior) + " → " : ""}
+                  {etiquetaEstado(cambio.estado)}
+                </strong>
+                <span className="block text-xs texto-tenue">
+                  {formatearFechaHora(cambio.fechaHora)}
+                  {cambio.nombreUsuario ? " · " + cambio.nombreUsuario : ""}
+                </span>
                 <span className="block">{cambio.observacion}</span>
               </li>
             ))}
           </ul>
         </section>
+
+        {orden.historialTecnicos.length > 0 ? (
+          <section className="panel detail-panel">
+            <h2>Historial de técnicos</h2>
+            <ul className="mt-4 grid gap-3">
+              {[...orden.historialTecnicos].reverse().map((cambio, indice) => (
+                <li className="border-b u-borde pb-3 text-sm" key={indice}>
+                  <strong>
+                    {cambio.nombreTecnicoAnterior ? cambio.nombreTecnicoAnterior + " → " : "Asignado a "}
+                    {cambio.nombreTecnico ?? "técnico sin identificar"}
+                  </strong>
+                  <span className="block text-xs texto-tenue">
+                    {formatearFechaHora(cambio.fechaHora)}
+                    {cambio.nombreUsuario ? " · " + cambio.nombreUsuario : ""}
+                  </span>
+                  {cambio.observacion ? <span className="block">{cambio.observacion}</span> : null}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
       </div>
       </div>
     );

@@ -16,7 +16,7 @@ test("una orden recorre su ciclo desde el escritorio con una evidencia y queda c
   await page.goto(`/ordenes-trabajo/${ordenId}`);
   await expect(page.getByRole("heading", { name: `Orden de trabajo N° ${ordenId}` })).toBeVisible();
 
-  await page.getByLabel("Actualizar estado").selectOption({ label: "En ejecución" });
+  await page.getByLabel("Actualizar estado").selectOption({ label: "En progreso" });
   await page.getByRole("button", { name: "Confirmar estado" }).click();
   await expect(page.getByRole("heading", { name: "Historial de estados" })).toBeVisible();
   await expect(page.getByLabel("Actualizar estado")).toBeVisible();
@@ -31,14 +31,11 @@ test("una orden recorre su ciclo desde el escritorio con una evidencia y queda c
   await expect(page.getByText("Evidencia registrada correctamente.")).toBeVisible();
   await expect(page.getByText("Filtro con desgaste visible")).toBeVisible();
 
-  await page.getByLabel("Actualizar estado").selectOption({ label: "Finalizada" });
+  await page.getByLabel("Actualizar estado").selectOption({ label: "En revisión" });
   await page.getByRole("button", { name: "Confirmar estado" }).click();
-  await expect(page.getByLabel("Actualizar estado").locator("option", { hasText: "Cerrada" })).toHaveCount(1);
+  await expect(page.getByLabel("Actualizar estado").locator("option", { hasText: "Cerrado" })).toHaveCount(1);
 
-  await page.getByLabel("Actualizar estado").selectOption({ label: "Cerrada" });
-  await page.getByRole("button", { name: "Confirmar estado" }).click();
-  await expect(page.getByText("Indicá")).toBeVisible();
-  await page.getByLabel("Motivo u observación").fill("Trabajo verificado en planta");
+  await page.getByLabel("Actualizar estado").selectOption({ label: "Cerrado" });
   await page.getByRole("button", { name: "Confirmar estado" }).click();
   await expect(page.getByText("No hay cambios de estado disponibles para esta orden.")).toBeVisible();
 

@@ -107,7 +107,7 @@ export function OrdenDelTecnico(props: { ordenInicial: OrdenTrabajo }) {
           {[...orden.historialEstados].reverse().map((cambio, indice) => (
             <li key={indice}>
               <strong>{etiquetaEstado(cambio.estado)}</strong>
-              {" · " + formatearFechaHora(cambio.fechaHora)}
+              {" · " + formatearFechaHora(cambio.fechaHora) + (cambio.nombreUsuario ? " · " + cambio.nombreUsuario : "")}
               {cambio.observacion ? <small>{" — " + cambio.observacion}</small> : null}
             </li>
           ))}

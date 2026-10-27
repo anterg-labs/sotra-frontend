@@ -1,7 +1,7 @@
 /** El valor de un estado lo define el catálogo de la base (`estado_ot`): el frontend no conoce la lista. */
 export type EstadoOrdenTrabajo = string;
 
-export type FaseEstadoOrden = "pendiente" | "en_curso" | "por_validar" | "cerrada" | "cancelada";
+export type FaseEstadoOrden = "pendiente" | "en_curso" | "por_validar" | "cerrada" | "eliminada";
 
 /** Cómo se llama cada fase en la interfaz (las fases las define la base; aquí solo su texto). */
 export const ETIQUETAS_FASE_ORDEN: Record<FaseEstadoOrden, string> = {
@@ -9,7 +9,7 @@ export const ETIQUETAS_FASE_ORDEN: Record<FaseEstadoOrden, string> = {
   en_curso: "En curso",
   por_validar: "Por validar",
   cerrada: "Cerradas",
-  cancelada: "Canceladas",
+  eliminada: "Eliminadas",
 };
 
 export type TonoEstadoOrden = "neutro" | "info" | "alerta" | "exito" | "peligro" | "destacado";
@@ -42,9 +42,25 @@ export type RepuestoDeOrden = {
   nombre: string;
 };
 
+/** Un cambio de estado: de qué estado vino (`null` en el alta), a cuál pasó, cuándo, quién lo hizo y el motivo. */
 export type HistorialEstadoOrdenTrabajo = {
   estado: EstadoOrdenTrabajo;
+  estadoAnterior: EstadoOrdenTrabajo | null;
   fechaHora: string;
+  observacion: string | null;
+  usuarioId: number | null;
+  nombreUsuario: string | null;
+};
+
+/** Una asignación o cambio de técnico: de quién a quién (`null` en la primera asignación), quién lo hizo y cuándo. */
+export type HistorialTecnicoOrdenTrabajo = {
+  tecnicoAnteriorId: number | null;
+  nombreTecnicoAnterior: string | null;
+  tecnicoId: number | null;
+  nombreTecnico: string | null;
+  fechaHora: string;
+  usuarioId: number | null;
+  nombreUsuario: string | null;
   observacion: string | null;
 };
 
@@ -69,6 +85,7 @@ export type OrdenTrabajo = {
   repuestos: RepuestoDeOrden[];
   transiciones: TransicionOrden[];
   historialEstados: HistorialEstadoOrdenTrabajo[];
+  historialTecnicos: HistorialTecnicoOrdenTrabajo[];
   version: string;
 };
 

@@ -5,7 +5,7 @@ import { GraficoBarras, GraficoTendencia } from "./graficos";
 describe("GraficoBarras", () => {
   it("muestra cada valor como texto y escala las barras al máximo", () => {
     const { container } = render(
-      <GraficoBarras datos={[{ etiqueta: "Pausada", valor: 60, valorTexto: "2 d 12 h" }, { etiqueta: "En ejecución", valor: 30 }]} />,
+      <GraficoBarras datos={[{ etiqueta: "Pausado", valor: 60, valorTexto: "2 d 12 h" }, { etiqueta: "En progreso", valor: 30 }]} />,
     );
 
     expect(screen.getByText("2 d 12 h")).toBeInTheDocument();

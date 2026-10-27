@@ -44,7 +44,7 @@ export async function crearOrdenAsignada(request: APIRequestContext) {
   const orden = await crear<{ id: number }>(request, "/api/v1/ordenes-trabajo", {
     clienteId: cliente.id, activoId: activo.id, tecnicoId, tipo: "correctivo", prioridad: "alta",
     descripcion: "Cambiar el filtro hidráulico (e2e)", observaciones: "",
-    fechaPrevistaEjecucion: new Date().toISOString().slice(0, 10), sugerencias: [], repuestosIds: [],
+    fechaPrevistaEjecucion: new Date().toISOString().slice(0, 10), sugerencias: [], repuestos: [],
   });
   return { ordenId: orden.id, tecnicoId, nombreActivo: activo.nombre };
 }

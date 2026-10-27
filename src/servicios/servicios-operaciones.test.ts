@@ -259,7 +259,7 @@ describe("servicio-ordenes-trabajo", () => {
     observaciones: "",
     fechaPrevistaEjecucion: "2026-10-20",
     sugerencias: [],
-    repuestosIds: [],
+    repuestos: [],
     estado: "pendiente",
     motivoEstado: "",
     sesion: "s",

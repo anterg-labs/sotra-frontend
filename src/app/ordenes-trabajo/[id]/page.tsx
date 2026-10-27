@@ -1,4 +1,5 @@
 import { conTecnicoDeLaOrden, obtenerOrdenTrabajoServidor, listarTecnicosServidor } from "@/servicios/servidor/ordenes-trabajo";
+import { obtenerRepuestoServidor } from "@/servicios/servidor/repuestos";
 import { tienePermisoServidor } from "@/servicios/servidor/sesion";
 import type { OrdenTrabajo } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
@@ -23,6 +24,15 @@ async function cargarTecnicos(orden: OrdenTrabajo): Promise<Usuario[] | null> {
   }
 }
 
+/** Los repuestos de la orden con su stock actual, para el selector de cantidades; si falla, el detalle sigue sin editor completo. */
+async function cargarRepuestos(orden: OrdenTrabajo) {
+  try {
+    return await Promise.all(orden.repuestos.map((repuesto) => obtenerRepuestoServidor(repuesto.id)));
+  } catch {
+    return [];
+  }
+}
+
 export default async function PaginaDetalleOrdenTrabajo(props: { params: Promise<{ id: string }> }) {
   const orden = await cargarOrden(Number((await props.params).id));
   if (orden === null) {
@@ -43,5 +53,13 @@ export default async function PaginaDetalleOrdenTrabajo(props: { params: Promise
   }
 
   const tecnicos = (await tienePermisoServidor("ot.asignar_tecnico")) ? await cargarTecnicos(orden) : [];
-  return <DetalleOrdenTrabajo huboErrorTecnicos={tecnicos === null} ordenInicial={orden} tecnicosIniciales={tecnicos ?? []} />;
+  const repuestos = (await tienePermisoServidor("ot.gestionar_repuestos")) ? await cargarRepuestos(orden) : [];
+  return (
+    <DetalleOrdenTrabajo
+      huboErrorTecnicos={tecnicos === null}
+      ordenInicial={orden}
+      repuestosDeLaOrden={repuestos}
+      tecnicosIniciales={tecnicos ?? []}
+    />
+  );
 }

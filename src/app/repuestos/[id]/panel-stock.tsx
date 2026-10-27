@@ -114,7 +114,7 @@ export function PanelStock(props: { repuesto: Repuesto; abrirIngreso: boolean })
           <dd>{repuesto.ubicacion}</dd>
         </div>
         <div>
-          <dt>Cantidad disponible</dt>
+          <dt>Stock en la empresa</dt>
           <dd>
             <strong>{repuesto.cantidad}</strong>
             {estaActivo ? (
@@ -124,6 +124,21 @@ export function PanelStock(props: { repuesto: Repuesto; abrirIngreso: boolean })
                 <BarraNivelStock cantidad={repuesto.cantidad} cantidadMinima={repuesto.cantidadMinima} estadoStock={repuesto.estadoStock} />
               </>
             ) : null}
+          </dd>
+        </div>
+        <div>
+          <dt>Reservado</dt>
+          <dd>{repuesto.cantidadReservada}</dd>
+        </div>
+        <div>
+          <dt>Entregado</dt>
+          <dd>{repuesto.cantidadEntregada}</dd>
+        </div>
+        <div>
+          <dt>Disponible para órdenes</dt>
+          <dd>
+            <strong>{repuesto.cantidadDisponible}</strong>
+            <small className="block texto-tenue">Reservado y entregado siguen en la empresa: el stock baja recién cuando se cierra la orden.</small>
           </dd>
         </div>
         <div>

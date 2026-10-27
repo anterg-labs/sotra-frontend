@@ -36,10 +36,38 @@ export type TransicionOrden = {
   principal: boolean;
 };
 
+/** Ciclo de un repuesto en una orden: reservado al asignarlo, entregado cuando la orden empieza, descontado al cerrarla. */
+export type EstadoRepuestoDeOrden = "reservado" | "entregado" | "descontado";
+
 export type RepuestoDeOrden = {
   id: number;
   codigo: string;
   nombre: string;
+  cantidad: number;
+  estado: EstadoRepuestoDeOrden;
+};
+
+/** Un repuesto y la cantidad que se pide para la orden (lo que viaja en el alta y la modificación). */
+export type RepuestoPedido = {
+  repuestoId: number;
+  cantidad: number;
+};
+
+export type AccionRepuestoOrden = "reservar" | "modificar" | "entregar" | "descontar" | "liberar";
+
+/** Un cambio de un repuesto en la orden: qué se hizo, con cuántas unidades, quién y cuándo. */
+export type HistorialRepuestoOrdenTrabajo = {
+  repuestoId: number;
+  codigo: string;
+  nombre: string;
+  accion: AccionRepuestoOrden;
+  cantidadAnterior: number | null;
+  cantidadNueva: number;
+  estadoAnterior: string | null;
+  estadoNuevo: string;
+  fechaHora: string;
+  usuarioId: number | null;
+  nombreUsuario: string | null;
 };
 
 /** Un cambio de estado: de qué estado vino (`null` en el alta), a cuál pasó, cuándo, quién lo hizo y el motivo. */
@@ -86,6 +114,7 @@ export type OrdenTrabajo = {
   transiciones: TransicionOrden[];
   historialEstados: HistorialEstadoOrdenTrabajo[];
   historialTecnicos: HistorialTecnicoOrdenTrabajo[];
+  historialRepuestos: HistorialRepuestoOrdenTrabajo[];
   version: string;
 };
 
@@ -99,7 +128,7 @@ export type CrearOrdenTrabajoInput = {
   observaciones: string;
   fechaPrevistaEjecucion: string;
   sugerencias: string[];
-  repuestosIds: number[];
+  repuestos: RepuestoPedido[];
   estado: EstadoOrdenTrabajo;
   motivoEstado: string;
   sesion: string;

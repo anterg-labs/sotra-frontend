@@ -5,10 +5,10 @@ import { listarRepuestosServidor } from "@/servicios/servidor/repuestos";
 import { tienePermisoServidor } from "@/servicios/servidor/sesion";
 import { FormularioNuevaOrden } from "../formularios-orden";
 
-/** Los repuestos solo se cargan si el rol los puede ver (el jefe no): sin la lista, la orden se crea sin repuestos. */
+/** Los repuestos solo se cargan si el rol puede gestionarlos en una orden (administrador, jefe y pañolero). */
 async function cargarDatos() {
   try {
-    const puedeVerRepuestos = await tienePermisoServidor("stock.consultar");
+    const puedeVerRepuestos = await tienePermisoServidor("ot.gestionar_repuestos");
     const [clientes, activos, tecnicos, repuestos] = await Promise.all([
       listarClientesServidor({ buscar: "", estado: "activo", pagina: 1 }),
       listarActivosServidor({ buscar: "", clienteId: "", modeloMaquinaId: "", estado: "activo", pagina: 1 }),

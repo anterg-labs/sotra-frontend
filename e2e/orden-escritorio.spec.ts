@@ -53,7 +53,7 @@ test("la edición detecta que otra persona modificó la orden y no pisa sus camb
     data: {
       clienteId: vigente.clienteId, activoId: vigente.activoId, tecnicoId: vigente.tecnicoId, tipo: vigente.tipo,
       prioridad: vigente.prioridad, descripcion: "Descripción cambiada por otra persona", observaciones: "",
-      fechaPrevistaEjecucion: vigente.fechaPrevistaEjecucion, sugerencias: [], repuestosIds: [], estado: vigente.estado,
+      fechaPrevistaEjecucion: vigente.fechaPrevistaEjecucion, sugerencias: [], repuestos: [], estado: vigente.estado,
     },
   });
   expect(ajena.ok()).toBe(true);

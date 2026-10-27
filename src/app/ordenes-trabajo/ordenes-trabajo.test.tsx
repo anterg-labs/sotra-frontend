@@ -29,6 +29,9 @@ const s = vi.hoisted(() => ({
   listarOrdenesTrabajo: vi.fn(),
   asignarTecnicoOrdenTrabajo: vi.fn(),
   cambiarEstadoOrdenTrabajo: vi.fn(),
+  actualizarRepuestosOrdenTrabajo: vi.fn(),
+  obtenerDetalleRepuesto: vi.fn(),
+  listarRepuestosPaginados: vi.fn(),
   actualizarOrdenTrabajo: vi.fn(),
   crearOrdenTrabajo: vi.fn(),
   listarTecnicosPaginados: vi.fn(),
@@ -56,9 +59,14 @@ vi.mock("@/servicios/servicio-ordenes-trabajo", async (importarOriginal) => ({
   listarOrdenesTrabajo: s.listarOrdenesTrabajo,
   asignarTecnicoOrdenTrabajo: s.asignarTecnicoOrdenTrabajo,
   cambiarEstadoOrdenTrabajo: s.cambiarEstadoOrdenTrabajo,
+  actualizarRepuestosOrdenTrabajo: s.actualizarRepuestosOrdenTrabajo,
   actualizarOrdenTrabajo: s.actualizarOrdenTrabajo,
   crearOrdenTrabajo: s.crearOrdenTrabajo,
   listarTecnicosPaginados: s.listarTecnicosPaginados,
+}));
+vi.mock("@/servicios/servicio-repuestos", () => ({
+  obtenerDetalleRepuesto: s.obtenerDetalleRepuesto,
+  listarRepuestosPaginados: s.listarRepuestosPaginados,
 }));
 vi.mock("@/servicios/servicio-clientes", () => ({ listarClientesPaginados: s.listarClientesPaginados }));
 vi.mock("@/servicios/servicio-activos", () => ({ listarActivosPaginados: s.listarActivosPaginados }));
@@ -127,11 +135,17 @@ const orden = (id: number, extra: Record<string, unknown> = {}) => ({
     { estado: "pendiente", estadoAnterior: null, fechaHora: "2026-10-01T10:00:00Z", observacion: "Alta", usuarioId: null, nombreUsuario: null },
     { estado: "en_progreso", estadoAnterior: "pendiente", fechaHora: "2026-10-02T10:00:00Z", observacion: "Arranca el trabajo", usuarioId: 4, nombreUsuario: "Ana Pérez" },
   ],
+  historialRepuestos: [],
   historialTecnicos: [
     { tecnicoAnteriorId: 8, nombreTecnicoAnterior: "Luis Gómez", tecnicoId: 7, nombreTecnico: "Tomás Ruiz", fechaHora: "2026-10-02T09:00:00Z", usuarioId: 4, nombreUsuario: "Ana Pérez", observacion: null },
   ],
   version: "v1",
   ...extra,
+});
+/** Repuesto R3: 10 en stock y 3 reservadas (las de esta orden), o sea 7 disponibles; la orden puede pedir hasta 7 + 3 = 10. */
+const repuestoConStock = (extra: Record<string, unknown> = {}) => ({
+  id: 3, codigo: "R3", nombre: "Filtro", descripcion: "", marca: "", ubicacion: "", cantidad: 10, cantidadMinima: 2,
+  cantidadReservada: 3, cantidadEntregada: 0, cantidadDisponible: 7, estado: "activo", estadoStock: "normal", ...extra,
 });
 const tecnico = { id: 7, nombre: "Tomás", apellido: "Ruiz" };
 const cliente = { id: 1, razonSocial: "ACME", estado: "activo" };
@@ -421,17 +435,76 @@ describe("detalle de orden de trabajo", () => {
 
   it("muestra repuestos y sugerencias cuando existen", async () => {
     s.obtenerOrdenTrabajoServidor.mockResolvedValue(
-      orden(11, { repuestos: [{ id: 3, codigo: "R3", nombre: "Filtro" }], sugerencias: ["Revisar sellos"], observaciones: "Urgente" }),
+      orden(11, {
+        repuestos: [{ id: 3, codigo: "R3", nombre: "Filtro", cantidad: 3, estado: "reservado" }],
+        historialRepuestos: [{
+          repuestoId: 3, codigo: "R3", nombre: "Filtro", accion: "reservar", cantidadAnterior: null, cantidadNueva: 3,
+          estadoAnterior: null, estadoNuevo: "reservado", fechaHora: "2026-10-02T10:00:00Z", usuarioId: 4, nombreUsuario: "Ana Pérez",
+        }],
+        sugerencias: ["Revisar sellos"], observaciones: "Urgente",
+      }),
     );
+    s.obtenerRepuestoServidor.mockResolvedValue(repuestoConStock());
     render(await DetalleOrden(parametros("11")));
-    expect(screen.getByText("R3 - Filtro")).toBeInTheDocument();
+    expect(screen.getByText("R3 - Filtro · 3 u. · Reservado")).toBeInTheDocument();
+    const repuestos = screen.getByRole("table", { name: "Repuestos de la orden" });
+    expect(within(repuestos).getByText("Reservado")).toBeInTheDocument();
+    const historial = screen.getByRole("list", { name: "Historial de repuestos" });
+    expect(within(historial).getByText("Reservó R3 - Filtro")).toBeInTheDocument();
+    expect(within(historial).getByText(/Ana Pérez/)).toBeInTheDocument();
     expect(screen.getByText("Revisar sellos")).toBeInTheDocument();
     expect(screen.getByText("Urgente")).toBeInTheDocument();
+  });
+
+  it("quien gestiona repuestos cambia la cantidad con el selector numérico, la guarda y ve el resultado", async () => {
+    s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11, { repuestos: [{ id: 3, codigo: "R3", nombre: "Filtro", cantidad: 3, estado: "reservado" }] }));
+    s.obtenerRepuestoServidor.mockResolvedValue(repuestoConStock());
+    s.obtenerDetalleRepuesto.mockResolvedValue(repuestoConStock({ cantidadReservada: 5, cantidadDisponible: 3 }));
+    s.actualizarRepuestosOrdenTrabajo.mockResolvedValue(orden(11, { repuestos: [{ id: 3, codigo: "R3", nombre: "Filtro", cantidad: 5, estado: "reservado" }] }));
+    render(await DetalleOrden(parametros("11")));
+    const cantidad = screen.getByLabelText("Cantidad de R3");
+    expect(cantidad).toHaveValue(3);
+    expect(cantidad).toHaveAttribute("max", "10");
+    expect(screen.getByRole("button", { name: "Guardar repuestos" })).toBeDisabled();
+
+    fireEvent.change(cantidad, { target: { value: "5" } });
+    fireEvent.click(screen.getByRole("button", { name: "Guardar repuestos" }));
+
+    await waitFor(() => expect(s.actualizarRepuestosOrdenTrabajo).toHaveBeenCalledWith(11, [{ repuestoId: 3, cantidad: 5 }]));
+    expect(await screen.findByText("Repuestos actualizados correctamente.")).toBeInTheDocument();
+    expect(within(screen.getByRole("table", { name: "Repuestos de la orden" })).getByText("5")).toBeInTheDocument();
+    expect(s.obtenerDetalleRepuesto).toHaveBeenCalledWith(3);
+  });
+
+  it("si la API rechaza los repuestos por falta de stock, muestra su mensaje y no cambia la orden", async () => {
+    s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11, { repuestos: [{ id: 3, codigo: "R3", nombre: "Filtro", cantidad: 3, estado: "reservado" }] }));
+    s.obtenerRepuestoServidor.mockResolvedValue(repuestoConStock());
+    s.actualizarRepuestosOrdenTrabajo.mockRejectedValue(new Error("No hay unidades disponibles de R3 - Filtro: hay 10 en stock, 7 reservadas por otras órdenes; quedan 3 y se necesitan 6."));
+    render(await DetalleOrden(parametros("11")));
+
+    fireEvent.change(screen.getByLabelText("Cantidad de R3"), { target: { value: "6" } });
+    fireEvent.click(screen.getByRole("button", { name: "Guardar repuestos" }));
+
+    expect(await screen.findByText(/No hay unidades disponibles de R3 - Filtro: hay 10 en stock/)).toBeInTheDocument();
+    expect(within(screen.getByRole("table", { name: "Repuestos de la orden" })).getByText("3")).toBeInTheDocument();
+  });
+
+  it("no deja pasar de lo disponible ni llama a la API", async () => {
+    s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11, { repuestos: [{ id: 3, codigo: "R3", nombre: "Filtro", cantidad: 3, estado: "reservado" }] }));
+    s.obtenerRepuestoServidor.mockResolvedValue(repuestoConStock());
+    render(await DetalleOrden(parametros("11")));
+
+    fireEvent.change(screen.getByLabelText("Cantidad de R3"), { target: { value: "20" } });
+    fireEvent.click(screen.getByRole("button", { name: "Guardar repuestos" }));
+
+    expect((await screen.findAllByText(/Solo hay 10 disponibles de R3 - Filtro/)).length).toBeGreaterThan(0);
+    expect(s.actualizarRepuestosOrdenTrabajo).not.toHaveBeenCalled();
   });
 
   it("una orden cerrada es solo de consulta: sin modificar, sin técnico ni cambios de estado, sin registrar evidencias", async () => {
     s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11, { estado: "cerrado", transiciones: [] }));
     render(await DetalleOrden(parametros("11")));
+    expect(screen.queryByRole("button", { name: "Guardar repuestos" })).not.toBeInTheDocument();
     expect(screen.getByText("La orden está cerrada o eliminada y solo queda disponible para consulta.")).toBeInTheDocument();
     expect(screen.getByText("No hay cambios de estado disponibles para esta orden.")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Modificar" })).not.toBeInTheDocument();

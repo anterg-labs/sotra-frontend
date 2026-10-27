@@ -11,7 +11,7 @@ import type { FiltrosRepuestos } from "@/tipos/repuesto";
 export const RUTA_REPUESTOS = "/repuestos";
 
 /** Columnas por las que se puede ordenar; coinciden con las que acepta la API. */
-export const COLUMNAS_ORDENABLES_REPUESTOS = ["codigo", "nombre", "marca", "ubicacion", "cantidad", "cantidadMinima", "estado"] as const;
+export const COLUMNAS_ORDENABLES_REPUESTOS = ["codigo", "nombre", "marca", "ubicacion", "cantidad", "cantidadMinima", "cantidadReservada", "cantidadEntregada", "cantidadDisponible", "estado"] as const;
 
 export type FiltroStock = "" | "alerta" | "bajo" | "sin_stock";
 

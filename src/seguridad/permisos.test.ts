@@ -24,7 +24,9 @@ describe("matriz de permisos (copia de PoliticasDeAcceso.cs)", () => {
     ["ot.crear", ["administrador", "jefe_mantenimiento"]],
     ["ot.registrar_avance", ["administrador", "jefe_mantenimiento", "tecnico"]],
     ["documento.consultar", ["administrador", "jefe_mantenimiento", "tecnico"]],
-    ["stock.consultar", ["administrador", "panolero"]],
+    ["stock.consultar", ["administrador", "jefe_mantenimiento", "panolero"]],
+    ["ot.gestionar_repuestos", ["administrador", "jefe_mantenimiento", "panolero"]],
+    ["stock.registrar_movimiento", ["administrador", "panolero"]],
     ["reporte.consultar", ["administrador", "jefe_mantenimiento"]],
   ] as const)("%s: solo %j", (permiso, permitidos) => {
     for (const rol of ["administrador", "jefe_mantenimiento", "tecnico", "panolero"]) {

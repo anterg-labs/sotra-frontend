@@ -7,12 +7,12 @@ import { FormularioEditarOrden } from "../../formularios-orden";
 
 /**
  * La orden y sus selecciones actuales van primero en cada lista, aunque ya no estén activas.
- * Los repuestos solo se cargan si el rol los puede ver (el jefe no): sin la lista, el formulario conserva los de la orden.
+ * Los repuestos de la orden (con su stock) y el catálogo solo se cargan si el rol puede gestionarlos en una orden.
  */
 async function cargarDatos(ordenTrabajoId: number) {
   if (!Number.isInteger(ordenTrabajoId) || ordenTrabajoId <= 0) return null;
   try {
-    const puedeVerRepuestos = await tienePermisoServidor("stock.consultar");
+    const puedeVerRepuestos = await tienePermisoServidor("ot.gestionar_repuestos");
     const [orden, paginaClientes, tecnicos, paginaRepuestos] = await Promise.all([
       obtenerOrdenTrabajoServidor(ordenTrabajoId),
       listarClientesServidor({ buscar: "", estado: "activo", pagina: 1 }),

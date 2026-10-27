@@ -9,7 +9,7 @@ import { Modal } from "@/componentes/modal";
 import { CamposEstadoFechasOrdenTrabajo } from "@/componentes/campos-estado-fechas-orden-trabajo";
 import { CamposGeneralesOrdenTrabajo } from "@/componentes/campos-generales-orden-trabajo";
 import { SelectorClienteActivoOrdenTrabajo } from "@/componentes/selector-cliente-activo-orden-trabajo";
-import { SelectorRepuestosOrdenTrabajo } from "@/componentes/selector-repuestos-orden-trabajo";
+import { EditorRepuestosOrden, obtenerErrorDeLineas, type LineaRepuestoOrden } from "@/componentes/editor-repuestos-orden";
 import { SugerenciasOrdenTrabajo } from "@/componentes/sugerencias-orden-trabajo";
 import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import {
@@ -42,6 +42,15 @@ type PropiedadesFormularioOrdenTrabajo = {
   alEnviar: (orden: CrearOrdenTrabajoInput) => Promise<OrdenTrabajo>;
 };
 
+/** Si el catálogo no trae el repuesto de una orden, se muestra con lo que se sabe y sin margen para subir la cantidad. */
+function repuestoSinStockConocido(repuesto: OrdenTrabajo["repuestos"][number]): Repuesto {
+  return {
+    id: repuesto.id, codigo: repuesto.codigo, nombre: repuesto.nombre, descripcion: "", marca: "", ubicacion: "",
+    cantidad: repuesto.cantidad, cantidadMinima: 0, cantidadReservada: 0, cantidadEntregada: 0, cantidadDisponible: 0,
+    estado: "activo", estadoStock: "normal",
+  };
+}
+
 export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo) {
   const ordenInicial = props.ordenInicial;
   const etiquetaConfirmacion = props.etiquetaConfirmacion;
@@ -59,7 +68,8 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
   let fechaPrevistaInicial = "";
   let sugerenciasIniciales: string[] = [];
   let claveSugerenciasTemporales = "";
-  const idsRepuestosIniciales: number[] = [];
+  const lineasRepuestosIniciales: LineaRepuestoOrden[] = [];
+  const cantidadesDeLaOrden: Record<number, number> = {};
   const estadosDisponibles: EstadoOrdenTrabajo[] = [];
 
   if (ordenInicial) {
@@ -81,7 +91,12 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
     }
 
     for (const repuestoDeLaOrden of ordenInicial.repuestos) {
-      idsRepuestosIniciales.push(repuestoDeLaOrden.id);
+      lineasRepuestosIniciales.push({
+        repuesto: props.repuestos.find((repuesto) => repuesto.id === repuestoDeLaOrden.id) ?? repuestoSinStockConocido(repuestoDeLaOrden),
+        cantidad: repuestoDeLaOrden.cantidad,
+      });
+      // Lo reservado o entregado a esta orden cuenta como disponible para ella; lo ya descontado no.
+      if (repuestoDeLaOrden.estado !== "descontado") cantidadesDeLaOrden[repuestoDeLaOrden.id] = repuestoDeLaOrden.cantidad;
     }
 
     estadosDisponibles.push(ordenInicial.estado);
@@ -111,9 +126,9 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
   const [observaciones, setObservaciones] = useState(observacionesInicial);
   const [fechaPrevistaEjecucion, setFechaPrevistaEjecucion] = useState(fechaPrevistaInicial);
   const [sugerencias, setSugerencias] = useState(sugerenciasIniciales);
-  // El jefe crea y edita órdenes pero no ve repuestos (la API le responde 403): conserva los que ya tenía la orden.
-  const puedeVerRepuestos = useTienePermiso("stock.consultar");
-  const [idsRepuestos, setIdsRepuestos] = useState(idsRepuestosIniciales);
+  const puedeGestionarRepuestos = useTienePermiso("ot.gestionar_repuestos");
+  const [lineasRepuestos, setLineasRepuestos] = useState(lineasRepuestosIniciales);
+  const [errorRepuestos, setErrorRepuestos] = useState("");
   const [estaEnviando, setEstaEnviando] = useState(false);
   const [errorGeneral, setErrorGeneral] = useState("");
   const [errores, setErrores] = useState<ReturnType<typeof obtenerErroresOrdenTrabajo> & { motivoEstado?: string }>({});
@@ -166,7 +181,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
       observaciones,
       fechaPrevistaEjecucion,
       sugerencias,
-      repuestosIds: idsRepuestos,
+      repuestos: lineasRepuestos.map((linea) => ({ repuestoId: linea.repuesto.id, cantidad: linea.cantidad })),
       estado: estado,
       motivoEstado: motivoEstado,
       sesion: sesionSugerencias,
@@ -177,9 +192,15 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
       erroresDetectados.motivoEstado = "Indicá el motivo del cambio de estado.";
     }
     setErrores(erroresDetectados);
+    const errorDeRepuestos = puedeGestionarRepuestos ? obtenerErrorDeLineas(lineasRepuestos, cantidadesDeLaOrden) : "";
+    setErrorRepuestos(errorDeRepuestos);
     const primerCampo = Object.keys(erroresDetectados)[0];
     if (primerCampo) {
       document.getElementById(primerCampo)?.focus();
+      return;
+    }
+    if (errorDeRepuestos) {
+      document.getElementById("repuestos-orden")?.focus();
       return;
     }
     setEstaEnviando(true);
@@ -269,18 +290,22 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
         {errores.observaciones ? <p className="field-error" id="observaciones-error" role="alert">{errores.observaciones}</p> : null}
       </div>
 
-      {puedeVerRepuestos ? (
-        <SelectorRepuestosOrdenTrabajo
-          alCambiarIdsRepuestos={setIdsRepuestos}
-          idsRepuestos={idsRepuestos}
-          repuestos={props.repuestos}
+      {puedeGestionarRepuestos ? (
+        <EditorRepuestosOrden
+          alCambiar={(lineas) => {
+            setLineasRepuestos(lineas);
+            setErrorRepuestos("");
+          }}
+          cantidadesDeLaOrden={cantidadesDeLaOrden}
+          lineas={lineasRepuestos}
+          mensajeError={errorRepuestos}
         />
       ) : ordenInicial && ordenInicial.repuestos.length > 0 ? (
         <div className="form-field form-field-full">
           <span>Repuestos</span>
           <ul>
             {ordenInicial.repuestos.map((repuesto) => (
-              <li key={repuesto.id}>{repuesto.codigo + " - " + repuesto.nombre}</li>
+              <li key={repuesto.id}>{`${repuesto.codigo} - ${repuesto.nombre} (${repuesto.cantidad})`}</li>
             ))}
           </ul>
         </div>

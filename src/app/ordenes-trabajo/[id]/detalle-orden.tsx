@@ -13,7 +13,9 @@ import {
 } from "@/servicios/servicio-ordenes-trabajo";
 import { EtiquetaEstadoOrden, useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
 import type { HistorialEstadoOrdenTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
+import type { Repuesto } from "@/tipos/repuesto";
 import type { Usuario } from "@/tipos/usuario";
+import { RepuestosDeLaOrden, ETIQUETAS_ESTADO_REPUESTO } from "./repuestos-de-la-orden";
 import { formatearFechaCorta, formatearFechaHora } from "@/utilidades/fechas";
 import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 import { EnlaceVolver } from "@/componentes/enlace-volver";
@@ -23,6 +25,8 @@ type PropiedadesDetalleOrden = {
   tecnicosIniciales: Usuario[];
   /** La orden se cargó en el servidor; si falló la lista de técnicos, se informa pero el detalle sigue disponible. */
   huboErrorTecnicos: boolean;
+  /** Los repuestos de la orden con su stock actual; solo se cargan si el rol puede gestionarlos. */
+  repuestosDeLaOrden?: Repuesto[];
 };
 
 /** Detalle de la orden: los datos llegan del servidor; el cambio de estado, la asignación y las evidencias siguen en el navegador. */
@@ -33,6 +37,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
   const puedeEditar = useTienePermiso("ot.editar");
   const puedeAsignarTecnico = useTienePermiso("ot.asignar_tecnico");
   const puedeRegistrarAvance = useTienePermiso("ot.registrar_avance");
+  const puedeGestionarRepuestos = useTienePermiso("ot.gestionar_repuestos");
   const errorCarga = puedeAsignarTecnico && props.huboErrorTecnicos ? "No se pudo obtener el listado de técnicos." : "";
   const tecnicos = props.tecnicosIniciales;
   const [tecnicoSeleccionadoId, setTecnicoSeleccionadoId] = useState("");
@@ -130,7 +135,9 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
       textoRepuestos = (
         <ul>
           {orden.repuestos.map((repuestoDeLaOrden) => (
-            <li key={repuestoDeLaOrden.id}>{repuestoDeLaOrden.codigo + " - " + repuestoDeLaOrden.nombre}</li>
+            <li key={repuestoDeLaOrden.id}>
+              {repuestoDeLaOrden.codigo + " - " + repuestoDeLaOrden.nombre + " · " + repuestoDeLaOrden.cantidad + " u. · " + ETIQUETAS_ESTADO_REPUESTO[repuestoDeLaOrden.estado]}
+            </li>
           ))}
         </ul>
       );
@@ -333,6 +340,17 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
         </dl>
         <div className="form-actions">{enlaceModificar}</div>
       </section>
+
+      <RepuestosDeLaOrden
+        alActualizar={(ordenActualizada) => {
+          setOrden(ordenActualizada);
+          setMensajeExito("");
+        }}
+        key={orden.version}
+        orden={orden}
+        puedeGestionar={puedeGestionarRepuestos}
+        repuestosIniciales={props.repuestosDeLaOrden ?? []}
+      />
 
       <EvidenciasOrdenTrabajo ordenTrabajoId={orden.id} permiteRegistrar={!ordenEstaTerminada && puedeRegistrarAvance} />
       </div>

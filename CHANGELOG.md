@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Version 1.0.64 (2026-10-27)
+
+- Navegación: mientras se abre una pantalla, el contenido de la derecha se atenúa y se desenfoca y no recibe clics; el menú lateral sigue disponible para elegir otra opción.
+- Menú: el submenú de Activos se despliega y se pliega con animación, y sus ítems entran de a uno.
+
 ## Version 1.0.63 (2026-10-27)
 
 - Menú: las opciones con submenú desplegable (Activos) empiezan retraídas, se abren y se cierran con una flecha cuantas veces se quiera y se pliegan al retraer el menú.

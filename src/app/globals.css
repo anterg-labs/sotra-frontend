@@ -1379,6 +1379,29 @@ label:has(input:disabled) {
 /* Aviso de navegación: tarjeta en el centro de la pantalla con spinner; aparece tras un instante para no parpadear en cargas rápidas. */
 .navegacion-pendiente { position: fixed; top: 50%; left: 50%; z-index: 60; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; width: 190px; max-width: calc(100vw - 32px); min-height: 150px; padding: 24px 20px; border: 1px solid var(--borde); border-radius: var(--radio-l); background: var(--superficie); box-shadow: var(--sombra-l); color: var(--texto); font-size: 14px; font-weight: 600; text-align: center; overflow-wrap: anywhere; pointer-events: none; animation: aparecer-aviso 160ms ease 120ms both; }
 .navegacion-pendiente .indicador-carga { width: 36px; height: 36px; flex-basis: 36px; border-width: 3px; }
+/* Mientras se abre una pantalla, el contenido de la derecha se ve atenuado y desenfocado y no recibe clics; el menú lateral sigue activo. */
+.app-contenido,
+.tecnico-contenido {
+  transition:
+    opacity 180ms ease 120ms,
+    filter 180ms ease 120ms;
+}
+
+body:has(.navegacion-pendiente) .app-contenido,
+body:has(.navegacion-pendiente) .tecnico-contenido {
+  opacity: 0.55;
+  filter: blur(2px);
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-contenido,
+  .tecnico-contenido {
+    transition: none;
+  }
+}
+
 @keyframes aparecer-aviso { from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); } to { opacity: 1; transform: translate(-50%, -50%); } }
 @media (prefers-reduced-motion: reduce) { .navegacion-pendiente { animation: none; } }
 .indicador-carga { display: inline-block; width: 18px; height: 18px; flex: 0 0 18px; border: 2px solid var(--borde); border-top-color: var(--acento); border-radius: 50%; animation: giro-carga 700ms linear infinite; }

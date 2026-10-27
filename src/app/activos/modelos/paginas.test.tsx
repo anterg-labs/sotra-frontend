@@ -74,6 +74,7 @@ describe("página del listado de modelos (Server Component)", () => {
     s.listarTiposMaquinaServidor.mockRejectedValue(new Error("x"));
     render(await PaginaModelos({ searchParams: Promise.resolve({}) }));
     expect(screen.getByRole("heading", { level: 1, name: "Modelos de máquina" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
     expect(screen.getByRole("combobox", { name: "Tipo" })).toBeInTheDocument();
   });
 });

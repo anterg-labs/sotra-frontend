@@ -100,6 +100,7 @@ describe("barra de filtros de activos (en vivo)", () => {
   it("aplica texto, cliente, modelo y estado en la URL sin botón y los limpia", async () => {
     render(conNavegacion(<BarraFiltrosActivos clientes={[cliente as never]} filtros={filtrosVacios} modelosMaquina={[modelo as never]} />));
     fireEvent.change(screen.getByLabelText("Buscar"), { target: { value: "SN-1" } });
+    fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
     fireEvent.focus(screen.getByRole("combobox", { name: "Cliente" }));
     fireEvent.click(await screen.findByRole("option", { name: "ACME" }));
     fireEvent.focus(screen.getByRole("combobox", { name: "Modelo" }));

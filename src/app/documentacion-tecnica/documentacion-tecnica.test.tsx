@@ -142,6 +142,7 @@ describe("barra de filtros de documentos (en vivo)", () => {
   it("filtra por texto y activo (combobox) sin botón y limpia", async () => {
     render(conNavegacion(<BarraFiltrosDocumentos activos={[activo as never, { ...activo, id: 3, nombre: null, numSerie: "SN-3" } as never]} filtros={filtrosVacios} modelosMaquina={[]} />));
     fireEvent.change(screen.getByLabelText("Buscar"), { target: { value: "manual" } });
+    fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
     fireEvent.focus(screen.getByRole("combobox", { name: "Activo asociado" }));
     expect(screen.getByRole("option", { name: "SN-3" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("option", { name: "Retro 2" }));
@@ -337,6 +338,7 @@ describe("datos generales y vigencia de la documentación", () => {
 
   it("los filtros de tipo y vigencia actualizan la URL", async () => {
     render(conNavegacion(<BarraFiltrosDocumentos activos={[]} filtros={filtrosVacios} modelosMaquina={[]} />));
+    fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
     fireEvent.change(screen.getByLabelText("Tipo"), { target: { value: "normativa" } });
     await waitFor(() => expect(push.mock.calls.concat(replace.mock.calls).flat().join(" ")).toContain("tipo=normativa"));
     fireEvent.change(screen.getByLabelText("Vigencia"), { target: { value: "false" } });

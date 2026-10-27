@@ -8,12 +8,11 @@ import { listarClientesPaginados } from "@/servicios/servicio-clientes";
 import { listarTecnicosPaginados } from "@/servicios/servicio-ordenes-trabajo";
 import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
-import { useState } from "react";
-import { IconoFiltrosAvanzados } from "@/componentes/iconos";
 import { useEstadosOrden } from "@/componentes/estados-orden";
 import { ETIQUETAS_FASE_ORDEN, type FiltrosOrdenesTrabajo } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
 import { construirUrlOrdenes } from "./filtros";
+import { FiltrosAvanzados, hayFiltrosAplicados } from "@/componentes/listado/filtros-avanzados";
 
 type ValoresOrdenes = Omit<FiltrosOrdenesTrabajo, "pagina">;
 const VACIOS: ValoresOrdenes = {
@@ -53,10 +52,6 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
     alInvalido: () => document.getElementById("fechaCreacion-hasta")?.focus(),
   });
 
-  const hayFiltrosAvanzados = Object.entries(valores).some(
-    ([nombre, valor]) => !["buscar", "ordenarPor", "direccionOrden"].includes(nombre) && valor !== "" && valor !== false && valor !== undefined,
-  );
-  const [estanAvanzadosAbiertos, setEstanAvanzadosAbiertos] = useState(hayFiltrosAvanzados);
   const fasesDelCatalogo = [...new Set(estados.map((estado) => estado.fase))];
   const activosDelCliente = props.activos.filter((activo) => valores.clienteId === "" || String(activo.clienteId) === valores.clienteId);
 
@@ -82,23 +77,7 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
         />
       </div>
 
-      <div className="barra-filtros-acciones">
-        <button
-          aria-controls="filtrosAvanzadosOrdenes"
-          aria-expanded={estanAvanzadosAbiertos}
-          className="boton-filtros-avanzados"
-          data-activo={hayFiltrosAvanzados}
-          onClick={() => setEstanAvanzadosAbiertos((abiertos) => !abiertos)}
-          title="Filtros avanzados"
-          type="button"
-        >
-          <IconoFiltrosAvanzados />
-          <span className="sr-only">Filtros avanzados</span>
-        </button>
-      </div>
-      {estanAvanzadosAbiertos ? (
-        <fieldset className="filtros-avanzados" id="filtrosAvanzadosOrdenes">
-          <legend>Filtros avanzados</legend>
+      <FiltrosAvanzados alLimpiar={() => limpiar(VACIOS)} hayFiltros={hayFiltrosAplicados(valores)}>
         <Combobox
           alCambiar={(clienteId) => cambiar({ clienteId, activoId: "" })}
           buscarOpciones={async (consulta) => {
@@ -212,13 +191,7 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
             Solo con recomendaciones de IA
           </label>
         </div>
-          <div className="barra-filtros-acciones">
-            <button className="secondary-button" onClick={() => limpiar(VACIOS)} type="button">
-              Limpiar filtros
-            </button>
-          </div>
-        </fieldset>
-      ) : null}
+      </FiltrosAvanzados>
     </form>
   );
 }

@@ -112,6 +112,20 @@ td {
   text-align: left;
 }
 
+/* Tablas pequeñas (por ejemplo «Órdenes por estado»): se ajustan a su bloque, sin desplazamiento horizontal. */
+table.tabla-compacta {
+  min-width: 0;
+}
+
+.celda-centrada {
+  text-align: center;
+}
+
+.celda-centrada .table-actions,
+td.celda-centrada {
+  justify-content: center;
+}
+
 .celda-fecha {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;

@@ -125,6 +125,7 @@ describe("barra de filtros de usuarios (en vivo)", () => {
     expect(replace).toHaveBeenCalledTimes(1);
     expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana");
 
+    fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
     fireEvent.change(screen.getByLabelText("Rol"), { target: { value: "2" } });
     expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana&rolId=2");
     fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "activo" } });

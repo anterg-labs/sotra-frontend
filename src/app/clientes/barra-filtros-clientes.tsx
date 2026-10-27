@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { IconoFiltrosAvanzados } from "@/componentes/iconos";
 import { useFiltrosEnVivo } from "@/componentes/listado/use-filtros-en-vivo";
 import type { FiltrosClientes } from "@/tipos/cliente";
 import { construirUrlClientes } from "./filtros";
+import { FiltrosAvanzados, hayFiltrosAplicados } from "@/componentes/listado/filtros-avanzados";
 
 type ValoresClientes = Pick<FiltrosClientes, "buscar" | "estado" | "conActivos" | "ordenarPor" | "direccionOrden">;
 const VACIOS: ValoresClientes = { buscar: "", estado: "activo", conActivos: false };
@@ -16,8 +15,6 @@ export function BarraFiltrosClientes(props: { filtros: FiltrosClientes }) {
     construirUrl: (v) => construirUrlClientes({ ...v, pagina: 1 }),
   });
 
-  const hayFiltrosAvanzados = valores.estado !== "activo" || (valores.conActivos ?? false);
-  const [estanAvanzadosAbiertos, setEstanAvanzadosAbiertos] = useState(hayFiltrosAvanzados);
 
   return (
     <form
@@ -39,23 +36,7 @@ export function BarraFiltrosClientes(props: { filtros: FiltrosClientes }) {
           value={valores.buscar}
         />
       </div>
-      <div className="barra-filtros-acciones">
-        <button
-          aria-controls="filtrosAvanzadosClientes"
-          aria-expanded={estanAvanzadosAbiertos}
-          className="boton-filtros-avanzados"
-          data-activo={hayFiltrosAvanzados}
-          onClick={() => setEstanAvanzadosAbiertos((abiertos) => !abiertos)}
-          title="Filtros avanzados"
-          type="button"
-        >
-          <IconoFiltrosAvanzados />
-          <span className="sr-only">Filtros avanzados</span>
-        </button>
-      </div>
-      {estanAvanzadosAbiertos ? (
-        <fieldset className="filtros-avanzados" id="filtrosAvanzadosClientes">
-          <legend>Filtros avanzados</legend>
+      <FiltrosAvanzados alLimpiar={() => limpiar(VACIOS)} hayFiltros={hayFiltrosAplicados(valores, { estado: "activo" })}>
           <div className="form-field">
             <label htmlFor="estadoClienteFiltro">Mostrar</label>
             <select id="estadoClienteFiltro" onChange={(evento) => cambiar({ estado: evento.target.value })} value={valores.estado}>
@@ -76,11 +57,7 @@ export function BarraFiltrosClientes(props: { filtros: FiltrosClientes }) {
               Solo con activos asociados
             </label>
           </div>
-          <button className="secondary-button" onClick={() => limpiar(VACIOS)} type="button">
-            Limpiar filtros
-          </button>
-        </fieldset>
-      ) : null}
+      </FiltrosAvanzados>
     </form>
   );
 }

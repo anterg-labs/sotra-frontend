@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Version 1.0.69 (2026-10-27)
+
+- Listados: en Clientes, Órdenes, Activos, Modelos, Tipos, Documentación, Repuestos, Movimientos y Usuarios solo se ve el buscador; el resto de los filtros queda detrás del botón «Filtros avanzados» (se abre solo si hay uno aplicado y avisa con un punto).
+- Reportes: los bloques ya no tienen desplazamiento horizontal y se reparten de a tres por fila; en «Órdenes recientes» el ojito queda centrado y prioridad y estado se ven con mayúscula inicial y los mismos colores que en Órdenes de trabajo, igual que en los bloques por estado, prioridad y tipo.
+
 ## Version 1.0.68 (2026-10-27)
 
 - Navegación: en las pantallas de segundo nivel (detalles, altas y modificaciones) aparece arriba la ruta, por ejemplo «Órdenes de trabajo / Orden N° 8», con los niveles anteriores como enlaces para volver.

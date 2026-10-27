@@ -3,6 +3,7 @@
 import { useFiltrosEnVivo } from "@/componentes/listado/use-filtros-en-vivo";
 import type { AlertasStock } from "@/tipos/repuesto";
 import { construirUrlRepuestos, type FiltroStock, type FiltrosUrlRepuestos } from "./filtros";
+import { FiltrosAvanzados, hayFiltrosAplicados } from "@/componentes/listado/filtros-avanzados";
 
 type ValoresRepuestos = Omit<FiltrosUrlRepuestos, "pagina">;
 const VACIOS: ValoresRepuestos = { buscar: "", estado: "", ubicacion: "", stock: "" };
@@ -69,28 +70,25 @@ export function BarraFiltrosRepuestos(props: { filtros: FiltrosUrlRepuestos; ale
             value={valores.buscar}
           />
         </div>
-        <div className="form-field">
-          <label htmlFor="ubicacionRepuestoFiltro">Ubicación</label>
-          <input
-            id="ubicacionRepuestoFiltro"
-            onChange={(evento) => cambiar({ ubicacion: evento.target.value }, true)}
-            type="text"
-            value={valores.ubicacion}
-          />
-        </div>
-        <div className="form-field">
-          <label htmlFor="estadoRepuestoFiltro">Estado</label>
-          <select id="estadoRepuestoFiltro" onChange={(evento) => cambiar({ estado: evento.target.value })} value={valores.estado}>
-            <option value="">Todos los estados</option>
-            <option value="activo">Activo</option>
-            <option value="inactivo">Inactivo</option>
-          </select>
-        </div>
-        <div className="barra-filtros-acciones">
-          <button className="secondary-button" onClick={() => limpiar(VACIOS)} type="button">
-            Limpiar filtros
-          </button>
-        </div>
+        <FiltrosAvanzados alLimpiar={() => limpiar(VACIOS)} hayFiltros={hayFiltrosAplicados(valores)}>
+          <div className="form-field">
+            <label htmlFor="ubicacionRepuestoFiltro">Ubicación</label>
+            <input
+              id="ubicacionRepuestoFiltro"
+              onChange={(evento) => cambiar({ ubicacion: evento.target.value }, true)}
+              type="text"
+              value={valores.ubicacion}
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="estadoRepuestoFiltro">Estado</label>
+            <select id="estadoRepuestoFiltro" onChange={(evento) => cambiar({ estado: evento.target.value })} value={valores.estado}>
+              <option value="">Todos los estados</option>
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+          </div>
+        </FiltrosAvanzados>
       </form>
     </>
   );

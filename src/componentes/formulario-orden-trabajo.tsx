@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { BotonCancelarFormulario, useSalidaDeFormulario } from "@/componentes/modal-de-ruta";
 import { useRef, useState } from "react";
 import { useAvisos } from "@/componentes/avisos";
 import { FormularioCliente } from "@/componentes/formulario-cliente";
@@ -112,7 +111,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
     }
   }
 
-  const enrutador = useRouter();
+  const { terminar } = useSalidaDeFormulario();
   const [estado, setEstado] = useState(estadoInicial);
   const estadoExigeMotivo = ordenInicial?.transiciones.some((transicion) => transicion.estado === estado && transicion.exigeMotivo) ?? false;
   const [clienteId, setClienteId] = useState(clienteIdInicial);
@@ -208,7 +207,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
     try {
       await alEnviar(ordenParaGuardar);
       borrarSugerenciasTemporales(claveSugerenciasTemporales);
-      enrutador.push("/ordenes-trabajo");
+      terminar("/ordenes-trabajo");
     } catch (error) {
       if (error instanceof Error) {
         setErrorGeneral(error.message);
@@ -323,9 +322,7 @@ export function FormularioOrdenTrabajo(props: PropiedadesFormularioOrdenTrabajo)
       {mensajeError}
 
       <div className="form-actions">
-        <Link className="secondary-button" href="/ordenes-trabajo" onClick={descartarSugerenciasTemporales}>
-          Cancelar
-        </Link>
+        <BotonCancelarFormulario href="/ordenes-trabajo" alHacerClic={descartarSugerenciasTemporales} />
         <button className="primary-button" disabled={estaEnviando} type="submit">
           {textoBoton}
         </button>

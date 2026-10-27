@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { BotonCancelarFormulario, useSalidaDeFormulario } from "@/componentes/modal-de-ruta";
 import { useState } from "react";
 import { useAvisos, type TipoAviso } from "@/componentes/avisos";
 import { useFormularioAccion } from "@/componentes/use-formulario-accion";
@@ -43,7 +42,7 @@ export function avisoUsuarioCreado(usuario: Pick<Usuario, "correo" | "correoDeCo
 export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
   const { usuarioInicial, roles, accion, alGuardar, alCancelar, etiquetaConfirmacion, rutaCancelar, rutaExito } = props;
 
-  const enrutador = useRouter();
+  const { terminar } = useSalidaDeFormulario();
   const { mostrarAviso } = useAvisos();
   const [nombre, setNombre] = useState(usuarioInicial?.nombre ?? "");
   const [apellido, setApellido] = useState(usuarioInicial?.apellido ?? "");
@@ -60,7 +59,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
       } else {
         const aviso = usuarioInicial ? { tipo: "exito" as const, texto: "Usuario actualizado." } : avisoUsuarioCreado(usuario);
         mostrarAviso(aviso.tipo, aviso.texto);
-        enrutador.push(rutaExito);
+        terminar(rutaExito);
       }
     },
     mensajeGeneral: "No se pudo guardar la información del usuario.",
@@ -200,9 +199,7 @@ export function FormularioUsuario(props: PropiedadesFormularioUsuario) {
             Cancelar
           </button>
         ) : (
-          <Link className="secondary-button" href={rutaCancelar}>
-            Cancelar
-          </Link>
+          <BotonCancelarFormulario href={rutaCancelar} />
         )}
         <button className="primary-button" disabled={estaEnviando} type="submit">
           {textoBoton}

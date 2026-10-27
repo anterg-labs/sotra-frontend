@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { BotonCancelarFormulario, useSalidaDeFormulario } from "@/componentes/modal-de-ruta";
 import { useState } from "react";
 import { Combobox } from "@/componentes/combobox";
 import { listarActivosPaginados } from "@/servicios/servicio-activos";
@@ -27,7 +26,7 @@ type PropiedadesFormularioEditarDocumento = {
 /** Modifica los datos generales de un documento; el archivo no se cambia (hay que eliminarlo y cargarlo de nuevo). */
 export function FormularioEditarDocumento(props: PropiedadesFormularioEditarDocumento) {
   const { documento, accion } = props;
-  const enrutador = useRouter();
+  const { terminar } = useSalidaDeFormulario();
   const [titulo, setTitulo] = useState(documento.titulo === documento.nombreArchivo ? "" : documento.titulo);
   const [tipo, setTipo] = useState<TipoDocumento>(documento.tipo);
   const [descripcion, setDescripcion] = useState(documento.descripcion ?? "");
@@ -60,7 +59,7 @@ export function FormularioEditarDocumento(props: PropiedadesFormularioEditarDocu
         modeloMaquinaId: modeloMaquinaId === "" ? null : Number(modeloMaquinaId),
       });
       if (resultado.exito) {
-        enrutador.push("/documentacion-tecnica/" + documento.id);
+        terminar("/documentacion-tecnica/" + documento.id);
         return;
       }
       setErrores(resultado.errores);
@@ -139,7 +138,7 @@ export function FormularioEditarDocumento(props: PropiedadesFormularioEditarDocu
       {errorGeneral ? <AvisoEnLinea>{errorGeneral}</AvisoEnLinea> : null}
 
       <div className="form-actions">
-        <Link className="secondary-button" href={"/documentacion-tecnica/" + documento.id}>Cancelar</Link>
+        <BotonCancelarFormulario href={"/documentacion-tecnica/" + documento.id} />
         <button className="primary-button" disabled={estaGuardando} type="submit">
           {estaGuardando ? "Guardando…" : "Confirmar modificación"}
         </button>

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.56 (2026-10-27)
+
+- Interfaz: las altas y modificaciones (órdenes de trabajo, clientes, activos, modelos, tipos, repuestos, usuarios y documentos técnicos) se abren en un modal desde los listados y detalles, con foco en el primer campo, confirmación al descartar cambios, tamaño amplio para formularios extensos y pantalla completa en el móvil. Abiertas por enlace directo se ven como página.
+
 ## Version 1.0.55 (2026-10-27)
 
 - Reportes: se quitan el reporte de actividad por técnico, el cuadro de órdenes por técnico y el filtro «Técnico»; el análisis es de órdenes, procesos y maquinaria, sin evaluar personas.

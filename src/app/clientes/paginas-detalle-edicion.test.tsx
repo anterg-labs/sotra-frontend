@@ -1,3 +1,4 @@
+import { resolverServidor } from "@/pruebas/resolver-servidor";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import EditarCliente from "./[id]/editar/page";
@@ -79,7 +80,7 @@ describe("edición y alta de cliente", () => {
   it("precarga el formulario y guarda con la acción ligada al id", async () => {
     s.obtenerClienteServidor.mockResolvedValue(cliente);
     s.actualizarClienteAccion.mockImplementation(async () => ({ exito: true, registro: cliente }));
-    render(await EditarCliente(parametros("5")));
+    render(await resolverServidor(await EditarCliente(parametros("5"))));
     const razon = screen.getByLabelText("Nombre o razón social");
     expect(razon).toHaveValue("ACME");
     fireEvent.change(razon, { target: { value: "ACME SA" } });
@@ -91,7 +92,7 @@ describe("edición y alta de cliente", () => {
 
   it("informa si no se pudo cargar el cliente y no muestra el formulario", async () => {
     s.obtenerClienteServidor.mockRejectedValue(new Error("x"));
-    render(await EditarCliente(parametros("5")));
+    render(await resolverServidor(await EditarCliente(parametros("5"))));
     expect(screen.getByText("No se pudo obtener la información del cliente solicitado.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Confirmar modificación" })).not.toBeInTheDocument();
   });

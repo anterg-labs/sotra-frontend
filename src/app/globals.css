@@ -1370,13 +1370,35 @@ label:has(input:disabled) {
   background: rgba(10, 10, 12, 0.6);
 }
 
+.modal-dialogo-amplio {
+  width: min(960px, calc(100vw - 32px));
+}
+
 .modal-dialogo-cabecera {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   padding: 18px 24px;
   border-bottom: 1px solid var(--borde);
+  background: var(--superficie-suave);
+}
+
+.modal-dialogo-titulos {
+  min-width: 0;
+}
+
+.modal-dialogo-titulos h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.modal-dialogo-descripcion {
+  margin: 4px 0 0;
+  color: var(--texto-tenue);
+  font-size: 12px;
 }
 
 .modal-dialogo-cuerpo {
@@ -1396,6 +1418,12 @@ label:has(input:disabled) {
   padding: 16px 24px;
   background: var(--superficie);
   border-top: 1px solid var(--borde);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-dialogo[open] {
+    animation: none;
+  }
 }
 
 @keyframes modal-entrada {

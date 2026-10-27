@@ -1,11 +1,6 @@
-import { FormularioDocumentoTecnico } from "@/componentes/formulario-documento-tecnico";
-import { listarActivosServidor } from "@/servicios/servidor/activos";
+import { ContenidoNuevoDocumento } from "./contenido-nuevo-documento";
 
-export default async function PaginaNuevoDocumentoTecnico() {
-  const activos = await listarActivosServidor({ buscar: "", clienteId: "", modeloMaquinaId: "", estado: "activo", pagina: 1 })
-    .then((pagina) => pagina.elementos)
-    .catch(() => null);
-
+export default async function PaginaNuevoDocumento() {
   return (
     <main className="page-content">
       <header className="page-heading">
@@ -16,11 +11,7 @@ export default async function PaginaNuevoDocumentoTecnico() {
       </header>
 
       <section className="panel form-panel">
-        {activos === null ? (
-          <p className="form-error-banner">No se pudo obtener el listado de activos.</p>
-        ) : (
-          <FormularioDocumentoTecnico activos={activos} />
-        )}
+        <ContenidoNuevoDocumento />
       </section>
     </main>
   );

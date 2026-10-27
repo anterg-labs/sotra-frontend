@@ -1,3 +1,4 @@
+import { resolverServidor } from "@/pruebas/resolver-servidor";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FormularioDocumentoTecnico } from "@/componentes/formulario-documento-tecnico";
@@ -209,14 +210,14 @@ describe("detalle de documento técnico (Server Component)", () => {
 
 describe("alta de documento técnico (página)", () => {
   it("carga los activos activos en el servidor y muestra el formulario", async () => {
-    render(await NuevoDocumento());
+    render(await resolverServidor(await NuevoDocumento()));
     expect(s.listarActivosServidor).toHaveBeenCalledWith(expect.objectContaining({ estado: "activo" }));
     expect(screen.getByLabelText("Archivo PDF")).toBeInTheDocument();
   });
 
   it("informa si no se pueden cargar los activos", async () => {
     s.listarActivosServidor.mockRejectedValue(new Error("x"));
-    render(await NuevoDocumento());
+    render(await resolverServidor(await NuevoDocumento()));
     expect(screen.getByText("No se pudo obtener el listado de activos.")).toBeInTheDocument();
   });
 });
@@ -369,7 +370,7 @@ describe("edición de un documento", () => {
 
   it("la página carga los datos del documento en el formulario", async () => {
     s.obtenerDocumentoTecnicoServidor.mockResolvedValue(documentoCompleto());
-    render(await EditarDocumento(parametros("11")));
+    render(await resolverServidor(await EditarDocumento(parametros("11"))));
     expect(screen.getByRole("heading", { level: 1, name: "Modificar documento" })).toBeInTheDocument();
     expect(screen.getByLabelText("Título")).toHaveValue("Norma de EPP");
     expect(screen.getByLabelText("Tipo de documento")).toHaveValue("normativa");
@@ -378,7 +379,7 @@ describe("edición de un documento", () => {
 
   it("la página informa si no se puede obtener el documento", async () => {
     s.obtenerDocumentoTecnicoServidor.mockRejectedValue(new Error("x"));
-    render(await EditarDocumento(parametros("11")));
+    render(await resolverServidor(await EditarDocumento(parametros("11"))));
     expect(screen.getByText("No se pudo obtener la información del documento solicitado.")).toBeInTheDocument();
   });
 

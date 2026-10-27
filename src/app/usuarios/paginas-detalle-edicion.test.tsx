@@ -1,3 +1,4 @@
+import { resolverServidor } from "@/pruebas/resolver-servidor";
 import { ProveedorNavegacionListado } from "@/componentes/listado/navegacion-listado";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -107,7 +108,7 @@ describe("edición y alta de usuario", () => {
   it("precarga el formulario y guarda con la acción ligada al id, estado y fecha de ingreso", async () => {
     s.obtenerUsuarioServidor.mockResolvedValue(usuario);
     s.actualizarUsuarioAccion.mockResolvedValue({ exito: true, registro: usuario });
-    render(await EditarUsuario(parametros("5")));
+    render(await resolverServidor(await EditarUsuario(parametros("5"))));
     const nombre = screen.getByLabelText("Nombre");
     expect(nombre).toHaveValue("Ana");
     fireEvent.change(nombre, { target: { value: "Anabel" } });
@@ -123,13 +124,13 @@ describe("edición y alta de usuario", () => {
   it("informa error si falla la carga del usuario o de los roles", async () => {
     s.obtenerUsuarioServidor.mockResolvedValue(usuario);
     s.listarRolesServidor.mockRejectedValue(new Error("x"));
-    render(await EditarUsuario(parametros("5")));
+    render(await resolverServidor(await EditarUsuario(parametros("5"))));
     expect(screen.getByText("No se pudo obtener la información del usuario solicitado.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Confirmar modificación" })).not.toBeInTheDocument();
   });
 
   it("la página de alta carga los roles en el servidor y no pide contraseña", async () => {
-    render(await NuevoUsuario());
+    render(await resolverServidor(await NuevoUsuario()));
     expect(screen.queryByLabelText("Contraseña")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Confirmar creación" }));
     expect(await screen.findAllByRole("alert")).not.toHaveLength(0);
@@ -138,7 +139,7 @@ describe("edición y alta de usuario", () => {
 
   it("la página de alta informa si no se pudieron cargar los roles", async () => {
     s.listarRolesServidor.mockRejectedValue(new Error("x"));
-    render(await NuevoUsuario());
+    render(await resolverServidor(await NuevoUsuario()));
     expect(screen.getByText("No se pudo obtener el listado de roles.")).toBeInTheDocument();
   });
 });
@@ -153,32 +154,32 @@ describe("el jefe de mantenimiento gestiona usuarios, salvo administradores", ()
   });
 
   it("el alta no ofrece el rol Administrador", async () => {
-    render(await NuevoUsuario());
+    render(await resolverServidor(await NuevoUsuario()));
     expect(screen.queryByRole("checkbox", { name: "Administrador" })).not.toBeInTheDocument();
     expect(screen.getByRole("checkbox", { name: "Técnico" })).toBeInTheDocument();
   });
 
   it("la modificación de un usuario activo ofrece reenviar el enlace de contraseña; la de uno inactivo, no", async () => {
     s.obtenerUsuarioServidor.mockResolvedValue(usuario);
-    const { unmount } = render(await EditarUsuario(parametros("5")));
+    const { unmount } = render(await resolverServidor(await EditarUsuario(parametros("5"))));
     expect(screen.getByRole("button", { name: "Reenviar enlace de contraseña" })).toBeInTheDocument();
     unmount();
 
     s.obtenerUsuarioServidor.mockResolvedValue({ ...usuario, estado: "inactivo" });
-    render(await EditarUsuario(parametros("5")));
+    render(await resolverServidor(await EditarUsuario(parametros("5"))));
     expect(screen.queryByRole("button", { name: "Reenviar enlace de contraseña" })).not.toBeInTheDocument();
   });
 
   it("modifica a un técnico, pero sin poder darle el rol Administrador", async () => {
     s.obtenerUsuarioServidor.mockResolvedValue(usuario);
-    render(await EditarUsuario(parametros("5")));
+    render(await resolverServidor(await EditarUsuario(parametros("5"))));
     expect(screen.getByRole("button", { name: "Confirmar modificación" })).toBeInTheDocument();
     expect(screen.queryByRole("checkbox", { name: "Administrador" })).not.toBeInTheDocument();
   });
 
   it("no puede modificar a un administrador: ni la edición ni los botones del detalle", async () => {
     s.obtenerUsuarioServidor.mockResolvedValue(administrador);
-    const { unmount } = render(await EditarUsuario(parametros("35")));
+    const { unmount } = render(await resolverServidor(await EditarUsuario(parametros("35"))));
     expect(screen.getByText("Solo un administrador puede modificar a un administrador.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Confirmar modificación" })).not.toBeInTheDocument();
     unmount();

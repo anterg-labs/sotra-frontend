@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { BotonCancelarFormulario, useSalidaDeFormulario } from "@/componentes/modal-de-ruta";
 import { useState } from "react";
 import { useFormularioAccion } from "@/componentes/use-formulario-accion";
 import type { ResultadoGuardar } from "@/tipos/resultado-accion";
@@ -26,7 +25,7 @@ function numeroODesconocido(texto: string) {
 export function FormularioRepuesto(props: PropiedadesFormularioRepuesto) {
   const { repuestoInicial, etiquetaConfirmacion, accion, alGuardar, alCancelar } = props;
 
-  const enrutador = useRouter();
+  const { terminar } = useSalidaDeFormulario();
   const [codigo, setCodigo] = useState(repuestoInicial?.codigo ?? "");
   const [nombre, setNombre] = useState(repuestoInicial?.nombre ?? "");
   const [descripcion, setDescripcion] = useState(repuestoInicial?.descripcion ?? "");
@@ -42,7 +41,7 @@ export function FormularioRepuesto(props: PropiedadesFormularioRepuesto) {
       if (alGuardar) {
         alGuardar(repuesto);
       } else {
-        enrutador.push("/repuestos");
+        terminar("/repuestos");
       }
     },
     mensajeGeneral: "No se pudo guardar el repuesto.",
@@ -147,9 +146,7 @@ export function FormularioRepuesto(props: PropiedadesFormularioRepuesto) {
             Cancelar
           </button>
         ) : (
-          <Link className="secondary-button" href="/repuestos">
-            Cancelar
-          </Link>
+          <BotonCancelarFormulario href="/repuestos" />
         )}
         <button className="primary-button" disabled={estaEnviando} type="submit">
           {estaEnviando ? "Guardando…" : etiquetaConfirmacion}

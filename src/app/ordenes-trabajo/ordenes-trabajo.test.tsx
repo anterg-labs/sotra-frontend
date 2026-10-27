@@ -1,3 +1,4 @@
+import { resolverServidor } from "@/pruebas/resolver-servidor";
 import { fireEvent, render as renderBase, screen, waitFor, within } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { conEstadosOrden, estadosDePrueba, transicion } from "@/pruebas/estados-orden";
@@ -596,7 +597,7 @@ describe("edición y alta de orden de trabajo (páginas)", () => {
     s.obtenerUsuarioServidor.mockResolvedValue(tecnico);
     s.obtenerRepuestoServidor.mockResolvedValue({ id: 3, codigo: "R3", nombre: "Filtro" });
     s.actualizarOrdenTrabajo.mockResolvedValue(orden(11));
-    render(await EditarOrden(parametros("11")));
+    render(await resolverServidor(await EditarOrden(parametros("11"))));
     const formulario = screen.getByRole("form", { name: "Formulario de orden" });
     expect(formulario).toHaveAttribute("data-orden", "11");
     expect(formulario).toHaveAttribute("data-clientes", "1");
@@ -609,14 +610,14 @@ describe("edición y alta de orden de trabajo (páginas)", () => {
 
   it("la edición informa el error de carga", async () => {
     s.obtenerOrdenTrabajoServidor.mockRejectedValue(new Error("x"));
-    render(await EditarOrden(parametros("11")));
+    render(await resolverServidor(await EditarOrden(parametros("11"))));
     expect(screen.getByText("No se pudo obtener la información de la orden solicitada.")).toBeInTheDocument();
     expect(screen.queryByRole("form", { name: "Formulario de orden" })).not.toBeInTheDocument();
   });
 
   it("la alta carga los datos del formulario en el servidor y crea la orden", async () => {
     s.crearOrdenTrabajo.mockResolvedValue(orden(12));
-    render(await NuevaOrden());
+    render(await resolverServidor(await NuevaOrden()));
     const formulario = screen.getByRole("form", { name: "Formulario de orden" });
     expect(formulario).toHaveAttribute("data-clientes", "1");
     expect(formulario).toHaveAttribute("data-repuestos", "1");
@@ -626,7 +627,7 @@ describe("edición y alta de orden de trabajo (páginas)", () => {
 
   it("la alta informa si faltan datos", async () => {
     s.listarClientesServidor.mockRejectedValue(new Error("x"));
-    render(await NuevaOrden());
+    render(await resolverServidor(await NuevaOrden()));
     expect(screen.getByText("No se pudieron obtener los datos necesarios para crear la orden.")).toBeInTheDocument();
   });
 });

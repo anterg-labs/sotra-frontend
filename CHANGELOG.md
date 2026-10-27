@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.60 (2026-10-27)
+
+- Menú: al abrirse, el logo de CVM se desplaza al centro junto con el ensanche del menú y vuelve a la izquierda al retraerlo.
+
 ## Version 1.0.59 (2026-10-27)
 
 - Listados: los selectores de fecha de los filtros (por ejemplo «Creada» en órdenes de trabajo) dejan de estirarse por toda la fila y quedan con un ancho razonable.

@@ -1402,6 +1402,12 @@ label:has(input:disabled) {
   .app-lateral-logo {
     justify-content: flex-start;
     padding-left: calc((var(--lateral-ancho) - 48px) / 2);
+    transition: padding-left var(--transicion);
+  }
+
+  /* Con el menú abierto, el logo acompaña el ensanche y queda al centro; al retraerlo vuelve a la izquierda. */
+  .app-lateral[data-abierto="true"] .app-lateral-logo {
+    padding-left: calc((var(--lateral-ancho-abierto) - 48px) / 2);
   }
 
   .app-lateral-logo span { flex-shrink: 0; }

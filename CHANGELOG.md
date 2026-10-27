@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.61 (2026-10-27)
+
+- Reportes: los filtros de indicadores se ordenan en una cuadrícula pareja (ya no hay un desplegable que se estire por toda la fila) y «Descarga de reportes» ocupa todo el ancho, con los campos a la izquierda y los botones a la derecha, en lugar de quedar centrada en la pantalla.
+
 ## Version 1.0.60 (2026-10-27)
 
 - Menú: al abrirse, el logo de CVM se desplaza al centro junto con el ensanche del menú y vuelve a la izquierda al retraerlo.

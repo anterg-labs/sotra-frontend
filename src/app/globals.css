@@ -586,6 +586,70 @@ label:has(input:disabled) {
   margin: 0;
 }
 
+/* Filtros de Reportes: cuadrícula pareja, sin que un desplegable se estire solo en la última fila. */
+.barra-filtros-reportes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  align-items: end;
+}
+
+.barra-filtros-reportes .form-field,
+.barra-filtros-reportes .form-field:has(> input[type="date"]) {
+  flex: none;
+  min-width: 0;
+}
+
+.barra-filtros-reportes .campo-casilla {
+  justify-content: flex-end;
+}
+
+.barra-filtros-reportes .barra-filtros-acciones {
+  grid-column: -2 / -1;
+  justify-self: end;
+}
+
+/* Descarga de reportes: a todo el ancho, con los campos a la izquierda y los botones a la derecha. */
+.panel-descarga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px 24px;
+  padding: 18px 22px;
+}
+
+.panel-descarga-texto {
+  flex: 1 1 100%;
+}
+
+.panel-descarga-texto h2 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.panel-descarga-texto p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.panel-descarga-campos {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.panel-descarga-campos .form-field {
+  flex: 0 1 260px;
+  min-width: 190px;
+}
+
+.panel-descarga-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
 .barra-filtros-acciones {
   display: flex;
   gap: 8px;

@@ -55,7 +55,7 @@ export function TableroReportes(props: PropiedadesTablero) {
       <form
         aria-busy={estaPendiente}
         aria-label="Filtros"
-        className="barra-filtros"
+        className="barra-filtros barra-filtros-reportes"
         noValidate
         onSubmit={(evento) => {
           evento.preventDefault();
@@ -124,14 +124,12 @@ export function TableroReportes(props: PropiedadesTablero) {
         </div>
       </form>
 
-      <section className="panel form-panel mb-6">
-        <div className="panel-heading">
+      <section className="panel panel-descarga mb-6">
+        <div className="panel-descarga-texto">
           <h2>Descarga de reportes</h2>
+          <p className="texto-tenue">Los reportes en PDF y CSV usan los criterios elegidos en los filtros de arriba, más la prioridad.</p>
         </div>
-        <p className="mb-4 mt-3 text-sm texto-tenue">
-          Los reportes en PDF y CSV usan los criterios elegidos en los filtros de arriba, más la prioridad.
-        </p>
-        <div className="form-grid">
+        <div className="panel-descarga-campos">
           <div className="form-field">
             <label htmlFor="tipoReporte">Tipo de reporte</label>
             <select id="tipoReporte" onChange={(evento) => setTipoReporte(evento.target.value)} value={tipoReporte}>
@@ -150,7 +148,7 @@ export function TableroReportes(props: PropiedadesTablero) {
             </select>
           </div>
         </div>
-        <div className="form-actions">
+        <div className="panel-descarga-acciones">
           <a
             className="primary-button"
             href={obtenerUrlReportePdf(tipoReporte, filtrosParaReporte, prioridadReporte)}

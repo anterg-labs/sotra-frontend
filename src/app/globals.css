@@ -126,6 +126,82 @@ td.celda-centrada {
   justify-content: center;
 }
 
+/* Configuración: panel de opciones y «Mi perfil». */
+.opciones-configuracion {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.opcion-configuracion {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 100%;
+  padding: 20px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-l);
+  box-shadow: var(--sombra-s);
+  color: var(--texto);
+  text-decoration: none;
+  transition: border-color var(--transicion), box-shadow var(--transicion), transform var(--transicion);
+}
+
+.opcion-configuracion:hover {
+  border-color: var(--borde-fuerte);
+  box-shadow: var(--sombra-m);
+  transform: translateY(-1px);
+}
+
+.opcion-configuracion-icono {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: var(--acento-suave);
+  border-radius: var(--radio-m);
+  color: var(--acento);
+}
+
+.opcion-configuracion strong {
+  display: block;
+  font-size: 15px;
+}
+
+.opcion-configuracion small {
+  display: block;
+  margin-top: 2px;
+  color: var(--texto-tenue);
+  font-size: 12px;
+}
+
+.perfil-formulario {
+  padding: 24px;
+}
+
+.perfil-keycloak {
+  min-width: 0;
+  margin: 0;
+  padding: 14px 16px 16px;
+  border: 1px dashed var(--borde-fuerte);
+  border-radius: var(--radio-m);
+}
+
+.perfil-keycloak legend {
+  padding: 0 6px;
+  color: var(--texto-tenue);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .celda-fecha {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -1543,6 +1619,9 @@ body:has(.navegacion-pendiente) .tecnico-contenido {
 .usuario-menu-identidad { display: grid; gap: 6px; padding: 12px; border-bottom: 1px solid var(--borde); overflow-wrap: anywhere; }
 .usuario-menu-identidad span { color: var(--texto-tenue); font-size: 11px; }
 .usuario-menu-identidad strong { font-size: 13px; font-weight: 600; }
+.usuario-menu-opcion { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; margin-top: 6px; padding: 10px 12px; border-radius: var(--radio-s); color: var(--texto); font-size: 13px; text-decoration: none; }
+.usuario-menu-opcion:hover { background: var(--acento-suave); color: var(--acento); }
+.usuario-menu-opcion svg { width: 18px; height: 18px; }
 .usuario-menu-salir { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; margin-top: 6px; padding: 10px 12px; border: 0; border-radius: var(--radio-s); background: transparent; color: var(--texto); font-size: 13px; text-align: left; }
 .usuario-menu-salir:hover:enabled { background: var(--acento-suave); color: var(--acento); }
 .usuario-menu-salir svg { width: 18px; height: 18px; }

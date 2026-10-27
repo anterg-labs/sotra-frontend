@@ -39,7 +39,8 @@ type Submenu = {
 type ElementoMenu = {
   ruta: string;
   etiqueta: string;
-  permiso: Permiso;
+  /** `null`: la ven todas las personas con sesión. */
+  permiso: Permiso | null;
   icono: React.ReactNode;
   submenus?: Submenu[];
   submenuPermanente?: boolean;
@@ -103,23 +104,15 @@ const elementosMenu: ElementoMenu[] = [
   {
     ruta: "/configuracion",
     etiqueta: "Configuración",
-    permiso: "configuracion.gestionar",
+    permiso: null,
     icono: <IconoConfiguracion />,
-    submenus: [
-      {
-        ruta: "/configuracion/terminos",
-        etiqueta: "Términos y condiciones",
-        permiso: "configuracion.gestionar",
-        esActivo: (ruta) => ruta.startsWith("/configuracion/terminos"),
-      },
-    ],
   },
 ];
 
 /** Opciones del menú que puede ver un usuario con estos roles, con solo los submenús que también puede ver. */
 export function filtrarMenuPorRoles(roles: readonly string[]): ElementoMenu[] {
   return elementosMenu
-    .filter((elemento) => tienePermiso(roles, elemento.permiso))
+    .filter((elemento) => elemento.permiso === null || tienePermiso(roles, elemento.permiso))
     .map((elemento) => {
       const submenus = elemento.submenus?.filter((submenu) => tienePermiso(roles, submenu.permiso));
       return { ...elemento, submenus: submenus && submenus.length > 0 ? submenus : undefined };

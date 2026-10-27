@@ -69,7 +69,7 @@ export function tienePermiso(roles: readonly string[], permiso: Permiso): boolea
   return roles.some((rol) => permitidos.includes(rol));
 }
 
-type ReglaDeRuta = { patron: RegExp; permiso: Permiso };
+type ReglaDeRuta = { patron: RegExp; permiso: Permiso | null };
 
 /** De la más específica a la más general: gana la primera que coincide. */
 const reglasDeRuta: ReglaDeRuta[] = [
@@ -79,6 +79,9 @@ const reglasDeRuta: ReglaDeRuta[] = [
   { patron: /^\/repuestos(\/|$)/, permiso: "stock.consultar" },
   { patron: /^\/inicio(\/|$)/, permiso: "reporte.consultar" },
   { patron: /^\/reportes(\/|$)/, permiso: "reporte.consultar" },
+  // «Mi perfil» y el panel de configuración son para cualquier persona con sesión; «Términos y condiciones» exige permiso.
+  { patron: /^\/configuracion$/, permiso: null },
+  { patron: /^\/configuracion\/perfil(\/|$)/, permiso: null },
   { patron: /^\/configuracion(\/|$)/, permiso: "configuracion.gestionar" },
   { patron: /^\/documentacion-tecnica\/nuevo$/, permiso: "documento.gestionar" },
   { patron: /^\/documentacion-tecnica(\/|$)/, permiso: "documento.consultar" },

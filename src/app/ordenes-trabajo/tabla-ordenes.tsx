@@ -7,10 +7,10 @@ import { EncabezadoOrdenable } from "@/componentes/listado/encabezado-ordenable"
 import { useFilasConOrdenInstantaneo } from "@/componentes/listado/orden-instantaneo";
 import type { ValorOrdenable } from "@/componentes/listado/orden-local";
 import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
-import { EtiquetaEstadoOrden, useFaseEstadoOrden } from "@/componentes/estados-orden";
+import { EtiquetaEstadoOrden, etiquetaLegible, useFaseEstadoOrden } from "@/componentes/estados-orden";
 import { formatearFechaPrevista } from "@/servicios/servicio-ordenes-trabajo";
 import type { FiltrosOrdenesTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
-import { formatearFechaCorta } from "@/utilidades/fechas";
+import { formatearFechaNumerica } from "@/utilidades/fechas";
 import { urlOrdenOrdenes } from "./filtros";
 
 const RANGO_PRIORIDAD: Record<string, number> = { baja: 1, media: 2, alta: 3 };
@@ -62,20 +62,20 @@ export function TablaOrdenes(props: { ordenes: OrdenTrabajo[]; filtros: FiltrosO
               <td>{orden.nombreActivo}</td>
               <td>{orden.tipo}</td>
               <td>
-                <span className={"status prioridad-" + orden.prioridad}>{orden.prioridad}</span>
+                <span className={"status prioridad-" + orden.prioridad}>{etiquetaLegible(orden.prioridad)}</span>
               </td>
-              <td>{orden.nombreTecnico ? orden.nombreTecnico : "Sin asignar"}</td>
+              <td className="celda-fecha">{orden.nombreTecnico ? orden.nombreTecnico : "Sin asignar"}</td>
               <td>
                 <EtiquetaEstadoOrden estado={orden.estado} />
               </td>
-              <td>{formatearFechaCorta(orden.creadoEn)}</td>
-              <td>{formatearFechaPrevista(orden.fechaPrevistaEjecucion)}</td>
+              <td className="celda-fecha">{formatearFechaNumerica(orden.creadoEn)}</td>
+              <td className="celda-fecha">{formatearFechaPrevista(orden.fechaPrevistaEjecucion)}</td>
               <td>
                 <div className="table-actions">
                   <Link aria-label="Ver detalle" className="boton-icono" href={"/ordenes-trabajo/" + orden.id} title="Ver detalle">
                     <IconoOjo />
                   </Link>
-                  {faseDelEstado(orden.estado) !== "cerrada" ? (
+                  {faseDelEstado(orden.estado) !== "cerrada" && faseDelEstado(orden.estado) !== "eliminada" ? (
                     <SiTienePermiso permiso="ot.editar">
                       <Link aria-label="Modificar orden" className="boton-icono" href={"/ordenes-trabajo/" + orden.id + "/editar"} title="Modificar orden">
                         <IconoLapiz />

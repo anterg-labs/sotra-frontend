@@ -6,6 +6,7 @@ import { GraficoBarras, GraficoTendencia } from "@/componentes/graficos";
 import {
   formatearDuracion,
   obtenerAlertasMaquinaria,
+  obtenerDesempeno,
   obtenerEtiquetaAlerta,
   obtenerReincidencias,
   obtenerRepuestosUsados,
@@ -15,7 +16,9 @@ import {
 import type {
   AgrupacionTendencias,
   AlertasMaquinaria,
+  DesempenoOperativo,
   FiltrosIndicadores,
+  MaquinariaDesempeno,
   Reincidencia,
   Reincidencias,
   RepuestosUsados,
@@ -81,6 +84,71 @@ function TablaReincidencias({ elementos }: { elementos: Reincidencia[] }) {
   );
 }
 
+type ColumnaMaquinaria = "nombre" | "ordenes" | "correctivas" | "preventivas" | "ejecucion" | "parada";
+
+const VALORES_MAQUINARIA = {
+  nombre: (fila: MaquinariaDesempeno) => fila.nombre,
+  ordenes: (fila: MaquinariaDesempeno) => fila.ordenes,
+  correctivas: (fila: MaquinariaDesempeno) => fila.correctivas,
+  preventivas: (fila: MaquinariaDesempeno) => fila.preventivas,
+  ejecucion: (fila: MaquinariaDesempeno) => fila.horasPromedioEjecucion,
+  parada: (fila: MaquinariaDesempeno) => fila.horasParada,
+} satisfies Record<ColumnaMaquinaria, (fila: MaquinariaDesempeno) => string | number | null>;
+
+/** Maquinaria por tipo o por activo: órdenes, ejecución promedio y horas de parada; se ordena en el navegador. */
+function TablaMaquinaria(props: { etiqueta: string; columnaNombre: string; elementos: MaquinariaDesempeno[]; enlazarActivos?: boolean }) {
+  const { filasOrdenadas, orden, alternar } = useOrdenLocal(props.elementos, VALORES_MAQUINARIA);
+  const encabezado = (columna: ColumnaMaquinaria, etiqueta: string) => (
+    <EncabezadoOrdenLocal alternar={alternar} columna={columna} etiqueta={etiqueta} orden={orden} />
+  );
+
+  return (
+    <ContenedorTabla etiqueta={props.etiqueta}>
+      <table>
+        <thead>
+          <tr>
+            {encabezado("nombre", props.columnaNombre)}
+            {encabezado("ordenes", "Órdenes")}
+            {encabezado("correctivas", "Correctivas")}
+            {encabezado("preventivas", "Preventivas")}
+            {encabezado("ejecucion", "Ejecución promedio")}
+            {encabezado("parada", "Horas de parada")}
+          </tr>
+        </thead>
+        <tbody>
+          {filasOrdenadas.map((fila) => (
+            <tr key={fila.id}>
+              <td>
+                {props.enlazarActivos ? <Link className="text-link" href={"/activos/" + fila.id}>{fila.nombre}</Link> : fila.nombre}
+                {fila.cliente ? <small className="block texto-tenue">{fila.cliente}</small> : null}
+              </td>
+              <td className="celda-numerica">{fila.ordenes}</td>
+              <td className="celda-numerica">{fila.correctivas}</td>
+              <td className="celda-numerica">{fila.preventivas}</td>
+              <td className="celda-numerica">{formatearDuracion(fila.horasPromedioEjecucion)}</td>
+              <td className="celda-numerica"><strong>{formatearDuracion(fila.horasParada)}</strong></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </ContenedorTabla>
+  );
+}
+
+function TarjetaDesempeno(props: { titulo: string; valor: string; detalle: string }) {
+  return (
+    <div className="tarjeta-resumen">
+      <span className="tarjeta-resumen-titulo">{props.titulo}</span>
+      <span className="tarjeta-resumen-valor">{props.valor}</span>
+      <span className="tarjeta-resumen-variacion">{props.detalle}</span>
+    </div>
+  );
+}
+
+function porcentajeODatos(valor: number | null) {
+  return valor === null ? "Sin datos" : valor + " %";
+}
+
 function mensajeDeError(razon: unknown, porDefecto: string) {
   return razon instanceof Error ? razon.message : porDefecto;
 }
@@ -102,6 +170,7 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
   const [reincidencias, setReincidencias] = useState<Resultado<Reincidencias> | null>(null);
   const [alertas, setAlertas] = useState<Resultado<AlertasMaquinaria> | null>(null);
   const [repuestosUsados, setRepuestosUsados] = useState<Resultado<RepuestosUsados> | null>(null);
+  const [desempeno, setDesempeno] = useState<Resultado<DesempenoOperativo> | null>(null);
   const claveDeFiltros = JSON.stringify(filtros);
 
   useEffect(() => {
@@ -113,12 +182,14 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
       setReincidencias(null);
       setAlertas(null);
       setRepuestosUsados(null);
-      const [resultadoTendencias, resultadoTiempos, resultadoReincidencias, resultadoAlertas, resultadoRepuestos] = await Promise.allSettled([
+      setDesempeno(null);
+      const [resultadoTendencias, resultadoTiempos, resultadoReincidencias, resultadoAlertas, resultadoRepuestos, resultadoDesempeno] = await Promise.allSettled([
         obtenerTendencias(filtros, agrupacion),
         obtenerTiempos(filtros),
         obtenerReincidencias(filtros),
         obtenerAlertasMaquinaria(filtros),
         obtenerRepuestosUsados(filtros),
+        obtenerDesempeno(filtros),
       ]);
       if (!estaVigente) return;
 
@@ -131,6 +202,7 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
       setReincidencias(convertir(resultadoReincidencias, "No se pudieron obtener las reincidencias."));
       setAlertas(convertir(resultadoAlertas, "No se pudieron obtener las alertas de maquinaria."));
       setRepuestosUsados(convertir(resultadoRepuestos, "No se pudieron obtener los repuestos más usados."));
+      setDesempeno(convertir(resultadoDesempeno, "No se pudo obtener el desempeño operativo."));
     }
 
     cargar();
@@ -217,6 +289,94 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
               puntos={datos.puntos}
               titulo={"Órdenes creadas por " + (datos.agrupacion === "mes" ? "mes" : "semana") + ", preventivas y correctivas"}
             />
+          </>
+        ))}
+      </section>
+
+      <section aria-labelledby="titulo-desempeno" className="panel">
+        <div className="panel-heading">
+          <h2 id="titulo-desempeno">Desempeño operativo: órdenes, procesos y maquinaria</h2>
+        </div>
+        {dibujarBloque(desempeno, "Cargando desempeño…", (datos) => (
+          <>
+            <div className="tarjetas-resumen px-6 pt-4">
+              <TarjetaDesempeno
+                detalle={datos.ordenes.cerradas + " cerradas · " + datos.ordenes.abiertas + " abiertas · " + datos.ordenes.eliminadas + " eliminadas"}
+                titulo="Órdenes creadas"
+                valor={String(datos.ordenes.creadas)}
+              />
+              <TarjetaDesempeno
+                detalle={datos.ordenes.preventivas + " preventivas · " + datos.ordenes.correctivas + " correctivas"}
+                titulo="Preventivas sobre el total"
+                valor={porcentajeODatos(datos.ordenes.porcentajePreventivas)}
+              />
+              <TarjetaDesempeno
+                detalle={"Mediana " + formatearDuracion(datos.tiempos.respuesta.medianaHoras) + " · " + datos.tiempos.respuesta.cantidad + " órdenes"}
+                titulo="Tiempo de respuesta (creación a inicio)"
+                valor={formatearDuracion(datos.tiempos.respuesta.promedioHoras)}
+              />
+              <TarjetaDesempeno
+                detalle={"Mediana " + formatearDuracion(datos.tiempos.ejecucion.medianaHoras) + " · " + datos.tiempos.ejecucion.cantidad + " órdenes"}
+                titulo="Tiempo de ejecución (inicio a revisión)"
+                valor={formatearDuracion(datos.tiempos.ejecucion.promedioHoras)}
+              />
+              <TarjetaDesempeno
+                detalle={"Mediana " + formatearDuracion(datos.tiempos.revision.medianaHoras) + " · " + datos.tiempos.revision.cantidad + " órdenes"}
+                titulo="Tiempo de revisión (revisión a cierre)"
+                valor={formatearDuracion(datos.tiempos.revision.promedioHoras)}
+              />
+            </div>
+            <div className="tarjetas-resumen px-6 pt-4">
+              <TarjetaDesempeno
+                detalle={datos.flujo.pausas.ordenesConPausa + " órdenes · duración promedio " + formatearDuracion(datos.flujo.pausas.duracionPromedioHoras)}
+                titulo="Pausas"
+                valor={String(datos.flujo.pausas.cantidad)}
+              />
+              <TarjetaDesempeno
+                detalle={datos.flujo.devoluciones.ordenesDevueltas + " órdenes · " + porcentajeODatos(datos.flujo.devoluciones.porcentajeDeOrdenes) + " de las creadas"}
+                titulo="Devoluciones de revisión a pendiente"
+                valor={String(datos.flujo.devoluciones.cantidad)}
+              />
+              <TarjetaDesempeno
+                detalle={datos.flujo.reasignaciones.ordenesReasignadas + " órdenes con cambio de técnico"}
+                titulo="Reasignaciones"
+                valor={String(datos.flujo.reasignaciones.cantidad)}
+              />
+            </div>
+            <h3 className="px-6 pt-4">Motivos de pausa más frecuentes</h3>
+            <GraficoBarras
+              datos={datos.flujo.pausas.motivos.map((motivo) => ({
+                etiqueta: motivo.texto,
+                valor: motivo.cantidad,
+                valorTexto: motivo.cantidad + (motivo.cantidad === 1 ? " vez" : " veces"),
+              }))}
+              vacio="No hubo pausas en este período."
+            />
+            <h3 className="px-6 pt-4">Motivos de devolución más frecuentes</h3>
+            <GraficoBarras
+              datos={datos.flujo.devoluciones.motivos.map((motivo) => ({
+                etiqueta: motivo.texto,
+                valor: motivo.cantidad,
+                valorTexto: motivo.cantidad + (motivo.cantidad === 1 ? " vez" : " veces"),
+              }))}
+              vacio="No hubo devoluciones a pendiente en este período."
+            />
+            <h3 className="px-6 pt-4">Maquinaria por tipo</h3>
+            {datos.maquinaria.porTipo.length === 0 ? (
+              <p className="empty-state">Todavía no hay órdenes en este período.</p>
+            ) : (
+              <TablaMaquinaria columnaNombre="Tipo de máquina" elementos={datos.maquinaria.porTipo} etiqueta="Maquinaria por tipo" />
+            )}
+            <h3 className="px-6 pt-4">Activos con más horas de parada</h3>
+            {datos.maquinaria.activos.length === 0 ? (
+              <p className="empty-state">Todavía no hay órdenes en este período.</p>
+            ) : (
+              <TablaMaquinaria columnaNombre="Activo" elementos={datos.maquinaria.activos} enlazarActivos etiqueta="Activos con más horas de parada" />
+            )}
+            <p className="px-6 pb-4 pt-2 text-xs texto-tenue">
+              Horas de parada: de la creación al cierre de las órdenes correctivas cerradas. Ejecución promedio: de inicio a revisión en las correctivas.
+              El análisis es de órdenes, procesos y maquinaria; no compara personas.
+            </p>
           </>
         ))}
       </section>

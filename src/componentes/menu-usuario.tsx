@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
-import { IconoSalir, IconoUsuarios } from "@/componentes/iconos";
+import { IconoConfiguracion, IconoSalir, IconoUsuarios } from "@/componentes/iconos";
 import { obtenerIniciales } from "@/servicios/servicio-sesion";
 import type { UsuarioEnSesion } from "@/tipos/sesion";
 
@@ -83,6 +84,12 @@ export function MenuUsuario({ usuario, alCerrarSesion }: MenuUsuarioProps) {
           {usuario ? <span>{usuario.correo}</span> : null}
           {usuario && usuario.roles.length > 0 ? <span>{usuario.roles.map((rol) => nombresDeRol[rol]).join(", ")}</span> : null}
         </div>
+        <Link className="usuario-menu-opcion" href="/configuracion/perfil" onClick={() => setEstaAbierto(false)}>
+          <IconoUsuarios />Mi perfil
+        </Link>
+        <Link className="usuario-menu-opcion" href="/configuracion" onClick={() => setEstaAbierto(false)}>
+          <IconoConfiguracion />Configuración
+        </Link>
         <button className="usuario-menu-salir" disabled={estaCerrando} onClick={salir} type="button">
           <IconoSalir />{estaCerrando ? "Cerrando sesión…" : "Cerrar sesión"}
         </button>

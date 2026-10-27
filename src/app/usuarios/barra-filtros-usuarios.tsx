@@ -3,6 +3,7 @@
 import { useFiltrosEnVivo } from "@/componentes/listado/use-filtros-en-vivo";
 import type { FiltrosUsuarios, Rol } from "@/tipos/usuario";
 import { construirUrlUsuarios } from "./filtros";
+import { FiltrosAvanzados, hayFiltrosAplicados } from "@/componentes/listado/filtros-avanzados";
 
 type ValoresUsuarios = Pick<FiltrosUsuarios, "buscar" | "rolId" | "estado" | "ordenarPor" | "direccionOrden">;
 const VACIOS: ValoresUsuarios = { buscar: "", rolId: "", estado: "" };
@@ -34,28 +35,25 @@ export function BarraFiltrosUsuarios(props: { filtros: FiltrosUsuarios; roles: R
           value={valores.buscar}
         />
       </div>
-      <div className="form-field">
-        <label htmlFor="rolUsuarioFiltro">Rol</label>
-        <select id="rolUsuarioFiltro" onChange={(evento) => cambiar({ rolId: evento.target.value })} value={valores.rolId}>
-          <option value="">Todos los roles</option>
-          {props.roles.map((rol) => (
-            <option key={rol.id} value={rol.id}>{rol.nombre}</option>
-          ))}
-        </select>
-      </div>
-      <div className="form-field">
-        <label htmlFor="estadoUsuarioFiltro">Estado</label>
-        <select id="estadoUsuarioFiltro" onChange={(evento) => cambiar({ estado: evento.target.value })} value={valores.estado}>
-          <option value="">Todos los estados</option>
-          <option value="activo">Activo</option>
-          <option value="inactivo">Inactivo</option>
-        </select>
-      </div>
-      <div className="barra-filtros-acciones">
-        <button className="secondary-button" onClick={() => limpiar(VACIOS)} type="button">
-          Limpiar filtros
-        </button>
-      </div>
+      <FiltrosAvanzados alLimpiar={() => limpiar(VACIOS)} hayFiltros={hayFiltrosAplicados(valores)}>
+        <div className="form-field">
+          <label htmlFor="rolUsuarioFiltro">Rol</label>
+          <select id="rolUsuarioFiltro" onChange={(evento) => cambiar({ rolId: evento.target.value })} value={valores.rolId}>
+            <option value="">Todos los roles</option>
+            {props.roles.map((rol) => (
+              <option key={rol.id} value={rol.id}>{rol.nombre}</option>
+            ))}
+          </select>
+        </div>
+        <div className="form-field">
+          <label htmlFor="estadoUsuarioFiltro">Estado</label>
+          <select id="estadoUsuarioFiltro" onChange={(evento) => cambiar({ estado: evento.target.value })} value={valores.estado}>
+            <option value="">Todos los estados</option>
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+        </div>
+      </FiltrosAvanzados>
     </form>
   );
 }

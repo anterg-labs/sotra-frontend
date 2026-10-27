@@ -13,7 +13,6 @@ type PropiedadesSelectorClienteActivoOrdenTrabajo = {
   errores?: { clienteId?: string; activoId?: string };
   alCambiarCliente: (clienteId: string) => void;
   alCambiarActivo: (activoId: string) => void;
-  alRegistrarCliente: () => void;
 };
 
 export function SelectorClienteActivoOrdenTrabajo(props: PropiedadesSelectorClienteActivoOrdenTrabajo) {
@@ -68,7 +67,6 @@ export function SelectorClienteActivoOrdenTrabajo(props: PropiedadesSelectorClie
           />
           {props.errores?.clienteId ? <p className="field-error" id="clienteId-error" role="alert">{props.errores.clienteId}</p> : null}
         </div>
-        <button className="secondary-button" onClick={props.alRegistrarCliente} type="button">Nuevo cliente</button>
       </div>
 
       <div className="min-w-0">

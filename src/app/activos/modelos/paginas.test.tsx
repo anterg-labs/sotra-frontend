@@ -1,8 +1,9 @@
+import { resolverServidor } from "@/pruebas/resolver-servidor";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FormularioModeloMaquina } from "@/componentes/formulario-modelo-maquina";
 import type { TipoMaquina } from "@/tipos/tipo-maquina";
-import EditarModelo from "./[id]/editar/page";
+import { ContenidoEditarModelo as EditarModelo } from "./[id]/editar/contenido-editar-modelo";
 import DetalleModelo from "./[id]/page";
 import PaginaModelos from "./page";
 import NuevoModelo from "./nuevo/page";
@@ -73,6 +74,7 @@ describe("página del listado de modelos (Server Component)", () => {
     s.listarTiposMaquinaServidor.mockRejectedValue(new Error("x"));
     render(await PaginaModelos({ searchParams: Promise.resolve({}) }));
     expect(screen.getByRole("heading", { level: 1, name: "Modelos de máquina" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
     expect(screen.getByRole("combobox", { name: "Tipo" })).toBeInTheDocument();
   });
 });
@@ -111,7 +113,7 @@ describe("edición y alta de modelo", () => {
     s.obtenerModeloMaquinaServidor.mockResolvedValue(modelo);
     s.obtenerTipoMaquinaServidor.mockResolvedValue(tipo);
     s.actualizarModeloMaquinaAccion.mockResolvedValue({ exito: true, registro: modelo });
-    render(await EditarModelo(parametros("5")));
+    render(await resolverServidor(await EditarModelo(parametros("5"))));
     fireEvent.click(screen.getByRole("switch", { name: "Activo" }));
     fireEvent.click(screen.getByRole("button", { name: "Confirmar modificación" }));
     await waitFor(() =>
@@ -122,16 +124,16 @@ describe("edición y alta de modelo", () => {
 
   it("la edición informa el error de carga y la alta muestra su formulario", async () => {
     s.obtenerModeloMaquinaServidor.mockRejectedValue(new Error("x"));
-    const { unmount } = render(await EditarModelo(parametros("5")));
+    const { unmount } = render(await resolverServidor(await EditarModelo(parametros("5"))));
     expect(screen.getByText("No se pudo obtener la información del modelo de máquina solicitado.")).toBeInTheDocument();
     unmount();
-    render(await NuevoModelo());
+    render(await resolverServidor(await NuevoModelo()));
     expect(screen.getByLabelText("Nombre del modelo")).toBeInTheDocument();
   });
 
   it("la alta informa si no se pudieron cargar los tipos", async () => {
     s.listarTiposMaquinaServidor.mockRejectedValue(new Error("x"));
-    render(await NuevoModelo());
+    render(await resolverServidor(await NuevoModelo()));
     expect(screen.getByText("No se pudo obtener el listado de tipos de máquina.")).toBeInTheDocument();
   });
 });

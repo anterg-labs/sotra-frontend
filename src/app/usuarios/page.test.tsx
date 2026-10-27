@@ -60,7 +60,7 @@ describe("filtros de la URL de usuarios", () => {
     render(conNavegacion(<TablaUsuarios filtros={filtrosVacios} usuarios={[usuario(1, []), { ...usuario(2, ["Técnico"]), cantidadOrdenesAsignadas: 4 }]} />));
     const filas = screen.getAllByRole("row");
     expect(within(filas[1]).getByRole("cell", { name: "0" })).toBeInTheDocument();
-    expect(within(filas[2]).getByRole("cell", { name: "4" })).toBeInTheDocument();
+    expect(within(filas[2]).getByRole("link", { name: /^Ver las 4 órdenes activas/ })).toHaveAttribute("href", expect.stringMatching(/^\/ordenes-trabajo\?(clienteId|tecnicoId)=\d+&soloActivas=true$/));
     fireEvent.click(screen.getByRole("button", { name: /Órdenes asignadas/ }));
     expect(push).toHaveBeenLastCalledWith(expect.stringContaining("ordenarPor=cantidadOrdenesAsignadas"));
     expect(leerFiltrosUsuarios({ ordenarPor: "cantidadOrdenesAsignadas" }).ordenarPor).toBe("cantidadOrdenesAsignadas");
@@ -125,6 +125,7 @@ describe("barra de filtros de usuarios (en vivo)", () => {
     expect(replace).toHaveBeenCalledTimes(1);
     expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana");
 
+    fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
     fireEvent.change(screen.getByLabelText("Rol"), { target: { value: "2" } });
     expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana&rolId=2");
     fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "activo" } });
@@ -215,7 +216,7 @@ describe("alta de usuario en modal", () => {
     fireEvent.change(within(dialogo).getByLabelText("Nombre"), { target: { value: "Ana" } });
     fireEvent.change(within(dialogo).getByLabelText("Apellido"), { target: { value: "Pérez" } });
     fireEvent.change(within(dialogo).getByLabelText("Correo electrónico"), { target: { value: "ana@sotra.com" } });
-    fireEvent.change(within(dialogo).getByLabelText("Número de teléfono"), { target: { value: "99111222" } });
+    fireEvent.change(within(dialogo).getByLabelText("Número de teléfono o celular"), { target: { value: "99111222" } });
     expect(within(dialogo).queryByLabelText("Contraseña")).not.toBeInTheDocument();
     fireEvent.click(within(dialogo).getByRole("button", { name: "Confirmar creación" }));
     await waitFor(() =>
@@ -232,7 +233,7 @@ describe("alta de usuario en modal", () => {
     fireEvent.change(within(dialogo).getByLabelText("Nombre"), { target: { value: "Ana" } });
     fireEvent.change(within(dialogo).getByLabelText("Apellido"), { target: { value: "Pérez" } });
     fireEvent.change(within(dialogo).getByLabelText("Correo electrónico"), { target: { value: "ana@sotra.com" } });
-    fireEvent.change(within(dialogo).getByLabelText("Número de teléfono"), { target: { value: "99111222" } });
+    fireEvent.change(within(dialogo).getByLabelText("Número de teléfono o celular"), { target: { value: "99111222" } });
     fireEvent.click(within(dialogo).getByRole("button", { name: "Confirmar creación" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     expect(mostrarAviso).toHaveBeenCalledWith(correoDeContrasenaEnviado === false ? "advertencia" : "info", expect.stringContaining("Usuario creado"));

@@ -97,7 +97,19 @@ export function TablaUsuarios(props: { usuarios: UsuarioListado[]; filtros: Filt
                   </td>
                   <td>{usuario.correo}</td>
                   <td><CeldaRoles roles={usuario.roles} /></td>
-                  <td className="celda-numerica">{usuario.cantidadOrdenesAsignadas}</td>
+                  <td className="celda-numerica">
+                    {usuario.cantidadOrdenesAsignadas > 0 ? (
+                      <Link
+                        aria-label={"Ver las " + usuario.cantidadOrdenesAsignadas + " órdenes activas asignadas a " + usuario.nombre}
+                        className="text-link"
+                        href={"/ordenes-trabajo?tecnicoId=" + usuario.id + "&soloActivas=true"}
+                      >
+                        {usuario.cantidadOrdenesAsignadas}
+                      </Link>
+                    ) : (
+                      0
+                    )}
+                  </td>
                   <td><EstadoRegistro estado={usuario.estado} /></td>
                   <td>
                     <div className="table-actions">

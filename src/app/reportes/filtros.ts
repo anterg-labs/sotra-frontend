@@ -18,7 +18,6 @@ export function leerFiltrosReportes(parametros: ParametrosBusqueda, estados: rea
   return {
     fechaDesde: leerFecha(parametros, "fechaDesde"),
     fechaHasta: leerFecha(parametros, "fechaHasta"),
-    tecnicoId: leerIdFiltro(parametros, "tecnicoId"),
     clienteId: leerIdFiltro(parametros, "clienteId"),
     activoId: leerIdFiltro(parametros, "activoId"),
     estado: estados.some((opcion) => opcion.valor === estado) ? estado : "",

@@ -26,7 +26,8 @@ function orden(estado: string, transiciones: TransicionOrden[] = transicionesDeP
     nombreTecnico: "Roberto Pérez", tipo: "correctivo", prioridad: "alta", descripcion: "Cambiar el filtro",
     observaciones: "", fechaPrevistaEjecucion: "2026-12-02", estado, creadoEn: "2026-10-08T12:00:00Z",
     fechaInicio: null, fechaCierre: null, sugerencias: [], repuestos: [], transiciones,
-    historialEstados: [{ estado: "creada", fechaHora: "2026-10-08T12:00:00Z", observacion: null }],
+    historialEstados: [{ estado: "pendiente", estadoAnterior: null, fechaHora: "2026-10-08T12:00:00Z", observacion: null, usuarioId: null, nombreUsuario: null }],
+    historialTecnicos: [],
   };
 }
 
@@ -39,7 +40,7 @@ describe("orden del técnico", () => {
   });
 
   it("solo ofrece las acciones de un técnico: nunca cancelar ni cerrar", async () => {
-    obtenerOrdenTrabajoServidor.mockResolvedValue(orden("finalizada"));
+    obtenerOrdenTrabajoServidor.mockResolvedValue(orden("en_revision"));
     render(await PaginaOrdenDelTecnico(parametros));
 
     expect(screen.getByText("Cambiar el filtro")).toBeInTheDocument();
@@ -47,18 +48,18 @@ describe("orden del técnico", () => {
     expect(screen.queryByRole("group", { name: "Acciones de la orden" })).not.toBeInTheDocument();
   });
 
-  it("en ejecución ofrece pausar y finalizar", async () => {
-    obtenerOrdenTrabajoServidor.mockResolvedValue(orden("en_ejecucion"));
+  it("en progreso ofrece pausar y enviar a revisión", async () => {
+    obtenerOrdenTrabajoServidor.mockResolvedValue(orden("en_progreso"));
     render(await PaginaOrdenDelTecnico(parametros));
 
     const acciones = screen.getByRole("group", { name: "Acciones de la orden" });
     expect(acciones).toHaveTextContent("Pausar");
-    expect(acciones).toHaveTextContent("Finalizar");
+    expect(acciones).toHaveTextContent("Enviar a revisión");
     expect(screen.queryByRole("button", { name: /Cancelar orden|Cerrar/ })).not.toBeInTheDocument();
   });
 
   it("pausar exige un motivo, lo muestra junto al campo con foco y no llama a la API", async () => {
-    obtenerOrdenTrabajoServidor.mockResolvedValue(orden("en_ejecucion"));
+    obtenerOrdenTrabajoServidor.mockResolvedValue(orden("en_progreso"));
     render(await PaginaOrdenDelTecnico(parametros));
 
     fireEvent.click(screen.getByRole("button", { name: "Pausar" }));
@@ -70,16 +71,16 @@ describe("orden del técnico", () => {
   });
 
   it("pausar con motivo cambia el estado y avisa", async () => {
-    obtenerOrdenTrabajoServidor.mockResolvedValue(orden("en_ejecucion"));
-    cambiarEstadoOrdenTrabajo.mockResolvedValue(orden("pausada"));
+    obtenerOrdenTrabajoServidor.mockResolvedValue(orden("en_progreso"));
+    cambiarEstadoOrdenTrabajo.mockResolvedValue(orden("pausado"));
     render(await PaginaOrdenDelTecnico(parametros));
 
     fireEvent.click(screen.getByRole("button", { name: "Pausar" }));
     fireEvent.change(screen.getByLabelText("Motivo del cambio de estado"), { target: { value: "Falta de material" } });
     fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
 
-    await waitFor(() => expect(cambiarEstadoOrdenTrabajo).toHaveBeenCalledWith(6, "pausada", "Falta de material", true));
-    expect(await screen.findByText("Estado actualizado: Pausada.")).toBeInTheDocument();
+    await waitFor(() => expect(cambiarEstadoOrdenTrabajo).toHaveBeenCalledWith(6, "pausado", "Falta de material", true));
+    expect(await screen.findByText("Estado actualizado: Pausado.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Reanudar" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Cancelar" })).not.toBeInTheDocument();
   });

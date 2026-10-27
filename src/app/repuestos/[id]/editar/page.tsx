@@ -1,40 +1,22 @@
-import { FormularioRepuesto } from "@/componentes/formulario-repuesto";
-import { obtenerRepuestoServidor } from "@/servicios/servidor/repuestos";
-import type { Repuesto } from "@/tipos/repuesto";
-import { actualizarRepuestoAccion } from "../../acciones";
+import { Suspense } from "react";
+import { EsqueletoFormulario, ModalDeRuta } from "@/componentes/modal-de-ruta";
+import PaginaDetalleRepuesto from "../page";
+import { ContenidoEditarRepuesto } from "./contenido-editar-repuesto";
 
-async function cargarRepuesto(repuestoId: number): Promise<Repuesto | null> {
-  if (!Number.isInteger(repuestoId) || repuestoId <= 0) return null;
-  try {
-    return await obtenerRepuestoServidor(repuestoId);
-  } catch {
-    return null;
-  }
-}
-
+/**
+ * Dirección abierta directamente (recarga o enlace): se ve la pantalla de origen con el formulario en un modal, igual que
+ * cuando se llega desde un enlace; al cerrarlo se vuelve a esa pantalla.
+ */
 export default async function PaginaEditarRepuesto(props: { params: Promise<{ id: string }> }) {
-  const repuesto = await cargarRepuesto(Number((await props.params).id));
-
+  const { id } = await props.params;
   return (
-    <main className="page-content">
-      <header className="page-heading">
-        <div>
-          <p className="eyebrow">Gestión de repuestos</p>
-          <h1>Modificar repuesto</h1>
-        </div>
-      </header>
-
-      {repuesto ? (
-        <section className="panel form-panel">
-          <FormularioRepuesto
-            accion={actualizarRepuestoAccion.bind(null, repuesto.id)}
-            etiquetaConfirmacion="Confirmar modificación"
-            repuestoInicial={repuesto}
-          />
-        </section>
-      ) : (
-        <p className="form-error-banner">No se pudo obtener la información del repuesto solicitado.</p>
-      )}
-    </main>
+    <>
+      <PaginaDetalleRepuesto params={props.params} searchParams={Promise.resolve({})} />
+      <ModalDeRuta descripcion="Gestión de repuestos" rutaDeRetorno={"/repuestos/" + id} titulo="Modificar repuesto">
+        <Suspense fallback={<EsqueletoFormulario />}>
+          <ContenidoEditarRepuesto params={props.params} />
+        </Suspense>
+      </ModalDeRuta>
+    </>
   );
 }

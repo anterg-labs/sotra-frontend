@@ -100,12 +100,13 @@ describe("barra de filtros de modelos (en vivo)", () => {
   it("aplica texto, tipo (combobox) y estado en la URL sin botón y los limpia", async () => {
     render(conNavegacion(<BarraFiltrosModelos filtros={filtrosVacios} tiposMaquina={[tipo(3)]} />));
     fireEvent.change(screen.getByLabelText("Buscar modelo"), { target: { value: "cat" } });
+    fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
     fireEvent.focus(screen.getByRole("combobox", { name: "Tipo" }));
     fireEvent.click(await screen.findByRole("option", { name: "Tipo 3" }));
     fireEvent.change(screen.getByLabelText("Estado del modelo"), { target: { value: "activo" } });
     expect(screen.queryByRole("button", { name: "Filtrar modelos" })).not.toBeInTheDocument();
     expect(replace).toHaveBeenLastCalledWith("/activos/modelos?buscar=cat&tipoMaquinaId=3&estado=activo");
-    fireEvent.click(screen.getByRole("button", { name: "Limpiar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
     expect(replace).toHaveBeenLastCalledWith("/activos/modelos");
   });
 

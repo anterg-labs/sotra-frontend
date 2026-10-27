@@ -12,6 +12,7 @@ import type {
   CrearOrdenTrabajoInput,
   FiltrosOrdenesTrabajo,
   OrdenTrabajo,
+  RepuestoPedido,
   SolicitarSugerenciaInput,
   SugerenciaOrdenTrabajo,
 } from "@/tipos/orden-trabajo";
@@ -39,6 +40,13 @@ export async function apiAsignarTecnicoOrdenTrabajo(ordenTrabajoId: number, tecn
   const opciones = crearOpcionesJson("PATCH", { tecnicoId: tecnicoId });
   const ruta = "/api/v1/ordenes-trabajo/" + ordenTrabajoId + "/tecnico";
   const orden = await leerDatosApi(ruta, opciones, "No se pudo asignar el técnico a la orden de trabajo.");
+  return orden as OrdenTrabajo;
+}
+
+export async function apiActualizarRepuestosOrdenTrabajo(ordenTrabajoId: number, repuestos: RepuestoPedido[]) {
+  const opciones = crearOpcionesJson("PUT", { repuestos });
+  const ruta = "/api/v1/ordenes-trabajo/" + ordenTrabajoId + "/repuestos";
+  const orden = await leerDatosApi(ruta, opciones, "No se pudieron actualizar los repuestos de la orden de trabajo.");
   return orden as OrdenTrabajo;
 }
 

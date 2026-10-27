@@ -1,6 +1,7 @@
+import { resolverServidor } from "@/pruebas/resolver-servidor";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import EditarRepuesto from "./[id]/editar/page";
+import { ContenidoEditarRepuesto as EditarRepuesto } from "./[id]/editar/contenido-editar-repuesto";
 import DetalleRepuesto from "./[id]/page";
 import NuevoRepuesto from "./nuevo/page";
 import PaginaRepuestos from "./page";
@@ -208,7 +209,7 @@ describe("detalle de repuesto (Server Component + panel de stock)", () => {
 describe("edición y alta de repuesto", () => {
   it("la edición precarga, deja la cantidad de solo lectura y envía los cambios", async () => {
     a.actualizarRepuestoAccion.mockResolvedValue({ exito: true, registro: repuesto });
-    render(await EditarRepuesto({ params: Promise.resolve({ id: "5" }) }));
+    render(await resolverServidor(await EditarRepuesto({ params: Promise.resolve({ id: "5" }) })));
     expect(screen.getByLabelText("Código")).toHaveValue("R-5");
     expect(screen.getByLabelText("Cantidad en stock")).toHaveAttribute("readonly");
     fireEvent.change(screen.getByLabelText("Nombre del repuesto"), { target: { value: "Filtro XL" } });
@@ -219,7 +220,7 @@ describe("edición y alta de repuesto", () => {
 
   it("la edición informa el error de carga y la alta valida los campos antes de llamar a la acción", async () => {
     s.obtenerRepuestoServidor.mockRejectedValue(new Error("x"));
-    const { unmount } = render(await EditarRepuesto({ params: Promise.resolve({ id: "5" }) }));
+    const { unmount } = render(await resolverServidor(await EditarRepuesto({ params: Promise.resolve({ id: "5" }) })));
     expect(screen.getByText("No se pudo obtener la información del repuesto solicitado.")).toBeInTheDocument();
     unmount();
 

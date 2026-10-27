@@ -18,12 +18,11 @@ vi.mock("@/servicios/servidor/ordenes-trabajo", async () => {
 const indicadores: Indicadores = {
   totalOrdenes: 20,
   ordenesPorEstado: [
-    { nombre: "creada", cantidad: 3 },
-    { nombre: "asignada", cantidad: 2 },
-    { nombre: "en_ejecucion", cantidad: 4 },
-    { nombre: "pausada", cantidad: 1 },
-    { nombre: "finalizada", cantidad: 5 },
-    { nombre: "cerrada", cantidad: 5 },
+    { nombre: "pendiente", cantidad: 5 },
+    { nombre: "en_progreso", cantidad: 4 },
+    { nombre: "pausado", cantidad: 1 },
+    { nombre: "en_revision", cantidad: 5 },
+    { nombre: "cerrado", cantidad: 5 },
   ],
   ordenesPorPrioridad: [],
   ordenesPorTipo: [],

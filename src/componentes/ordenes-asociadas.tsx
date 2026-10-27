@@ -6,7 +6,7 @@ import {
   formatearFechaPrevista,
   listarOrdenesTrabajo,
 } from "@/servicios/servicio-ordenes-trabajo";
-import { EtiquetaEstadoOrden } from "@/componentes/estados-orden";
+import { EtiquetaEstadoOrden, etiquetaLegible } from "@/componentes/estados-orden";
 import type { FiltrosOrdenesTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
 import { IconoOjo } from "@/componentes/iconos";
 import { ContenedorTabla } from "@/componentes/contenedor-tabla";
@@ -143,7 +143,7 @@ export function OrdenesAsociadas(props: PropiedadesOrdenesAsociadas) {
                   <td>{orden.nombreActivo}</td>
                   <td>{orden.nombreTecnico ?? "Sin asignar"}</td>
                   <td>
-                    <span className={"status prioridad-" + orden.prioridad}>{orden.prioridad}</span>
+                    <span className={"status prioridad-" + orden.prioridad}>{etiquetaLegible(orden.prioridad)}</span>
                   </td>
                   <td>
                     <EtiquetaEstadoOrden estado={orden.estado} />

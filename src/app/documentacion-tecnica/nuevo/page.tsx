@@ -1,27 +1,21 @@
-import { FormularioDocumentoTecnico } from "@/componentes/formulario-documento-tecnico";
-import { listarActivosServidor } from "@/servicios/servidor/activos";
+import { Suspense } from "react";
+import { EsqueletoFormulario, ModalDeRuta } from "@/componentes/modal-de-ruta";
+import PaginaDocumentacionTecnica from "../page";
+import { ContenidoNuevoDocumento } from "./contenido-nuevo-documento";
 
-export default async function PaginaNuevoDocumentoTecnico() {
-  const activos = await listarActivosServidor({ buscar: "", clienteId: "", modeloMaquinaId: "", estado: "activo", pagina: 1 })
-    .then((pagina) => pagina.elementos)
-    .catch(() => null);
-
+/**
+ * Dirección abierta directamente (recarga o enlace): se ve la pantalla de origen con el formulario en un modal, igual que
+ * cuando se llega desde un enlace; al cerrarlo se vuelve a esa pantalla.
+ */
+export default async function PaginaNuevoDocumento() {
   return (
-    <main className="page-content">
-      <header className="page-heading">
-        <div>
-          <p className="eyebrow">Documentación</p>
-          <h1>Cargar documento técnico</h1>
-        </div>
-      </header>
-
-      <section className="panel form-panel">
-        {activos === null ? (
-          <p className="form-error-banner">No se pudo obtener el listado de activos.</p>
-        ) : (
-          <FormularioDocumentoTecnico activos={activos} />
-        )}
-      </section>
-    </main>
+    <>
+      <PaginaDocumentacionTecnica searchParams={Promise.resolve({})} />
+      <ModalDeRuta descripcion="Documentación técnica" tamano="amplio" rutaDeRetorno={"/documentacion-tecnica"} titulo="Cargar documento técnico">
+        <Suspense fallback={<EsqueletoFormulario />}>
+          <ContenidoNuevoDocumento />
+        </Suspense>
+      </ModalDeRuta>
+    </>
   );
 }

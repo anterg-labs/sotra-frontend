@@ -6,12 +6,10 @@ import { ProveedorNavegacionListado, ZonaListado } from "@/componentes/listado/n
 import type { ParametrosBusqueda } from "@/componentes/listado/url-listado";
 import { listarActivosServidor, obtenerActivoServidor } from "@/servicios/servidor/activos";
 import { listarClientesServidor, obtenerClienteServidor } from "@/servicios/servidor/clientes";
-import { listarEstadosOrdenTrabajoOVacio, listarTecnicosServidor } from "@/servicios/servidor/ordenes-trabajo";
+import { listarEstadosOrdenTrabajoOVacio } from "@/servicios/servidor/ordenes-trabajo";
 import { conSeleccionado } from "@/servicios/servidor/opciones";
-import { obtenerUsuarioServidor } from "@/servicios/servidor/usuarios";
 import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
-import type { Usuario } from "@/tipos/usuario";
 import { leerFiltrosReportes } from "./filtros";
 import { ResumenIndicadores } from "./resumen-indicadores";
 import { TableroReportes } from "./tablero-reportes";
@@ -22,10 +20,7 @@ export default async function PaginaReportes(props: { searchParams: Promise<Para
   const filtros = leerFiltrosReportes(await props.searchParams, await listarEstadosOrdenTrabajoOVacio());
   const consulta = anticiparConsulta(obtenerIndicadoresServidor(filtros));
 
-  const [tecnicos, clientes, activos] = await Promise.all([
-    listarTecnicosServidor()
-      .then((lista) => conSeleccionado<Usuario>(lista, filtros.tecnicoId, obtenerUsuarioServidor))
-      .catch(() => [] as Usuario[]),
+  const [clientes, activos] = await Promise.all([
     listarClientesServidor({ buscar: "", estado: "", pagina: 1 })
       .then((pagina) => conSeleccionado<Cliente>(pagina.elementos, filtros.clienteId, obtenerClienteServidor))
       .catch(() => [] as Cliente[]),
@@ -43,7 +38,7 @@ export default async function PaginaReportes(props: { searchParams: Promise<Para
       </header>
 
       <ProveedorNavegacionListado etiquetaCarga={ETIQUETA_CARGA}>
-        <TableroReportes activos={activos} clientes={clientes} filtros={filtros} tecnicos={tecnicos}>
+        <TableroReportes activos={activos} clientes={clientes} filtros={filtros}>
           <ZonaListado>
             <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />}>
               <ResumenIndicadores consulta={consulta} filtros={filtros} />

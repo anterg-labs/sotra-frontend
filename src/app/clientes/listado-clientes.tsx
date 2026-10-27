@@ -2,7 +2,7 @@ import { InformarResultados } from "@/componentes/listado/navegacion-listado";
 import { PaginacionListado } from "@/componentes/listado/paginacion-listado";
 import { listarClientesServidor } from "@/servicios/servidor/clientes";
 import type { FiltrosClientes } from "@/tipos/cliente";
-import { RUTA_CLIENTES } from "./filtros";
+import { estadoClientesParaUrl, RUTA_CLIENTES } from "./filtros";
 import { TablaClientes } from "./tabla-clientes";
 
 /** Trae la página de clientes en el servidor; si falla, el error queda en línea y los filtros siguen disponibles. */
@@ -35,7 +35,7 @@ export async function ListadoClientes(props: { filtros: FiltrosClientes }) {
       <InformarResultados total={pagina.totalElementos} />
       <TablaClientes clientes={pagina.elementos} filtros={filtros} unaSolaPagina={pagina.totalPaginas <= 1} />
       <PaginacionListado
-        filtros={{ buscar: filtros.buscar, estado: filtros.estado, ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden }}
+        filtros={{ buscar: filtros.buscar, estado: estadoClientesParaUrl(filtros.estado), conActivos: filtros.conActivos ? "true" : "", ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden }}
         pagina={pagina.pagina}
         plural="clientes"
         ruta={RUTA_CLIENTES}

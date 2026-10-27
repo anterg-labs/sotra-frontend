@@ -1,36 +1,22 @@
-import { FormularioEditarDocumento } from "@/componentes/formulario-editar-documento";
-import { obtenerDocumentoTecnicoServidor } from "@/servicios/servidor/documentos-tecnicos";
-import type { DocumentoTecnico } from "@/tipos/documento-tecnico";
-import { actualizarDocumentoAccion } from "../../acciones";
+import { Suspense } from "react";
+import { EsqueletoFormulario, ModalDeRuta } from "@/componentes/modal-de-ruta";
+import PaginaDetalleDocumentoTecnico from "../page";
+import { ContenidoEditarDocumento } from "./contenido-editar-documento";
 
-async function cargarDocumento(documentoId: number): Promise<DocumentoTecnico | null> {
-  if (!Number.isInteger(documentoId) || documentoId <= 0) return null;
-  try {
-    return await obtenerDocumentoTecnicoServidor(documentoId);
-  } catch {
-    return null;
-  }
-}
-
+/**
+ * Dirección abierta directamente (recarga o enlace): se ve la pantalla de origen con el formulario en un modal, igual que
+ * cuando se llega desde un enlace; al cerrarlo se vuelve a esa pantalla.
+ */
 export default async function PaginaEditarDocumento(props: { params: Promise<{ id: string }> }) {
-  const documento = await cargarDocumento(Number((await props.params).id));
-
+  const { id } = await props.params;
   return (
-    <main className="page-content">
-      <header className="page-heading">
-        <div>
-          <p className="eyebrow">Documentación</p>
-          <h1>Modificar documento</h1>
-        </div>
-      </header>
-
-      {documento ? (
-        <section className="panel form-panel">
-          <FormularioEditarDocumento accion={actualizarDocumentoAccion.bind(null, documento.id)} documento={documento} />
-        </section>
-      ) : (
-        <p className="form-error-banner">No se pudo obtener la información del documento solicitado.</p>
-      )}
-    </main>
+    <>
+      <PaginaDetalleDocumentoTecnico params={props.params} />
+      <ModalDeRuta descripcion="Documentación técnica" rutaDeRetorno={"/documentacion-tecnica/" + id} titulo="Modificar documento">
+        <Suspense fallback={<EsqueletoFormulario />}>
+          <ContenidoEditarDocumento params={props.params} />
+        </Suspense>
+      </ModalDeRuta>
+    </>
   );
 }

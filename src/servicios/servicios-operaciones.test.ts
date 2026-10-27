@@ -180,14 +180,13 @@ describe("servicio-documentos-tecnicos", () => {
 });
 
 describe("servicio-reportes", () => {
-  const vacios: FiltrosIndicadores = { fechaDesde: "", fechaHasta: "", tecnicoId: "", clienteId: "", activoId: "", estado: "", tipo: "" };
+  const vacios: FiltrosIndicadores = { fechaDesde: "", fechaHasta: "", clienteId: "", activoId: "", estado: "", tipo: "" };
   const completos: FiltrosIndicadores = {
     fechaDesde: "2026-01-01",
     fechaHasta: "2026-01-31",
-    tecnicoId: "1",
     clienteId: "2",
     activoId: "3",
-    estado: "cerrada",
+    estado: "cerrado",
     tipo: "correctivo",
   };
 
@@ -199,10 +198,9 @@ describe("servicio-reportes", () => {
     expect(Object.fromEntries(urlRelativa(llamadas[1].url).searchParams)).toEqual({
       fechaDesde: "2026-01-01",
       fechaHasta: "2026-01-31",
-      tecnicoId: "1",
-      clienteId: "2",
+        clienteId: "2",
       activoId: "3",
-      estado: "cerrada",
+      estado: "cerrado",
       tipo: "correctivo",
     });
   });
@@ -233,8 +231,8 @@ describe("servicio-reportes", () => {
     const csv = urlRelativa(obtenerUrlReporteCsv("indicadores", completos, "alta"));
     expect(csv.pathname).toBe("/api/v1/reportes/indicadores/csv");
     expect(csv.searchParams.get("prioridad")).toBe("alta");
-    expect(csv.searchParams.get("estado")).toBe("cerrada");
-    expect(tiposDeReporte.map((t) => t.valor)).toContain("actividad-tecnicos");
+    expect(csv.searchParams.get("estado")).toBe("cerrado");
+    expect(tiposDeReporte.map((t) => t.valor)).not.toContain("actividad-tecnicos");
   });
 
   it("traduce las alertas y formatea duraciones", () => {
@@ -259,8 +257,8 @@ describe("servicio-ordenes-trabajo", () => {
     observaciones: "",
     fechaPrevistaEjecucion: "2026-10-20",
     sugerencias: [],
-    repuestosIds: [],
-    estado: "creada",
+    repuestos: [],
+    estado: "pendiente",
     motivoEstado: "",
     sesion: "s",
   };
@@ -309,13 +307,13 @@ describe("servicio-ordenes-trabajo", () => {
     const { llamadas } = simularFetch(() => ({ cuerpo: paginaDe([]) }));
     await listarOrdenesTrabajo(filtrosVacios);
     await listarOrdenesTrabajo({
-      buscar: " fuga ", clienteId: "1", activoId: "2", tecnicoId: "3", estado: "pausada", prioridad: "alta",
+      buscar: " fuga ", clienteId: "1", activoId: "2", tecnicoId: "3", estado: "pausado", prioridad: "alta",
       tipo: "preventivo", fechaDesde: "2026-01-01", fechaHasta: "2026-02-01", conSugerencias: true, pagina: 3,
     });
     await obtenerDetalleOrdenTrabajo(4);
     expect(llamadas[0].url).toBe("/api/v1/ordenes-trabajo?pagina=1");
     expect(Object.fromEntries(urlRelativa(llamadas[1].url).searchParams)).toMatchObject({
-      buscar: "fuga", estado: "pausada", conSugerencias: "true", pagina: "3", tecnicoId: "3",
+      buscar: "fuga", estado: "pausado", conSugerencias: "true", pagina: "3", tecnicoId: "3",
     });
     expect(llamadas[2].url).toBe("/api/v1/ordenes-trabajo/4");
   });
@@ -323,11 +321,11 @@ describe("servicio-ordenes-trabajo", () => {
   it("exige motivo solo cuando la transición lo pide", async () => {
     const { llamadas } = simularFetch(() => ({ cuerpo: { id: 1 } }));
     await expect(cambiarEstadoOrdenTrabajo(1, "", "", false)).rejects.toThrow("Seleccioná el nuevo estado");
-    await expect(cambiarEstadoOrdenTrabajo(1, "pausada", "  ", true)).rejects.toThrow("motivo");
+    await expect(cambiarEstadoOrdenTrabajo(1, "pausado", "  ", true)).rejects.toThrow("motivo");
     expect(llamadas).toHaveLength(0);
-    await cambiarEstadoOrdenTrabajo(1, "pausada", "  falta repuesto ", true);
-    await cambiarEstadoOrdenTrabajo(1, "asignada", "", false);
-    expect(llamadas[0]).toMatchObject({ metodo: "PATCH", cuerpo: { estado: "pausada", motivo: "falta repuesto" } });
+    await cambiarEstadoOrdenTrabajo(1, "pausado", "  falta repuesto ", true);
+    await cambiarEstadoOrdenTrabajo(1, "en_progreso", "", false);
+    expect(llamadas[0]).toMatchObject({ metodo: "PATCH", cuerpo: { estado: "pausado", motivo: "falta repuesto" } });
     expect(llamadas[0].url).toBe("/api/v1/ordenes-trabajo/1/estado");
   });
 

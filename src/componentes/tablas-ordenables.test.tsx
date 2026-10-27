@@ -8,10 +8,10 @@ import type { Repuesto } from "@/tipos/repuesto";
 
 function orden(id: number, cliente: string, prioridad: OrdenTrabajo["prioridad"], tecnico: string | null): OrdenTrabajo {
   return {
-    id, clienteId: id, nombreCliente: cliente, activoId: id, nombreActivo: "Activo " + id, tecnicoId: tecnico ? id : null,
+    id, clienteId: id, nombreCliente: cliente, activoId: id, nombreActivo: "Activo " + id, responsableId: 4, nombreResponsable: null, tecnicoId: tecnico ? id : null,
     nombreTecnico: tecnico, tipo: "correctivo", prioridad, descripcion: "", observaciones: "", fechaPrevistaEjecucion: "2026-10-30",
-    estado: "creada", creadoEn: "2026-10-20T10:00:00Z", fechaInicio: null, fechaCierre: null, sugerencias: [], repuestos: [],
-    transiciones: [], historialEstados: [], version: "v",
+    estado: "pendiente", creadoEn: "2026-10-20T10:00:00Z", fechaInicio: null, fechaCierre: null, sugerencias: [], repuestos: [],
+    transiciones: [], historialEstados: [], historialTecnicos: [], historialRepuestos: [], version: "v",
   };
 }
 
@@ -104,6 +104,7 @@ describe("tablas ordenables en el navegador", () => {
   it("los repuestos con bajo stock ordenan por cantidad y por estado de stock", () => {
     const repuesto = (id: number, codigo: string, cantidad: number, estadoStock: Repuesto["estadoStock"]): Repuesto => ({
       id, codigo, nombre: "Repuesto " + codigo, descripcion: "", marca: "", ubicacion: "", cantidad, cantidadMinima: 5, estado: "activo", estadoStock,
+      cantidadReservada: 0, cantidadEntregada: 0, cantidadDisponible: cantidad,
     });
     render(<TablaRepuestosBajoStock repuestos={[repuesto(1, "B-1", 3, "bajo"), repuesto(2, "A-1", 0, "sin_stock"), repuesto(3, "C-1", 4, "bajo")]} />);
     fireEvent.click(screen.getByRole("button", { name: /^Cantidad/ }));

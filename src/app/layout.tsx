@@ -7,6 +7,7 @@ import { ProveedorEstadosOrden } from "@/componentes/estados-orden";
 import { EstructuraAplicacion } from "@/componentes/estructura-aplicacion";
 import { RegistroServiceWorker } from "@/componentes/registro-service-worker";
 import { ProveedorSesion } from "@/componentes/sesion/contexto-sesion";
+import { RutaDeNavegacion } from "@/componentes/ruta-de-navegacion";
 import { PantallaSinAcceso } from "@/componentes/sesion/pantalla-sin-acceso";
 import { COOKIE_VISTA, leerModoVista } from "@/seguridad/vista";
 import { listarEstadosOrdenTrabajoOVacio } from "@/servicios/servidor/ordenes-trabajo";
@@ -29,6 +30,8 @@ export const viewport: Viewport = {
 
 type PropiedadesLayoutRaiz = {
   children: ReactNode;
+  /** Ranura `@modal`: altas y modificaciones abiertas como modal sobre la pantalla actual (rutas interceptadas). */
+  modal: ReactNode;
 };
 
 /**
@@ -49,7 +52,13 @@ export default async function LayoutRaiz(props: PropiedadesLayoutRaiz) {
   if (sesion.estado === "sin-sesion") {
     contenido = props.children;
   } else if (sesion.estado === "con-acceso") {
-    contenido = <EstructuraAplicacion modoVista={modoVista}>{props.children}</EstructuraAplicacion>;
+    contenido = (
+      <EstructuraAplicacion modoVista={modoVista}>
+        <RutaDeNavegacion />
+        {props.children}
+        {props.modal}
+      </EstructuraAplicacion>
+    );
   } else {
     contenido = <PantallaSinAcceso correo={sesion.estado === "sin-acceso" ? sesion.usuario.correo : undefined} motivo={sesion.estado} />;
   }

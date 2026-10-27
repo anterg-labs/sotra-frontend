@@ -1,5 +1,6 @@
 import {
   apiActualizarOrdenTrabajo,
+  apiActualizarRepuestosOrdenTrabajo,
   apiAsignarTecnicoOrdenTrabajo,
   apiCambiarEstadoOrdenTrabajo,
   apiCrearOrdenTrabajo,
@@ -13,6 +14,7 @@ import type {
   ActualizarOrdenTrabajoInput,
   CrearOrdenTrabajoInput,
   FiltrosOrdenesTrabajo,
+  RepuestoPedido,
   SolicitarSugerenciaInput,
   SugerenciaObtenida,
 } from "@/tipos/orden-trabajo";
@@ -32,8 +34,22 @@ export function obtenerErroresOrdenTrabajo(input: CrearOrdenTrabajoInput) {
   return errores;
 }
 
+/** Cantidad máxima por repuesto que acepta la API. */
+export const CANTIDAD_MAXIMA_REPUESTO = 1_000_000;
+
+/** Primer problema de los repuestos pedidos (cantidad entera de 1 en adelante, sin repetir); la disponibilidad la decide la API. */
+export function obtenerErrorDeRepuestos(repuestos: RepuestoPedido[]) {
+  if (repuestos.some((repuesto) => !Number.isInteger(repuesto.cantidad) || repuesto.cantidad < 1 || repuesto.cantidad > CANTIDAD_MAXIMA_REPUESTO)) {
+    return "La cantidad de cada repuesto debe ser un número entero de 1 en adelante.";
+  }
+  if (new Set(repuestos.map((repuesto) => repuesto.repuestoId)).size !== repuestos.length) {
+    return "Un repuesto no puede repetirse en la orden: indicá una sola cantidad por repuesto.";
+  }
+  return "";
+}
+
 function validarOrdenTrabajo(input: CrearOrdenTrabajoInput) {
-  const primerError = Object.values(obtenerErroresOrdenTrabajo(input))[0];
+  const primerError = Object.values(obtenerErroresOrdenTrabajo(input))[0] ?? obtenerErrorDeRepuestos(input.repuestos);
   if (primerError) throw new Error(primerError);
 }
 
@@ -135,6 +151,13 @@ export async function asignarTecnicoOrdenTrabajo(ordenTrabajoId: number, tecnico
   }
 
   return apiAsignarTecnicoOrdenTrabajo(ordenTrabajoId, Number(tecnicoId));
+}
+
+/** Deja la orden usando exactamente estos repuestos y cantidades; la API reserva, ajusta o libera y valida el stock. */
+export async function actualizarRepuestosOrdenTrabajo(ordenTrabajoId: number, repuestos: RepuestoPedido[]) {
+  const error = obtenerErrorDeRepuestos(repuestos);
+  if (error) throw new Error(error);
+  return apiActualizarRepuestosOrdenTrabajo(ordenTrabajoId, repuestos);
 }
 
 export async function solicitarSugerenciaOrdenTrabajo(input: SolicitarSugerenciaInput) {

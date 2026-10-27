@@ -11,9 +11,11 @@ import {
   formatearFechaPrevista,
   listarTecnicosPaginados,
 } from "@/servicios/servicio-ordenes-trabajo";
-import { EtiquetaEstadoOrden, useEtiquetaEstadoOrden, useFaseEstadoOrden } from "@/componentes/estados-orden";
+import { EtiquetaEstadoOrden, useEtiquetaEstadoOrden } from "@/componentes/estados-orden";
 import type { HistorialEstadoOrdenTrabajo, OrdenTrabajo } from "@/tipos/orden-trabajo";
+import type { Repuesto } from "@/tipos/repuesto";
 import type { Usuario } from "@/tipos/usuario";
+import { RepuestosDeLaOrden, ETIQUETAS_ESTADO_REPUESTO } from "./repuestos-de-la-orden";
 import { formatearFechaCorta, formatearFechaHora } from "@/utilidades/fechas";
 import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 import { EnlaceVolver } from "@/componentes/enlace-volver";
@@ -23,17 +25,19 @@ type PropiedadesDetalleOrden = {
   tecnicosIniciales: Usuario[];
   /** La orden se cargó en el servidor; si falló la lista de técnicos, se informa pero el detalle sigue disponible. */
   huboErrorTecnicos: boolean;
+  /** Los repuestos de la orden con su stock actual; solo se cargan si el rol puede gestionarlos. */
+  repuestosDeLaOrden?: Repuesto[];
 };
 
 /** Detalle de la orden: los datos llegan del servidor; el cambio de estado, la asignación y las evidencias siguen en el navegador. */
 export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
   const ordenTrabajoId = props.ordenInicial.id;
   const etiquetaEstado = useEtiquetaEstadoOrden();
-  const faseDelEstado = useFaseEstadoOrden();
   const [orden, setOrden] = useState<OrdenTrabajo | null>(props.ordenInicial);
   const puedeEditar = useTienePermiso("ot.editar");
   const puedeAsignarTecnico = useTienePermiso("ot.asignar_tecnico");
   const puedeRegistrarAvance = useTienePermiso("ot.registrar_avance");
+  const puedeGestionarRepuestos = useTienePermiso("ot.gestionar_repuestos");
   const errorCarga = puedeAsignarTecnico && props.huboErrorTecnicos ? "No se pudo obtener el listado de técnicos." : "";
   const tecnicos = props.tecnicosIniciales;
   const [tecnicoSeleccionadoId, setTecnicoSeleccionadoId] = useState("");
@@ -131,7 +135,9 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
       textoRepuestos = (
         <ul>
           {orden.repuestos.map((repuestoDeLaOrden) => (
-            <li key={repuestoDeLaOrden.id}>{repuestoDeLaOrden.codigo + " - " + repuestoDeLaOrden.nombre}</li>
+            <li key={repuestoDeLaOrden.id}>
+              {repuestoDeLaOrden.codigo + " - " + repuestoDeLaOrden.nombre + " · " + repuestoDeLaOrden.cantidad + " u. · " + ETIQUETAS_ESTADO_REPUESTO[repuestoDeLaOrden.estado]}
+            </li>
           ))}
         </ul>
       );
@@ -152,17 +158,17 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
 
     const fechaCreacion = formatearFechaCorta(orden.creadoEn);
 
+    // Un estado sin transiciones de salida es final (cerrado o eliminado): la orden queda solo para consulta.
+    const ordenEstaTerminada = orden.transiciones.length === 0;
+
     let enlaceModificar = null;
-    if (faseDelEstado(orden.estado) !== "cerrada" && puedeEditar) {
+    if (!ordenEstaTerminada && puedeEditar) {
       enlaceModificar = (
         <Link className="primary-button" href={"/ordenes-trabajo/" + orden.id + "/editar"}>
           Modificar
         </Link>
       );
     }
-
-    // Un estado sin transiciones de salida es final: la orden queda solo para consulta.
-    const ordenEstaTerminada = orden.transiciones.length === 0;
 
     let mensajeAccionError = null;
     if (errorAccion) {
@@ -175,7 +181,7 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
     }
 
     let seccionTecnico: React.ReactNode = (
-      <p className="empty-state">La orden está cerrada o cancelada y solo queda disponible para consulta.</p>
+      <p className="empty-state">La orden está cerrada o eliminada y solo queda disponible para consulta.</p>
     );
     if (!puedeAsignarTecnico) {
       seccionTecnico = null;
@@ -312,6 +318,10 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
             <dd>{fechaCreacion}</dd>
           </div>
           <div>
+            <dt>Creada por</dt>
+            <dd>{orden.nombreResponsable ?? "Sin identificar"}</dd>
+          </div>
+          <div>
             <dt>Fecha prevista de ejecución</dt>
             <dd>{formatearFechaPrevista(orden.fechaPrevistaEjecucion)}</dd>
           </div>
@@ -334,6 +344,17 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
         </dl>
         <div className="form-actions">{enlaceModificar}</div>
       </section>
+
+      <RepuestosDeLaOrden
+        alActualizar={(ordenActualizada) => {
+          setOrden(ordenActualizada);
+          setMensajeExito("");
+        }}
+        key={orden.version}
+        orden={orden}
+        puedeGestionar={puedeGestionarRepuestos}
+        repuestosIniciales={props.repuestosDeLaOrden ?? []}
+      />
 
       <EvidenciasOrdenTrabajo ordenTrabajoId={orden.id} permiteRegistrar={!ordenEstaTerminada && puedeRegistrarAvance} />
       </div>
@@ -360,13 +381,40 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
           <ul className="mt-4 grid gap-3">
             {historialMasNuevoPrimero.map((cambio, indice) => (
               <li className="border-b u-borde pb-3 text-sm" key={indice}>
-                <strong>{etiquetaEstado(cambio.estado)}</strong>
-                <span className="block text-xs texto-tenue">{formatearFechaHora(cambio.fechaHora)}</span>
+                <strong>
+                  {cambio.estadoAnterior ? etiquetaEstado(cambio.estadoAnterior) + " → " : ""}
+                  {etiquetaEstado(cambio.estado)}
+                </strong>
+                <span className="block text-xs texto-tenue">
+                  {formatearFechaHora(cambio.fechaHora)}
+                  {cambio.nombreUsuario ? " · " + cambio.nombreUsuario : ""}
+                </span>
                 <span className="block">{cambio.observacion}</span>
               </li>
             ))}
           </ul>
         </section>
+
+        {orden.historialTecnicos.length > 0 ? (
+          <section className="panel detail-panel">
+            <h2>Historial de técnicos</h2>
+            <ul className="mt-4 grid gap-3">
+              {[...orden.historialTecnicos].reverse().map((cambio, indice) => (
+                <li className="border-b u-borde pb-3 text-sm" key={indice}>
+                  <strong>
+                    {cambio.nombreTecnicoAnterior ? cambio.nombreTecnicoAnterior + " → " : "Asignado a "}
+                    {cambio.nombreTecnico ?? "técnico sin identificar"}
+                  </strong>
+                  <span className="block text-xs texto-tenue">
+                    {formatearFechaHora(cambio.fechaHora)}
+                    {cambio.nombreUsuario ? " · " + cambio.nombreUsuario : ""}
+                  </span>
+                  {cambio.observacion ? <span className="block">{cambio.observacion}</span> : null}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
       </div>
       </div>
     );

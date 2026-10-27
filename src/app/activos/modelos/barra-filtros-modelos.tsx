@@ -6,6 +6,7 @@ import { listarTiposMaquinaPaginados } from "@/servicios/servicio-tipos-maquina"
 import type { FiltrosModelosMaquina } from "@/tipos/modelo-maquina";
 import type { TipoMaquina } from "@/tipos/tipo-maquina";
 import { construirUrlModelos } from "./filtros";
+import { FiltrosAvanzados, hayFiltrosAplicados } from "@/componentes/listado/filtros-avanzados";
 
 type ValoresModelos = Pick<FiltrosModelosMaquina, "buscar" | "tipoMaquinaId" | "estado" | "ordenarPor" | "direccionOrden">;
 const VACIOS: ValoresModelos = { buscar: "", tipoMaquinaId: "", estado: "" };
@@ -37,31 +38,28 @@ export function BarraFiltrosModelos(props: { filtros: FiltrosModelosMaquina; tip
           value={valores.buscar}
         />
       </div>
-      <Combobox
-        alCambiar={(tipoMaquinaId) => cambiar({ tipoMaquinaId })}
-        buscarOpciones={async (consulta) => {
-          const pagina = await listarTiposMaquinaPaginados({ buscar: consulta, estado: "", pagina: 1 });
-          return pagina.elementos.map((tipo) => ({ valor: String(tipo.id), etiqueta: tipo.nombre }));
-        }}
-        etiqueta="Tipo"
-        id="tipoModeloFiltro"
-        opciones={props.tiposMaquina.map((tipo) => ({ valor: String(tipo.id), etiqueta: tipo.nombre }))}
-        textoVacio="Todos los tipos"
-        valor={valores.tipoMaquinaId}
-      />
-      <div className="form-field">
-        <label htmlFor="estadoModeloFiltro">Estado del modelo</label>
-        <select id="estadoModeloFiltro" onChange={(evento) => cambiar({ estado: evento.target.value })} value={valores.estado}>
-          <option value="">Todos los estados</option>
-          <option value="activo">Activo</option>
-          <option value="inactivo">Inactivo</option>
-        </select>
-      </div>
-      <div className="barra-filtros-acciones">
-        <button className="secondary-button" onClick={() => limpiar(VACIOS)} type="button">
-          Limpiar
-        </button>
-      </div>
+      <FiltrosAvanzados alLimpiar={() => limpiar(VACIOS)} hayFiltros={hayFiltrosAplicados(valores)}>
+        <Combobox
+          alCambiar={(tipoMaquinaId) => cambiar({ tipoMaquinaId })}
+          buscarOpciones={async (consulta) => {
+            const pagina = await listarTiposMaquinaPaginados({ buscar: consulta, estado: "", pagina: 1 });
+            return pagina.elementos.map((tipo) => ({ valor: String(tipo.id), etiqueta: tipo.nombre }));
+          }}
+          etiqueta="Tipo"
+          id="tipoModeloFiltro"
+          opciones={props.tiposMaquina.map((tipo) => ({ valor: String(tipo.id), etiqueta: tipo.nombre }))}
+          textoVacio="Todos los tipos"
+          valor={valores.tipoMaquinaId}
+        />
+        <div className="form-field">
+          <label htmlFor="estadoModeloFiltro">Estado del modelo</label>
+          <select id="estadoModeloFiltro" onChange={(evento) => cambiar({ estado: evento.target.value })} value={valores.estado}>
+            <option value="">Todos los estados</option>
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+        </div>
+      </FiltrosAvanzados>
     </form>
   );
 }

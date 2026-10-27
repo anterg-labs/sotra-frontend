@@ -39,6 +39,7 @@ export function leerFiltrosOrdenes(parametros: ParametrosBusqueda, estados: read
     tipo: leerOpcion(parametros, "tipo", ["preventivo", "correctivo"]),
     fechaDesde: leerFecha(parametros, "fechaDesde"),
     fechaHasta: leerFecha(parametros, "fechaHasta"),
+    soloActivas: primerValor(parametros.soloActivas) === "true",
     conSugerencias: primerValor(parametros.conSugerencias) === "true",
     pagina: leerPagina(parametros),
     ...leerOrden(parametros, COLUMNAS_ORDENABLES_ORDENES),
@@ -46,7 +47,7 @@ export function leerFiltrosOrdenes(parametros: ParametrosBusqueda, estados: read
 }
 
 export function construirUrlOrdenes(filtros: FiltrosOrdenesTrabajo) {
-  return construirUrlListado(RUTA_ORDENES, { ...filtros, conSugerencias: filtros.conSugerencias ? "true" : "" });
+  return construirUrlListado(RUTA_ORDENES, { ...filtros, soloActivas: filtros.soloActivas ? "true" : "", conSugerencias: filtros.conSugerencias ? "true" : "" });
 }
 
 /** URL del listado al hacer clic en el título de una columna: aplica el orden siguiente y vuelve a la página 1. */

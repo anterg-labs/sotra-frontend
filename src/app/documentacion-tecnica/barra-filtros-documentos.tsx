@@ -8,6 +8,7 @@ import type { Activo } from "@/tipos/activo";
 import type { ModeloMaquina } from "@/tipos/modelo-maquina";
 import { obtenerEtiquetaTipoDocumento, TIPOS_DOCUMENTO, type FiltrosDocumentosTecnicos } from "@/tipos/documento-tecnico";
 import { construirUrlDocumentos } from "./filtros";
+import { FiltrosAvanzados, hayFiltrosAplicados } from "@/componentes/listado/filtros-avanzados";
 
 type ValoresDocumentos = Pick<FiltrosDocumentosTecnicos, "buscar" | "activoId" | "modeloMaquinaId" | "tipo" | "vigente" | "ordenarPor" | "direccionOrden">;
 const VACIOS: ValoresDocumentos = { buscar: "", activoId: "", modeloMaquinaId: "", tipo: "", vigente: "" };
@@ -43,52 +44,49 @@ export function BarraFiltrosDocumentos(props: { filtros: FiltrosDocumentosTecnic
           value={valores.buscar}
         />
       </div>
-      <Combobox
-        alCambiar={(activoId) => cambiar({ activoId })}
-        buscarOpciones={async (consulta) => {
-          const pagina = await listarActivosPaginados({ buscar: consulta, clienteId: "", modeloMaquinaId: "", estado: "", pagina: 1 });
-          return pagina.elementos.map((activo) => ({ valor: String(activo.id), etiqueta: nombreVisibleDeActivo(activo) }));
-        }}
-        etiqueta="Activo asociado"
-        id="activoDocumentoFiltro"
-        opciones={props.activos.map((activo) => ({ valor: String(activo.id), etiqueta: nombreVisibleDeActivo(activo) }))}
-        textoVacio="Todos los activos"
-        valor={valores.activoId}
-      />
-      <Combobox
-        alCambiar={(modeloMaquinaId) => cambiar({ modeloMaquinaId })}
-        buscarOpciones={async (consulta) => {
-          const pagina = await listarModelosMaquinaPaginados({ buscar: consulta, tipoMaquinaId: "", estado: "", pagina: 1 });
-          return pagina.elementos.map((modelo) => ({ valor: String(modelo.id), etiqueta: modelo.nombre }));
-        }}
-        etiqueta="Modelo de máquina"
-        id="modeloDocumentoFiltro"
-        opciones={props.modelosMaquina.map((modelo) => ({ valor: String(modelo.id), etiqueta: modelo.nombre }))}
-        textoVacio="Todos los modelos"
-        valor={valores.modeloMaquinaId}
-      />
-      <div className="form-field">
-        <label htmlFor="tipoDocumentoFiltro">Tipo</label>
-        <select id="tipoDocumentoFiltro" onChange={(evento) => cambiar({ tipo: evento.target.value })} value={valores.tipo}>
-          <option value="">Todos los tipos</option>
-          {TIPOS_DOCUMENTO.map((tipo) => (
-            <option key={tipo} value={tipo}>{obtenerEtiquetaTipoDocumento(tipo)}</option>
-          ))}
-        </select>
-      </div>
-      <div className="form-field">
-        <label htmlFor="vigenciaDocumentoFiltro">Vigencia</label>
-        <select id="vigenciaDocumentoFiltro" onChange={(evento) => cambiar({ vigente: evento.target.value })} value={valores.vigente}>
-          <option value="">Todos</option>
-          <option value="true">Vigentes</option>
-          <option value="false">Obsoletos</option>
-        </select>
-      </div>
-      <div className="barra-filtros-acciones">
-        <button className="secondary-button" onClick={() => limpiar(VACIOS)} type="button">
-          Limpiar filtros
-        </button>
-      </div>
+      <FiltrosAvanzados alLimpiar={() => limpiar(VACIOS)} hayFiltros={hayFiltrosAplicados(valores)}>
+        <Combobox
+          alCambiar={(activoId) => cambiar({ activoId })}
+          buscarOpciones={async (consulta) => {
+            const pagina = await listarActivosPaginados({ buscar: consulta, clienteId: "", modeloMaquinaId: "", estado: "", pagina: 1 });
+            return pagina.elementos.map((activo) => ({ valor: String(activo.id), etiqueta: nombreVisibleDeActivo(activo) }));
+          }}
+          etiqueta="Activo asociado"
+          id="activoDocumentoFiltro"
+          opciones={props.activos.map((activo) => ({ valor: String(activo.id), etiqueta: nombreVisibleDeActivo(activo) }))}
+          textoVacio="Todos los activos"
+          valor={valores.activoId}
+        />
+        <Combobox
+          alCambiar={(modeloMaquinaId) => cambiar({ modeloMaquinaId })}
+          buscarOpciones={async (consulta) => {
+            const pagina = await listarModelosMaquinaPaginados({ buscar: consulta, tipoMaquinaId: "", estado: "", pagina: 1 });
+            return pagina.elementos.map((modelo) => ({ valor: String(modelo.id), etiqueta: modelo.nombre }));
+          }}
+          etiqueta="Modelo de máquina"
+          id="modeloDocumentoFiltro"
+          opciones={props.modelosMaquina.map((modelo) => ({ valor: String(modelo.id), etiqueta: modelo.nombre }))}
+          textoVacio="Todos los modelos"
+          valor={valores.modeloMaquinaId}
+        />
+        <div className="form-field">
+          <label htmlFor="tipoDocumentoFiltro">Tipo</label>
+          <select id="tipoDocumentoFiltro" onChange={(evento) => cambiar({ tipo: evento.target.value })} value={valores.tipo}>
+            <option value="">Todos los tipos</option>
+            {TIPOS_DOCUMENTO.map((tipo) => (
+              <option key={tipo} value={tipo}>{obtenerEtiquetaTipoDocumento(tipo)}</option>
+            ))}
+          </select>
+        </div>
+        <div className="form-field">
+          <label htmlFor="vigenciaDocumentoFiltro">Vigencia</label>
+          <select id="vigenciaDocumentoFiltro" onChange={(evento) => cambiar({ vigente: evento.target.value })} value={valores.vigente}>
+            <option value="">Todos</option>
+            <option value="true">Vigentes</option>
+            <option value="false">Obsoletos</option>
+          </select>
+        </div>
+      </FiltrosAvanzados>
     </form>
   );
 }

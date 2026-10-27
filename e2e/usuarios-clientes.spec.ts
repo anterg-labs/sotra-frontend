@@ -18,7 +18,7 @@ test("un cliente se registra, rechaza el duplicado junto al campo y se da de baj
   await page.getByLabel("Nombre o razón social").fill(razonSocial);
   await page.getByLabel("Nombre de contacto").fill("Contacto " + id);
   await page.getByLabel("Correo electrónico (opcional)").fill(`cliente.${id}@pruebas.test`);
-  await page.getByLabel("Número telefónico (opcional)").fill(telefonoNumerico());
+  await page.getByLabel("Número de teléfono o celular (opcional)").fill(telefonoNumerico());
   await page.getByRole("button", { name: "Confirmar registro" }).click();
   await expect(page.getByText("Cliente registrado.")).toBeVisible();
 
@@ -52,14 +52,14 @@ test("un usuario se crea con rol, valida el teléfono numérico y se da de baja"
   await formulario.getByLabel("Nombre", { exact: true }).fill("Prueba");
   await formulario.getByLabel("Apellido").fill("Automatica");
   await formulario.getByLabel("Correo electrónico").fill(correo);
-  await formulario.getByLabel("Número de teléfono").fill("abc123");
+  await formulario.getByLabel("Número de teléfono o celular").fill("abc123");
   await formulario.getByRole("checkbox", { name: "Técnico", exact: true }).check();
   await page.keyboard.press("Escape");
   await formulario.getByRole("button", { name: /^Confirmar|^Crear|^Registrar/ }).click();
   await expect(formulario.getByRole("alert").first()).toBeVisible();
-  await expect(formulario.getByLabel("Número de teléfono")).toBeFocused();
+  await expect(formulario.getByLabel("Número de teléfono o celular")).toBeFocused();
 
-  await formulario.getByLabel("Número de teléfono").fill(telefonoNumerico());
+  await formulario.getByLabel("Número de teléfono o celular").fill(telefonoNumerico());
   await formulario.getByRole("button", { name: /^Confirmar|^Crear|^Registrar/ }).click();
   await expect(page.getByText(/Usuario creado. Se envió un correo a/)).toBeVisible();
 

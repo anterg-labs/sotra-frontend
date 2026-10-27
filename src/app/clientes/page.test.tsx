@@ -45,7 +45,8 @@ function conNavegacion(ui: React.ReactNode) {
   return <ProveedorNavegacionListado etiquetaCarga="Cargando clientes…">{ui}</ProveedorNavegacionListado>;
 }
 
-const filtrosVacios = { buscar: "", estado: "", pagina: 1 };
+const filtrosVacios = { buscar: "", estado: "activo" as const, pagina: 1 };
+const abrirFiltrosAvanzados = () => fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
 
 beforeEach(() => {
   [push, replace, mostrarAviso, listarClientesServidor, cambiarEstadoClienteAccion, crearClienteAccion].forEach((f) => f.mockReset());
@@ -57,7 +58,7 @@ describe("filtros de la URL", () => {
     render(conNavegacion(<TablaClientes filtros={filtrosVacios} clientes={[cliente(1), { ...cliente(2), cantidadOrdenesAsociadas: 4 }]} />));
     const filas = screen.getAllByRole("row");
     expect(within(filas[1]).getByRole("cell", { name: "0" })).toBeInTheDocument();
-    expect(within(filas[2]).getByRole("cell", { name: "4" })).toBeInTheDocument();
+    expect(within(filas[2]).getByRole("link", { name: /^Ver las 4 órdenes activas/ })).toHaveAttribute("href", expect.stringMatching(/^\/ordenes-trabajo\?(clienteId|tecnicoId)=\d+&soloActivas=true$/));
     fireEvent.click(screen.getByRole("button", { name: /Órdenes de trabajo/ }));
     expect(push).toHaveBeenLastCalledWith(expect.stringContaining("ordenarPor=cantidadOrdenesAsociadas"));
     expect(leerFiltrosClientes({ ordenarPor: "cantidadOrdenesAsociadas" }).ordenarPor).toBe("cantidadOrdenesAsociadas");
@@ -65,14 +66,18 @@ describe("filtros de la URL", () => {
   it("lee buscar, estado y página con valores seguros por defecto", () => {
     expect(leerFiltrosClientes({})).toMatchObject(filtrosVacios);
     expect(leerFiltrosClientes({ buscar: "acme", estado: "inactivo", pagina: "3" })).toMatchObject({ buscar: "acme", estado: "inactivo", pagina: 3 });
-    expect(leerFiltrosClientes({ buscar: ["a", "b"], estado: "otro", pagina: "-2" })).toMatchObject({ buscar: "a", estado: "", pagina: 1 });
+    expect(leerFiltrosClientes({ buscar: ["a", "b"], estado: "otro", pagina: "-2" })).toMatchObject({ buscar: "a", estado: "activo", pagina: 1 });
+    expect(leerFiltrosClientes({})).toMatchObject({ estado: "activo" });
+    expect(leerFiltrosClientes({ estado: "todos" })).toMatchObject({ estado: "" });
     expect(leerFiltrosClientes({ pagina: "1.5" }).pagina).toBe(1);
     expect(leerFiltrosClientes({ pagina: "abc" }).pagina).toBe(1);
   });
 
   it("construye la URL omitiendo lo vacío y la página 1", () => {
     expect(construirUrlClientes(filtrosVacios)).toBe("/clientes");
-    expect(construirUrlClientes({ buscar: " a&b ", estado: "activo", pagina: 2 })).toBe("/clientes?buscar=a%26b&estado=activo&pagina=2");
+    expect(construirUrlClientes({ buscar: " a&b ", estado: "activo", pagina: 2 })).toBe("/clientes?buscar=a%26b&pagina=2");
+    expect(construirUrlClientes({ buscar: "", estado: "", pagina: 1 })).toBe("/clientes?estado=todos");
+    expect(construirUrlClientes({ buscar: "", estado: "inactivo", pagina: 1 })).toBe("/clientes?estado=inactivo");
   });
 });
 
@@ -129,7 +134,7 @@ describe("barra de filtros (en vivo)", () => {
 
   it("el texto busca una sola vez tras el retardo y vuelve a la página 1, sin botón «Aplicar filtros»", async () => {
     vi.useFakeTimers();
-    render(conNavegacion(<BarraFiltrosClientes filtros={{ buscar: "", estado: "", pagina: 4 }} />));
+    render(conNavegacion(<BarraFiltrosClientes filtros={{ buscar: "", estado: "activo", pagina: 4 }} />));
     expect(screen.queryByRole("button", { name: "Aplicar filtros" })).not.toBeInTheDocument();
     const buscar = screen.getByLabelText("Buscar");
     fireEvent.change(buscar, { target: { value: "a" } });
@@ -144,25 +149,50 @@ describe("barra de filtros (en vivo)", () => {
   it("el estado se aplica al instante, conservando el texto escrito", () => {
     render(conNavegacion(<BarraFiltrosClientes filtros={filtrosVacios} />));
     fireEvent.change(screen.getByLabelText("Buscar"), { target: { value: "acme" } });
-    fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "inactivo" } });
+    abrirFiltrosAvanzados();
+    fireEvent.change(screen.getByLabelText("Mostrar"), { target: { value: "inactivo" } });
     expect(replace).toHaveBeenCalledTimes(1);
     expect(replace).toHaveBeenLastCalledWith("/clientes?buscar=acme&estado=inactivo");
+  });
+
+  it("el interruptor de activos asociados se aplica al instante y se lee de la URL", () => {
+    expect(leerFiltrosClientes({ conActivos: "true" }).conActivos).toBe(true);
+    expect(leerFiltrosClientes({ conActivos: "otro" }).conActivos).toBe(false);
+    expect(construirUrlClientes({ ...filtrosVacios, conActivos: true })).toBe("/clientes?conActivos=true");
+    render(conNavegacion(<BarraFiltrosClientes filtros={filtrosVacios} />));
+    abrirFiltrosAvanzados();
+    fireEvent.click(screen.getByRole("switch", { name: "Solo con activos asociados" }));
+    expect(replace).toHaveBeenLastCalledWith("/clientes?conActivos=true");
+    fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
+    expect(replace).toHaveBeenLastCalledWith("/clientes");
   });
 
   it("limpia los campos y vuelve al listado sin filtros", () => {
     render(conNavegacion(<BarraFiltrosClientes filtros={{ buscar: "acme", estado: "activo", pagina: 1 }} />));
     expect(screen.getByLabelText("Buscar")).toHaveValue("acme");
+    abrirFiltrosAvanzados();
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
     expect(replace).toHaveBeenLastCalledWith("/clientes");
     expect(screen.getByLabelText("Buscar")).toHaveValue("");
-    expect(screen.getByLabelText("Estado")).toHaveValue("");
+    expect(screen.getByLabelText("Mostrar")).toHaveValue("activo");
+  });
+
+  it("por defecto muestra solo activos y deja los filtros avanzados cerrados; si hay uno aplicado, los abre", () => {
+    const { unmount } = render(conNavegacion(<BarraFiltrosClientes filtros={filtrosVacios} />));
+    expect(screen.getByRole("button", { name: "Filtros avanzados" })).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByLabelText("Mostrar")).not.toBeInTheDocument();
+    unmount();
+    render(conNavegacion(<BarraFiltrosClientes filtros={{ buscar: "", estado: "", pagina: 1 }} />));
+    expect(screen.getByRole("button", { name: "Filtros avanzados" })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByLabelText("Mostrar")).toHaveValue("");
   });
 
   it("indica la búsqueda en curso de forma accesible mientras navega", async () => {
     let terminar: () => void = () => undefined;
     replace.mockImplementation(() => new Promise<void>((resolver) => { terminar = resolver; }));
     render(conNavegacion(<BarraFiltrosClientes filtros={filtrosVacios} />));
-    fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "activo" } });
+    abrirFiltrosAvanzados();
+    fireEvent.change(screen.getByLabelText("Mostrar"), { target: { value: "inactivo" } });
     expect(await screen.findByText("Cargando…")).toBeInTheDocument();
     expect(screen.getByLabelText("Búsqueda y filtros")).toHaveAttribute("aria-busy", "true");
     await act(async () => terminar());
@@ -183,13 +213,14 @@ describe("navegación del listado", () => {
         </>,
       ),
     );
-    const estado = screen.getByLabelText("Estado");
+    abrirFiltrosAvanzados();
+    const estado = screen.getByLabelText("Mostrar");
     expect(screen.getByText("Tabla anterior")).toBeInTheDocument();
-    fireEvent.change(estado, { target: { value: "activo" } });
+    fireEvent.change(estado, { target: { value: "inactivo" } });
     expect(await screen.findByRole("status", { name: "Cargando clientes…" })).toBeInTheDocument();
     expect(screen.getByText("Tabla anterior")).toBeVisible();
     expect(screen.getByText("Tabla anterior").parentElement).toHaveAttribute("aria-busy", "true");
-    expect(screen.getByLabelText("Estado")).toBe(estado);
+    expect(screen.getByLabelText("Mostrar")).toBe(estado);
     await act(async () => terminar());
     expect(await screen.findByText("Tabla anterior")).toBeInTheDocument();
   });

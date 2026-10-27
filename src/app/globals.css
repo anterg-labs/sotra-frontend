@@ -539,6 +539,11 @@ label:has(input:disabled) {
   min-width: 150px;
 }
 
+/* Un selector de fecha no necesita crecer: con flex-grow ocupaba todo el ancho libre de la fila. */
+.barra-filtros .form-field:has(> input[type="date"]) {
+  flex: 0 1 172px;
+}
+
 .barra-filtros .campo-busqueda {
   flex: 2 1 260px;
 }

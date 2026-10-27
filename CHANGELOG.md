@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.59 (2026-10-27)
+
+- Listados: los selectores de fecha de los filtros (por ejemplo «Creada» en órdenes de trabajo) dejan de estirarse por toda la fila y quedan con un ancho razonable.
+
 ## Version 1.0.58 (2026-10-27)
 
 - Clientes y usuarios: la cantidad de órdenes de cada fila abre el listado de órdenes filtrado por ese cliente o usuario y solo con órdenes activas, igual que la cifra. Los activos no lo necesitan: su detalle ya muestra el historial de órdenes.

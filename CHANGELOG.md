@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## Version 1.0.68 (2026-10-27)
+
+- Navegación: en las pantallas de segundo nivel (detalles, altas y modificaciones) aparece arriba la ruta, por ejemplo «Órdenes de trabajo / Orden N° 8», con los niveles anteriores como enlaces para volver.
+- Órdenes de trabajo: los filtros, salvo el buscador, quedan detrás del botón «Filtros avanzados» (se abren solos si hay alguno aplicado); el resumen pasa a una franja compacta; el estado y el técnico ya no saltan de línea; las fechas usan el mismo formato y los títulos de columna quedan alineados; el buscador deja de ocupar todo el ancho.
+- Órdenes de trabajo: el editor de repuestos de la orden muestra de a cinco, con «Anterior» y «Siguiente».
+- Detalles: la flecha de volver tiene el alto del bloque del título.
+- Listados: el buscador de todos los listados tiene un ancho máximo.
+
 ## Version 1.0.67 (2026-10-27)
 
 - Menú: «Activos» ya no es un enlace; al pulsarlo despliega o pliega sus opciones (con el menú retraído, además lo abre). La lista de activos queda como «Todos los activos».

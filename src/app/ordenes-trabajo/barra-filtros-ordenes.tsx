@@ -8,6 +8,8 @@ import { listarClientesPaginados } from "@/servicios/servicio-clientes";
 import { listarTecnicosPaginados } from "@/servicios/servicio-ordenes-trabajo";
 import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
+import { useState } from "react";
+import { IconoFiltrosAvanzados } from "@/componentes/iconos";
 import { useEstadosOrden } from "@/componentes/estados-orden";
 import { ETIQUETAS_FASE_ORDEN, type FiltrosOrdenesTrabajo } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
@@ -51,6 +53,10 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
     alInvalido: () => document.getElementById("fechaCreacion-hasta")?.focus(),
   });
 
+  const hayFiltrosAvanzados = Object.entries(valores).some(
+    ([nombre, valor]) => !["buscar", "ordenarPor", "direccionOrden"].includes(nombre) && valor !== "" && valor !== false && valor !== undefined,
+  );
+  const [estanAvanzadosAbiertos, setEstanAvanzadosAbiertos] = useState(hayFiltrosAvanzados);
   const fasesDelCatalogo = [...new Set(estados.map((estado) => estado.fase))];
   const activosDelCliente = props.activos.filter((activo) => valores.clienteId === "" || String(activo.clienteId) === valores.clienteId);
 
@@ -76,124 +82,143 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
         />
       </div>
 
-      <Combobox
-        alCambiar={(clienteId) => cambiar({ clienteId, activoId: "" })}
-        buscarOpciones={async (consulta) => {
-          const pagina = await listarClientesPaginados({ buscar: consulta, estado: "", pagina: 1 });
-          return pagina.elementos.map((cliente) => ({ valor: String(cliente.id), etiqueta: cliente.razonSocial }));
-        }}
-        etiqueta="Cliente"
-        id="clienteId"
-        opciones={props.clientes.map((cliente) => ({ valor: String(cliente.id), etiqueta: cliente.razonSocial }))}
-        textoVacio="Todos los clientes"
-        valor={valores.clienteId}
-      />
-
-      <Combobox
-        alCambiar={(activoId) => cambiar({ activoId })}
-        buscarOpciones={async (consulta) => {
-          const pagina = await listarActivosPaginados({ buscar: consulta, clienteId: valores.clienteId, modeloMaquinaId: "", estado: "", pagina: 1 });
-          return pagina.elementos.map((activo) => ({ valor: String(activo.id), etiqueta: nombreVisibleDeActivo(activo) }));
-        }}
-        etiqueta="Activo"
-        id="activoId"
-        opciones={activosDelCliente.map((activo) => ({ valor: String(activo.id), etiqueta: nombreVisibleDeActivo(activo) }))}
-        textoVacio="Todos los activos"
-        valor={valores.activoId}
-      />
-
-      {props.puedeFiltrarPorTecnico ?? true ? (
-        <Combobox
-          alCambiar={(tecnicoId) => cambiar({ tecnicoId })}
-          buscarOpciones={async (consulta) => {
-            const tecnicos = await listarTecnicosPaginados(consulta);
-            return tecnicos.map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }));
-          }}
-          etiqueta="Técnico"
-          id="tecnicoId"
-          opciones={props.tecnicos.map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }))}
-          textoVacio="Todos los técnicos"
-          valor={valores.tecnicoId}
-        />
-      ) : null}
-
-      <div className="form-field">
-        <label htmlFor="estado">Estado</label>
-        <select id="estado" onChange={(evento) => cambiar({ estado: evento.target.value })} value={valores.estado}>
-          <option value="">Todos los estados</option>
-          {estados.map((estado) => (
-            <option key={estado.valor} value={estado.valor}>{estado.etiqueta}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="form-field">
-        <label htmlFor="fase">Fase</label>
-        <select id="fase" onChange={(evento) => cambiar({ fase: evento.target.value })} value={valores.fase ?? ""}>
-          <option value="">Todas las fases</option>
-          {fasesDelCatalogo.map((fase) => (
-            <option key={fase} value={fase}>{ETIQUETAS_FASE_ORDEN[fase]}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="form-field">
-        <label htmlFor="prioridad">Prioridad</label>
-        <select id="prioridad" onChange={(evento) => cambiar({ prioridad: evento.target.value })} value={valores.prioridad}>
-          <option value="">Todas las prioridades</option>
-          <option value="alta">Alta</option>
-          <option value="media">Media</option>
-          <option value="baja">Baja</option>
-        </select>
-      </div>
-
-      <div className="form-field">
-        <label htmlFor="tipo">Tipo de mantenimiento</label>
-        <select id="tipo" onChange={(evento) => cambiar({ tipo: evento.target.value })} value={valores.tipo}>
-          <option value="">Todos los tipos</option>
-          <option value="preventivo">Preventivo</option>
-          <option value="correctivo">Correctivo</option>
-        </select>
-      </div>
-
-      <FiltroFecha
-        alCambiar={(fechaDesde, fechaHasta) => cambiar({ fechaDesde, fechaHasta })}
-        etiqueta="Creada"
-        fechaDesde={valores.fechaDesde}
-        fechaHasta={valores.fechaHasta}
-        id="fechaCreacion"
-      />
-
-      <div className="form-field campo-casilla">
-        <label className="flex items-center gap-2" htmlFor="soloActivas">
-          <input
-            checked={valores.soloActivas ?? false}
-            id="soloActivas"
-            onChange={(evento) => cambiar({ soloActivas: evento.target.checked })}
-            role="switch"
-            type="checkbox"
-          />
-          Solo órdenes activas
-        </label>
-      </div>
-
-      <div className="form-field campo-casilla">
-        <label className="flex items-center gap-2" htmlFor="conSugerencias">
-          <input
-            checked={valores.conSugerencias}
-            id="conSugerencias"
-            onChange={(evento) => cambiar({ conSugerencias: evento.target.checked })}
-            role="switch"
-            type="checkbox"
-          />
-          Solo con recomendaciones de IA
-        </label>
-      </div>
       <div className="barra-filtros-acciones">
-        <button className="secondary-button" onClick={() => limpiar(VACIOS)} type="button">
-          Limpiar filtros
+        <button
+          aria-controls="filtrosAvanzadosOrdenes"
+          aria-expanded={estanAvanzadosAbiertos}
+          className="boton-filtros-avanzados"
+          data-activo={hayFiltrosAvanzados}
+          onClick={() => setEstanAvanzadosAbiertos((abiertos) => !abiertos)}
+          title="Filtros avanzados"
+          type="button"
+        >
+          <IconoFiltrosAvanzados />
+          <span className="sr-only">Filtros avanzados</span>
         </button>
       </div>
+      {estanAvanzadosAbiertos ? (
+        <fieldset className="filtros-avanzados" id="filtrosAvanzadosOrdenes">
+          <legend>Filtros avanzados</legend>
+        <Combobox
+          alCambiar={(clienteId) => cambiar({ clienteId, activoId: "" })}
+          buscarOpciones={async (consulta) => {
+            const pagina = await listarClientesPaginados({ buscar: consulta, estado: "", pagina: 1 });
+            return pagina.elementos.map((cliente) => ({ valor: String(cliente.id), etiqueta: cliente.razonSocial }));
+          }}
+          etiqueta="Cliente"
+          id="clienteId"
+          opciones={props.clientes.map((cliente) => ({ valor: String(cliente.id), etiqueta: cliente.razonSocial }))}
+          textoVacio="Todos los clientes"
+          valor={valores.clienteId}
+        />
+
+        <Combobox
+          alCambiar={(activoId) => cambiar({ activoId })}
+          buscarOpciones={async (consulta) => {
+            const pagina = await listarActivosPaginados({ buscar: consulta, clienteId: valores.clienteId, modeloMaquinaId: "", estado: "", pagina: 1 });
+            return pagina.elementos.map((activo) => ({ valor: String(activo.id), etiqueta: nombreVisibleDeActivo(activo) }));
+          }}
+          etiqueta="Activo"
+          id="activoId"
+          opciones={activosDelCliente.map((activo) => ({ valor: String(activo.id), etiqueta: nombreVisibleDeActivo(activo) }))}
+          textoVacio="Todos los activos"
+          valor={valores.activoId}
+        />
+
+        {props.puedeFiltrarPorTecnico ?? true ? (
+          <Combobox
+            alCambiar={(tecnicoId) => cambiar({ tecnicoId })}
+            buscarOpciones={async (consulta) => {
+              const tecnicos = await listarTecnicosPaginados(consulta);
+              return tecnicos.map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }));
+            }}
+            etiqueta="Técnico"
+            id="tecnicoId"
+            opciones={props.tecnicos.map((tecnico) => ({ valor: String(tecnico.id), etiqueta: `${tecnico.nombre} ${tecnico.apellido}` }))}
+            textoVacio="Todos los técnicos"
+            valor={valores.tecnicoId}
+          />
+        ) : null}
+
+        <div className="form-field">
+          <label htmlFor="estado">Estado</label>
+          <select id="estado" onChange={(evento) => cambiar({ estado: evento.target.value })} value={valores.estado}>
+            <option value="">Todos los estados</option>
+            {estados.map((estado) => (
+              <option key={estado.valor} value={estado.valor}>{estado.etiqueta}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="fase">Fase</label>
+          <select id="fase" onChange={(evento) => cambiar({ fase: evento.target.value })} value={valores.fase ?? ""}>
+            <option value="">Todas las fases</option>
+            {fasesDelCatalogo.map((fase) => (
+              <option key={fase} value={fase}>{ETIQUETAS_FASE_ORDEN[fase]}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="prioridad">Prioridad</label>
+          <select id="prioridad" onChange={(evento) => cambiar({ prioridad: evento.target.value })} value={valores.prioridad}>
+            <option value="">Todas las prioridades</option>
+            <option value="alta">Alta</option>
+            <option value="media">Media</option>
+            <option value="baja">Baja</option>
+          </select>
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="tipo">Tipo de mantenimiento</label>
+          <select id="tipo" onChange={(evento) => cambiar({ tipo: evento.target.value })} value={valores.tipo}>
+            <option value="">Todos los tipos</option>
+            <option value="preventivo">Preventivo</option>
+            <option value="correctivo">Correctivo</option>
+          </select>
+        </div>
+
+        <FiltroFecha
+          alCambiar={(fechaDesde, fechaHasta) => cambiar({ fechaDesde, fechaHasta })}
+          etiqueta="Creada"
+          fechaDesde={valores.fechaDesde}
+          fechaHasta={valores.fechaHasta}
+          id="fechaCreacion"
+        />
+
+        <div className="form-field campo-casilla">
+          <label className="flex items-center gap-2" htmlFor="soloActivas">
+            <input
+              checked={valores.soloActivas ?? false}
+              id="soloActivas"
+              onChange={(evento) => cambiar({ soloActivas: evento.target.checked })}
+              role="switch"
+              type="checkbox"
+            />
+            Solo órdenes activas
+          </label>
+        </div>
+
+        <div className="form-field campo-casilla">
+          <label className="flex items-center gap-2" htmlFor="conSugerencias">
+            <input
+              checked={valores.conSugerencias}
+              id="conSugerencias"
+              onChange={(evento) => cambiar({ conSugerencias: evento.target.checked })}
+              role="switch"
+              type="checkbox"
+            />
+            Solo con recomendaciones de IA
+          </label>
+        </div>
+          <div className="barra-filtros-acciones">
+            <button className="secondary-button" onClick={() => limpiar(VACIOS)} type="button">
+              Limpiar filtros
+            </button>
+          </div>
+        </fieldset>
+      ) : null}
     </form>
   );
 }

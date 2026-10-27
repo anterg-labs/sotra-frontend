@@ -124,4 +124,24 @@ describe("EditorRepuestosOrden", () => {
     expect(Number.isNaN(alCambiar.mock.calls[0][0][0].cantidad)).toBe(true);
     expect(screen.getByRole("alert")).toHaveTextContent("entera de 1 en adelante");
   });
+
+  it("con más de cinco repuestos pagina de a cinco y, sin repuestos de más, no muestra la paginación", () => {
+    const lineas = Array.from({ length: 7 }, (_, indice) => ({ repuesto: repuesto(indice + 1), cantidad: 1 }));
+    const { unmount } = render(<Envoltorio inicial={lineas.slice(0, 5)} />);
+    expect(screen.queryByRole("navigation", { name: "Páginas de repuestos de la orden" })).not.toBeInTheDocument();
+    unmount();
+
+    render(<Envoltorio inicial={lineas} />);
+    expect(within(screen.getByRole("list", { name: "Repuestos seleccionados" })).getAllByRole("listitem")).toHaveLength(5);
+    expect(screen.getByText("Página 1 de 2 · 7 repuestos")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Anterior" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Siguiente" }));
+    expect(within(screen.getByRole("list", { name: "Repuestos seleccionados" })).getAllByRole("listitem")).toHaveLength(2);
+    expect(screen.getByText("Página 2 de 2 · 7 repuestos")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Siguiente" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Quitar R6" }));
+    fireEvent.click(screen.getByRole("button", { name: "Quitar R7" }));
+    expect(screen.queryByRole("navigation", { name: "Páginas de repuestos de la orden" })).not.toBeInTheDocument();
+    expect(within(screen.getByRole("list", { name: "Repuestos seleccionados" })).getAllByRole("listitem")).toHaveLength(5);
+  });
 });

@@ -112,6 +112,11 @@ td {
   text-align: left;
 }
 
+.celda-fecha {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .celda-numerica {
   text-align: center;
   font-variant-numeric: tabular-nums;
@@ -142,7 +147,54 @@ th {
   }
 }
 
+/* Estados y prioridades siempre en una línea (por ejemplo «En progreso»). */
+.status {
+  white-space: nowrap;
+}
+
+/* Resumen de órdenes: una sola franja compacta en lugar de cuatro tarjetas. */
+.resumen-ordenes {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+}
+
+.resumen-ordenes-dato {
+  display: flex;
+  flex: 1 1 150px;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  padding: 9px 16px;
+  border-right: 1px solid var(--borde);
+}
+
+.resumen-ordenes-dato:last-child {
+  border-right: 0;
+}
+
+.resumen-ordenes-dato dt {
+  color: var(--texto-tenue);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.resumen-ordenes-dato dd {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Títulos de columna alineados a la izquierda, igual que su contenido. */
+th:has(> .encabezado-ordenable) {
+  text-align: left;
+}
+
 .encabezado-ordenable {
+  text-align: left;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -230,6 +282,66 @@ label:has(input:disabled) {
   cursor: not-allowed;
 }
 
+/* Ruta de navegación («Órdenes de trabajo / Orden N° 8») sobre el contenido de las pantallas de segundo nivel. */
+.ruta-navegacion {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 18px 34px 0;
+}
+
+.ruta-navegacion ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+
+.ruta-navegacion li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--texto-tenue);
+}
+
+.ruta-navegacion li + li::before {
+  content: "/";
+  color: var(--borde-fuerte);
+}
+
+.ruta-navegacion a {
+  color: var(--acento);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ruta-navegacion a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ruta-navegacion [aria-current="page"] {
+  color: var(--texto);
+  font-weight: 600;
+}
+
+.ruta-navegacion + .page-content {
+  padding-top: 16px;
+}
+
+@media (max-width: 760px) {
+  .ruta-navegacion {
+    padding: 14px 18px 0;
+  }
+
+  .ruta-navegacion + .page-content {
+    padding-top: 12px;
+  }
+}
+
 .page-content {
   max-width: 1500px;
   margin: 0 auto;
@@ -246,7 +358,7 @@ label:has(input:disabled) {
 
 .encabezado-volver {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 14px;
   min-width: 0;
 }
@@ -257,7 +369,7 @@ label:has(input:disabled) {
   align-items: center;
   justify-content: center;
   width: 40px;
-  height: 40px;
+  min-height: 40px;
   border: 1px solid var(--borde);
   border-radius: var(--radio-m);
   background: var(--superficie);
@@ -545,7 +657,17 @@ label:has(input:disabled) {
 }
 
 .barra-filtros .campo-busqueda {
-  flex: 2 1 260px;
+  flex: 1 1 280px;
+  max-width: 460px;
+}
+
+/* El botón de filtros avanzados queda junto al buscador; «Limpiar filtros» al final del panel. */
+.barra-filtros:has(.boton-filtros-avanzados) > .barra-filtros-acciones {
+  margin-left: 0;
+}
+
+.filtros-avanzados .barra-filtros-acciones {
+  margin-left: auto;
 }
 
 .barra-filtros .form-field label {

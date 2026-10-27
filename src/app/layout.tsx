@@ -7,6 +7,7 @@ import { ProveedorEstadosOrden } from "@/componentes/estados-orden";
 import { EstructuraAplicacion } from "@/componentes/estructura-aplicacion";
 import { RegistroServiceWorker } from "@/componentes/registro-service-worker";
 import { ProveedorSesion } from "@/componentes/sesion/contexto-sesion";
+import { RutaDeNavegacion } from "@/componentes/ruta-de-navegacion";
 import { PantallaSinAcceso } from "@/componentes/sesion/pantalla-sin-acceso";
 import { COOKIE_VISTA, leerModoVista } from "@/seguridad/vista";
 import { listarEstadosOrdenTrabajoOVacio } from "@/servicios/servidor/ordenes-trabajo";
@@ -53,6 +54,7 @@ export default async function LayoutRaiz(props: PropiedadesLayoutRaiz) {
   } else if (sesion.estado === "con-acceso") {
     contenido = (
       <EstructuraAplicacion modoVista={modoVista}>
+        <RutaDeNavegacion />
         {props.children}
         {props.modal}
       </EstructuraAplicacion>

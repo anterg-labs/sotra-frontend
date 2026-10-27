@@ -281,6 +281,8 @@ describe("barra de filtros de órdenes (en vivo)", () => {
   it("combina todos los filtros en la URL y los limpia", async () => {
     render(conNavegacion(<BarraFiltrosOrdenes activos={[activo as never]} clientes={[cliente as never]} filtros={filtrosVacios} tecnicos={[tecnico as never]} />));
     fireEvent.change(screen.getByLabelText("Buscar"), { target: { value: "fuga" } });
+    expect(screen.queryByRole("combobox", { name: "Cliente" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
     fireEvent.focus(screen.getByRole("combobox", { name: "Cliente" }));
     fireEvent.click(screen.getByRole("option", { name: "ACME" }));
     fireEvent.focus(screen.getByRole("combobox", { name: "Activo" }));

@@ -27,10 +27,10 @@ const sinFiltrosDeIndicadores = { fechaDesde: "", fechaHasta: "", tecnicoId: "",
 
 function TarjetaResumen(props: { etiqueta: string; valor: number }) {
   return (
-    <article className="panel flex items-center justify-between px-4 py-3">
-      <p className="text-[11px] font-bold uppercase tracking-wide texto-tenue">{props.etiqueta}</p>
-      <p className="text-xl font-bold">{props.valor}</p>
-    </article>
+    <div className="resumen-ordenes-dato">
+      <dt>{props.etiqueta}</dt>
+      <dd>{props.valor}</dd>
+    </div>
   );
 }
 
@@ -73,12 +73,12 @@ export default async function PaginaOrdenesTrabajo(props: { searchParams: Promis
       </header>
 
       {resumen !== null ? (
-        <section aria-label="Resumen de órdenes de trabajo" className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <section aria-label="Resumen de órdenes de trabajo" className="mb-4"><dl className="panel resumen-ordenes">
           <TarjetaResumen etiqueta="Total de órdenes" valor={resumen.totalOrdenes} />
           <TarjetaResumen etiqueta={ETIQUETAS_FASE_ORDEN.pendiente} valor={contarPorFase(resumen.ordenesPorEstado, estados, "pendiente")} />
           <TarjetaResumen etiqueta={ETIQUETAS_FASE_ORDEN.en_curso} valor={contarPorFase(resumen.ordenesPorEstado, estados, "en_curso")} />
           <TarjetaResumen etiqueta={ETIQUETAS_FASE_ORDEN.cerrada} valor={contarPorFase(resumen.ordenesPorEstado, estados, "cerrada")} />
-        </section>
+        </dl></section>
       ) : null}
 
       <ProveedorNavegacionListado etiquetaCarga={ETIQUETA_CARGA}>

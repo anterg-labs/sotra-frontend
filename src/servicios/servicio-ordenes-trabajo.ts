@@ -15,6 +15,7 @@ import type {
   EstadoOrdenTrabajo,
   FiltrosOrdenesTrabajo,
   SolicitarSugerenciaInput,
+  SugerenciaObtenida,
 } from "@/tipos/orden-trabajo";
 import type { Usuario } from "@/tipos/usuario";
 
@@ -167,7 +168,11 @@ export async function solicitarSugerenciaOrdenTrabajo(input: SolicitarSugerencia
   }
 
   const respuesta = await apiSolicitarSugerenciaOrdenTrabajo(input);
-  return respuesta.sugerencia;
+  const sugerenciaObtenida: SugerenciaObtenida = {
+    texto: respuesta.sugerencia,
+    sinIa: respuesta.modo === "sin_ia",
+  };
+  return sugerenciaObtenida;
 }
 
 export function leerSugerenciasTemporales(clave: string) {

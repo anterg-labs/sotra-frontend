@@ -226,12 +226,38 @@ describe("servicio-ordenes-trabajo", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => {
-        return new Response(JSON.stringify({ sugerencia: "Texto de la documentación" }), { status: 200 });
+        return new Response(JSON.stringify({ sugerencia: "Texto de la documentación", modo: "ia" }), { status: 200 });
       }),
     );
 
-    const texto = await solicitarSugerenciaOrdenTrabajo({ descripcion: "Cambiar aceite", numero: 1, sesion: "" });
+    const sugerencia = await solicitarSugerenciaOrdenTrabajo({ descripcion: "Cambiar aceite", numero: 1, sesion: "" });
 
-    expect(texto).toBe("Texto de la documentación");
+    expect(sugerencia).toEqual({ texto: "Texto de la documentación", sinIa: false });
+  });
+
+  it("indica cuando la sugerencia salió sin el asistente de IA", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        return new Response(JSON.stringify({ sugerencia: "Texto del manual", modo: "sin_ia" }), { status: 200 });
+      }),
+    );
+
+    const sugerencia = await solicitarSugerenciaOrdenTrabajo({ descripcion: "Cambiar aceite", numero: 1, sesion: "" });
+
+    expect(sugerencia).toEqual({ texto: "Texto del manual", sinIa: true });
+  });
+
+  it("un resumen descartado por el control de números no se avisa como IA caída", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        return new Response(JSON.stringify({ sugerencia: "Texto del manual", modo: "descartada" }), { status: 200 });
+      }),
+    );
+
+    const sugerencia = await solicitarSugerenciaOrdenTrabajo({ descripcion: "Cambiar aceite", numero: 1, sesion: "" });
+
+    expect(sugerencia.sinIa).toBe(false);
   });
 });

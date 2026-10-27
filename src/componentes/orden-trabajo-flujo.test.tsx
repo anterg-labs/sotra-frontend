@@ -218,6 +218,7 @@ describe("SugerenciasOrdenTrabajo", () => {
     const alCambiar = vi.fn();
     render(
       <SugerenciasOrdenTrabajo
+        activoId="7"
         alCambiarSugerencias={alCambiar}
         claveSugerenciasTemporales="clave"
         descripcion="Fuga de aceite"
@@ -229,18 +230,18 @@ describe("SugerenciasOrdenTrabajo", () => {
   }
 
   it("solicita una sugerencia con número de intento y sesión, la agrega y la guarda como temporal", async () => {
-    s.solicitarSugerenciaOrdenTrabajo.mockResolvedValue("Revisar sellos");
+    s.solicitarSugerenciaOrdenTrabajo.mockResolvedValue({ texto: "Revisar sellos", sinIa: false });
     const alCambiar = dibujar(["Previa"]);
     fireEvent.click(screen.getByRole("button", { name: "Solicitar sugerencia" }));
     expect(screen.getByRole("button", { name: "Solicitando…" })).toBeDisabled();
     expect(screen.getByText(/buscando la sugerencia en la documentación técnica/)).toBeInTheDocument();
     await waitFor(() => expect(alCambiar).toHaveBeenCalledWith(["Previa", "Revisar sellos"]));
-    expect(s.solicitarSugerenciaOrdenTrabajo).toHaveBeenCalledWith({ descripcion: "Fuga de aceite", numero: 2, sesion: "sesion-1" });
+    expect(s.solicitarSugerenciaOrdenTrabajo).toHaveBeenCalledWith({ descripcion: "Fuga de aceite", numero: 2, sesion: "sesion-1", activoId: 7 });
     expect(JSON.parse(localStorage.getItem("clave") ?? "[]")).toEqual(["Previa", "Revisar sellos"]);
   });
 
   it("vuelve a solicitar reemplazando solo la sugerencia elegida, y permite editar y quitar", async () => {
-    s.solicitarSugerenciaOrdenTrabajo.mockResolvedValue("Nueva");
+    s.solicitarSugerenciaOrdenTrabajo.mockResolvedValue({ texto: "Nueva", sinIa: false });
     const alCambiar = dibujar(["Una", "Dos"]);
     fireEvent.click(screen.getAllByRole("button", { name: "Volver a solicitar" })[1]);
     await waitFor(() => expect(alCambiar).toHaveBeenCalledWith(["Una", "Nueva"]));
@@ -261,15 +262,30 @@ describe("SugerenciasOrdenTrabajo", () => {
     expect(await screen.findByText("No se pudo obtener la sugerencia.")).toBeInTheDocument();
   });
 
-  it("sin clave temporal no usa el almacenamiento", async () => {
-    s.solicitarSugerenciaOrdenTrabajo.mockResolvedValue("X");
+  it("avisa cuando el asistente de IA no está disponible y quita el aviso con la siguiente sugerencia", async () => {
+    s.solicitarSugerenciaOrdenTrabajo
+      .mockResolvedValueOnce({ texto: "Texto del manual", sinIa: true })
+      .mockResolvedValueOnce({ texto: "Resumen", sinIa: false });
+    dibujar();
+    fireEvent.click(screen.getByRole("button", { name: "Solicitar sugerencia" }));
+    const aviso = await screen.findByText(/El asistente de IA no está disponible en este momento/);
+    expect(aviso).toHaveAttribute("role", "status");
+    expect(aviso).toHaveTextContent("Verificá los valores con la fuente indicada.");
+
+    fireEvent.click(screen.getByRole("button", { name: "Solicitar sugerencia" }));
+    await waitFor(() => expect(screen.queryByText(/El asistente de IA no está disponible/)).not.toBeInTheDocument());
+  });
+
+  it("sin clave temporal no usa el almacenamiento, y sin activo elegido no lo envía", async () => {
+    s.solicitarSugerenciaOrdenTrabajo.mockResolvedValue({ texto: "X", sinIa: false });
     const alCambiar = vi.fn();
     render(
-      <SugerenciasOrdenTrabajo alCambiarSugerencias={alCambiar} claveSugerenciasTemporales="" descripcion="d" sesion="s" sugerencias={[]} />,
+      <SugerenciasOrdenTrabajo activoId="" alCambiarSugerencias={alCambiar} claveSugerenciasTemporales="" descripcion="d" sesion="s" sugerencias={[]} />,
     );
     fireEvent.click(screen.getByRole("button", { name: "Solicitar sugerencia" }));
     await waitFor(() => expect(alCambiar).toHaveBeenCalledWith(["X"]));
     expect(localStorage.length).toBe(0);
+    expect(s.solicitarSugerenciaOrdenTrabajo).toHaveBeenCalledWith({ descripcion: "d", numero: 1, sesion: "s", activoId: null });
   });
 });
 

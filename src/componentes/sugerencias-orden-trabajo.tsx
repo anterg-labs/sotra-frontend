@@ -7,6 +7,7 @@ import type { SolicitarSugerenciaInput } from "@/tipos/orden-trabajo";
 
 type PropiedadesSugerenciasOrdenTrabajo = {
   descripcion: string;
+  activoId: string;
   sesion: string;
   sugerencias: string[];
   claveSugerenciasTemporales: string;
@@ -17,6 +18,7 @@ export function SugerenciasOrdenTrabajo(props: PropiedadesSugerenciasOrdenTrabaj
   const [cantidadSolicitudes, setCantidadSolicitudes] = useState(props.sugerencias.length);
   const [estaSolicitandoSugerencia, setEstaSolicitandoSugerencia] = useState(false);
   const [errorSugerencia, setErrorSugerencia] = useState("");
+  const [asistenteNoDisponible, setAsistenteNoDisponible] = useState(false);
   const referenciaError = useRef<HTMLParagraphElement>(null);
 
   function actualizarSugerencias(nuevasSugerencias: string[]) {
@@ -31,11 +33,13 @@ export function SugerenciasOrdenTrabajo(props: PropiedadesSugerenciasOrdenTrabaj
       descripcion: props.descripcion,
       numero: cantidadSolicitudes + 1,
       sesion: props.sesion,
+      activoId: props.activoId === "" ? null : Number(props.activoId),
     };
 
-    const textoObtenido = await solicitarSugerenciaOrdenTrabajo(datosSugerencia);
+    const sugerenciaObtenida = await solicitarSugerenciaOrdenTrabajo(datosSugerencia);
     setCantidadSolicitudes(cantidadSolicitudes + 1);
-    return textoObtenido;
+    setAsistenteNoDisponible(sugerenciaObtenida.sinIa);
+    return sugerenciaObtenida.texto;
   }
 
   function mostrarErrorSugerencia(error: unknown) {
@@ -50,6 +54,7 @@ export function SugerenciasOrdenTrabajo(props: PropiedadesSugerenciasOrdenTrabaj
   async function pedirSugerencia() {
     setEstaSolicitandoSugerencia(true);
     setErrorSugerencia("");
+    setAsistenteNoDisponible(false);
 
     try {
       const textoObtenido = await obtenerTextoSugerencia();
@@ -69,6 +74,7 @@ export function SugerenciasOrdenTrabajo(props: PropiedadesSugerenciasOrdenTrabaj
   async function volverAPedirSugerencia(indiceSugerencia: number) {
     setEstaSolicitandoSugerencia(true);
     setErrorSugerencia("");
+    setAsistenteNoDisponible(false);
 
     try {
       const textoObtenido = await obtenerTextoSugerencia();
@@ -141,7 +147,13 @@ export function SugerenciasOrdenTrabajo(props: PropiedadesSugerenciasOrdenTrabaj
           </button>
         </div>
         {mensajeBuscandoSugerencia}
-        {errorSugerencia ? <p className="field-error" ref={referenciaError} role="alert" tabIndex={-1}>{errorSugerencia}</p> : null}
+        {asistenteNoDisponible ? (
+          <p className="aviso-sin-ia" role="status">
+            El asistente de IA no está disponible en este momento. Se muestra el texto original del manual, sin resumir.
+            Verificá los valores con la fuente indicada.
+          </p>
+        ) : null}
+        {errorSugerencia ?<p className="field-error" ref={referenciaError} role="alert" tabIndex={-1}>{errorSugerencia}</p> : null}
       </div>
 
       {props.sugerencias.map((textoSugerencia, indice) => (

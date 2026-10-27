@@ -77,10 +77,22 @@ export type SolicitarSugerenciaInput = {
   descripcion: string;
   numero: number;
   sesion: string;
+  /** Con activo, la búsqueda usa solo la documentación de esa máquina y la general. */
+  activoId?: number | null;
 };
+
+/** Cómo se redactó la sugerencia: resumen de la IA, texto del manual con la IA caída o resumen descartado. */
+export type ModoSugerencia = "ia" | "sin_ia" | "descartada";
 
 export type SugerenciaOrdenTrabajo = {
   sugerencia: string;
+  modo?: ModoSugerencia;
+};
+
+export type SugerenciaObtenida = {
+  texto: string;
+  /** El asistente de IA no respondió: el texto es el del manual sin resumir y hay que avisarlo. */
+  sinIa: boolean;
 };
 
 export type ActualizarOrdenTrabajoInput = CrearOrdenTrabajoInput;

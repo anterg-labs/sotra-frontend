@@ -348,7 +348,7 @@ describe("servicio-ordenes-trabajo", () => {
   it("solicita sugerencias: valida, traduce 422 y 5xx, y devuelve el texto", async () => {
     const { llamadas } = simularFetch(() => ({ cuerpo: { sugerencia: "Revisar sellos" } }));
     await expect(solicitarSugerenciaOrdenTrabajo({ descripcion: " ", numero: 1, sesion: "s" })).rejects.toThrow("Escribí la descripción");
-    expect(await solicitarSugerenciaOrdenTrabajo({ descripcion: "Fuga", numero: 1, sesion: "s" })).toBe("Revisar sellos");
+    expect(await solicitarSugerenciaOrdenTrabajo({ descripcion: "Fuga", numero: 1, sesion: "s" })).toEqual({ texto: "Revisar sellos", sinIa: false });
     expect(llamadas[0]).toMatchObject({ metodo: "POST", url: "/api/v1/ordenes-trabajo/sugerencia" });
 
     simularFetch(() => ({ estado: 422, cuerpo: {} }));

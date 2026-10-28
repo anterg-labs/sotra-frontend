@@ -7,6 +7,9 @@ import { GraficoBarras } from "@/componentes/graficos";
 import { apiObtenerDesempeno } from "@/servicios/api/api-reportes";
 import type { FiltrosIndicadores, MaquinariaDesempeno } from "@/tipos/reporte";
 import { PlanificacionEnHoras, PlanificacionPorTipo } from "./planificacion-en-horas";
+import { Estacionalidad } from "./estacionalidad";
+import { RepuestosPorModelo } from "./repuestos-por-modelo";
+import { ResumenPorCliente } from "./resumen-por-cliente";
 
 function porcentajeDePreventivas(elemento: MaquinariaDesempeno) {
   return elemento.ordenes === 0 ? 0 : (elemento.preventivas * 100) / elemento.ordenes;
@@ -132,6 +135,7 @@ export function SeccionMaquinaria({ filtros }: { filtros: FiltrosIndicadores }) 
   const clave = JSON.stringify(filtros);
   const desempeno = useDatos(() => apiObtenerDesempeno(filtros), clave);
   return (
+    <>
     <BloqueDeDatos cargando="Cargando la maquinaria…" {...desempeno}>
       {(datos) => (
         <div className="seccion-grilla">
@@ -144,5 +148,9 @@ export function SeccionMaquinaria({ filtros }: { filtros: FiltrosIndicadores }) 
         </div>
       )}
     </BloqueDeDatos>
+    <Estacionalidad filtros={filtros} />
+    <RepuestosPorModelo filtros={filtros} />
+    <ResumenPorCliente filtros={filtros} />
+    </>
   );
 }

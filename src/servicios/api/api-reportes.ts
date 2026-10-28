@@ -10,7 +10,6 @@ import type {
   Tendencias,
   DesempenoOperativo,
   Tiempos,
-  Atipicas,
   Avisos,
   Comparativa,
   Desgaste,
@@ -74,11 +73,6 @@ export async function apiObtenerComparativa(filtros: FiltrosIndicadores) {
 export async function apiObtenerEnvejecimiento(filtros: FiltrosIndicadores) {
   const ruta = "/api/v1/reportes/envejecimiento" + construirConsultaAnalisis(filtros);
   return (await leerDatosApi(ruta, { cache: "no-store" }, "No se pudo obtener el envejecimiento de las órdenes.")) as Envejecimiento;
-}
-
-export async function apiObtenerAtipicas(filtros: FiltrosIndicadores) {
-  const ruta = "/api/v1/reportes/analisis/atipicas" + construirConsultaAnalisis(filtros);
-  return (await leerDatosApi(ruta, { cache: "no-store" }, "No se pudieron obtener las órdenes atípicas.")) as Atipicas;
 }
 
 export async function apiObtenerDesgaste(filtros: FiltrosIndicadores) {

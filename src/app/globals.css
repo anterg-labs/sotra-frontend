@@ -1,4 +1,19 @@
 @import "tailwindcss";
+
+.estacionalidad-panel { min-width: 0; margin-top: 1.25rem; }
+.estacionalidad-desplazable { max-width: 100%; overflow-x: auto; border-radius: .5rem; }
+.estacionalidad-desplazable:focus-visible { outline: 2px solid var(--color-primary, #1d4ed8); outline-offset: 3px; }
+table.tabla-grafico.estacionalidad-tabla { min-width: 740px; width: 100%; }
+table.estacionalidad-tabla td, .estacionalidad-tabla thead th:not(:first-child) { text-align: center; font-variant-numeric: tabular-nums; }
+.estacionalidad-tabla th:first-child { min-width: 9rem; text-align: left; }
+.estacionalidad-mapa td { border: 2px solid var(--fondo-panel, #fff); }
+.estacionalidad-leyenda { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem; margin-top: .75rem; }
+.estacionalidad-leyenda span { display: inline-block; width: 1rem; height: 1rem; border-radius: .2rem; }
+.estacionalidad-nivel-0 { background: #f1f5f9; color: #334155; }
+.estacionalidad-nivel-1 { background: #dbeafe; color: #1e3a8a; }
+.estacionalidad-nivel-2 { background: #93c5fd; color: #172554; }
+.estacionalidad-nivel-3 { background: #1d4ed8; color: #fff; }
+.estacionalidad-nivel-4 { background: #1e3a8a; color: #fff; }
 @import "@fontsource-variable/inter/wght.css";
 @import "@fontsource-variable/inter/wght-italic.css";
 
@@ -2557,6 +2572,21 @@ input[type="checkbox"][role="switch"]:disabled {
   z-index: 20;
   /* Una sola fila con tantas columnas iguales como opciones tenga el rol (de 3 a 5). */
   display: grid;
+.grafico-punto-edad-uso {
+  fill: var(--grafico-neutro);
+  fill-opacity: 0.7;
+  stroke: var(--fondo);
+  stroke-width: 1.5;
+}
+
+.grafico-dispersion-edad-uso {
+  overflow-x: auto;
+}
+
+.grafico-dispersion-edad-uso svg {
+  min-width: 560px;
+}
+
   grid-auto-columns: minmax(0, 1fr);
   grid-auto-flow: column;
   padding-bottom: env(safe-area-inset-bottom);

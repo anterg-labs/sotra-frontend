@@ -17,12 +17,26 @@ const api = vi.hoisted(() => ({
   apiObtenerEnvejecimiento: vi.fn(),
   apiObtenerTiempos: vi.fn(),
   apiObtenerComparativa: vi.fn(),
-  apiObtenerAtipicas: vi.fn(),
   apiObtenerDesgaste: vi.fn(),
 }));
 vi.mock("@/servicios/api/api-reportes", () => api);
+vi.mock("@/servicios/api/api-estacionalidad", () => ({
+  apiObtenerEstacionalidad: vi.fn().mockResolvedValue({ fechaDesde: null, fechaHasta: null, total: 0, tipos: [],
+    meses: Array.from({ length: 12 }, (_, indice) => ({ mes: indice + 1, correctivas: 0 })) }),
+}));
+vi.mock("@/servicios/api/api-repuestos-por-modelo", () => ({
+  apiObtenerRepuestosPorModelo: vi.fn().mockResolvedValue({ fechaDesde: null, fechaHasta: null, modelos: [] }),
+}));
+vi.mock("@/servicios/api/api-resumen-por-cliente", () => ({
+  apiObtenerResumenPorCliente: vi.fn().mockResolvedValue({ fechaDesde: null, fechaHasta: null, diasReincidencia: 90, clientes: [] }),
+}));
 vi.mock("@/servicios/api/api-demoras-etapas", () => ({
   apiObtenerDemorasEtapas: vi.fn().mockResolvedValue({ calculadoEn: "2026-10-27T00:00:00Z", etapas: [], demoradas: { elementos: [], pagina: 1, tamanoPagina: 20, totalElementos: 0, totalPaginas: 0 } }),
+}));
+vi.mock("@/servicios/api/api-desgaste-edad-uso", () => ({
+  apiObtenerDesgasteEdadUso: vi.fn().mockResolvedValue({
+    fechaDesde: null, fechaHasta: null, totalActivos: 0, conEdad: 0, conUso: 0, activos: [],
+  }),
 }));
 
 const filtros = { fechaDesde: "", fechaHasta: "", clienteId: "", activoId: "", estado: "", tipo: "" };
@@ -264,33 +278,28 @@ describe("secciones del tablero", () => {
     expect(screen.getAllByText("10 h").length).toBeGreaterThan(0);
   });
 
-  it("Análisis avanzado compara períodos, lista atípicas y avisa cuando faltan datos de desgaste", async () => {
+  it("Análisis avanzado compara períodos y avisa cuando faltan datos de desgaste", async () => {
     const comparativa: Comparativa = {
       periodo: { desde: "2026-07-01", hasta: "2026-09-28" }, periodoAnterior: { desde: "2026-04-03", hasta: "2026-06-30" }, periodoAnioAnterior: { desde: "2025-07-01", hasta: "2025-09-28" },
       metricas: [metrica({})],
     };
     api.apiObtenerComparativa.mockResolvedValue(comparativa);
-    api.apiObtenerAtipicas.mockResolvedValue({ minimoPorGrupo: 8, elementos: [{ ordenId: 31, nombreActivo: "Retro 1", tipoMaquina: "Retroexcavadora", horas: 90, medianaHoras: 20, limiteHoras: 50, vecesLaMediana: 4.5 }] });
-    api.apiObtenerDesgaste.mockResolvedValue({ minimoDeIntervalos: 3, minimoParaPatron: 20, activos: [], patrones: [], datosInsuficientes: true } as Desgaste);
+    api.apiObtenerDesgaste.mockResolvedValue({ minimoDeIntervalos: 3, activos: [], datosInsuficientes: true } as Desgaste);
     render(<SeccionAnalisisAvanzado filtros={filtros} />);
     expect(await screen.findByText("Este período frente al anterior")).toBeInTheDocument();
     expect(screen.getByText("+33,3 %")).toBeInTheDocument();
-    expect(await screen.findByRole("link", { name: "31" })).toHaveAttribute("href", "/ordenes-trabajo/31");
     expect(await screen.findByText(/Datos insuficientes: hacen falta al menos 4 correctivas/)).toBeInTheDocument();
   });
 
-  it("Análisis avanzado muestra los intervalos y el patrón de fallas cuando hay datos", async () => {
+  it("Análisis avanzado muestra los intervalos cuando hay datos", async () => {
     api.apiObtenerComparativa.mockResolvedValue({ periodo: { desde: "a", hasta: "b" }, periodoAnterior: { desde: "a", hasta: "b" }, periodoAnioAnterior: { desde: "a", hasta: "b" }, metricas: [] });
-    api.apiObtenerAtipicas.mockResolvedValue({ minimoPorGrupo: 8, elementos: [] });
     api.apiObtenerDesgaste.mockResolvedValue({
-      minimoDeIntervalos: 3, minimoParaPatron: 20, datosInsuficientes: false,
+      minimoDeIntervalos: 3, datosInsuficientes: false,
       activos: [{ activoId: 5, nombreActivo: "Retro 1", cliente: "ACME", modelo: "BHL75", intervalosDias: [90, 60, 30], promedioDias: 60, pendienteDiasPorIntervalo: -30, seAcortan: true, unidadUso: "kilometros", usoPromedioEntreFallas: 1500 }],
-      patrones: [{ modeloId: 9, modelo: "BHL75", intervalos: 25, forma: 1.8, escalaDias: 70, ajusteR2: 0.97, patron: "desgaste" }],
     } as Desgaste);
     render(<SeccionAnalisisAvanzado filtros={filtros} />);
     expect(await screen.findByText("Se acortan")).toBeInTheDocument();
     expect(screen.getByText("1.500 km")).toBeInTheDocument();
-    expect(screen.getByText("Desgaste")).toBeInTheDocument();
-    expect(screen.getByText("No hay órdenes atípicas en el período.")).toBeInTheDocument();
+    expect(screen.queryByText("Patrón de fallas por modelo")).not.toBeInTheDocument();
   });
 });

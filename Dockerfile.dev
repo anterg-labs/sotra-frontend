@@ -20,7 +20,7 @@ ENV WATCHPACK_POLLING=true
 ENV HOSTNAME="0.0.0.0"
 ENV NODE_OPTIONS=--no-experimental-webstorage
 
-RUN mkdir -p /app/.next && chown node:node /app /app/.next
+RUN mkdir -p /app/.next /var/lib/sotra/errores && chown node:node /app /app/.next && chmod 1777 /var/lib/sotra/errores
 USER node
 
 EXPOSE 3000

@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## Version 1.0.87 (2026-10-27)
+
+- Sesión: los fallos de sesión del servidor se registran mediante la API, con respaldo local temporal mientras la API o la base no responden.
+
+## Version 1.0.86 (2026-10-27)
+
+- Sesión: la lectura inicial de `/api/v1/sesion` reintenta hasta dos veces cuando la API local está temporalmente indisponible o devuelve un error 5xx; conserva el error tras agotar los intentos y no reintenta respuestas de permisos.
+
 ## Version 1.0.85 (2026-10-27)
 
 - Reportes: consumo de repuestos en unidades y controles independientes para ocultar o mostrar cada indicador, gráfica y reporte desde Configuración → Reportes.

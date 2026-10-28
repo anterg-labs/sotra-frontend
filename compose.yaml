@@ -10,6 +10,7 @@ services:
     environment:
       # Dirección de la API alcanzable desde el contenedor (la usa el servidor de Next, no el navegador).
       API_URL_INTERNA: ${API_URL_INTERNA:-}
+      SOTRA_ERROR_SPOOL_DIR: /var/lib/sotra/errores
       # Sesión con Keycloak (Auth.js): se leen al ejecutar, no al construir.
       AUTH_SECRET: ${AUTH_SECRET:-}
       AUTH_URL: ${AUTH_URL:-http://localhost}
@@ -20,6 +21,8 @@ services:
       - "host.docker.internal:host-gateway"
     ports:
       - "80:3000" # mantuve tu puerto 3100
+    volumes:
+      - errores_pendientes:/var/lib/sotra/errores
 
 # este servicio refleja los cambios en tiempo real: la carpeta del proyecto esta montada dentro del contenedor
   sotra-frontend-dev:
@@ -33,6 +36,8 @@ services:
     restart: unless-stopped
     env_file:
       - .env.dev
+    environment:
+      SOTRA_ERROR_SPOOL_DIR: /var/lib/sotra/errores
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
@@ -40,6 +45,7 @@ services:
       - /app/node_modules
       # Caché de compilación de `next dev` con nombre: sobrevive a `up -V` y a recrear el contenedor (si no, cada ruta vuelve a tardar segundos).
       - sotra_frontend_next:/app/.next
+      - errores_pendientes:/var/lib/sotra/errores
 
 # este es por su qures correr unicamente los unitest dentro del contendor y ta, solo hace eso
   sotra-frontend-test:
@@ -75,3 +81,6 @@ services:
 
 volumes:
   sotra_frontend_next:
+  errores_pendientes:
+    name: sotra_errores_pendientes
+    external: true

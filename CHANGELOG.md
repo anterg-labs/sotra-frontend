@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.88 (2026-10-27)
+
+- Inicio: octava tarjeta «Sin asignar» con contador real y acceso al listado filtrado. Órdenes de trabajo conserva el filtro en búsqueda, paginación y vista de calendario.
+
 ## Version 1.0.87 (2026-10-27)
 
 - Sesión: los fallos de sesión del servidor se registran mediante la API, con respaldo local temporal mientras la API o la base no responden.

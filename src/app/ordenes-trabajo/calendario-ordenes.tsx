@@ -85,12 +85,12 @@ export function CalendarioOrdenes({ filtros }: PropiedadesCalendario) {
   const meses = useMemo(() => Array.from({ length: cantidadDeMeses }, (_, indice) => sumarMeses(mesInicial, indice)), [mesInicial, cantidadDeMeses]);
   const desde = primerDiaDelMes(meses[0]);
   const hasta = ultimoDiaDelMes(meses[meses.length - 1]);
-  const clave = JSON.stringify({ desde, hasta, conEliminadas, c: filtros.clienteId, a: filtros.activoId, e: filtros.estado, t: filtros.tipo, p: filtros.prioridad });
+  const clave = JSON.stringify({ desde, hasta, conEliminadas, c: filtros.clienteId, a: filtros.activoId, e: filtros.estado, t: filtros.tipo, p: filtros.prioridad, sinAsignar: filtros.sinAsignar });
   const calendario = useDatos(
     () =>
       apiObtenerCalendarioOrdenes({
         desde, hasta, clienteId: filtros.clienteId, activoId: filtros.activoId, estado: filtros.estado,
-        tipo: filtros.tipo, prioridad: filtros.prioridad, incluirEliminadas: conEliminadas,
+        tipo: filtros.tipo, prioridad: filtros.prioridad, incluirEliminadas: conEliminadas, sinAsignar: filtros.sinAsignar,
       }),
     clave,
   );

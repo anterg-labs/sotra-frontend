@@ -1543,6 +1543,11 @@ export interface components {
              * @description Órdenes terminadas pendientes de validación.
              */
             ordenesPendientesDeValidacion?: number | string;
+            /**
+             * Format: int32
+             * @description Órdenes en fase pendiente sin técnico asignado.
+             */
+            ordenesSinAsignar?: number | string;
             /** @description Órdenes más recientes. */
             ordenesRecientes?: components["schemas"]["OrdenTrabajoDto"][];
         };

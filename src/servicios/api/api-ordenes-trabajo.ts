@@ -115,6 +115,7 @@ export type ParametrosCalendario = {
   tipo: string;
   prioridad: string;
   incluirEliminadas: boolean;
+  sinAsignar?: boolean;
 };
 
 /** Órdenes del rango ubicadas por su fecha prevista (hasta 100 días), con los filtros del listado. */
@@ -124,5 +125,6 @@ export async function apiObtenerCalendarioOrdenes(parametros: ParametrosCalendar
     if (parametros[campo] !== "") consulta.set(campo, parametros[campo]);
   }
   if (parametros.incluirEliminadas) consulta.set("incluirEliminadas", "true");
+  if (parametros.sinAsignar) consulta.set("sinAsignar", "true");
   return (await leerDatosApi("/api/v1/ordenes-trabajo/calendario?" + consulta.toString(), { cache: "no-store" }, "No se pudo obtener el calendario de órdenes.")) as RespuestaCalendarioOrdenes;
 }

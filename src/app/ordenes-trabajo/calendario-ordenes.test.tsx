@@ -16,7 +16,7 @@ vi.mock("./[id]/detalle-orden", () => ({
 
 const filtros: FiltrosOrdenesTrabajo = {
   buscar: "", clienteId: "", activoId: "", tecnicoId: "", estado: "", fase: "", prioridad: "", tipo: "",
-  fechaDesde: "", fechaHasta: "", soloActivas: false, conSugerencias: false, vista: "calendario", mes: "2026-10", meses: "", eliminadas: false, pagina: 1,
+  fechaDesde: "", fechaHasta: "", soloActivas: false, sinAsignar: false, conSugerencias: false, vista: "calendario", mes: "2026-10", meses: "", eliminadas: false, pagina: 1,
 };
 
 const orden = (id: number, fecha: string, extra: Record<string, unknown> = {}) => ({
@@ -63,7 +63,7 @@ describe("calendario de órdenes", () => {
 
     expect(await screen.findByRole("button", { name: /Orden 1, Retro 1, Pendiente\. Ver detalle/ })).toBeInTheDocument();
     expect(api.apiObtenerCalendarioOrdenes).toHaveBeenCalledWith({
-      desde: "2026-10-01", hasta: "2026-10-31", clienteId: "3", activoId: "", estado: "", tipo: "correctivo", prioridad: "", incluirEliminadas: false,
+      desde: "2026-10-01", hasta: "2026-10-31", clienteId: "3", activoId: "", estado: "", tipo: "correctivo", prioridad: "", incluirEliminadas: false, sinAsignar: false,
     });
     expect(screen.getByRole("heading", { name: "octubre de 2026" })).toBeInTheDocument();
     const dia = screen.getByRole("button", { name: /Orden 1,/ }).closest("td") as HTMLElement;

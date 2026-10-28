@@ -16,6 +16,7 @@ export function armarAccesos(indicadores: Indicadores, alertas: AlertasMaquinari
     { etiqueta: ETIQUETAS_FASE_ORDEN.pendiente, valor: pendientes, detalle: "Esperan técnico o inicio", href: "/ordenes-trabajo?fase=pendiente" },
     { etiqueta: ETIQUETAS_FASE_ORDEN.en_curso, valor: enCurso, href: "/ordenes-trabajo?fase=en_curso" },
     { etiqueta: ETIQUETAS_FASE_ORDEN.por_validar, valor: indicadores.ordenesPendientesDeValidacion, detalle: "Terminadas sin cerrar", href: "/ordenes-trabajo?fase=por_validar" },
+    { etiqueta: "Sin asignar", valor: indicadores.ordenesSinAsignar, detalle: "Órdenes pendientes de asignación", href: "/ordenes-trabajo?sinAsignar=true", destacado: indicadores.ordenesSinAsignar > 0 },
     {
       etiqueta: "Alertas de maquinaria",
       valor: alertas?.total ?? "—",

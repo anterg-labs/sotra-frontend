@@ -194,6 +194,8 @@ export type FiltrosOrdenesTrabajo = {
   clienteId: string;
   activoId: string;
   tecnicoId: string;
+  /** Solo órdenes en fase pendiente sin técnico asignado. */
+  sinAsignar?: boolean;
   estado: string;
   /** Fase del estado: trae las órdenes de todos los estados de esa fase. */
   fase?: string;

@@ -17,7 +17,7 @@ import { FiltrosAvanzados, hayFiltrosAplicados } from "@/componentes/listado/fil
 type ValoresOrdenes = Omit<FiltrosOrdenesTrabajo, "pagina">;
 const VACIOS: ValoresOrdenes = {
   buscar: "", clienteId: "", activoId: "", tecnicoId: "", estado: "", fase: "", prioridad: "", tipo: "",
-  fechaDesde: "", fechaHasta: "", soloActivas: false, conSugerencias: false, vista: "", mes: "", meses: "", eliminadas: false,
+  fechaDesde: "", fechaHasta: "", soloActivas: false, sinAsignar: false, conSugerencias: false, vista: "", mes: "", meses: "", eliminadas: false,
 };
 
 function nombreVisibleDeActivo(activo: Activo) {
@@ -44,7 +44,7 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
     inicial: {
       buscar: filtros.buscar, clienteId: filtros.clienteId, activoId: filtros.activoId, tecnicoId: filtros.tecnicoId,
       estado: filtros.estado, fase: filtros.fase ?? "", prioridad: filtros.prioridad, tipo: filtros.tipo, fechaDesde: filtros.fechaDesde,
-      fechaHasta: filtros.fechaHasta, soloActivas: filtros.soloActivas ?? false, conSugerencias: filtros.conSugerencias,
+      fechaHasta: filtros.fechaHasta, soloActivas: filtros.soloActivas ?? false, sinAsignar: filtros.sinAsignar ?? false, conSugerencias: filtros.conSugerencias,
       ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden,
       vista: filtros.vista ?? "", mes: filtros.mes ?? "", meses: filtros.meses ?? "", eliminadas: filtros.eliminadas ?? false,
     },
@@ -166,6 +166,19 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
           fechaHasta={valores.fechaHasta}
           id="fechaCreacion"
         />
+
+        <div className="form-field campo-casilla">
+          <label className="flex items-center gap-2" htmlFor="sinAsignar">
+            <input
+              checked={valores.sinAsignar ?? false}
+              id="sinAsignar"
+              onChange={(evento) => cambiar({ sinAsignar: evento.target.checked })}
+              role="switch"
+              type="checkbox"
+            />
+            Solo sin asignar
+          </label>
+        </div>
 
         <div className="form-field campo-casilla">
           <label className="flex items-center gap-2" htmlFor="soloActivas">

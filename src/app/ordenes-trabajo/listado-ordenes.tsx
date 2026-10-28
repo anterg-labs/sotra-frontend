@@ -34,7 +34,7 @@ export async function ListadoOrdenes(props: { filtros: FiltrosOrdenesTrabajo; co
   }
 
   const filtrosSinPagina = Object.fromEntries(
-    Object.entries({ ...filtros, soloActivas: filtros.soloActivas ? "true" : "", conSugerencias: filtros.conSugerencias ? "true" : "", eliminadas: filtros.eliminadas ? "true" : "" }).filter(([nombre]) => nombre !== "pagina"),
+    Object.entries({ ...filtros, soloActivas: filtros.soloActivas ? "true" : "", sinAsignar: filtros.sinAsignar ? "true" : "", conSugerencias: filtros.conSugerencias ? "true" : "", eliminadas: filtros.eliminadas ? "true" : "" }).filter(([nombre]) => nombre !== "pagina"),
   ) as Record<string, string>;
 
   return (

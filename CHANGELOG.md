@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.89 (2026-10-27)
+
+- Usuarios: el listado inicial muestra solo activos. Filtros avanzados permite Activos, Inactivos y Todos; conserva la elección durante búsquedas, ordenación y paginación y vuelve a Activos al limpiar.
+
 ## Version 1.0.88 (2026-10-27)
 
 - Inicio: octava tarjeta «Sin asignar» con contador real y acceso al listado filtrado. Órdenes de trabajo conserva el filtro en búsqueda, paginación y vista de calendario.

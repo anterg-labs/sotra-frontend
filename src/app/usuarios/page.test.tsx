@@ -44,7 +44,7 @@ const pagina = (elementos: ReturnType<typeof usuario>[], totalPaginas = 1) => ({
 });
 
 const roles = [{ id: 1, nombre: "Administrador", estado: "activo" as const }, { id: 2, nombre: "Técnico", estado: "activo" as const }];
-const filtrosVacios = { buscar: "", rolId: "", estado: "", pagina: 1 };
+const filtrosVacios = { buscar: "", rolId: "", estado: "activo", pagina: 1 };
 const conNavegacion = (ui: React.ReactNode) => <ProveedorNavegacionListado etiquetaCarga="Cargando usuarios…">{ui}</ProveedorNavegacionListado>;
 
 beforeEach(() => {
@@ -71,7 +71,11 @@ describe("filtros de la URL de usuarios", () => {
       buscar: "ana", rolId: "2", estado: "activo", pagina: 3,
     });
     expect(leerFiltrosUsuarios({ rolId: "x; DROP", estado: "otro", pagina: "0" })).toEqual(filtrosVacios);
-    expect(construirUrlUsuarios({ buscar: "ana", rolId: "2", estado: "", pagina: 2 })).toBe("/usuarios?buscar=ana&rolId=2&pagina=2");
+    expect(leerFiltrosUsuarios({ estado: "todos", buscar: "ana", pagina: "3" })).toEqual({ ...filtrosVacios, estado: "", buscar: "ana", pagina: 3 });
+    expect(leerFiltrosUsuarios({ estado: "inactivo" }).estado).toBe("inactivo");
+    expect(construirUrlUsuarios({ buscar: "ana", rolId: "2", estado: "activo", pagina: 2 })).toBe("/usuarios?buscar=ana&rolId=2&pagina=2");
+    expect(construirUrlUsuarios({ buscar: "ana", rolId: "2", estado: "", pagina: 2 })).toBe("/usuarios?buscar=ana&rolId=2&estado=todos&pagina=2");
+    expect(construirUrlUsuarios({ ...filtrosVacios, estado: "", ordenarPor: "nombre", direccionOrden: "desc" })).toBe("/usuarios?estado=todos&ordenarPor=nombre&direccionOrden=desc");
   });
 });
 
@@ -108,6 +112,17 @@ describe("listado de usuarios (Server Component)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Siguiente" }));
     expect(push).toHaveBeenLastCalledWith("/usuarios?rolId=2&pagina=2");
   });
+
+  it("conserva Inactivos y Todos al paginar junto con la búsqueda", async () => {
+    s.listarUsuariosServidor.mockResolvedValue(pagina([usuario(3, ["Técnico"], "inactivo")], 2));
+    const { unmount } = render(conNavegacion(await ListadoUsuarios({ filtros: { ...filtrosVacios, buscar: "ana", estado: "inactivo" } })));
+    fireEvent.click(screen.getByRole("button", { name: "Siguiente" }));
+    expect(push).toHaveBeenLastCalledWith("/usuarios?buscar=ana&estado=inactivo&pagina=2");
+    unmount();
+    render(conNavegacion(await ListadoUsuarios({ filtros: { ...filtrosVacios, buscar: "ana", estado: "" } })));
+    fireEvent.click(screen.getByRole("button", { name: "Siguiente" }));
+    expect(push).toHaveBeenLastCalledWith("/usuarios?buscar=ana&estado=todos&pagina=2");
+  });
 });
 
 describe("barra de filtros de usuarios (en vivo)", () => {
@@ -129,16 +144,21 @@ describe("barra de filtros de usuarios (en vivo)", () => {
     fireEvent.change(screen.getByLabelText("Rol"), { target: { value: "2" } });
     expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana&rolId=2");
     fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "activo" } });
-    expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana&rolId=2&estado=activo");
+    expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana&rolId=2");
+    fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "inactivo" } });
+    expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana&rolId=2&estado=inactivo");
+    fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "" } });
+    expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana&rolId=2&estado=todos");
     expect(push).not.toHaveBeenCalled();
   });
 
   it("limpia los filtros", () => {
-    render(conNavegacion(<BarraFiltrosUsuarios filtros={{ buscar: "ana", rolId: "2", estado: "activo", pagina: 1 }} roles={roles} />));
+    render(conNavegacion(<BarraFiltrosUsuarios filtros={{ buscar: "ana", rolId: "2", estado: "inactivo", pagina: 1 }} roles={roles} />));
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
     expect(replace).toHaveBeenLastCalledWith("/usuarios");
     expect(screen.getByLabelText("Buscar")).toHaveValue("");
     expect(screen.getByLabelText("Rol")).toHaveValue("");
+    expect(screen.getByLabelText("Estado")).toHaveValue("activo");
   });
 });
 

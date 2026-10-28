@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Version 1.0.98 (2026-10-28)
+
+- Inicio: el QR de «Descargar App» suma «Compartir enlace» (menú del sistema o copia al portapapeles) y «Descargar imagen» (PNG).
+- Técnico: «Todas» pasa junto a los estados, debajo de la búsqueda; la lista de órdenes se actualiza sola cada 20 segundos con la pantalla visible y al volver a la app, y las tarjetas muestran «Abriendo…» al tocarlas.
+
 ## Version 1.0.97 (2026-10-28)
 
 - Pruebas: las pruebas de alta de órdenes y de documentos técnicos simulan la ruta actual que ahora usa la navegación de los modales.

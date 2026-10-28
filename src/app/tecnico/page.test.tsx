@@ -12,11 +12,12 @@ function render(ui: ReactElement) {
 }
 
 const replace = vi.hoisted(() => vi.fn());
+const refresh = vi.hoisted(() => vi.fn());
 const listarOrdenesTrabajoServidor = vi.hoisted(() => vi.fn());
 const listarTecnicosServidor = vi.hoisted(() => vi.fn());
 const obtenerUsuarioServidor = vi.hoisted(() => vi.fn());
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace, refresh }) }));
 vi.mock("@/servicios/servidor/ordenes-trabajo", () => ({ listarOrdenesTrabajoServidor, listarTecnicosServidor }));
 vi.mock("@/servicios/servidor/usuarios", () => ({ obtenerUsuarioServidor }));
 
@@ -31,7 +32,7 @@ function pagina(elementos: unknown[]) {
 const tecnico = { id: 25, nombre: "Roberto", apellido: "Pérez" };
 
 beforeEach(() => {
-  [replace, listarOrdenesTrabajoServidor, listarTecnicosServidor, obtenerUsuarioServidor].forEach((f) => f.mockReset());
+  [replace, refresh, listarOrdenesTrabajoServidor, listarTecnicosServidor, obtenerUsuarioServidor].forEach((f) => f.mockReset());
   listarTecnicosServidor.mockResolvedValue([tecnico]);
   listarOrdenesTrabajoServidor.mockImplementation(async (filtros: { fase: string }) => {
     if (filtros.fase === "pendiente") return pagina([orden(1, "en_progreso", "baja", "2026-11-01")]);
@@ -103,6 +104,27 @@ describe("Mi trabajo (isla)", () => {
     fireEvent.change(screen.getByLabelText("Buscar por número de orden"), { target: { value: "2" } });
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
     expect(screen.getByRole("link")).toHaveAttribute("href", "/tecnico/2");
+  });
+
+  it("consulta periódicamente si hay órdenes nuevas mientras la pantalla está visible", () => {
+    vi.useFakeTimers();
+    try {
+      render(<MiTrabajo puedeElegirTecnico={false} error="" ordenes={[]} tecnicoId="25" tecnicos={[]} />);
+      expect(refresh).not.toHaveBeenCalled();
+      vi.advanceTimersByTime(20_000);
+      expect(refresh).toHaveBeenCalledTimes(1);
+      vi.advanceTimersByTime(40_000);
+      expect(refresh).toHaveBeenCalledTimes(3);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("muestra «Todas» junto a los estados, debajo de la búsqueda", () => {
+    render(<MiTrabajo puedeElegirTecnico={false} error="" ordenes={ordenes as never} tecnicoId="25" tecnicos={[]} />);
+    const grupo = screen.getByRole("group", { name: "Filtro por estado" });
+    expect(within(grupo).getByRole("button", { name: /Todas/ })).toBeInTheDocument();
+    expect(within(grupo).getByRole("button", { name: /Pausado/ })).toBeInTheDocument();
   });
 
   it("al elegir un técnico escribe la URL; sin técnico la quita", () => {

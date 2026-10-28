@@ -2042,6 +2042,9 @@ body:has(.navegacion-pendiente) .tecnico-contenido {
 .qr-marco .qr-esquina-superior-derecha { top: 4px; right: 4px; }
 .qr-marco .qr-esquina-inferior-izquierda { bottom: 4px; left: 4px; }
 .qr-marco .qr-esquina-inferior-derecha { bottom: 4px; right: 4px; }
+.qr-acciones { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 18px; }
+.qr-acciones .secondary-button { flex: 1 1 140px; min-height: 44px; }
+.qr-aviso { margin: 10px 0 0; color: var(--texto-suave); font-size: 13px; text-align: center; }
 .qr-instrucciones { display: grid; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--borde); font-size: 13px; }
 .qr-instrucciones p { display: grid; gap: 3px; margin: 0; }
 .qr-instrucciones strong { color: var(--texto); }

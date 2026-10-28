@@ -27,6 +27,32 @@ describe("descargar App", () => {
     expect(generar).toHaveBeenLastCalledWith(window.location.href);
     expect(generar).toHaveBeenCalledTimes(2);
   });
+  it("comparte el enlace con el menú del sistema o, si no existe, lo copia", async () => {
+    const compartir = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "share", { configurable: true, value: compartir });
+    render(<BotonDescargarApp />);
+    fireEvent.click(screen.getByRole("button", { name: "Descargar App" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Compartir enlace" }));
+    await waitFor(() => expect(compartir).toHaveBeenCalledWith({ title: "SOTRA", url: window.location.href }));
+
+    Object.defineProperty(navigator, "share", { configurable: true, value: undefined });
+    const escribir = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: escribir } });
+    fireEvent.click(screen.getByRole("button", { name: "Compartir enlace" }));
+    await waitFor(() => expect(escribir).toHaveBeenCalledWith(window.location.href));
+    expect(await screen.findByText("Enlace copiado.")).toBeVisible();
+  });
+
+  it("ofrece descargar el QR como imagen y avisa si no se puede crear", async () => {
+    render(<BotonDescargarApp />);
+    fireEvent.click(screen.getByRole("button", { name: "Descargar App" }));
+    await screen.findByRole("dialog");
+    expect(screen.getByRole("button", { name: "Descargar imagen" })).toBeEnabled();
+    Object.defineProperty(URL, "createObjectURL", { configurable: true, value: () => { throw new Error("sin soporte"); } });
+    fireEvent.click(screen.getByRole("button", { name: "Descargar imagen" }));
+    expect(await screen.findByText("No se pudo crear la imagen del QR.")).toBeVisible();
+  });
+
   it("muestra un error recuperable si falla la generación", async () => {
     generar.mockRejectedValueOnce(new Error("No hay capacidad"));
     render(<BotonDescargarApp />);

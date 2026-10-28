@@ -13,6 +13,8 @@ const redirect = vi.hoisted(() =>
 );
 
 vi.mock("next-auth/jwt", () => ({ getToken }));
+const registrarFalloSesion = vi.hoisted(() => vi.fn());
+vi.mock("@/servicios/servidor/registro-fallo-sesion", () => ({ registrarFalloSesion }));
 vi.mock("next/headers", () => ({ headers: async () => encabezados.valor }));
 vi.mock("next/navigation", () => ({ redirect, unstable_rethrow: (error: unknown) => {
   if (error instanceof Error && error.message === "NEXT_REDIRECT") throw error;
@@ -32,6 +34,7 @@ beforeEach(() => {
   encabezados.valor = new Headers({ "x-sotra-ruta": "/ordenes-trabajo?pagina=2" });
   getToken.mockReset();
   redirect.mockClear();
+  registrarFalloSesion.mockReset();
   fetchSimulado = vi.fn();
   vi.stubGlobal("fetch", fetchSimulado);
 });
@@ -122,6 +125,21 @@ describe("usuario en sesión (/api/v1/sesion)", () => {
     expect((await obtenerEstadoSesion()).estado).toBe("sin-acceso");
   });
 
+  it("recupera la sesión cuando la API vuelve tras una falla temporal", async () => {
+    getToken.mockResolvedValue({ tokenAcceso: "tok", venceEn: enUnRato() });
+    fetchSimulado.mockResolvedValueOnce(new Response(null, { status: 503 }));
+    fetchSimulado.mockResolvedValueOnce(respuestaSesion({}));
+    expect((await obtenerEstadoSesion()).estado).toBe("con-acceso");
+    expect(fetchSimulado).toHaveBeenCalledTimes(2);
+  });
+
+  it("no reintenta una respuesta 403", async () => {
+    getToken.mockResolvedValue({ tokenAcceso: "tok", venceEn: enUnRato() });
+    fetchSimulado.mockResolvedValue(new Response(null, { status: 403 }));
+    expect(await obtenerEstadoSesion()).toEqual({ estado: "error" });
+    expect(fetchSimulado).toHaveBeenCalledTimes(1);
+  });
+
   it("sin cookie no consulta la API; si la API falla, informa el error", async () => {
     getToken.mockResolvedValue(null);
     expect(await obtenerEstadoSesion()).toEqual({ estado: "sin-sesion" });
@@ -130,6 +148,8 @@ describe("usuario en sesión (/api/v1/sesion)", () => {
     getToken.mockResolvedValue({ tokenAcceso: "tok", venceEn: enUnRato() });
     fetchSimulado.mockResolvedValue(Response.json({ mensaje: "x" }, { status: 500 }));
     expect(await obtenerEstadoSesion()).toEqual({ estado: "error" });
+    expect(fetchSimulado).toHaveBeenCalledTimes(3);
+    expect(registrarFalloSesion).toHaveBeenCalledWith("SESION_API_ERROR", 500);
     expect(await tienePermisoServidor("ot.consultar")).toBe(false);
   });
 });

@@ -64,6 +64,9 @@ RUN chown node:node .next
 COPY --from=builder --chown=node:node /app/.next/standalone ./
 COPY --from=builder --chown=node:node /app/.next/static ./.next/static
 
+# El volumen compartido conserva fallos de sesión mientras la API o la base están caídas.
+RUN mkdir -p /var/lib/sotra/errores && chmod 1777 /var/lib/sotra/errores
+
 # Switch to non-root user for security best practices
 USER node
 

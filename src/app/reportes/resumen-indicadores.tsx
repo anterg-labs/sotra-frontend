@@ -38,11 +38,19 @@ export async function ResumenIndicadores(props: { filtros: FiltrosIndicadores; c
 
   return (
     <div className="grid gap-6 lg:grid-cols-12">
-      <section className="panel p-6 lg:col-span-6">
+      <section className="panel p-6 lg:col-span-3">
         <h2>Órdenes de trabajo registradas</h2>
         <p className="mt-2 text-4xl font-bold">{indicadores.totalOrdenes}</p>
       </section>
-      <section className="panel p-6 lg:col-span-6">
+      <section className="panel p-6 lg:col-span-3">
+        <h2>Tiempo promedio hasta el inicio</h2>
+        <p className="mt-2 text-3xl font-bold">{formatearHoras(indicadores.promedioHorasHastaInicio)}</p>
+      </section>
+      <section className="panel p-6 lg:col-span-3">
+        <h2>Tiempo promedio hasta el cierre</h2>
+        <p className="mt-2 text-3xl font-bold">{formatearHoras(indicadores.promedioHorasHastaCierre)}</p>
+      </section>
+      <section className="panel p-6 lg:col-span-3">
         <h2>Atención necesaria</h2>
         <ul className="mt-3 grid gap-2 text-sm">
           <li>
@@ -61,14 +69,6 @@ export async function ResumenIndicadores(props: { filtros: FiltrosIndicadores; c
             </Link>
           </li>
         </ul>
-      </section>
-      <section className="panel p-6 lg:col-span-6">
-        <h2>Tiempo promedio hasta el inicio</h2>
-        <p className="mt-2 text-3xl font-bold">{formatearHoras(indicadores.promedioHorasHastaInicio)}</p>
-      </section>
-      <section className="panel p-6 lg:col-span-6">
-        <h2>Tiempo promedio hasta el cierre</h2>
-        <p className="mt-2 text-3xl font-bold">{formatearHoras(indicadores.promedioHorasHastaCierre)}</p>
       </section>
       <section className="panel lg:col-span-12">
         <div className="panel-heading">

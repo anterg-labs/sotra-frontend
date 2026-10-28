@@ -21,6 +21,9 @@ const api = vi.hoisted(() => ({
   apiObtenerDesgaste: vi.fn(),
 }));
 vi.mock("@/servicios/api/api-reportes", () => api);
+vi.mock("@/servicios/api/api-demoras-etapas", () => ({
+  apiObtenerDemorasEtapas: vi.fn().mockResolvedValue({ calculadoEn: "2026-10-27T00:00:00Z", etapas: [], demoradas: { elementos: [], pagina: 1, tamanoPagina: 20, totalElementos: 0, totalPaginas: 0 } }),
+}));
 
 const filtros = { fechaDesde: "", fechaHasta: "", clienteId: "", activoId: "", estado: "", tipo: "" };
 

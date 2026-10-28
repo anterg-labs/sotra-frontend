@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Version 1.0.78 (2026-10-27)
+
+- Reportes A18 en Proceso: cuatro gráficas con media, mediana y línea de referencia, tablas y órdenes demoradas con etapa, exceso y enlace. Nueva configuración de umbrales con restablecimiento al promedio histórico.
+- Resumen: vuelve la fila de cuatro bloques en escritorio; orden, tiempo hasta inicio, tiempo hasta cierre y Atención necesaria en la cuarta columna. En móvil se apilan.
+
 ## Version 1.0.77 (2026-10-27)
 
 - Reportes A17: tarjeta de mantenimiento planificado en horas dentro de Maquinaria, variación frente al período anterior y tendencia de seis meses, barras apiladas mensuales y desglose por tipo de máquina con alternativa tabular. Se explica que son horas transcurridas de creación a cierre con pausas, y se distingue «Sin dato» de 0 %.

@@ -29,6 +29,12 @@ export default async function PaginaConfiguracion() {
       descripcion: "Ajustá los umbrales de las reglas que avisan cuando algo se hace mal en el mantenimiento.",
       icono: <IconoConfiguracion />,
     });
+    opciones.push({
+      ruta: "/configuracion/demoras-etapas",
+      titulo: "Demoras por etapa",
+      descripcion: "Configurá las horas de referencia de pendiente, progreso, revisión y pausa.",
+      icono: <IconoConfiguracion />,
+    });
   }
 
   return (

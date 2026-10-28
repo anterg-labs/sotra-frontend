@@ -7,6 +7,7 @@ import { ContenedorGrafico, GraficoColumnas, GraficoLineas, type DatoColumna } f
 import { GraficoBarras } from "@/componentes/graficos";
 import { apiObtenerDesempeno, apiObtenerEnvejecimiento, apiObtenerTendencias, apiObtenerTiempos } from "@/servicios/api/api-reportes";
 import type { Envejecimiento, FiltrosIndicadores, Tendencias } from "@/tipos/reporte";
+import { DemorasPorEtapa } from "./demoras-por-etapa";
 
 const SEVERIDAD_POR_RANGO: Record<string, DatoColumna["severidad"]> = {
   hasta_3: "normal",
@@ -108,6 +109,7 @@ export function SeccionProceso({ filtros }: { filtros: FiltrosIndicadores }) {
 
   return (
     <div className="seccion-grilla">
+      <DemorasPorEtapa filtros={filtros} key={clave} />
       <BloqueDeDatos cargando="Cargando la evolución de las órdenes…" {...tendencias}>
         {(datos) => <CreadasYCerradas tendencias={datos} />}
       </BloqueDeDatos>

@@ -3165,6 +3165,25 @@ input[type="checkbox"][role="switch"]:disabled {
   height: 24px;
 }
 
+.demoras-etapas {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.demoras-etapa-grafica {
+  display: block;
+  width: 100%;
+  max-height: 150px;
+  fill: var(--texto);
+  font-size: 18px;
+}
+
+.demoras-media { fill: var(--grafico-creadas); }
+.demoras-mediana { fill: var(--grafico-neutro); }
+.demoras-referencia { stroke: var(--texto); stroke-width: 3; stroke-dasharray: 6 4; }
+
 .planificacion-barras {
   display: grid;
   gap: 12px;

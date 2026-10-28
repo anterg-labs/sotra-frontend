@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## Version 1.0.97 (2026-10-28)
+
+- Pruebas: las pruebas de alta de órdenes y de documentos técnicos simulan la ruta actual que ahora usa la navegación de los modales.
+
+## Version 1.0.96 (2026-10-28)
+
+- Términos y condiciones: en pantallas chicas el texto se recorre con el desplazamiento del modal y la casilla se habilita al llegar al final; antes quedaba bloqueada y no se podía aceptar ni salir.
+- Órdenes: al abrir el formulario de modificación desde el calendario aparece el aviso «Abriendo…» mientras carga.
+
+## Version 1.0.95 (2026-10-27)
+
+- Navegación: rutas jerárquicas en subpáginas y formularios modales, con niveles anteriores enlazados y flecha de volver. La flecha usa la página previa dentro de la aplicación o el nivel superior al abrir una URL directa.
+
+## Version 1.0.94 (2026-10-27)
+
+- Los modales de alta, modificación e ingreso rápido de stock permanecen abiertos al pulsar fuera o Escape. La cruz y Cancelar permiten salir; un error de guardado conserva el formulario y sus datos.
+
+## Version 1.0.93 (2026-10-27)
+
+- Vista móvil del técnico: logo centrado, navegación inferior con Ajustes, acceso a perfil, términos y cierre de sesión desde Configuración; se ocultan los controles superiores y el footer fijo.
+- Mi trabajo: búsqueda de orden con fuente de 16 px y filtro Todas en la misma fila. Clientes, Activos y Documentos alinean búsqueda y filtros; Clientes y Activos presentan tarjetas móviles y conservan tablas en escritorio.
+
+## Version 1.0.92 (2026-10-27)
+
+- Configuración de avisos: tarjetas compactas, nombres sin códigos internos, ayuda explicativa en el ícono `?` y ajustes plegables.
+
 ## Version 1.0.91 (2026-10-27)
 
 - Desarrollo por red: allowedDevOrigins toma la IP detectada para el QR; corrige el bloqueo del WebSocket HMR al acceder desde esa IP, sin fijarla en el código ni aceptar cualquier origen.

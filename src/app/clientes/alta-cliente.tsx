@@ -17,7 +17,7 @@ export function AltaCliente() {
       <button className="primary-button" onClick={() => setEstaAbierto(true)} type="button">
         Registrar nuevo cliente
       </button>
-      <Modal alCerrar={() => setEstaAbierto(false)} estaAbierto={estaAbierto} titulo="Registrar nuevo cliente">
+      <Modal alCerrar={() => setEstaAbierto(false)} cierreSoloConBotones estaAbierto={estaAbierto} titulo="Registrar nuevo cliente">
         <div className="form-panel">
           <FormularioCliente
             accion={crearClienteAccion}

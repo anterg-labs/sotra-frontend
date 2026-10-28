@@ -17,7 +17,7 @@ export function AltaRepuesto() {
       <button className="primary-button" onClick={() => setEstaAbierto(true)} type="button">
         Registrar repuesto
       </button>
-      <Modal alCerrar={() => setEstaAbierto(false)} estaAbierto={estaAbierto} titulo="Registrar repuesto">
+      <Modal alCerrar={() => setEstaAbierto(false)} cierreSoloConBotones estaAbierto={estaAbierto} titulo="Registrar repuesto">
         <div className="form-panel">
           <FormularioRepuesto
             accion={crearRepuestoAccion}

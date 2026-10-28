@@ -1,7 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ back: vi.fn(), push: vi.fn() }) }));
+const rutaActual = vi.hoisted(() => ({ valor: "/clientes/5/editar" }));
+vi.mock("next/navigation", () => ({
+  usePathname: () => rutaActual.valor,
+  useSelectedLayoutSegment: () => "editar",
+  useRouter: () => ({ back: vi.fn(), push: vi.fn() }),
+}));
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal = function showModal() {
@@ -42,6 +47,7 @@ const RUTAS = [
 
 describe("rutas interceptadas de altas y modificaciones", () => {
   it.each(RUTAS)("%s se muestra como modal «%s»", async (ruta, titulo, esAmplio) => {
+    rutaActual.valor = "/" + ruta.replace("(.)", "").replace("[id]", "5");
     const modulo = await import(`./${ruta}/page`);
     render(modulo.default(params));
 
@@ -50,6 +56,7 @@ describe("rutas interceptadas de altas y modificaciones", () => {
     if (esAmplio) expect(dialogo).toHaveClass("modal-dialogo-amplio");
     else expect(dialogo).not.toHaveClass("modal-dialogo-amplio");
     expect(await screen.findByText(/^Formulario Contenido/)).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Ruta de navegación" })).toBeInTheDocument();
   });
 
   it("la ranura no muestra nada sin modal abierto ni en direcciones desconocidas", async () => {

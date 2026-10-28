@@ -18,7 +18,7 @@ export function AltaUsuarioModal(props: { roles: Rol[] | null }) {
       <button className="primary-button" onClick={() => setEstaAbierto(true)} type="button">
         Crear nuevo usuario
       </button>
-      <Modal alCerrar={() => setEstaAbierto(false)} estaAbierto={estaAbierto} titulo="Crear nuevo usuario">
+      <Modal alCerrar={() => setEstaAbierto(false)} cierreSoloConBotones estaAbierto={estaAbierto} titulo="Crear nuevo usuario">
         <div className="form-panel">
           <AltaUsuario
             alCancelar={() => setEstaAbierto(false)}

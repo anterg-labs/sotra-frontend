@@ -17,7 +17,7 @@ export function AltaTipo() {
       <button className="primary-button" onClick={() => setEstaAbierto(true)} type="button">
         Registrar tipo
       </button>
-      <Modal alCerrar={() => setEstaAbierto(false)} estaAbierto={estaAbierto} titulo="Registrar nuevo tipo de máquina">
+      <Modal alCerrar={() => setEstaAbierto(false)} cierreSoloConBotones estaAbierto={estaAbierto} titulo="Registrar nuevo tipo de máquina">
         <div className="form-panel">
           <FormularioTipoMaquina
             accion={crearTipoMaquinaAccion}

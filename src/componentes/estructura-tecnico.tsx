@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IconoActivos, IconoClientes, IconoDocumentacion, IconoOrdenesTrabajo, IconoRepuestos } from "@/componentes/iconos";
+import { IconoActivos, IconoClientes, IconoConfiguracion, IconoDocumentacion, IconoOrdenesTrabajo, IconoRepuestos } from "@/componentes/iconos";
 import { BotonTerminos } from "@/componentes/terminos/modal-terminos";
 import { IndicadorNavegacion } from "@/componentes/indicador-navegacion";
 import { MenuUsuario } from "@/componentes/menu-usuario";
@@ -34,15 +34,15 @@ export function EstructuraTecnico({ children }: { children: React.ReactNode }) {
   return (
     <div className="tecnico-estructura">
       <header className="tecnico-cabecera">
-        <Image alt="CVM" className="h-auto w-16" height={152} priority src="/images/logo-cvm.png" width={717} />
+        <Image alt="CVM" className="tecnico-logo h-auto w-16" height={152} priority src="/images/logo-cvm.png" width={717} />
         <span className="tecnico-cabecera-titulo">{tituloSeccion}</span>
         {esSoloTecnico(roles) ? (
           // Cambia la vista guardada (recarga la página completa) y abre la misma pantalla en el escritorio.
-          <a className="text-link" href={urlCambioDeVista("escritorio", rutaActual)}>
+          <a className="text-link tecnico-enlace-escritorio" href={urlCambioDeVista("escritorio", rutaActual)}>
             Escritorio
           </a>
         ) : (
-          <Link className="text-link" href="/ordenes-trabajo">
+          <Link className="text-link tecnico-enlace-escritorio" href="/ordenes-trabajo">
             Escritorio
             <IndicadorNavegacion destino="Escritorio" />
           </Link>
@@ -64,6 +64,16 @@ export function EstructuraTecnico({ children }: { children: React.ReactNode }) {
             <IndicadorNavegacion destino={enlace.etiqueta} />
           </Link>
         ))}
+        <Link
+          aria-label="Configuración"
+          aria-current={rutaActual.startsWith("/configuracion") ? "page" : undefined}
+          className="tecnico-barra-enlace"
+          href="/configuracion"
+        >
+          <IconoConfiguracion />
+          <span>Ajustes</span>
+          <IndicadorNavegacion destino="Configuración" />
+        </Link>
       </nav>
     </div>
   );

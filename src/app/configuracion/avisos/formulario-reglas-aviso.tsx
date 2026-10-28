@@ -4,6 +4,18 @@ import { useState } from "react";
 import { apiActualizarReglaAviso } from "@/servicios/api/api-reportes";
 import type { ReglaAviso } from "@/tipos/reporte";
 
+const explicaciones: Record<string, string> = {
+  R1: "Detecta máquinas con correctivas repetidas. Ayuda a investigar una falla persistente y evitar nuevas paradas.",
+  R2: "Compara las correctivas con todas las órdenes de un tipo de máquina. Una proporción alta puede indicar que conviene revisar los preventivos.",
+  R3: "Señala preventivos que no se cierran en la fecha prevista. El atraso puede dejar máquinas sin mantenimiento a tiempo.",
+  R7: "Detecta órdenes que siguen abiertas más días de lo esperado. Permite revisar trabajos acumulados antes de que sigan envejeciendo.",
+  R8: "Detecta órdenes terminadas que llevan demasiado tiempo esperando revisión. Puede retrasar su cierre y la disponibilidad de información confiable.",
+  R12: "Compara el tiempo de reparación con el historial del mismo tipo de máquina. Un aumento puede señalar un cuello de botella que merece revisión.",
+  R13: "Detecta si pocas máquinas reúnen gran parte de las horas de parada. Ayuda a priorizar la investigación de esos activos.",
+  R17: "Detecta órdenes de prioridad alta que siguen sin asignación. Permite actuar antes de que la atención se retrase más.",
+  R18: "Detecta órdenes abiertas sin cambios de estado durante varios días. Ayuda a revisar si el trabajo quedó detenido.",
+};
+
 export type BorradorDeRegla = {
   activa: boolean;
   umbral: string;
@@ -90,12 +102,23 @@ function FilaRegla({ regla }: { regla: ReglaAviso }) {
 
   return (
     <form aria-labelledby={id + "-titulo"} className="panel regla-aviso" noValidate onSubmit={guardar}>
-      <h2 id={id + "-titulo"}>{regla.codigo + " · " + regla.nombre}</h2>
-      <div className="form-grid">
+      <header className="regla-aviso-cabecera">
+        <h2 id={id + "-titulo"}>{regla.nombre}</h2>
+        <span className="regla-aviso-ayuda">
+          <button aria-describedby={id + "-ayuda"} aria-label={"¿Para qué sirve " + regla.nombre + "?"} type="button">?</button>
+          <span className="regla-aviso-globo" id={id + "-ayuda"} role="tooltip">{explicaciones[regla.codigo] ?? "Esta regla señala una situación del mantenimiento que conviene revisar. Sus valores se ajustan a la realidad de la empresa."}</span>
+        </span>
+      </header>
+      <div className="regla-aviso-controles">
         <label className="calendario-casilla" htmlFor={id + "-activa"}>
           <input checked={borrador.activa} id={id + "-activa"} onChange={(evento) => cambiar({ activa: evento.target.checked })} type="checkbox" />
           Regla encendida
         </label>
+        <span className={borrador.activa ? "regla-aviso-estado regla-aviso-estado-activa" : "regla-aviso-estado"}>{borrador.activa ? "Activa" : "Desactivada"}</span>
+      </div>
+      <details className="regla-aviso-ajustes">
+        <summary>Ajustar umbrales y período</summary>
+        <div className="form-grid">
         <div className="form-field">
           <label htmlFor={id + "-umbral"}>Umbral de atención</label>
           <input id={id + "-umbral"} inputMode="decimal" onChange={(evento) => cambiar({ umbral: evento.target.value })} value={borrador.umbral} />
@@ -116,10 +139,11 @@ function FilaRegla({ regla }: { regla: ReglaAviso }) {
           <label htmlFor={id + "-minimo"}>Mínimo de datos</label>
           <input id={id + "-minimo"} inputMode="numeric" onChange={(evento) => cambiar({ minimoDatos: evento.target.value })} value={borrador.minimoDatos} />
         </div>
-      </div>
+        </div>
+      </details>
       {mensaje ? <p className={esError ? "field-error" : "texto-tenue"} role={esError ? "alert" : "status"}>{mensaje}</p> : null}
       <div className="form-actions">
-        <button className="primary-button" disabled={guardando} type="submit">{guardando ? "Guardando…" : "Guardar"}</button>
+        <button className="primary-button" disabled={guardando} type="submit">{guardando ? "Guardando…" : "Guardar cambios"}</button>
       </div>
     </form>
   );
@@ -127,7 +151,7 @@ function FilaRegla({ regla }: { regla: ReglaAviso }) {
 
 export function FormularioReglasAviso({ reglas }: { reglas: ReglaAviso[] }) {
   return (
-    <div className="grid gap-4">
+    <div className="reglas-aviso-lista">
       {reglas.map((regla) => <FilaRegla key={regla.codigo} regla={regla} />)}
     </div>
   );

@@ -5,7 +5,11 @@ import { BotonCancelarFormulario, EsqueletoFormulario, ModalDeRuta, useModalDeRu
 const volver = vi.hoisted(() => vi.fn());
 const empujar = vi.hoisted(() => vi.fn());
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ back: volver, push: empujar }) }));
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/clientes/3/editar",
+  useSelectedLayoutSegment: () => "editar",
+  useRouter: () => ({ back: volver, push: empujar }),
+}));
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal = function showModal() {
@@ -35,6 +39,15 @@ function Indicador() {
 }
 
 describe("ModalDeRuta", () => {
+  it("no vuelve al listado al pulsar el fondo o Escape", () => {
+    render(<ModalDeRuta titulo="Modificar cliente"><input aria-label="Nombre" defaultValue="ACME" /></ModalDeRuta>);
+    const dialogo = screen.getByRole("dialog", { name: "Modificar cliente" });
+    fireEvent.click(dialogo);
+    fireEvent(dialogo, new Event("cancel", { bubbles: true, cancelable: true }));
+    expect(volver).not.toHaveBeenCalled();
+    expect(dialogo).toHaveAttribute("open");
+    expect(screen.getByLabelText("Nombre")).toHaveValue("ACME");
+  });
   it("muestra el título y la descripción, y cerrar vuelve a la pantalla anterior", () => {
     render(
       <ModalDeRuta descripcion="Gestión de clientes" titulo="Modificar cliente">

@@ -28,7 +28,7 @@ const s = vi.hoisted(() => ({
 }));
 
 const refresh = vi.hoisted(() => vi.fn());
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace, refresh }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace, refresh }), usePathname: () => "/documentacion-tecnica/nuevo", useSelectedLayoutSegment: () => null }));
 vi.mock("@/servicios/servicio-activos", () => ({ listarActivosPaginados: s.listarActivosPaginados }));
 vi.mock("@/servicios/servidor/activos", () => ({ listarActivosServidor: s.listarActivosServidor, obtenerActivoServidor: vi.fn() }));
 vi.mock("@/servicios/servidor/documentos-tecnicos", () => ({

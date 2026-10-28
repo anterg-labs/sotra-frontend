@@ -29,9 +29,10 @@ describe("reglas de aviso", () => {
   it("guarda los cambios de una regla y los muestra confirmados", async () => {
     api.apiActualizarReglaAviso.mockResolvedValue({ ...regla, umbral: 4, activa: false });
     render(<FormularioReglasAviso reglas={[regla]} />);
+    fireEvent.click(screen.getByText("Ajustar umbrales y período"));
     fireEvent.change(screen.getByLabelText("Umbral de atención"), { target: { value: "4" } });
     fireEvent.click(screen.getByLabelText("Regla encendida"));
-    fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Guardar cambios" }));
 
     await waitFor(() =>
       expect(api.apiActualizarReglaAviso).toHaveBeenCalledWith("R1", {
@@ -43,14 +44,24 @@ describe("reglas de aviso", () => {
 
   it("no envía un borrador inválido y muestra el error del servidor", async () => {
     render(<FormularioReglasAviso reglas={[regla]} />);
+    fireEvent.click(screen.getByText("Ajustar umbrales y período"));
     fireEvent.change(screen.getByLabelText("Ventana en días (opcional)"), { target: { value: "0" } });
-    fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Guardar cambios" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("La ventana debe ser un número entero de días mayor que cero.");
     expect(api.apiActualizarReglaAviso).not.toHaveBeenCalled();
 
     api.apiActualizarReglaAviso.mockRejectedValue(new Error("No tenés permiso para realizar esta acción."));
     fireEvent.change(screen.getByLabelText("Ventana en días (opcional)"), { target: { value: "90" } });
-    fireEvent.click(screen.getByRole("button", { name: "Guardar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Guardar cambios" }));
     expect(await screen.findByText("No tenés permiso para realizar esta acción.")).toBeInTheDocument();
+  });
+
+  it("muestra el nombre sin código y explica la utilidad con ayuda accesible", () => {
+    render(<FormularioReglasAviso reglas={[regla]} />);
+    expect(screen.getByRole("heading", { name: "Máquina que reincide" })).toBeInTheDocument();
+    expect(screen.queryByText(/R1 ·/)).not.toBeInTheDocument();
+    const boton = screen.getByRole("button", { name: "¿Para qué sirve Máquina que reincide?" });
+    expect(boton).toHaveAttribute("aria-describedby", "regla-R1-ayuda");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("evitar nuevas paradas");
   });
 });

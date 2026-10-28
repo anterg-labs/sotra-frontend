@@ -52,6 +52,20 @@ export function TablaActivos(props: { activos: Activo[]; filtros: FiltrosActivos
 
   return (
     <>
+      <ul aria-label="Activos" className="listado-tarjetas-tecnico">
+        {activos.map((activo) => (
+          <li key={activo.id}>
+            <Link className="tecnico-tarjeta tarjeta-listado-tecnico" href={"/activos/" + activo.id}>
+              <span className="tarjeta-listado-cabecera"><strong>{activo.nombre ?? activo.numSerie}</strong><EstadoRegistro estado={activo.estado} /></span>
+              <span className="tarjeta-listado-dato"><span>Número de serie</span>{activo.numSerie}</span>
+              <span className="tarjeta-listado-dato"><span>Cliente</span>{activo.nombreCliente ?? `Cliente ${activo.clienteId}`}</span>
+              <span className="tarjeta-listado-dato"><span>Modelo</span>{activo.nombreModeloMaquina ?? `Modelo ${activo.modeloMaquinaId}`}</span>
+              <span className="tarjeta-listado-ver">Ver detalle →</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <div className="tabla-listado-tecnico">
       <ContenedorTabla etiqueta="Listado de activos">
         <table>
           <thead>
@@ -126,6 +140,7 @@ export function TablaActivos(props: { activos: Activo[]; filtros: FiltrosActivos
           </tbody>
         </table>
       </ContenedorTabla>
+      </div>
 
       {modales}
     </>

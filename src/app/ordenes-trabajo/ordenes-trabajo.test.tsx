@@ -53,7 +53,7 @@ const s = vi.hoisted(() => ({
   obtenerUsuarioServidor: vi.fn(),
 }));
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace }), usePathname: () => "/ordenes-trabajo/nuevo", useSelectedLayoutSegment: () => null }));
 vi.mock("@/componentes/avisos", () => ({ useAvisos: () => ({ mostrarAviso: vi.fn() }) }));
 vi.mock("@/servicios/servicio-ordenes-trabajo", async (importarOriginal) => ({
   ...(await importarOriginal<typeof import("@/servicios/servicio-ordenes-trabajo")>()),

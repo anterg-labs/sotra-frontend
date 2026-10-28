@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useEstadosOrden, etiquetaLegible } from "@/componentes/estados-orden";
 import { IconoLapiz, IconoOjo } from "@/componentes/iconos";
+import { IndicadorNavegacion } from "@/componentes/indicador-navegacion";
 import { Modal } from "@/componentes/modal";
 import { SiTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import { BloqueDeDatos, useDatos } from "@/componentes/use-datos";
@@ -56,6 +57,7 @@ function TarjetaDeOrden({ orden, alVer }: PropiedadesTarjeta) {
           <SiTienePermiso permiso="ot.editar">
             <Link aria-label={`Modificar la orden ${orden.id}`} className="boton-icono" href={"/ordenes-trabajo/" + orden.id + "/editar"} title="Modificar orden">
               <IconoLapiz />
+              <IndicadorNavegacion destino="el formulario de la orden" />
             </Link>
           </SiTienePermiso>
         ) : null}

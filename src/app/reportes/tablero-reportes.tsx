@@ -17,6 +17,7 @@ import { SeccionAnalisisAvanzado } from "./seccion-analisis-avanzado";
 import { SeccionMaquinaria } from "./seccion-maquinaria";
 import { SeccionPlegable } from "./seccion-plegable";
 import { SeccionProceso } from "./seccion-proceso";
+import { ProveedorVisibilidadReportes } from "@/componentes/visibilidad-reportes";
 
 const VACIOS: FiltrosIndicadores = { fechaDesde: "", fechaHasta: "", clienteId: "", activoId: "", estado: "", tipo: "" };
 
@@ -25,6 +26,7 @@ function nombreVisibleDeActivo(activo: Activo) {
 }
 
 type PropiedadesTablero = {
+  desactivados?: string[];
   /** Filtros aplicados (los de la URL): el resumen y el análisis se calculan con ellos. */
   filtros: FiltrosIndicadores;
   clientes: Cliente[];
@@ -53,12 +55,14 @@ export function TableroReportes(props: PropiedadesTablero) {
   const { fechaDesde, fechaHasta, clienteId, activoId, estado, tipo } = valores;
   const [tipoReporte, setTipoReporte] = useState("ordenes-trabajo");
   const [prioridadReporte, setPrioridadReporte] = useState("");
+  const tiposVisibles = tiposDeReporte.filter(item => !props.desactivados?.includes("descarga_" + item.valor.replaceAll("-", "_")));
+  const tipoSeleccionado = tiposVisibles.some(item => item.valor === tipoReporte) ? tipoReporte : (tiposVisibles[0]?.valor ?? "ordenes-trabajo");
 
   const activosDelCliente = props.activos.filter((activo) => clienteId === "" || String(activo.clienteId) === clienteId);
   const filtrosParaReporte: FiltrosIndicadores = valores;
 
   return (
-    <>
+    <ProveedorVisibilidadReportes desactivados={props.desactivados ?? []}>
       <form
         aria-busy={estaPendiente}
         aria-label="Filtros"
@@ -131,7 +135,7 @@ export function TableroReportes(props: PropiedadesTablero) {
         </div>
       </form>
 
-      <details className="panel-descarga-plegable mb-6">
+      {!props.desactivados?.includes("descarga") && tiposVisibles.length > 0 && <details className="panel-descarga-plegable mb-6">
         <summary className="panel-descarga-resumen">
           <span>Descargar PDF o CSV</span>
         </summary>
@@ -139,8 +143,8 @@ export function TableroReportes(props: PropiedadesTablero) {
         <div className="panel-descarga-campos">
           <div className="form-field">
             <label htmlFor="tipoReporte">Tipo de reporte</label>
-            <select id="tipoReporte" onChange={(evento) => setTipoReporte(evento.target.value)} value={tipoReporte}>
-              {tiposDeReporte.map((tipoDisponible) => (
+            <select id="tipoReporte" onChange={(evento) => setTipoReporte(evento.target.value)} value={tipoSeleccionado}>
+              {tiposVisibles.map((tipoDisponible) => (
                 <option key={tipoDisponible.valor} value={tipoDisponible.valor}>{tipoDisponible.etiqueta}</option>
               ))}
             </select>
@@ -158,18 +162,18 @@ export function TableroReportes(props: PropiedadesTablero) {
         <div className="panel-descarga-acciones">
           <a
             className="primary-button"
-            href={obtenerUrlReportePdf(tipoReporte, filtrosParaReporte, prioridadReporte)}
+            href={obtenerUrlReportePdf(tipoSeleccionado, filtrosParaReporte, prioridadReporte)}
             rel="noreferrer"
             target="_blank"
           >
             Descargar PDF
           </a>
-          <a className="secondary-button" href={obtenerUrlReporteCsv(tipoReporte, filtrosParaReporte, prioridadReporte)} rel="noreferrer">
+          <a className="secondary-button" href={obtenerUrlReporteCsv(tipoSeleccionado, filtrosParaReporte, prioridadReporte)} rel="noreferrer">
             Descargar CSV
           </a>
         </div>
       </div>
-      </details>
+      </details>}
 
       {props.kpis}
       {props.avisos}
@@ -189,6 +193,6 @@ export function TableroReportes(props: PropiedadesTablero) {
       <SeccionPlegable id="analisis-avanzado" resumen="Comparación de períodos y desgaste por intervalos, edad y uso." titulo="Análisis avanzado">
         <SeccionAnalisisAvanzado filtros={filtros} />
       </SeccionPlegable>
-    </>
+    </ProveedorVisibilidadReportes>
   );
 }

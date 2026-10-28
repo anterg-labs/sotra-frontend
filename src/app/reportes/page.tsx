@@ -8,6 +8,7 @@ import { listarActivosServidor, obtenerActivoServidor } from "@/servicios/servid
 import { listarClientesServidor, obtenerClienteServidor } from "@/servicios/servidor/clientes";
 import { listarEstadosOrdenTrabajoOVacio } from "@/servicios/servidor/ordenes-trabajo";
 import { conSeleccionado } from "@/servicios/servidor/opciones";
+import { obtenerVisibilidadReportesServidor } from "@/servicios/servidor/visibilidad-reportes";
 import type { Activo } from "@/tipos/activo";
 import type { Cliente } from "@/tipos/cliente";
 import { leerFiltrosReportes } from "./filtros";
@@ -23,6 +24,8 @@ export default async function PaginaReportes(props: { searchParams: Promise<Para
   const consulta = anticiparConsulta(obtenerIndicadoresServidor(filtros));
   const consultaKpi = anticiparConsulta(obtenerComparativaServidor(filtros));
   const consultaAvisos = anticiparConsulta(obtenerAvisosServidor());
+  const visibilidad = await obtenerVisibilidadReportesServidor();
+  const desactivados = visibilidad.filter(item => !item.visible).map(item => item.codigo);
 
   const [clientes, activos] = await Promise.all([
     listarClientesServidor({ buscar: "", estado: "", pagina: 1 })
@@ -43,23 +46,24 @@ export default async function PaginaReportes(props: { searchParams: Promise<Para
 
       <ProveedorNavegacionListado etiquetaCarga={ETIQUETA_CARGA}>
         <TableroReportes
+          desactivados={desactivados}
           activos={activos}
           avisos={
             <Suspense fallback={null}>
-              <FranjaAvisos consulta={consultaAvisos} />
+              <FranjaAvisos consulta={consultaAvisos} visible={!desactivados.includes("franja_avisos")} />
             </Suspense>
           }
           clientes={clientes}
           filtros={filtros}
           kpis={
             <Suspense fallback={<div aria-hidden="true" className="kpi-franja h-28 animate-pulse rounded bg-current opacity-10 motion-reduce:animate-none" />}>
-              <TarjetasKpi consulta={consultaKpi} />
+              <TarjetasKpi consulta={consultaKpi} desactivados={desactivados} />
             </Suspense>
           }
         >
           <ZonaListado>
             <Suspense fallback={<EsqueletoListado etiqueta={ETIQUETA_CARGA} />}>
-              <ResumenIndicadores consulta={consulta} filtros={filtros} />
+              <ResumenIndicadores consulta={consulta} filtros={filtros} desactivados={desactivados} />
             </Suspense>
           </ZonaListado>
         </TableroReportes>

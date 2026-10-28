@@ -4239,3 +4239,48 @@ table.tabla-grafico {
 .rango-mes th {
   padding: 3px 0;
 }
+.reportes-config-enlaces { display: flex; flex-wrap: wrap; gap: .75rem; margin-bottom: 1.5rem; }
+.reportes-configuracion { display: grid; gap: 1.25rem; }
+.reportes-config-resumen {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  padding: 1.25rem 1.5rem;
+}
+.reportes-config-resumen-titulo { margin: 0; color: var(--texto-suave); font-size: .875rem; font-weight: 650; }
+.reportes-config-resumen-cantidad { margin: .15rem 0 .4rem; font-size: 1rem; color: var(--texto-suave); }
+.reportes-config-resumen-cantidad strong { color: var(--texto); font-size: 1.75rem; font-variant-numeric: tabular-nums; }
+.reportes-config-resumen .texto-tenue { margin: 0; font-size: .875rem; }
+.reportes-config-acciones { display: flex; flex-wrap: wrap; gap: .6rem; }
+.reportes-config-guardando { margin: 0; color: var(--texto-suave); font-size: .875rem; }
+.reportes-config-grupo { margin: 0; padding: 1.25rem; min-width: 0; }
+.reportes-config-grupo legend { padding: 0 .45rem; font-size: 1rem; font-weight: 700; color: var(--texto); }
+.reportes-config-grupo-cuenta { margin-left: .45rem; color: var(--texto-tenue); font-size: .75rem; font-weight: 550; white-space: nowrap; }
+.reportes-config-opciones { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: .7rem; }
+.reportes-config-opcion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.6rem;
+  padding: .7rem .9rem;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-m);
+  background: var(--superficie);
+  cursor: pointer;
+  transition: border-color var(--transicion), background var(--transicion), box-shadow var(--transicion);
+}
+.reportes-config-opcion:hover { border-color: var(--borde-fuerte); background: var(--superficie-suave); }
+.reportes-config-opcion:focus-within { box-shadow: var(--anillo-foco); }
+.reportes-config-opcion[data-activo="true"] { border-color: var(--borde-fuerte); }
+.reportes-config-opcion-nombre { min-width: 0; font-size: .875rem; line-height: 1.35; font-weight: 600; }
+.reportes-config-opcion input[role="switch"] { margin: 0; }
+@media (max-width: 760px) {
+  .reportes-config-resumen { padding: 1rem; }
+  .reportes-config-acciones { width: 100%; }
+  .reportes-config-acciones button { flex: 1; }
+  .reportes-config-grupo { padding: 1rem; }
+  .reportes-config-opciones { grid-template-columns: 1fr; }
+}

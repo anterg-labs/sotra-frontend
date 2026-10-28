@@ -8,7 +8,8 @@ function formatearHoras(horas: number | null) {
   return horas === null ? "Sin datos" : horas + " h";
 }
 
-function TablaGrupos(props: { titulo: string; columna: string; grupos: CantidadPorGrupo[]; ancho?: "angosto" | "medio" }) {
+function TablaGrupos(props: { titulo: string; columna: string; grupos: CantidadPorGrupo[]; visible?: boolean; ancho?: "angosto" | "medio" }) {
+  if (props.visible === false) return null;
   return (
     <section className={"panel " + (props.ancho === "medio" ? "lg:col-span-6" : "lg:col-span-3")}>
       <div className="panel-heading">
@@ -24,7 +25,8 @@ function TablaGrupos(props: { titulo: string; columna: string; grupos: CantidadP
 }
 
 /** Resumen del tablero: los indicadores se piden en el servidor con los filtros de la URL; si falla, el error queda en línea. */
-export async function ResumenIndicadores(props: { filtros: FiltrosIndicadores; consulta?: ConsultaAnticipada<Awaited<ReturnType<typeof obtenerIndicadoresServidor>>> }) {
+export async function ResumenIndicadores(props: { filtros: FiltrosIndicadores; desactivados?: string[]; consulta?: ConsultaAnticipada<Awaited<ReturnType<typeof obtenerIndicadoresServidor>>> }) {
+  const visible = (codigo: string) => !props.desactivados?.includes(codigo);
   let indicadores;
   try {
     indicadores = await resolverConsulta(props.consulta ?? anticiparConsulta(obtenerIndicadoresServidor(props.filtros)));
@@ -38,19 +40,19 @@ export async function ResumenIndicadores(props: { filtros: FiltrosIndicadores; c
 
   return (
     <div className="grid gap-6 lg:grid-cols-12">
-      <section className="panel p-6 lg:col-span-3">
+      {visible("resumen_ordenes_registradas") && <section className="panel p-6 lg:col-span-3">
         <h2>Órdenes de trabajo registradas</h2>
         <p className="mt-2 text-4xl font-bold">{indicadores.totalOrdenes}</p>
-      </section>
-      <section className="panel p-6 lg:col-span-3">
+      </section>}
+      {visible("resumen_tiempo_inicio") && <section className="panel p-6 lg:col-span-3">
         <h2>Tiempo promedio hasta el inicio</h2>
         <p className="mt-2 text-3xl font-bold">{formatearHoras(indicadores.promedioHorasHastaInicio)}</p>
-      </section>
-      <section className="panel p-6 lg:col-span-3">
+      </section>}
+      {visible("resumen_tiempo_cierre") && <section className="panel p-6 lg:col-span-3">
         <h2>Tiempo promedio hasta el cierre</h2>
         <p className="mt-2 text-3xl font-bold">{formatearHoras(indicadores.promedioHorasHastaCierre)}</p>
-      </section>
-      <section className="panel p-6 lg:col-span-3">
+      </section>}
+      {visible("resumen_atencion") && <section className="panel p-6 lg:col-span-3">
         <h2>Atención necesaria</h2>
         <ul className="mt-3 grid gap-2 text-sm">
           <li>
@@ -69,8 +71,8 @@ export async function ResumenIndicadores(props: { filtros: FiltrosIndicadores; c
             </Link>
           </li>
         </ul>
-      </section>
-      <section className="panel lg:col-span-12">
+      </section>}
+      {visible("resumen_ordenes_recientes") && <section className="panel lg:col-span-12">
         <div className="panel-heading">
           <h2>Órdenes recientes</h2>
           <Link className="text-link" href="/ordenes-trabajo">
@@ -82,12 +84,12 @@ export async function ResumenIndicadores(props: { filtros: FiltrosIndicadores; c
         ) : (
           <TablaOrdenesResumen etiqueta="Órdenes recientes" ordenes={indicadores.ordenesRecientes} />
         )}
-      </section>
-      <TablaGrupos columna="Estado" grupos={indicadores.ordenesPorEstado} titulo="Órdenes por estado" />
-      <TablaGrupos columna="Prioridad" grupos={indicadores.ordenesPorPrioridad} titulo="Órdenes por prioridad" />
-      <TablaGrupos columna="Tipo" grupos={indicadores.ordenesPorTipo} titulo="Órdenes por tipo de mantenimiento" />
-      <TablaGrupos columna="Activo" grupos={indicadores.activosConMasIntervenciones} titulo="Activos con más intervenciones" />
-      <section className="panel lg:col-span-12">
+      </section>}
+      <TablaGrupos columna="Estado" grupos={indicadores.ordenesPorEstado} titulo="Órdenes por estado" visible={visible("resumen_estado")} />
+      <TablaGrupos columna="Prioridad" grupos={indicadores.ordenesPorPrioridad} titulo="Órdenes por prioridad" visible={visible("resumen_prioridad")} />
+      <TablaGrupos columna="Tipo" grupos={indicadores.ordenesPorTipo} titulo="Órdenes por tipo de mantenimiento" visible={visible("resumen_tipo")} />
+      <TablaGrupos columna="Activo" grupos={indicadores.activosConMasIntervenciones} titulo="Activos con más intervenciones" visible={visible("resumen_activos")} />
+      {visible("resumen_bajo_stock") && <section className="panel lg:col-span-12">
         <div className="panel-heading">
           <h2>Repuestos con bajo stock</h2>
           <Link className="text-link" href="/repuestos?stock=alerta">Ver en Repuestos</Link>
@@ -97,7 +99,7 @@ export async function ResumenIndicadores(props: { filtros: FiltrosIndicadores; c
         ) : (
           <TablaRepuestosBajoStock repuestos={indicadores.repuestosBajoStock} />
         )}
-      </section>
+      </section>}
     </div>
   );
 }

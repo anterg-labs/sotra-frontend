@@ -24,9 +24,9 @@ export default async function PaginaConfiguracion() {
       icono: <IconoConfiguracion />,
     });
     opciones.push({
-      ruta: "/configuracion/avisos",
-      titulo: "Avisos de ineficiencia",
-      descripcion: "Ajustá los umbrales de las reglas que avisan cuando algo se hace mal en el mantenimiento.",
+      ruta: "/configuracion/reportes",
+      titulo: "Reportes",
+      descripcion: "Elegí qué indicadores, gráficas y reportes se muestran y configurá sus avisos.",
       icono: <IconoConfiguracion />,
     });
     opciones.push({

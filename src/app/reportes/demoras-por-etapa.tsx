@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ContenedorGrafico, GraficoColumnas } from "@/componentes/graficos-avanzados";
+import { ElementoReporte } from "@/componentes/visibilidad-reportes";
 import { formatearNumero } from "@/componentes/formato-numero";
 import { BloqueDeDatos, useDatos } from "@/componentes/use-datos";
 import { apiObtenerDemorasEtapas } from "@/servicios/api/api-demoras-etapas";
@@ -84,7 +85,7 @@ export function DemorasPorEtapa({ filtros }: { filtros: FiltrosIndicadores }) {
         {(datos) => <>
           <CuellosDeBotella etapas={datos.etapas} />
           <div className="seccion-grilla">{datos.etapas.map(item => <ResumenDeEtapa datos={item} key={item.etapa} />)}</div>
-          <div className="form-field"><label htmlFor="etapa-demoradas">Etapa de las órdenes demoradas</label>
+          <ElementoReporte codigo="grafico_ordenes_demoradas"><div className="form-field"><label htmlFor="etapa-demoradas">Etapa de las órdenes demoradas</label>
             <select id="etapa-demoradas" value={etapa} onChange={evento => { const valor = evento.target.value; if (valor === "" || esEtapa(valor)) { setEtapa(valor); setPagina(1); } }}>
               <option value="">Todas las etapas</option>{Object.entries(NOMBRES_ETAPA).map(([codigo, nombre]) => <option key={codigo} value={codigo}>{nombre}</option>)}
             </select></div>
@@ -101,7 +102,7 @@ export function DemorasPorEtapa({ filtros }: { filtros: FiltrosIndicadores }) {
             <button className="secondary-button" disabled={pagina <= 1} onClick={() => setPagina(pagina - 1)} type="button">Página anterior</button>
             <span>Página {pagina} de {Math.max(1, datos.demoradas.totalPaginas)}</span>
             <button className="secondary-button" disabled={pagina >= datos.demoradas.totalPaginas} onClick={() => setPagina(pagina + 1)} type="button">Página siguiente</button>
-          </nav>
+          </nav></ElementoReporte>
         </>}
       </BloqueDeDatos>
     </section>

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.85 (2026-10-27)
+
+- Reportes: consumo de repuestos en unidades y controles independientes para ocultar o mostrar cada indicador, gráfica y reporte desde Configuración → Reportes.
+
 ## Version 1.0.84 (2026-10-27)
 
 - Reportes: se retiran las reparaciones atípicas y el patrón de fallas por modelo; se conserva el análisis de intervalos entre correctivas.

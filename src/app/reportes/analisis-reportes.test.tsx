@@ -27,6 +27,9 @@ vi.mock("@/servicios/api/api-estacionalidad", () => ({
 vi.mock("@/servicios/api/api-repuestos-por-modelo", () => ({
   apiObtenerRepuestosPorModelo: vi.fn().mockResolvedValue({ fechaDesde: null, fechaHasta: null, modelos: [] }),
 }));
+vi.mock("@/servicios/api/api-consumo-repuestos", () => ({
+  apiObtenerConsumoDeRepuestos: vi.fn().mockResolvedValue({ fechaDesde: null, fechaHasta: null, totalUnidades: 0, repuestos: [] }),
+}));
 vi.mock("@/servicios/api/api-resumen-por-cliente", () => ({
   apiObtenerResumenPorCliente: vi.fn().mockResolvedValue({ fechaDesde: null, fechaHasta: null, diasReincidencia: 90, clientes: [] }),
 }));

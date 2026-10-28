@@ -35,6 +35,7 @@ vi.mock("@/servicios/servidor/reportes", () => ({
   obtenerComparativaServidor: s.obtenerComparativaServidor,
   obtenerAvisosServidor: s.obtenerAvisosServidor,
 }));
+vi.mock("@/servicios/servidor/visibilidad-reportes", () => ({ obtenerVisibilidadReportesServidor: vi.fn().mockResolvedValue([]) }));
 vi.mock("@/servicios/servidor/ordenes-trabajo", () => ({
   listarEstadosOrdenTrabajoOVacio: s.listarEstadosOrdenTrabajoOVacio,
 }));
@@ -136,6 +137,11 @@ describe("página de reportes (Server Component)", () => {
 });
 
 describe("resumen de indicadores (Server Component)", () => {
+  it("oculta solo un bloque desactivado y mantiene los demás", async () => {
+    render(await ResumenIndicadores({ filtros: filtrosVacios, desactivados: ["resumen_atencion"] }));
+    expect(screen.queryByRole("heading", { name: "Atención necesaria" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Órdenes de trabajo registradas" })).toBeInTheDocument();
+  });
   it("lleva cada punto de «Atención necesaria» a su listado", async () => {
     render(await ResumenIndicadores({ filtros: filtrosVacios }));
     expect(screen.getByRole("link", { name: /órdenes de prioridad alta pendientes/ })).toHaveAttribute("href", "/ordenes-trabajo?prioridad=alta");

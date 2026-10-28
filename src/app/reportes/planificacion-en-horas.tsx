@@ -1,6 +1,7 @@
 "use client";
 
 import { ContenedorGrafico, Sparkline } from "@/componentes/graficos-avanzados";
+import { ElementoReporte } from "@/componentes/visibilidad-reportes";
 import { formatearNumero } from "@/componentes/formato-numero";
 import { BloqueDeDatos, useDatos } from "@/componentes/use-datos";
 import { apiObtenerComparativa } from "@/servicios/api/api-reportes";
@@ -71,13 +72,16 @@ function ComparacionDeHoras({ filtros }: { filtros: FiltrosIndicadores }) {
 
 export function PlanificacionEnHoras({ datos, filtros }: { datos: Planificacion; filtros: FiltrosIndicadores }) {
   return (
+    <>
+    <ElementoReporte codigo="indicador_planificado_horas"><ComparacionDeHoras filtros={filtros} /></ElementoReporte>
     <ContenedorGrafico
       titulo="Mantenimiento planificado frente a reactivo en horas"
       descripcion={"Del " + datos.periodo.desde + " al " + datos.periodo.hasta + ": " + formatearNumero(datos.resumen.horasPreventivas) + " h preventivas y " + formatearNumero(datos.resumen.horasCorrectivas) + " h correctivas. Incluye las pausas."}
       ayuda={AYUDA}
-      grafico={<><ComparacionDeHoras filtros={filtros} /><BarrasDeHoras elementos={datos.porMes} /></>}
+      grafico={<BarrasDeHoras elementos={datos.porMes} />}
       tabla={<TablaDeHoras columna="Mes" elementos={datos.porMes.map(({ periodo, resumen }) => ({ clave: periodo, nombre: periodo.slice(0, 7), resumen }))} />}
     />
+    </>
   );
 }
 

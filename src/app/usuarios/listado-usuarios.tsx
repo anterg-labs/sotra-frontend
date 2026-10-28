@@ -3,7 +3,7 @@ import { InformarResultados } from "@/componentes/listado/navegacion-listado";
 import { PaginacionListado } from "@/componentes/listado/paginacion-listado";
 import { listarUsuariosServidor } from "@/servicios/servidor/usuarios";
 import type { FiltrosUsuarios } from "@/tipos/usuario";
-import { RUTA_USUARIOS } from "./filtros";
+import { RUTA_USUARIOS, estadoUsuariosParaUrl } from "./filtros";
 import { TablaUsuarios } from "./tabla-usuarios";
 
 /** Trae la página de usuarios en el servidor; si falla, el error queda en línea y los filtros siguen disponibles. */
@@ -36,7 +36,7 @@ export async function ListadoUsuarios(props: { filtros: FiltrosUsuarios; consult
       <InformarResultados total={pagina.totalElementos} />
       <TablaUsuarios usuarios={pagina.elementos} filtros={filtros} unaSolaPagina={pagina.totalPaginas <= 1} />
       <PaginacionListado
-        filtros={{ buscar: filtros.buscar, rolId: filtros.rolId, estado: filtros.estado, ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden }}
+        filtros={{ buscar: filtros.buscar, rolId: filtros.rolId, estado: estadoUsuariosParaUrl(filtros.estado), ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden }}
         pagina={pagina.pagina}
         plural="usuarios"
         ruta={RUTA_USUARIOS}

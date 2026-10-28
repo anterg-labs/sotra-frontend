@@ -29,7 +29,7 @@ describe("página del listado de usuarios (Server Component)", () => {
     let completarRoles = () => {};
     listarRolesServidor.mockReturnValue(new Promise((resolver) => { completarRoles = () => resolver([]); }));
     const pagina = PaginaUsuarios({ searchParams: Promise.resolve({ buscar: "ana" }) });
-    await waitFor(() => expect(listarUsuariosServidor).toHaveBeenCalledWith({ buscar: "ana", rolId: "", estado: "", pagina: 1 }));
+    await waitFor(() => expect(listarUsuariosServidor).toHaveBeenCalledWith({ buscar: "ana", rolId: "", estado: "activo", pagina: 1 }));
     completarRoles();
     await pagina;
   });
@@ -43,7 +43,7 @@ describe("página del listado de usuarios (Server Component)", () => {
     ]);
     expect(screen.getByRole("button", { name: "Crear nuevo usuario" })).toBeInTheDocument();
     expect(await screen.findByText("Listado simulado")).toBeInTheDocument();
-    expect(listado).toHaveBeenCalledWith({ consulta: expect.any(Promise), filtros: { buscar: "ana", rolId: "2", estado: "", pagina: 2 } });
+    expect(listado).toHaveBeenCalledWith({ consulta: expect.any(Promise), filtros: { buscar: "ana", rolId: "2", estado: "activo", pagina: 2 } });
   });
 
   it("si fallan los roles muestra el error y mantiene la página", async () => {

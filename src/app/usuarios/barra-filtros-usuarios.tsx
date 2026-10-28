@@ -6,7 +6,7 @@ import { construirUrlUsuarios } from "./filtros";
 import { FiltrosAvanzados, hayFiltrosAplicados } from "@/componentes/listado/filtros-avanzados";
 
 type ValoresUsuarios = Pick<FiltrosUsuarios, "buscar" | "rolId" | "estado" | "ordenarPor" | "direccionOrden">;
-const VACIOS: ValoresUsuarios = { buscar: "", rolId: "", estado: "" };
+const VACIOS: ValoresUsuarios = { buscar: "", rolId: "", estado: "activo" };
 
 /** Filtros del listado en vivo: el texto espera un instante y el rol y el estado aplican al instante. */
 export function BarraFiltrosUsuarios(props: { filtros: FiltrosUsuarios; roles: Rol[] }) {
@@ -35,7 +35,7 @@ export function BarraFiltrosUsuarios(props: { filtros: FiltrosUsuarios; roles: R
           value={valores.buscar}
         />
       </div>
-      <FiltrosAvanzados alLimpiar={() => limpiar(VACIOS)} hayFiltros={hayFiltrosAplicados(valores)}>
+      <FiltrosAvanzados alLimpiar={() => limpiar(VACIOS)} hayFiltros={hayFiltrosAplicados(valores, { estado: "activo" })}>
         <div className="form-field">
           <label htmlFor="rolUsuarioFiltro">Rol</label>
           <select id="rolUsuarioFiltro" onChange={(evento) => cambiar({ rolId: evento.target.value })} value={valores.rolId}>
@@ -48,9 +48,9 @@ export function BarraFiltrosUsuarios(props: { filtros: FiltrosUsuarios; roles: R
         <div className="form-field">
           <label htmlFor="estadoUsuarioFiltro">Estado</label>
           <select id="estadoUsuarioFiltro" onChange={(evento) => cambiar({ estado: evento.target.value })} value={valores.estado}>
-            <option value="">Todos los estados</option>
-            <option value="activo">Activo</option>
-            <option value="inactivo">Inactivo</option>
+            <option value="activo">Activos</option>
+            <option value="inactivo">Inactivos</option>
+            <option value="">Todos</option>
           </select>
         </div>
       </FiltrosAvanzados>

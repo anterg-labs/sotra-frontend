@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## Version 1.0.84 (2026-10-27)
+
+- Reportes: se retiran las reparaciones atípicas y el patrón de fallas por modelo; se conserva el análisis de intervalos entre correctivas.
+
+## Version 1.0.83 (2026-10-27)
+
+- Análisis avanzado: tres dispersiones de correctivas frente a edad, horas de uso y kilómetros de uso, con tablas de edad, lectura, fecha, modelo y órdenes; estados de carga, vacío y error y controles individuales de visibilidad.
+
+## Version 1.0.82 (2026-10-27)
+
+- Reportes A13: resumen por empresa cliente en Maquinaria, con selector de órdenes, correctivas, horas de parada o reincidencias; barras, tabla completa, filtros compartidos y explicación del cálculo.
+
+## Version 1.0.81 (2026-10-27)
+
+- Reportes A12: en Maquinaria, selector de modelo, gráfica de los repuestos más frecuentes y tabla completa con órdenes correctivas asociadas y con suministro; estados de carga, vacío y error, filtros compartidos y explicación de alcance.
+
+## Version 1.0.80 (2026-10-27)
+
+- Reportes A10 integrado en A18: comparación de las cuatro etapas por media, mediana, P90 y cantidad de órdenes, con identificación de la media mayor y tabla accesible. Usa la misma respuesta y conserva gráficas, referencias y lista de demoras existentes.
+
+## Version 1.0.79 (2026-10-27)
+
+- A9 en Maquinaria: mapa de calor de doce meses por tipo de máquina, cifras y totales, alternativa tabular, desplazamiento horizontal por teclado y estados de carga, vacío y error. Contrato validado y filtros de fecha, cliente y activo.
+
 ## Version 1.0.78 (2026-10-27)
 
 - Reportes A18 en Proceso: cuatro gráficas con media, mediana y línea de referencia, tablas y órdenes demoradas con etapa, exceso y enlace. Nueva configuración de umbrales con restablecimiento al promedio histórico.

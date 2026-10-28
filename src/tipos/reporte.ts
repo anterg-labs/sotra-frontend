@@ -248,18 +248,6 @@ export type Envejecimiento = {
   masAntiguas: OrdenAntigua[];
 };
 
-export type OrdenAtipica = {
-  ordenId: number;
-  nombreActivo: string;
-  tipoMaquina: string;
-  horas: number;
-  medianaHoras: number;
-  limiteHoras: number;
-  vecesLaMediana: number;
-};
-
-export type Atipicas = { minimoPorGrupo: number; elementos: OrdenAtipica[] };
-
 export type DesgasteActivo = {
   activoId: number;
   nombreActivo: string;
@@ -273,21 +261,9 @@ export type DesgasteActivo = {
   usoPromedioEntreFallas: number | null;
 };
 
-export type PatronDeFallas = {
-  modeloId: number;
-  modelo: string;
-  intervalos: number;
-  forma: number;
-  escalaDias: number;
-  ajusteR2: number;
-  patron: "tempranas" | "aleatorias" | "desgaste";
-};
-
 export type Desgaste = {
   minimoDeIntervalos: number;
-  minimoParaPatron: number;
   activos: DesgasteActivo[];
-  patrones: PatronDeFallas[];
   datosInsuficientes: boolean;
 };
 

@@ -186,7 +186,7 @@ export function TableroReportes(props: PropiedadesTablero) {
       <SeccionPlegable id="proceso" resumen="Si el trabajo se acumula, cuánto llevan abiertas las órdenes, el cumplimiento de fechas y las demoras por motivo." titulo="Proceso">
         <SeccionProceso filtros={filtros} />
       </SeccionPlegable>
-      <SeccionPlegable id="analisis-avanzado" resumen="Este período frente al anterior, reparaciones atípicas y señales de desgaste." titulo="Análisis avanzado">
+      <SeccionPlegable id="analisis-avanzado" resumen="Comparación de períodos y desgaste por intervalos, edad y uso." titulo="Análisis avanzado">
         <SeccionAnalisisAvanzado filtros={filtros} />
       </SeccionPlegable>
     </>

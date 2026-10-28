@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ContenedorGrafico } from "@/componentes/graficos-avanzados";
+import { ContenedorGrafico, GraficoColumnas } from "@/componentes/graficos-avanzados";
 import { formatearNumero } from "@/componentes/formato-numero";
 import { BloqueDeDatos, useDatos } from "@/componentes/use-datos";
 import { apiObtenerDemorasEtapas } from "@/servicios/api/api-demoras-etapas";
@@ -43,16 +43,46 @@ export function ResumenDeEtapa({ datos }: { datos: EstadisticaEtapa }) {
   );
 }
 
+/** A10 reutiliza las cuatro estadísticas de A18: no abre una segunda consulta ni clasifica órdenes por su cuenta. */
+export function CuellosDeBotella({ etapas }: { etapas: EstadisticaEtapa[] }) {
+  const conDatos = etapas.filter(item => item.cantidadOrdenes > 0 && item.promedioHoras !== null);
+  const mayorMedia = conDatos.length > 0 ? Math.max(...conDatos.map(item => item.promedioHoras ?? 0)) : null;
+  const nombresConMayorMedia = conDatos.filter(item => item.promedioHoras === mayorMedia).map(item => item.nombre);
+  const descripcion = mayorMedia === null
+    ? "No hay tiempos registrados para comparar las etapas con los filtros elegidos."
+    : mayorMedia === 0
+      ? "Las etapas con datos tienen una media de 0 h; todavía no se identifica una concentración de tiempo."
+      : `${nombresConMayorMedia.length === 1 ? "La media más alta está en" : "Las medias más altas están en"} ${nombresConMayorMedia.join(" y ")}: ${horas(mayorMedia)}. Revisá también la mediana, el P90 y cuántas órdenes pasaron por cada etapa.`;
+  return <ContenedorGrafico
+    titulo="Cuellos de botella del proceso"
+    descripcion={descripcion}
+    ayuda="Compara, para los filtros elegidos, las horas medias que cada orden acumuló en pendiente (antes de empezar), en progreso (durante el trabajo), revisión (esperando validación) y pausa. Incluye las visitas repetidas y los tramos abiertos hasta la consulta. Cada etapa usa las órdenes que pasaron por ella, por eso las cantidades pueden diferir; comparar medias no identifica por sí solo una causa. La mediana muestra el centro y el P90 el extremo alto. Pausa se cuenta aparte, sin sumarla otra vez a progreso. El destaque usa la media, no el umbral; las gráficas y órdenes demoradas de abajo aplican la referencia configurable de A18. No se comparan personas."
+    grafico={conDatos.length === 0 ? <p className="empty-state">No hay datos de etapas en este período.</p>
+      : mayorMedia === 0 ? <p>Media de 0 h en las etapas con datos.</p>
+        : <GraficoColumnas datos={etapas.map(item => ({ etiqueta: item.nombre, valor: item.promedioHoras ?? 0 }))}
+            titulo="Media de horas por etapa del proceso" unidad="horas de media" />}
+    tabla={<table className="tabla-grafico"><caption className="sr-only">Comparación de tiempos por etapa</caption>
+      <thead><tr><th scope="col">Etapa</th><th scope="col" className="celda-numerica">Órdenes</th>
+        <th scope="col" className="celda-numerica">Media</th><th scope="col" className="celda-numerica">Mediana</th>
+        <th scope="col" className="celda-numerica">P90</th></tr></thead>
+      <tbody>{etapas.map(item => <tr key={item.etapa}><th scope="row">{item.nombre}</th>
+        <td className="celda-numerica">{item.cantidadOrdenes}</td><td className="celda-numerica">{horas(item.promedioHoras)}</td>
+        <td className="celda-numerica">{horas(item.medianaHoras)}</td><td className="celda-numerica">{horas(item.percentil90Horas)}</td></tr>)}</tbody>
+    </table>}
+  />;
+}
+
 export function DemorasPorEtapa({ filtros }: { filtros: FiltrosIndicadores }) {
   const [pagina, setPagina] = useState(1);
   const [etapa, setEtapa] = useState<EtapaDemora | "">("");
   const consulta = useDatos(() => apiObtenerDemorasEtapas(filtros, pagina, etapa), JSON.stringify([filtros, pagina, etapa]));
   return (
     <section aria-label="Demoras por etapa" className="demoras-etapas">
-      <h3>Demoras por etapa</h3>
-      <p className="texto-tenue">Tiempo acumulado en cada etapa, con media y mediana. Los tiempos abiertos siguen corriendo; las pausas se cuentan aparte.</p>
+      <h3>Tiempos y demoras por etapa</h3>
+      <p className="texto-tenue">Compará dónde se acumula el tiempo y consultá las órdenes que superan su referencia. Los tiempos abiertos siguen corriendo; las pausas se cuentan aparte.</p>
       <BloqueDeDatos cargando="Cargando las demoras por etapa…" {...consulta}>
         {(datos) => <>
+          <CuellosDeBotella etapas={datos.etapas} />
           <div className="seccion-grilla">{datos.etapas.map(item => <ResumenDeEtapa datos={item} key={item.etapa} />)}</div>
           <div className="form-field"><label htmlFor="etapa-demoradas">Etapa de las órdenes demoradas</label>
             <select id="etapa-demoradas" value={etapa} onChange={evento => { const valor = evento.target.value; if (valor === "" || esEtapa(valor)) { setEtapa(valor); setPagina(1); } }}>

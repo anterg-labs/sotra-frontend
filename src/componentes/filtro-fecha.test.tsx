@@ -1,20 +1,22 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
-import { FiltroFecha, rangoDeFechasInvalido } from "./filtro-fecha";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { FiltroFecha, formatearFechaCorta, rangoDeFechasInvalido } from "./filtro-fecha";
 
 function dibujar(fechaDesde = "", fechaHasta = "") {
   const alCambiar = vi.fn();
-  render(
-    <FiltroFecha
-      alCambiar={alCambiar}
-      etiqueta="Creada"
-      fechaDesde={fechaDesde}
-      fechaHasta={fechaHasta}
-      id="creada"
-    />,
-  );
+  render(<FiltroFecha alCambiar={alCambiar} etiqueta="Creada" fechaDesde={fechaDesde} fechaHasta={fechaHasta} id="creada" />);
   return alCambiar;
 }
+
+const abrir = () => fireEvent.click(screen.getByRole("button", { name: "Creada" }));
+
+beforeEach(() => {
+  vi.setSystemTime(new Date(2026, 9, 27, 12));
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe("FiltroFecha", () => {
   it("solo rechaza rangos completos invertidos", () => {
@@ -23,50 +25,86 @@ describe("FiltroFecha", () => {
     expect(rangoDeFechasInvalido("2026-10-01", "2026-10-01")).toBe(false);
     expect(rangoDeFechasInvalido("2026-10-01", "")).toBe(false);
   });
-  it("muestra un solo selector y envía desde y hasta iguales para un día fijo", () => {
+
+  it("da formato a las fechas", () => {
+    expect(formatearFechaCorta("2026-10-05")).toBe("05/10/2026");
+  });
+
+  it("muestra «Cualquier fecha», un día o un rango en un solo botón", () => {
+    const { unmount } = render(<FiltroFecha alCambiar={vi.fn()} etiqueta="Creada" fechaDesde="" fechaHasta="" id="a" />);
+    expect(screen.getByText("Cualquier fecha")).toBeInTheDocument();
+    unmount();
+    const dia = render(<FiltroFecha alCambiar={vi.fn()} etiqueta="Creada" fechaDesde="2026-10-12" fechaHasta="2026-10-12" id="b" />);
+    expect(screen.getByText("12/10/2026")).toBeInTheDocument();
+    dia.unmount();
+    render(<FiltroFecha alCambiar={vi.fn()} etiqueta="Creada" fechaDesde="2026-10-01" fechaHasta="2026-10-15" id="c" />);
+    expect(screen.getByText("01/10/2026 – 15/10/2026")).toBeInTheDocument();
+  });
+
+  it("un clic elige un día fijo y se envía como desde y hasta iguales", () => {
     const alCambiar = dibujar();
+    abrir();
+    expect(screen.getByRole("dialog", { name: "Elegir creada" })).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText("Creada"), { target: { value: "2026-10-12" } });
+    fireEvent.click(screen.getByRole("button", { name: "12 de octubre de 2026" }));
 
-    expect(screen.queryByLabelText("Creada hasta")).toBeNull();
     expect(alCambiar).toHaveBeenCalledWith("2026-10-12", "2026-10-12");
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
-  it("muestra el segundo selector al marcar la casilla de rango", () => {
-    dibujar("2026-10-01", "2026-10-01");
+  it("un segundo clic arma el rango, aunque se elija un día anterior, y cierra el panel", () => {
+    const alCambiar = dibujar();
+    abrir();
+    fireEvent.click(screen.getByRole("button", { name: "20 de octubre de 2026" }));
+    fireEvent.click(screen.getByRole("button", { name: "8 de octubre de 2026" }));
 
-    fireEvent.click(screen.getByLabelText("Rango de fechas"));
-
-    expect(screen.getByLabelText("Creada desde")).toBeDefined();
-    expect(screen.getByLabelText("Creada hasta")).toBeDefined();
+    expect(alCambiar).toHaveBeenLastCalledWith("2026-10-08", "2026-10-20");
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("empieza en modo rango cuando las fechas ya son distintas", () => {
-    dibujar("2026-10-01", "2026-10-15");
+  it("muestra dos meses, navega y marca el rango elegido", () => {
+    dibujar("2026-10-10", "2026-10-12");
+    abrir();
+    expect(screen.getByText("octubre de 2026")).toBeInTheDocument();
+    expect(screen.getByText("noviembre de 2026")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "11 de octubre de 2026" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "13 de octubre de 2026" })).toHaveAttribute("aria-pressed", "false");
 
-    expect(screen.getByLabelText("Creada hasta")).toBeDefined();
+    fireEvent.click(screen.getByRole("button", { name: "Mes siguiente" }));
+    expect(screen.getByText("diciembre de 2026")).toBeInTheDocument();
   });
 
-  it("avisa cuando el fin es anterior al inicio", () => {
-    dibujar("2026-10-15", "2026-10-01");
+  it("los atajos aplican un rango y «Cualquier fecha» lo limpia", () => {
+    const alCambiar = dibujar();
+    abrir();
+    fireEvent.click(within(screen.getByRole("list", { name: "Atajos" })).getByRole("button", { name: "Últimos 7 días" }));
+    expect(alCambiar).toHaveBeenLastCalledWith("2026-10-21", "2026-10-27");
+    expect(screen.queryByRole("dialog")).toBeNull();
 
-    expect(screen.getByRole("alert").textContent).toBe("La fecha final no puede ser anterior a la inicial.");
+    abrir();
+    fireEvent.click(within(screen.getByRole("list", { name: "Atajos" })).getByRole("button", { name: "Mes pasado" }));
+    expect(alCambiar).toHaveBeenLastCalledWith("2026-09-01", "2026-09-30");
+
+    abrir();
+    fireEvent.click(within(screen.getByRole("list", { name: "Atajos" })).getByRole("button", { name: "Cualquier fecha" }));
+    expect(alCambiar).toHaveBeenLastCalledWith("", "");
   });
 
-  it("al volver a un día fijo conserva solo la fecha inicial", () => {
+  it("la cruz quita el filtro y Escape cierra el panel", () => {
     const alCambiar = dibujar("2026-10-01", "2026-10-15");
+    fireEvent.click(screen.getByRole("button", { name: "Quitar el filtro de creada" }));
+    expect(alCambiar).toHaveBeenCalledWith("", "");
 
-    fireEvent.click(screen.getByLabelText("Rango de fechas"));
-
-    expect(alCambiar).toHaveBeenCalledWith("2026-10-01", "2026-10-01");
+    abrir();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("la casilla de rango es un interruptor accesible", () => {
+  it("un clic afuera cierra el panel", () => {
     dibujar();
-
-    const interruptor = screen.getByRole("switch", { name: "Rango de fechas" });
-    expect(interruptor).not.toBeChecked();
-    fireEvent.click(interruptor);
-    expect(interruptor).toBeChecked();
+    abrir();
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 });

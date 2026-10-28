@@ -9,7 +9,10 @@ import {
 } from "@/servicios/api/solicitudes-http";
 import type {
   ActualizarOrdenTrabajoInput,
+  CausaFalla,
   CrearOrdenTrabajoInput,
+  MotivoDeOrden,
+  RespuestaCalendarioOrdenes,
   FiltrosOrdenesTrabajo,
   OrdenTrabajo,
   RepuestoPedido,
@@ -29,8 +32,10 @@ export async function apiObtenerOrdenTrabajo(ordenTrabajoId: number) {
   return orden as OrdenTrabajo;
 }
 
-export async function apiCambiarEstadoOrdenTrabajo(ordenTrabajoId: number, estado: string, motivo: string) {
-  const opciones = crearOpcionesJson("PATCH", { estado: estado, motivo: motivo });
+export type DatosExtraDeEstado = { lecturaUso?: number; motivoCodigo?: string };
+
+export async function apiCambiarEstadoOrdenTrabajo(ordenTrabajoId: number, estado: string, motivo: string, extra: DatosExtraDeEstado = {}) {
+  const opciones = crearOpcionesJson("PATCH", { estado: estado, motivo: motivo, ...extra });
   const ruta = "/api/v1/ordenes-trabajo/" + ordenTrabajoId + "/estado";
   const orden = await leerDatosApi(ruta, opciones, "No se pudo cambiar el estado de la orden de trabajo.");
   return orden as OrdenTrabajo;
@@ -89,4 +94,35 @@ export async function apiSolicitarSugerenciaOrdenTrabajo(datosOrden: SolicitarSu
 
   const sugerenciaObtenida = await respuesta.json();
   return sugerenciaObtenida as SugerenciaOrdenTrabajo;
+}
+
+/** Causas de falla activas para clasificar una correctiva. */
+export async function apiListarCausasFalla() {
+  return (await leerDatosApi("/api/v1/causas-falla?estado=activo", { cache: "no-store" }, "No se pudieron obtener las causas de falla.")) as CausaFalla[];
+}
+
+/** Motivos codificados para clasificar una pausa o una devolución. */
+export async function apiListarMotivosOrden() {
+  return (await leerDatosApi("/api/v1/ordenes-trabajo/motivos", { cache: "no-store" }, "No se pudieron obtener los motivos.")) as MotivoDeOrden[];
+}
+
+export type ParametrosCalendario = {
+  desde: string;
+  hasta: string;
+  clienteId: string;
+  activoId: string;
+  estado: string;
+  tipo: string;
+  prioridad: string;
+  incluirEliminadas: boolean;
+};
+
+/** Órdenes del rango ubicadas por su fecha prevista (hasta 100 días), con los filtros del listado. */
+export async function apiObtenerCalendarioOrdenes(parametros: ParametrosCalendario) {
+  const consulta = new URLSearchParams({ desde: parametros.desde, hasta: parametros.hasta });
+  for (const campo of ["clienteId", "activoId", "estado", "tipo", "prioridad"] as const) {
+    if (parametros[campo] !== "") consulta.set(campo, parametros[campo]);
+  }
+  if (parametros.incluirEliminadas) consulta.set("incluirEliminadas", "true");
+  return (await leerDatosApi("/api/v1/ordenes-trabajo/calendario?" + consulta.toString(), { cache: "no-store" }, "No se pudo obtener el calendario de órdenes.")) as RespuestaCalendarioOrdenes;
 }

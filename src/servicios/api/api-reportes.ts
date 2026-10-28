@@ -1,5 +1,5 @@
 import { construirConsultaAnalisis, construirConsultaIndicadores } from "@/servicios/api/consultas-reportes";
-import { leerDatosApi, obtenerUrlBaseApi } from "@/servicios/api/solicitudes-http";
+import { crearOpcionesJson, leerDatosApi, obtenerUrlBaseApi } from "@/servicios/api/solicitudes-http";
 import type {
   AgrupacionTendencias,
   AlertasMaquinaria,
@@ -10,6 +10,12 @@ import type {
   Tendencias,
   DesempenoOperativo,
   Tiempos,
+  Atipicas,
+  Avisos,
+  Comparativa,
+  Desgaste,
+  Envejecimiento,
+  ReglaAviso,
 } from "@/tipos/reporte";
 
 export async function apiObtenerIndicadores(filtros: FiltrosIndicadores) {
@@ -58,4 +64,40 @@ export async function apiObtenerAlertasMaquinaria(filtros: FiltrosIndicadores) {
 export async function apiObtenerRepuestosUsados(filtros: FiltrosIndicadores) {
   const ruta = "/api/v1/reportes/repuestos-usados" + construirConsultaAnalisis(filtros);
   return (await leerDatosApi(ruta, { cache: "no-store" }, "No se pudieron obtener los repuestos más usados.")) as RepuestosUsados;
+}
+
+export async function apiObtenerComparativa(filtros: FiltrosIndicadores) {
+  const ruta = "/api/v1/reportes/analisis/comparativa" + construirConsultaAnalisis(filtros);
+  return (await leerDatosApi(ruta, { cache: "no-store" }, "No se pudo obtener la comparativa.")) as Comparativa;
+}
+
+export async function apiObtenerEnvejecimiento(filtros: FiltrosIndicadores) {
+  const ruta = "/api/v1/reportes/envejecimiento" + construirConsultaAnalisis(filtros);
+  return (await leerDatosApi(ruta, { cache: "no-store" }, "No se pudo obtener el envejecimiento de las órdenes.")) as Envejecimiento;
+}
+
+export async function apiObtenerAtipicas(filtros: FiltrosIndicadores) {
+  const ruta = "/api/v1/reportes/analisis/atipicas" + construirConsultaAnalisis(filtros);
+  return (await leerDatosApi(ruta, { cache: "no-store" }, "No se pudieron obtener las órdenes atípicas.")) as Atipicas;
+}
+
+export async function apiObtenerDesgaste(filtros: FiltrosIndicadores) {
+  const ruta = "/api/v1/reportes/analisis/desgaste" + construirConsultaAnalisis(filtros);
+  return (await leerDatosApi(ruta, { cache: "no-store" }, "No se pudo obtener el análisis de desgaste.")) as Desgaste;
+}
+
+export async function apiObtenerAvisos() {
+  return (await leerDatosApi("/api/v1/reportes/avisos", { cache: "no-store" }, "No se pudieron obtener los avisos.")) as Avisos;
+}
+
+export async function apiObtenerReglasAviso() {
+  return (await leerDatosApi("/api/v1/reportes/avisos/reglas", { cache: "no-store" }, "No se pudieron obtener las reglas de aviso.")) as ReglaAviso[];
+}
+
+export async function apiActualizarReglaAviso(codigo: string, regla: Omit<ReglaAviso, "codigo" | "nombre">) {
+  return (await leerDatosApi(
+    "/api/v1/reportes/avisos/reglas/" + encodeURIComponent(codigo),
+    crearOpcionesJson("PUT", regla),
+    "No se pudo guardar la regla de aviso.",
+  )) as ReglaAviso;
 }

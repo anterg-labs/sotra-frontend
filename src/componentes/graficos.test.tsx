@@ -23,8 +23,8 @@ describe("GraficoBarras", () => {
 
 describe("GraficoTendencia", () => {
   const puntos = [
-    { periodo: "2026-10-05", preventivas: 1, correctivas: 3, total: 4 },
-    { periodo: "2026-10-12", preventivas: 0, correctivas: 0, total: 0 },
+    { periodo: "2026-10-05", preventivas: 1, correctivas: 3, total: 4, cerradas: 2 },
+    { periodo: "2026-10-12", preventivas: 0, correctivas: 0, total: 0, cerradas: 0 },
   ];
 
   it("es una imagen con nombre y trae una tabla equivalente para lectores de pantalla", () => {
@@ -39,7 +39,7 @@ describe("GraficoTendencia", () => {
   });
 
   it("no falla con todo en cero ni sin períodos", () => {
-    const { rerender } = render(<GraficoTendencia puntos={[{ periodo: "2026-10-05", preventivas: 0, correctivas: 0, total: 0 }]} titulo="Vacío" />);
+    const { rerender } = render(<GraficoTendencia puntos={[{ periodo: "2026-10-05", preventivas: 0, correctivas: 0, total: 0, cerradas: 0 }]} titulo="Vacío" />);
     expect(screen.getByRole("img", { name: "Vacío" })).toBeInTheDocument();
     rerender(<GraficoTendencia puntos={[]} titulo="Vacío" />);
     expect(screen.getByText("No hay órdenes en el período.")).toBeInTheDocument();

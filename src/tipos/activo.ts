@@ -11,6 +11,8 @@ export type Activo = {
   anioFabricacion: number | null;
   nombre: string | null;
   ubicacion: string | null;
+  /** Cómo se mide el uso de la máquina: horas (horómetro) o kilómetros (odómetro). */
+  unidadUso?: "horas" | "kilometros";
   estado: EstadoActivo;
 };
 
@@ -22,6 +24,7 @@ export type CrearActivoInput = {
   anioFabricacion: number | null;
   nombre: string | null;
   ubicacion: string | null;
+  unidadUso?: "horas" | "kilometros";
 };
 
 export type ActualizarActivoInput = {
@@ -32,6 +35,7 @@ export type ActualizarActivoInput = {
   anioFabricacion: number | null;
   nombre: string | null;
   ubicacion: string | null;
+  unidadUso?: "horas" | "kilometros";
   estado: EstadoActivo;
 };
 

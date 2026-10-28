@@ -41,13 +41,22 @@ export function leerFiltrosOrdenes(parametros: ParametrosBusqueda, estados: read
     fechaHasta: leerFecha(parametros, "fechaHasta"),
     soloActivas: primerValor(parametros.soloActivas) === "true",
     conSugerencias: primerValor(parametros.conSugerencias) === "true",
+    vista: primerValor(parametros.vista) === "calendario" ? "calendario" : "",
+    mes: /^\d{4}-(0[1-9]|1[0-2])$/.test(primerValor(parametros.mes)) ? primerValor(parametros.mes) : "",
+    meses: ["2", "3"].includes(primerValor(parametros.meses)) ? primerValor(parametros.meses) : "",
+    eliminadas: primerValor(parametros.eliminadas) === "true",
     pagina: leerPagina(parametros),
     ...leerOrden(parametros, COLUMNAS_ORDENABLES_ORDENES),
   };
 }
 
 export function construirUrlOrdenes(filtros: FiltrosOrdenesTrabajo) {
-  return construirUrlListado(RUTA_ORDENES, { ...filtros, soloActivas: filtros.soloActivas ? "true" : "", conSugerencias: filtros.conSugerencias ? "true" : "" });
+  return construirUrlListado(RUTA_ORDENES, {
+    ...filtros,
+    soloActivas: filtros.soloActivas ? "true" : "",
+    conSugerencias: filtros.conSugerencias ? "true" : "",
+    eliminadas: filtros.eliminadas ? "true" : "",
+  });;
 }
 
 /** URL del listado al hacer clic en el título de una columna: aplica el orden siguiente y vuelve a la página 1. */

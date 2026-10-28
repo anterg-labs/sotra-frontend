@@ -92,6 +92,23 @@ export type HistorialTecnicoOrdenTrabajo = {
   observacion: string | null;
 };
 
+/** Cómo se mide el uso de la máquina: horas (horómetro) o kilómetros (odómetro). */
+export type UnidadDeUso = "horas" | "kilometros";
+
+/** Un cambio de la lectura de uso de la orden: valor anterior (`null` la primera vez), valor nuevo, cuándo y quién. */
+export type HistorialLecturaUsoOrden = {
+  lecturaAnterior: number | null;
+  lecturaNueva: number | null;
+  fechaHora: string;
+  usuarioId: number | null;
+  nombreUsuario: string | null;
+};
+
+export type CausaFalla = { id: number; nombre: string; estado: "activo" | "inactivo" };
+
+/** Motivo codificado de una pausa o devolución (`falta_repuesto`, `esperando_autorizacion`, `esperando_cliente`, `otro`). */
+export type MotivoDeOrden = { codigo: string; descripcion: string };
+
 export type OrdenTrabajo = {
   id: number;
   clienteId: number;
@@ -108,6 +125,12 @@ export type OrdenTrabajo = {
   descripcion: string;
   observaciones: string;
   fechaPrevistaEjecucion: string;
+  tiempoEstimadoHoras?: number | null;
+  causaFallaId?: number | null;
+  causaFalla?: string | null;
+  lecturaUso?: number | null;
+  unidadUso?: UnidadDeUso;
+  historialLecturaUso?: HistorialLecturaUsoOrden[];
   estado: EstadoOrdenTrabajo;
   creadoEn: string;
   fechaInicio: string | null;
@@ -135,6 +158,11 @@ export type CrearOrdenTrabajoInput = {
   estado: EstadoOrdenTrabajo;
   motivoEstado: string;
   sesion: string;
+  /** Datos opcionales para los reportes; si no se envían, la API no cambia lo guardado. */
+  tiempoEstimadoHoras?: number;
+  causaFallaId?: number;
+  lecturaUso?: number;
+  motivoCodigo?: string;
 };
 
 export type SolicitarSugerenciaInput = {
@@ -176,7 +204,35 @@ export type FiltrosOrdenesTrabajo = {
   fechaDesde: string;
   fechaHasta: string;
   conSugerencias: boolean;
+  /** `calendario` muestra las órdenes en un calendario por su fecha prevista; vacío es la lista. */
+  vista?: string;
+  /** Primer mes visible del calendario (`aaaa-mm`). */
+  mes?: string;
+  /** Cantidad de meses visibles del calendario (1 a 3). */
+  meses?: string;
+  /** El calendario incluye las órdenes eliminadas. */
+  eliminadas?: boolean;
   pagina: number;
   ordenarPor?: string;
   direccionOrden?: "asc" | "desc" | "";
+};
+
+/** Una orden ubicada en el calendario por su fecha prevista de ejecución. */
+export type CalendarioOrden = {
+  id: number;
+  fecha: string;
+  nombreActivo: string;
+  nombreCliente: string;
+  tipo: TipoOrdenTrabajo;
+  prioridad: PrioridadOrdenTrabajo;
+  estado: EstadoOrdenTrabajo;
+  fase: FaseEstadoOrden;
+  vencida: boolean;
+};
+
+export type RespuestaCalendarioOrdenes = {
+  desde: string;
+  hasta: string;
+  truncado: boolean;
+  elementos: CalendarioOrden[];
 };

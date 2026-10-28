@@ -1,5 +1,34 @@
 # CHANGELOG
 
+## Version 1.0.78 (2026-10-27)
+
+- Reportes A18 en Proceso: cuatro gráficas con media, mediana y línea de referencia, tablas y órdenes demoradas con etapa, exceso y enlace. Nueva configuración de umbrales con restablecimiento al promedio histórico.
+- Resumen: vuelve la fila de cuatro bloques en escritorio; orden, tiempo hasta inicio, tiempo hasta cierre y Atención necesaria en la cuarta columna. En móvil se apilan.
+
+## Version 1.0.77 (2026-10-27)
+
+- Reportes A17: tarjeta de mantenimiento planificado en horas dentro de Maquinaria, variación frente al período anterior y tendencia de seis meses, barras apiladas mensuales y desglose por tipo de máquina con alternativa tabular. Se explica que son horas transcurridas de creación a cierre con pausas, y se distingue «Sin dato» de 0 %.
+
+## Version 1.0.76 (2026-10-27)
+
+- Reportes: franja de avisos con ícono, conteos por gravedad y control «Ver detalle / Ocultar»; lista agrupada en críticos y de atención, con encabezado adaptado a móvil.
+- Resumen general: estado, prioridad, tipo y activos se alinean en cuatro columnas en escritorio; los repuestos con bajo stock ocupan todo el ancho. En móvil se apilan.
+- Descarga: control discreto «Descargar PDF o CSV» que despliega el formulario debajo.
+
+## Version 1.0.75 (2026-10-27)
+
+- Filtros: la fecha es un solo selector con un calendario de dos meses y atajos (hoy, últimos 7 o 30 días, este mes, mes pasado, este año) en Reportes, Órdenes de trabajo y Movimientos de stock; desaparece el interruptor de rango y el segundo campo de fecha. Campos más prolijos, del mismo alto y con foco claro.
+- Reportes: la sección «Alertas y desempeño operativo» pasa a ir justo debajo del resumen general.
+- Pantallas: se corrige el desplazamiento horizontal de más en Reportes y en el calendario de órdenes, causado por tablas solo para lectores de pantalla y por un ancho mínimo de las tablas.
+
+## Version 1.0.74 (2026-10-27)
+
+- Reportes: pantalla más limpia, con tres tarjetas de indicadores clave arriba, una franja de avisos que solo aparece si hay y secciones plegables (Resumen, Maquinaria, Proceso, Análisis avanzado y Alertas) que cargan al abrirse. Nuevas gráficas con alternativa en tabla y explicación de su cálculo: Pareto de la parada, tiempo de reparación, preventivo frente a reactivo, órdenes creadas frente a cerradas, antigüedad de las órdenes, cumplimiento preventivo, horas en pausa por motivo, comparación de períodos, órdenes atípicas y desgaste.
+- Órdenes: interruptor Lista/Calendario con un calendario de uno a tres meses, filtros, leyenda y vencidas que filtran, íconos de ver y modificar y detalle en un modal; línea de tiempo de etapas y recorrido con flechas en el detalle de cada orden, sin mostrar personas.
+- Órdenes: el formulario suma tiempo estimado, causa de falla, lectura de uso (horómetro u odómetro según el activo) y tipo de motivo; el detalle muestra el historial de la lectura.
+- Activos: nueva unidad de uso (horas o kilómetros).
+- Configuración: nueva pantalla de avisos de ineficiencia para ajustar los umbrales.
+
 ## Version 1.0.73 (2026-10-27)
 
 - Documentación técnica: al subir un documento para las sugerencias de IA ya no hay que esperar a que se procese; el listado y el detalle muestran si está «En cola», «Procesando…», listo o con «Error al procesar», y se actualizan solos cada 5 segundos mientras haya alguno en proceso.

@@ -10,6 +10,9 @@ import type {
   RepuestosUsados,
   Tendencias,
   Tiempos,
+  Avisos,
+  Comparativa,
+  ReglaAviso,
 } from "@/tipos/reporte";
 
 export function obtenerIndicadoresServidor(filtros: FiltrosIndicadores) {
@@ -49,4 +52,19 @@ export function obtenerRepuestosUsadosServidor(filtros: FiltrosIndicadores) {
     "/api/v1/reportes/repuestos-usados" + construirConsultaAnalisis(filtros),
     "No se pudieron obtener los repuestos más usados.",
   );
+}
+
+export function obtenerComparativaServidor(filtros: FiltrosIndicadores) {
+  return leerJsonServidor<Comparativa>(
+    "/api/v1/reportes/analisis/comparativa" + construirConsultaAnalisis(filtros),
+    "No se pudo obtener la comparativa.",
+  );
+}
+
+export function obtenerAvisosServidor() {
+  return leerJsonServidor<Avisos>("/api/v1/reportes/avisos", "No se pudieron obtener los avisos.");
+}
+
+export function listarReglasAvisoServidor() {
+  return leerJsonServidor<ReglaAviso[]>("/api/v1/reportes/avisos/reglas", "No se pudieron obtener las reglas de aviso.");
 }

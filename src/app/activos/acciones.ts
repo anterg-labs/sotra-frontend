@@ -17,7 +17,7 @@ const campoPorCodigoDuplicado = { NUMERO_SERIE_DUPLICADO: "numSerie" };
 /** Una Server Action es un endpoint público: la entrada se revisa como si viniera de cualquier cliente. */
 function leerEntrada(datos: unknown): CrearActivoInput | null {
   if (typeof datos !== "object" || datos === null) return null;
-  const { clienteId, numSerie, descripcion, modeloMaquinaId, anioFabricacion, nombre, ubicacion } = datos as Record<string, unknown>;
+  const { clienteId, numSerie, descripcion, modeloMaquinaId, anioFabricacion, nombre, ubicacion, unidadUso } = datos as Record<string, unknown>;
   const descripcionLimpia = textoOpcional(descripcion);
   const nombreLimpio = textoOpcional(nombre);
   const ubicacionLimpia = textoOpcional(ubicacion);
@@ -26,6 +26,7 @@ function leerEntrada(datos: unknown): CrearActivoInput | null {
     typeof modeloMaquinaId !== "number" ||
     typeof numSerie !== "string" ||
     !(anioFabricacion === null || typeof anioFabricacion === "number") ||
+    !(unidadUso === undefined || unidadUso === "horas" || unidadUso === "kilometros") ||
     descripcionLimpia === undefined ||
     nombreLimpio === undefined ||
     ubicacionLimpia === undefined
@@ -40,6 +41,7 @@ function leerEntrada(datos: unknown): CrearActivoInput | null {
     anioFabricacion,
     nombre: nombreLimpio,
     ubicacion: ubicacionLimpia,
+    ...(unidadUso === undefined ? {} : { unidadUso }),
   };
 }
 

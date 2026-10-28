@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { useState } from "react";
 import { EvidenciasOrdenTrabajo } from "@/componentes/evidencias-orden-trabajo";
+import { etiquetaDeLectura } from "@/componentes/campos-datos-orden";
+import { LineaDeTiempoOrden, RecorridoDeLaOrden } from "@/componentes/linea-de-tiempo-orden";
+import { useDatos } from "@/componentes/use-datos";
+import { apiListarMotivosOrden } from "@/servicios/api/api-ordenes-trabajo";
 import { Combobox } from "@/componentes/combobox";
 import { useTienePermiso } from "@/componentes/sesion/contexto-sesion";
 import {
@@ -27,6 +31,8 @@ type PropiedadesDetalleOrden = {
   huboErrorTecnicos: boolean;
   /** Los repuestos de la orden con su stock actual; solo se cargan si el rol puede gestionarlos. */
   repuestosDeLaOrden?: Repuesto[];
+  /** Se muestra dentro de un modal: sin página propia ni encabezado. */
+  enModal?: boolean;
 };
 
 /** Detalle de la orden: los datos llegan del servidor; el cambio de estado, la asignación y las evidencias siguen en el navegador. */
@@ -43,11 +49,18 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
   const [tecnicoSeleccionadoId, setTecnicoSeleccionadoId] = useState("");
   const [estadoSeleccionado, setEstadoSeleccionado] = useState("");
   const [motivoEstado, setMotivoEstado] = useState("");
+  const [lecturaEstado, setLecturaEstado] = useState("");
+  const [motivoCodigoEstado, setMotivoCodigoEstado] = useState("");
   const [estaGuardandoTecnico, setEstaGuardandoTecnico] = useState(false);
   const [estaGuardandoEstado, setEstaGuardandoEstado] = useState(false);
   const [errorAccion, setErrorAccion] = useState("");
   const [errorMotivo, setErrorMotivo] = useState("");
   const [mensajeExito, setMensajeExito] = useState("");
+  const estadoElegidoExigeMotivo = (orden?.transiciones ?? []).some((transicion) => transicion.estado === estadoSeleccionado && transicion.exigeMotivo);
+  const motivosCodificados = useDatos(
+    () => (estadoElegidoExigeMotivo ? apiListarMotivosOrden() : Promise.resolve([])),
+    "motivos-" + estadoElegidoExigeMotivo,
+  );
 
   function cambiarMotivoEstado(evento: React.ChangeEvent<HTMLTextAreaElement>) {
     setMotivoEstado(evento.target.value);
@@ -96,10 +109,21 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
     setEstaGuardandoEstado(true);
 
     try {
-      const ordenActualizada = await cambiarEstadoOrdenTrabajo(ordenTrabajoId, estadoSeleccionado, motivoEstado, exigeMotivo);
+      const lectura = lecturaEstado.trim() === "" ? undefined : Number(lecturaEstado.trim().replace(",", "."));
+      if (lectura !== undefined && !(lectura >= 0)) {
+        setErrorAccion("La lectura de uso debe ser un número mayor o igual a cero.");
+        setEstaGuardandoEstado(false);
+        return;
+      }
+      const ordenActualizada = await cambiarEstadoOrdenTrabajo(ordenTrabajoId, estadoSeleccionado, motivoEstado, exigeMotivo, {
+        ...(lectura === undefined ? {} : { lecturaUso: lectura }),
+        ...(exigeMotivo && motivoCodigoEstado !== "" ? { motivoCodigo: motivoCodigoEstado } : {}),
+      });
       setOrden(ordenActualizada);
       setEstadoSeleccionado("");
       setMotivoEstado("");
+      setLecturaEstado("");
+      setMotivoCodigoEstado("");
       setErrorMotivo("");
       setMensajeExito("Estado actualizado correctamente.");
     } catch (error) {
@@ -240,6 +264,13 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
               value={motivoEstado}
             />
             {errorMotivo ? <p className="field-error" id="motivoCambioEstado-error" role="alert">{errorMotivo}</p> : null}
+            <label htmlFor="motivoCodigoEstado">Tipo de motivo (opcional)</label>
+            <select id="motivoCodigoEstado" onChange={(evento) => setMotivoCodigoEstado(evento.target.value)} value={motivoCodigoEstado}>
+              <option value="">Sin clasificar</option>
+              {(motivosCodificados.resultado.estado === "listo" ? motivosCodificados.resultado.datos : []).map((motivo) => (
+                <option key={motivo.codigo} value={motivo.codigo}>{motivo.descripcion}</option>
+              ))}
+            </select>
           </div>
         );
       }
@@ -263,6 +294,10 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
             valor={estadoSeleccionado}
           />
           {campoMotivo}
+          <div className="form-field">
+            <label htmlFor="lecturaEstado">{etiquetaDeLectura(orden.unidadUso ?? "horas")} (opcional)</label>
+            <input id="lecturaEstado" inputMode="decimal" onChange={(evento) => setLecturaEstado(evento.target.value)} value={lecturaEstado} />
+          </div>
           <div className="form-actions">
             <button
               className="primary-button"
@@ -283,6 +318,14 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
     }
 
     contenidoOrden = (
+      <>
+      <div className="mb-6 grid gap-3">
+        <LineaDeTiempoOrden historial={orden.historialEstados} />
+        <details className="panel detail-panel">
+          <summary className="cursor-pointer font-semibold">Ver el recorrido completo de la orden</summary>
+          <RecorridoDeLaOrden historial={orden.historialEstados} />
+        </details>
+      </div>
       <div className="grid items-start gap-6 lg:grid-cols-[2fr_1fr]">
       <div className="grid gap-6">
       <section className="panel detail-panel">
@@ -324,6 +367,20 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
           <div>
             <dt>Fecha prevista de ejecución</dt>
             <dd>{formatearFechaPrevista(orden.fechaPrevistaEjecucion)}</dd>
+          </div>
+          <div>
+            <dt>Tiempo estimado</dt>
+            <dd>{orden.tiempoEstimadoHoras ? orden.tiempoEstimadoHoras + " h" : "Sin estimar"}</dd>
+          </div>
+          {orden.tipo === "correctivo" ? (
+            <div>
+              <dt>Causa de la falla</dt>
+              <dd>{orden.causaFalla ?? "Sin indicar"}</dd>
+            </div>
+          ) : null}
+          <div>
+            <dt>{etiquetaDeLectura(orden.unidadUso ?? "horas")}</dt>
+            <dd>{orden.lecturaUso !== null && orden.lecturaUso !== undefined ? orden.lecturaUso : "Sin registrar"}</dd>
           </div>
           <div className="detail-wide">
             <dt>Descripción de la tarea</dt>
@@ -395,6 +452,26 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
           </ul>
         </section>
 
+        {orden.historialLecturaUso && orden.historialLecturaUso.length > 0 ? (
+          <section className="panel detail-panel">
+            <h2>Historial de la lectura de uso</h2>
+            <ul className="mt-4 grid gap-3">
+              {[...orden.historialLecturaUso].reverse().map((cambio, indice) => (
+                <li className="border-b u-borde pb-3 text-sm" key={indice}>
+                  <strong>
+                    {cambio.lecturaAnterior === null ? "Primera lectura: " : cambio.lecturaAnterior + " → "}
+                    {cambio.lecturaNueva}
+                  </strong>
+                  <span className="block text-xs texto-tenue">
+                    {formatearFechaHora(cambio.fechaHora)}
+                    {cambio.nombreUsuario ? " · " + cambio.nombreUsuario : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
         {orden.historialTecnicos.length > 0 ? (
           <section className="panel detail-panel">
             <h2>Historial de técnicos</h2>
@@ -417,12 +494,22 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
         ) : null}
       </div>
       </div>
+      </>
     );
   }
 
   let titulo = "Orden de trabajo";
   if (orden !== null) {
     titulo = "Orden de trabajo N° " + orden.id;
+  }
+
+  if (props.enModal) {
+    return (
+      <div>
+        {mensajeError}
+        {contenidoOrden}
+      </div>
+    );
   }
 
   return (

@@ -112,6 +112,7 @@ describe("barra de filtros de movimientos (en vivo)", () => {
   });
 
   it("combina todos los filtros en la URL y los limpia", async () => {
+    vi.setSystemTime(new Date(2026, 9, 10, 12));
     render(conNavegacion(<BarraFiltrosMovimientos filtros={vacios} repuestos={[repuesto as never]} usuarios={[usuario as never]} />));
     fireEvent.change(screen.getByLabelText("Buscar"), { target: { value: "filtro" } });
     fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
@@ -121,7 +122,8 @@ describe("barra de filtros de movimientos (en vivo)", () => {
     fireEvent.focus(screen.getByRole("combobox", { name: "Usuario responsable" }));
     fireEvent.click(await screen.findByRole("option", { name: "Ana Pérez" }));
     fireEvent.change(screen.getByLabelText("Ubicación o depósito"), { target: { value: "A1" } });
-    fireEvent.change(screen.getByLabelText("Fecha"), { target: { value: "2026-10-05" } });
+    fireEvent.click(screen.getByRole("button", { name: "Fecha" }));
+    fireEvent.click(screen.getByRole("button", { name: "5 de octubre de 2026" }));
     expect(replace).toHaveBeenLastCalledWith(
       "/repuestos/movimientos?buscar=filtro&repuestoId=5&tipo=ingreso&fechaDesde=2026-10-05&fechaHasta=2026-10-05&ubicacion=A1&usuarioId=3",
     );
@@ -129,11 +131,11 @@ describe("barra de filtros de movimientos (en vivo)", () => {
     expect(replace).toHaveBeenLastCalledWith("/repuestos/movimientos");
   });
 
-  it("no navega con un rango de fechas invertido y enfoca la fecha final", () => {
+  it("no navega con un rango de fechas invertido (por ejemplo desde la URL) y enfoca el selector de fecha", () => {
     render(conNavegacion(<BarraFiltrosMovimientos filtros={{ ...vacios, fechaDesde: "2026-10-10", fechaHasta: "2026-10-01" }} repuestos={[]} usuarios={[]} />));
     fireEvent.change(screen.getByLabelText("Tipo de movimiento"), { target: { value: "ingreso" } });
     expect(replace).not.toHaveBeenCalled();
-    expect(document.getElementById("fechaMovimiento-hasta")).toHaveFocus();
+    expect(document.getElementById("fechaMovimiento")).toHaveFocus();
   });
 });
 

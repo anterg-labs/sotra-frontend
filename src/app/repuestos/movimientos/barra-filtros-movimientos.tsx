@@ -40,7 +40,7 @@ export function BarraFiltrosMovimientos(props: {
     },
     construirUrl: (v) => construirUrlMovimientos({ ...v, pagina: 1 }),
     sonValidos: (v) => !rangoDeFechasInvalido(v.fechaDesde, v.fechaHasta),
-    alInvalido: () => document.getElementById("fechaMovimiento-hasta")?.focus(),
+    alInvalido: () => document.getElementById("fechaMovimiento")?.focus(),
   });
 
   return (

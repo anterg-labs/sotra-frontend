@@ -16,6 +16,8 @@ const push = vi.hoisted(() => vi.fn());
 const replace = vi.hoisted(() => vi.fn());
 const s = vi.hoisted(() => ({
   obtenerIndicadoresServidor: vi.fn(),
+  obtenerComparativaServidor: vi.fn(),
+  obtenerAvisosServidor: vi.fn(),
   listarEstadosOrdenTrabajoOVacio: vi.fn(),
   listarClientesServidor: vi.fn(),
   obtenerClienteServidor: vi.fn(),
@@ -28,7 +30,11 @@ const s = vi.hoisted(() => ({
 }));
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace }) }));
-vi.mock("@/servicios/servidor/reportes", () => ({ obtenerIndicadoresServidor: s.obtenerIndicadoresServidor }));
+vi.mock("@/servicios/servidor/reportes", () => ({
+  obtenerIndicadoresServidor: s.obtenerIndicadoresServidor,
+  obtenerComparativaServidor: s.obtenerComparativaServidor,
+  obtenerAvisosServidor: s.obtenerAvisosServidor,
+}));
 vi.mock("@/servicios/servidor/ordenes-trabajo", () => ({
   listarEstadosOrdenTrabajoOVacio: s.listarEstadosOrdenTrabajoOVacio,
 }));
@@ -78,7 +84,7 @@ const activos = [{ id: 5, clienteId: 1, nombre: "Retro 1", numSerie: "S1" }, { i
 function tablero(filtros = filtrosVacios) {
   return (
     <ProveedorNavegacionListado etiquetaCarga="Cargando indicadores…">
-      <TableroReportes activos={activos as never} clientes={clientes as never} filtros={filtros}>
+      <TableroReportes activos={activos as never} avisos={null} clientes={clientes as never} filtros={filtros} kpis={null}>
         <p>Resumen simulado</p>
       </TableroReportes>
     </ProveedorNavegacionListado>
@@ -91,6 +97,8 @@ beforeEach(() => {
   push.mockReset();
   replace.mockReset();
   s.obtenerIndicadoresServidor.mockResolvedValue(indicadores);
+  s.obtenerComparativaServidor.mockResolvedValue({ periodo: { desde: "", hasta: "" }, periodoAnterior: { desde: "", hasta: "" }, periodoAnioAnterior: { desde: "", hasta: "" }, metricas: [] });
+  s.obtenerAvisosServidor.mockResolvedValue({ total: 0, criticos: 0, avisos: [] });
   s.listarClientesServidor.mockResolvedValue(pagina(clientes));
   s.listarActivosServidor.mockResolvedValue(pagina(activos));
 });
@@ -173,13 +181,15 @@ describe("tablero de reportes (isla)", () => {
   });
 
   it("aplica los filtros en la URL y los limpia", () => {
+    vi.setSystemTime(new Date(2026, 4, 10, 12));
     render(tablero());
     expect(screen.queryByRole("combobox", { name: "Técnico" })).not.toBeInTheDocument();
     fireEvent.focus(screen.getByRole("combobox", { name: "Cliente" }));
     fireEvent.click(screen.getByRole("option", { name: "ACME" }));
     fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "cerrado" } });
     fireEvent.change(screen.getByLabelText("Tipo de mantenimiento"), { target: { value: "preventivo" } });
-    fireEvent.change(screen.getByLabelText("Fecha"), { target: { value: "2026-05-01" } });
+    fireEvent.click(screen.getByRole("button", { name: "Fecha" }));
+    fireEvent.click(screen.getByRole("button", { name: "1 de mayo de 2026" }));
     expect(screen.queryByRole("button", { name: "Aplicar filtros" })).not.toBeInTheDocument();
     expect(replace).toHaveBeenLastCalledWith(
       "/reportes?fechaDesde=2026-05-01&fechaHasta=2026-05-01&clienteId=1&estado=cerrado&tipo=preventivo",
@@ -204,15 +214,11 @@ describe("tablero de reportes (isla)", () => {
     expect(within(screen.getByRole("listbox")).getAllByRole("option").map((o) => o.textContent)).toEqual(["Retro 1"]);
   });
 
-  it("no navega con un rango de fechas invertido y enfoca la fecha final", () => {
-    render(tablero());
-    fireEvent.click(screen.getByRole("switch", { name: "Rango de fechas" }));
-    fireEvent.change(screen.getByLabelText("Fecha desde"), { target: { value: "2026-06-10" } });
-    fireEvent.change(screen.getByLabelText("Fecha hasta"), { target: { value: "2026-06-01" } });
-    const navegacionesValidas = replace.mock.calls.length;
-    fireEvent.change(screen.getByLabelText("Fecha hasta"), { target: { value: "2026-06-01" } });
-    expect(screen.getByLabelText("Fecha hasta")).toHaveFocus();
-    expect(replace).toHaveBeenCalledTimes(navegacionesValidas);
+  it("no navega con un rango de fechas invertido (por ejemplo desde la URL) y enfoca el selector de fecha", () => {
+    render(tablero({ ...filtrosVacios, fechaDesde: "2026-06-10", fechaHasta: "2026-06-01" }));
+    fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "cerrado" } });
+    expect(replace).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Fecha" })).toHaveFocus();
   });
 
   it("los enlaces de descarga reflejan el tipo de reporte, la prioridad y los filtros", () => {
@@ -226,20 +232,22 @@ describe("tablero de reportes (isla)", () => {
     expect(screen.getByRole("link", { name: "Descargar PDF" })).toHaveAttribute("rel", "noreferrer");
   });
 
-  it("las pestañas alternan entre resumen y análisis, pasando los filtros aplicados", () => {
+  it("las secciones se abren y se cierran a pedido, pasando los filtros aplicados", () => {
     render(tablero({ ...filtrosVacios, estado: "cerrado" }));
-    const resumen = screen.getByRole("tab", { name: "Resumen" });
-    const analisis = screen.getByRole("tab", { name: "Análisis y alertas" });
-    expect(resumen).toHaveAttribute("aria-selected", "true");
+    const resumen = screen.getByRole("button", { name: /Resumen general/ });
+    const alertas = screen.getByRole("button", { name: /Alertas y desempeño operativo/ });
+    expect(resumen).toHaveAttribute("aria-expanded", "true");
+    expect(alertas).toHaveAttribute("aria-expanded", "false");
     expect(screen.queryByTestId("panel-analitica")).not.toBeInTheDocument();
 
-    fireEvent.click(analisis);
-    expect(analisis).toHaveAttribute("aria-selected", "true");
+    fireEvent.click(alertas);
+    expect(alertas).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByTestId("panel-analitica")).toHaveTextContent(JSON.stringify({ ...filtrosVacios, estado: "cerrado" }));
-    expect(document.getElementById("panel-resumen")).toHaveAttribute("hidden");
+    expect(window.location.search).toContain("abiertas=alertas");
 
-    fireEvent.click(resumen);
-    expect(screen.queryByTestId("panel-analitica")).not.toBeInTheDocument();
+    fireEvent.click(alertas);
+    expect(alertas).toHaveAttribute("aria-expanded", "false");
+    expect(window.location.search).not.toContain("abiertas");
     expect(screen.getByText("Resumen simulado")).toBeInTheDocument();
   });
 });

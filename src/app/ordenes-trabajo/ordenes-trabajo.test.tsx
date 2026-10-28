@@ -155,7 +155,7 @@ const activo = { id: 2, clienteId: 1, nombre: "Retro 1", numSerie: "S1", estado:
 const resumen = { totalOrdenes: 30, ordenesPorEstado: [{ nombre: "pendiente", cantidad: 5 }, { nombre: "cerrado", cantidad: 9 }] };
 const filtrosVacios = {
   buscar: "", clienteId: "", activoId: "", tecnicoId: "", estado: "", fase: "", prioridad: "", tipo: "",
-  fechaDesde: "", fechaHasta: "", soloActivas: false, conSugerencias: false, pagina: 1,
+  fechaDesde: "", fechaHasta: "", soloActivas: false, conSugerencias: false, vista: "", mes: "", meses: "", eliminadas: false, pagina: 1,
 };
 const conNavegacion = (ui: React.ReactNode) => <ProveedorNavegacionListado etiquetaCarga="Cargando…">{ui}</ProveedorNavegacionListado>;
 const parametros = (id: string) => ({ params: Promise.resolve({ id }) });
@@ -182,8 +182,11 @@ describe("filtros de la URL de órdenes", () => {
       }, estadosDePrueba),
     ).toEqual({
       buscar: "fuga", clienteId: "1", activoId: "2", tecnicoId: "7", estado: "pausado", fase: "", prioridad: "alta", tipo: "preventivo",
-      fechaDesde: "2026-10-01", fechaHasta: "2026-10-31", soloActivas: false, conSugerencias: true, pagina: 2,
+      fechaDesde: "2026-10-01", fechaHasta: "2026-10-31", soloActivas: false, conSugerencias: true, vista: "", mes: "", meses: "", eliminadas: false, pagina: 2,
     });
+    expect(leerFiltrosOrdenes({ vista: "calendario", mes: "2026-11", meses: "3", eliminadas: "true" }, estadosDePrueba)).toMatchObject({ vista: "calendario", mes: "2026-11", meses: "3", eliminadas: true });
+    expect(leerFiltrosOrdenes({ vista: "x", mes: "2026-13", meses: "9", eliminadas: "si" }, estadosDePrueba)).toMatchObject({ vista: "", mes: "", meses: "", eliminadas: false });
+    expect(construirUrlOrdenes({ ...filtrosVacios, vista: "calendario", mes: "2026-11", eliminadas: true })).toBe("/ordenes-trabajo?vista=calendario&mes=2026-11&eliminadas=true");
     expect(leerFiltrosOrdenes({ fase: "en_curso" }, estadosDePrueba).fase).toBe("en_curso");
     expect(leerFiltrosOrdenes({ soloActivas: "true" }, estadosDePrueba).soloActivas).toBe(true);
     expect(leerFiltrosOrdenes({ soloActivas: "si" }, estadosDePrueba).soloActivas).toBe(false);
@@ -327,11 +330,11 @@ describe("barra de filtros de órdenes (en vivo)", () => {
     expect(screen.getByRole("combobox", { name: "Activo" })).toHaveValue("");
   });
 
-  it("bloquea un rango de fechas invertido y enfoca la fecha final", () => {
+  it("bloquea un rango de fechas invertido (por ejemplo desde la URL) y enfoca el selector de fecha", () => {
     render(conNavegacion(<BarraFiltrosOrdenes activos={[]} clientes={[]} filtros={{ ...filtrosVacios, fechaDesde: "2026-06-10", fechaHasta: "2026-06-01" }} tecnicos={[]} />));
     fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "pausado" } });
     expect(replace).not.toHaveBeenCalled();
-    expect(screen.getByLabelText("Creada hasta")).toHaveFocus();
+    expect(document.getElementById("fechaCreacion")).toHaveFocus();
   });
 });
 
@@ -556,7 +559,7 @@ describe("detalle de orden de trabajo", () => {
     expect(screen.queryByLabelText("Motivo u observación")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Confirmar estado" }));
-    await waitFor(() => expect(s.cambiarEstadoOrdenTrabajo).toHaveBeenCalledWith(11, "en_progreso", "", false));
+    await waitFor(() => expect(s.cambiarEstadoOrdenTrabajo).toHaveBeenCalledWith(11, "en_progreso", "", false, {}));
     expect(await screen.findByText("Estado actualizado correctamente.")).toBeInTheDocument();
     expect(screen.getByLabelText("Actualizar estado")).toHaveValue("");
   });

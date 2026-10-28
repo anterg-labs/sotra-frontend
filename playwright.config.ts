@@ -25,7 +25,7 @@ export default defineConfig({
     { name: "sesion", testMatch: /sesion\.setup\.ts/, use: { ...devices["Desktop Chrome"], channel: "chrome" } },
     {
       name: "escritorio",
-      testMatch: /(stock|reportes|orden-escritorio|usuarios-clientes|seguridad-xss|terminos|navegacion)\.spec\.ts/,
+      testMatch: /(stock|reportes|reportes-planificacion|reportes-demoras|orden-escritorio|usuarios-clientes|seguridad-xss|terminos|navegacion)\.spec\.ts/,
       dependencies: ["sesion"],
       use: { ...devices["Desktop Chrome"], channel: "chrome", storageState: sesion },
     },

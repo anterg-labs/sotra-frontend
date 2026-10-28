@@ -4,6 +4,7 @@ import { listarEstadosOrdenTrabajoOVacio } from "@/servicios/servidor/ordenes-tr
 import { obtenerAlertasMaquinariaServidor, obtenerIndicadoresServidor } from "@/servicios/servidor/reportes";
 import type { FiltrosIndicadores, Indicadores } from "@/tipos/reporte";
 import { armarAccesos, type Acceso } from "./accesos";
+import { BotonDescargarApp } from "./boton-descargar-app";
 
 const SIN_FILTROS: FiltrosIndicadores = {
   fechaDesde: "", fechaHasta: "", clienteId: "", activoId: "", estado: "", tipo: "",
@@ -47,7 +48,10 @@ export default async function PaginaInicio() {
         <div>
           <h1>Inicio</h1>
         </div>
-        <Link className="primary-button" href="/ordenes-trabajo/nuevo">Nueva orden de trabajo</Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <BotonDescargarApp />
+          <Link className="primary-button" href="/ordenes-trabajo/nuevo">Nueva orden de trabajo</Link>
+        </div>
       </header>
 
       <section aria-label="Accesos directos" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

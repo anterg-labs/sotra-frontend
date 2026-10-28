@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## Version 1.0.91 (2026-10-27)
+
+- Desarrollo por red: allowedDevOrigins toma la IP detectada para el QR; corrige el bloqueo del WebSocket HMR al acceder desde esa IP, sin fijarla en el código ni aceptar cualquier origen.
+
+## Version 1.0.90 (2026-10-27)
+
+- Inicio: botón «Descargar App» a la izquierda de «Nueva orden de trabajo»; abre un modal con QR, marco visual e instrucciones breves para Android e iPhone. Lee la URL al pulsar; en localhost sustituye el host por la IP de red del equipo y conserva puerto, ruta y parámetros. Sin dominios fijos ni servicios externos. Biblioteca qrcode-generator 2.0.4, cargada a pedido.
+- Login: callback y página de error conservan el origen público del pedido, evitando el puerto interno 3000 y el rechazo Incorrect redirect_uri; se documenta el acceso local por IP y el emisor de identidad.
+
 ## Version 1.0.89 (2026-10-27)
 
 - Usuarios: el listado inicial muestra solo activos. Filtros avanzados permite Activos, Inactivos y Todos; conserva la elección durante búsquedas, ordenación y paginación y vuelve a Activos al limpiar.

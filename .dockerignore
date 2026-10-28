@@ -33,6 +33,7 @@ test-results/
 .vitest/
 
 # Environment files (avoid leaking secrets into the build context)
+.ip-local.json
 .env
 .env*
 .env.local

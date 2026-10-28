@@ -21,7 +21,7 @@ function describirVariacion(metrica: MetricaComparada) {
 }
 
 /** Tres indicadores clave arriba de Reportes: cifra, variación frente al período anterior y tendencia de seis meses. */
-export async function TarjetasKpi({ consulta }: { consulta: ConsultaAnticipada<Awaited<ReturnType<typeof obtenerComparativaServidor>>> }) {
+export async function TarjetasKpi({ consulta, desactivados = [] }: { consulta: ConsultaAnticipada<Awaited<ReturnType<typeof obtenerComparativaServidor>>>; desactivados?: string[] }) {
   let comparativa;
   try {
     comparativa = await resolverConsulta(consulta);
@@ -32,6 +32,7 @@ export async function TarjetasKpi({ consulta }: { consulta: ConsultaAnticipada<A
   return (
     <section aria-label="Indicadores clave" className="kpi-franja">
       {TARJETAS.map(({ codigo, seccion }) => {
+        if (desactivados.includes("kpi_" + codigo)) return null;
         const metrica = comparativa.metricas.find((item) => item.codigo === codigo);
         if (!metrica) return null;
         const tono = tonoDeLaVariacion(metrica);

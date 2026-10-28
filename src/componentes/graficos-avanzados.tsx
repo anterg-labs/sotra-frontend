@@ -3,6 +3,8 @@
 import { useId, useState, type ReactNode } from "react";
 
 import { formatearNumero } from "./formato-numero";
+import { codigoDeGrafico } from "@/servicios/catalogo-elementos-reportes";
+import { useReporteVisible } from "./visibilidad-reportes";
 
 /** Tope «redondo» del eje para que las guías caigan en números fáciles de leer. */
 function topeDelEje(maximo: number) {
@@ -15,6 +17,7 @@ function topeDelEje(maximo: number) {
 
 type PropiedadesContenedor = {
   titulo: string;
+  codigo?: string;
   /** Una línea que dice qué se ve o qué conclusión sacar. */
   descripcion?: string;
   /** Cómo se calcula, para quien quiera saberlo. */
@@ -25,9 +28,11 @@ type PropiedadesContenedor = {
 };
 
 /** Contenedor común de las gráficas: título, descripción, ayuda y el cambio entre gráfica y tabla. */
-export function ContenedorGrafico({ titulo, descripcion, ayuda, grafico, tabla }: PropiedadesContenedor) {
+export function ContenedorGrafico({ titulo, codigo, descripcion, ayuda, grafico, tabla }: PropiedadesContenedor) {
   const [verTabla, setVerTabla] = useState(false);
   const idTabla = useId();
+  const visible = useReporteVisible(codigo ?? codigoDeGrafico(titulo));
+  if (!visible) return null;
   return (
     <section aria-label={titulo} className="grafico-contenedor">
       <header className="grafico-encabezado">

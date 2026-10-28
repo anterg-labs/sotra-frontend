@@ -1,6 +1,8 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DesgasteEdadUso } from "./desgaste-edad-uso";
+import { ProveedorVisibilidadReportes } from "@/componentes/visibilidad-reportes";
+import { codigoDeGrafico } from "@/servicios/catalogo-elementos-reportes";
 
 const obtener = vi.hoisted(() => vi.fn());
 vi.mock("@/servicios/api/api-desgaste-edad-uso", () => ({ apiObtenerDesgasteEdadUso: obtener }));
@@ -29,6 +31,15 @@ describe("desgaste por edad y uso", () => {
     const enlaces = screen.getAllByRole("link", { name: "Retro 1" });
     expect(enlaces[0]).toHaveAttribute("href", "/activos/1");
     expect(screen.queryByRole("link", { name: "Retro 2" })).not.toBeInTheDocument();
+  });
+  it("oculta una gráfica configurada sin quitar las otras", async () => {
+    obtener.mockResolvedValue(base);
+    render(<ProveedorVisibilidadReportes desactivados={[codigoDeGrafico("Correctivas frente a horas de uso")]}>
+      <DesgasteEdadUso filtros={filtros} />
+    </ProveedorVisibilidadReportes>);
+    await waitFor(() => expect(screen.getByRole("img", { name: "Correctivas frente a edad de la máquina" })).toBeInTheDocument());
+    expect(screen.queryByRole("img", { name: "Correctivas frente a horas de uso" })).not.toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Correctivas frente a kilómetros de uso" })).toBeInTheDocument();
   });
   it("informa falta de datos y permite reintentar un error", async () => {
     obtener.mockRejectedValueOnce(new Error("No se pudo obtener el análisis.")).mockResolvedValueOnce({

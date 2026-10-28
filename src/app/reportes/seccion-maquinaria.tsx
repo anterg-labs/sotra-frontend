@@ -9,7 +9,10 @@ import type { FiltrosIndicadores, MaquinariaDesempeno } from "@/tipos/reporte";
 import { PlanificacionEnHoras, PlanificacionPorTipo } from "./planificacion-en-horas";
 import { Estacionalidad } from "./estacionalidad";
 import { RepuestosPorModelo } from "./repuestos-por-modelo";
+import { ConsumoRepuestos } from "./consumo-repuestos";
 import { ResumenPorCliente } from "./resumen-por-cliente";
+import { ElementoReporte } from "@/componentes/visibilidad-reportes";
+import { codigoDeGrafico } from "@/servicios/catalogo-elementos-reportes";
 
 function porcentajeDePreventivas(elemento: MaquinariaDesempeno) {
   return elemento.ordenes === 0 ? 0 : (elemento.preventivas * 100) / elemento.ordenes;
@@ -148,9 +151,10 @@ export function SeccionMaquinaria({ filtros }: { filtros: FiltrosIndicadores }) 
         </div>
       )}
     </BloqueDeDatos>
-    <Estacionalidad filtros={filtros} />
-    <RepuestosPorModelo filtros={filtros} />
-    <ResumenPorCliente filtros={filtros} />
+    <ElementoReporte codigo={codigoDeGrafico("Estacionalidad de las correctivas")}><Estacionalidad filtros={filtros} /></ElementoReporte>
+    <ElementoReporte codigo={codigoDeGrafico("Repuestos por modelo")}><RepuestosPorModelo filtros={filtros} /></ElementoReporte>
+    <ElementoReporte codigo={codigoDeGrafico("Consumo de repuestos en unidades")}><ConsumoRepuestos filtros={filtros} /></ElementoReporte>
+    <ElementoReporte codigo={codigoDeGrafico("Resumen por cliente")}><ResumenPorCliente filtros={filtros} /></ElementoReporte>
     </>
   );
 }

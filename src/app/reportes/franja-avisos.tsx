@@ -32,7 +32,8 @@ function ListaDeAvisos({ avisos, titulo, severidad }: { avisos: Aviso[]; titulo:
 }
 
 /** Franja con los avisos de ineficiencia: se despliega con un clic; si no hay ninguno, no ocupa lugar. */
-export async function FranjaAvisos({ consulta }: { consulta: ConsultaAnticipada<Awaited<ReturnType<typeof obtenerAvisosServidor>>> }) {
+export async function FranjaAvisos({ consulta, visible = true }: { consulta: ConsultaAnticipada<Awaited<ReturnType<typeof obtenerAvisosServidor>>>; visible?: boolean }) {
+  if (!visible) return null;
   let avisos;
   try {
     avisos = await resolverConsulta(consulta);

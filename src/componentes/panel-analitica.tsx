@@ -1,4 +1,6 @@
 "use client";
+import { ElementoReporte, useReporteVisible } from "@/componentes/visibilidad-reportes";
+import { codigoDeGrafico } from "@/servicios/catalogo-elementos-reportes";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -136,6 +138,8 @@ function TablaMaquinaria(props: { etiqueta: string; columnaNombre: string; eleme
 }
 
 function TarjetaDesempeno(props: { titulo: string; valor: string; detalle: string }) {
+  const visible = useReporteVisible(codigoDeGrafico(props.titulo));
+  if (!visible) return null;
   return (
     <div className="tarjeta-resumen">
       <span className="tarjeta-resumen-titulo">{props.titulo}</span>
@@ -221,7 +225,7 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
 
   return (
     <div className="grid gap-6">
-      <section aria-labelledby="titulo-alertas-maquinaria" className="panel">
+      <ElementoReporte codigo={codigoDeGrafico("Alertas de maquinaria")}><section aria-labelledby="titulo-alertas-maquinaria" className="panel">
         <div className="panel-heading">
           <h2 id="titulo-alertas-maquinaria">Alertas de maquinaria</h2>
         </div>
@@ -257,7 +261,7 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
             </div>
           ),
         )}
-      </section>
+      </section></ElementoReporte>
 
       <section aria-labelledby="titulo-tendencias" className="panel">
         <div className="panel-heading">
@@ -278,17 +282,17 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
         </div>
         {dibujarBloque(tendencias, "Cargando tendencias…", (datos) => (
           <>
-            <div className="tarjetas-resumen px-6 pt-4">
+            <ElementoReporte codigo={codigoDeGrafico("Órdenes en el período")}><div className="tarjetas-resumen px-6 pt-4">
               <div className="tarjeta-resumen">
                 <span className="tarjeta-resumen-titulo">Órdenes en el período</span>
                 <span className="tarjeta-resumen-valor">{datos.totalPeriodo}</span>
                 <span className="tarjeta-resumen-variacion">{describirVariacion(datos.totalPeriodo, datos.totalPeriodoAnterior)}</span>
               </div>
-            </div>
-            <GraficoTendencia
+            </div></ElementoReporte>
+            <ElementoReporte codigo={codigoDeGrafico("Órdenes creadas por mes, preventivas y correctivas")}><GraficoTendencia
               puntos={datos.puntos}
               titulo={"Órdenes creadas por " + (datos.agrupacion === "mes" ? "mes" : "semana") + ", preventivas y correctivas"}
-            />
+            /></ElementoReporte>
           </>
         ))}
       </section>
@@ -343,7 +347,7 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
                 valor={String(datos.flujo.reasignaciones.cantidad)}
               />
             </div>
-            <h3 className="px-6 pt-4">Motivos de pausa más frecuentes</h3>
+            <ElementoReporte codigo={codigoDeGrafico("Motivos de pausa más frecuentes")}><h3 className="px-6 pt-4">Motivos de pausa más frecuentes</h3>
             <GraficoBarras
               datos={datos.flujo.pausas.motivos.map((motivo) => ({
                 etiqueta: motivo.texto,
@@ -351,8 +355,8 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
                 valorTexto: motivo.cantidad + (motivo.cantidad === 1 ? " vez" : " veces"),
               }))}
               vacio="No hubo pausas en este período."
-            />
-            <h3 className="px-6 pt-4">Motivos de devolución más frecuentes</h3>
+            /></ElementoReporte>
+            <ElementoReporte codigo={codigoDeGrafico("Motivos de devolución más frecuentes")}><h3 className="px-6 pt-4">Motivos de devolución más frecuentes</h3>
             <GraficoBarras
               datos={datos.flujo.devoluciones.motivos.map((motivo) => ({
                 etiqueta: motivo.texto,
@@ -360,19 +364,21 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
                 valorTexto: motivo.cantidad + (motivo.cantidad === 1 ? " vez" : " veces"),
               }))}
               vacio="No hubo devoluciones a pendiente en este período."
-            />
-            <h3 className="px-6 pt-4">Maquinaria por tipo</h3>
+            /></ElementoReporte>
+            <ElementoReporte codigo={codigoDeGrafico("Maquinaria por tipo")}><h3 className="px-6 pt-4">Maquinaria por tipo</h3>
             {datos.maquinaria.porTipo.length === 0 ? (
               <p className="empty-state">Todavía no hay órdenes en este período.</p>
             ) : (
               <TablaMaquinaria columnaNombre="Tipo de máquina" elementos={datos.maquinaria.porTipo} etiqueta="Maquinaria por tipo" />
             )}
-            <h3 className="px-6 pt-4">Activos con más horas de parada</h3>
+            </ElementoReporte>
+            <ElementoReporte codigo={codigoDeGrafico("Activos con más horas de parada")}><h3 className="px-6 pt-4">Activos con más horas de parada</h3>
             {datos.maquinaria.activos.length === 0 ? (
               <p className="empty-state">Todavía no hay órdenes en este período.</p>
             ) : (
               <TablaMaquinaria columnaNombre="Activo" elementos={datos.maquinaria.activos} enlazarActivos etiqueta="Activos con más horas de parada" />
             )}
+            </ElementoReporte>
             <p className="px-6 pb-4 pt-2 text-xs texto-tenue">
               Horas de parada: de la creación al cierre de las órdenes correctivas cerradas. Ejecución promedio: de inicio a revisión en las correctivas.
               El análisis es de órdenes, procesos y maquinaria; no compara personas.
@@ -388,22 +394,22 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
         {dibujarBloque(tiempos, "Cargando tiempos…", (datos) => (
           <>
             <div className="tarjetas-resumen px-6 pt-4">
-              <div className="tarjeta-resumen">
+              <ElementoReporte codigo={codigoDeGrafico("Duración promedio")}><div className="tarjeta-resumen">
                 <span className="tarjeta-resumen-titulo">Duración promedio</span>
                 <span className="tarjeta-resumen-valor">{formatearDuracion(datos.duracion.promedioHoras)}</span>
                 <span className="tarjeta-resumen-variacion">{"Sobre " + datos.duracion.cantidad + " órdenes cerradas"}</span>
-              </div>
-              <div className="tarjeta-resumen">
+              </div></ElementoReporte>
+              <ElementoReporte codigo={codigoDeGrafico("Mediana")}><div className="tarjeta-resumen">
                 <span className="tarjeta-resumen-titulo">Mediana</span>
                 <span className="tarjeta-resumen-valor">{formatearDuracion(datos.duracion.medianaHoras)}</span>
                 <span className="tarjeta-resumen-variacion">La mitad se cierra antes</span>
-              </div>
-              <div className="tarjeta-resumen">
+              </div></ElementoReporte>
+              <ElementoReporte codigo={codigoDeGrafico("Percentil 90")}><div className="tarjeta-resumen">
                 <span className="tarjeta-resumen-titulo">Percentil 90</span>
                 <span className="tarjeta-resumen-valor">{formatearDuracion(datos.duracion.percentil90Horas)}</span>
                 <span className="tarjeta-resumen-variacion">El 90 % se cierra antes</span>
-              </div>
-              <div className="tarjeta-resumen">
+              </div></ElementoReporte>
+              <ElementoReporte codigo={codigoDeGrafico("Cumplen la fecha prevista")}><div className="tarjeta-resumen">
                 <span className="tarjeta-resumen-titulo">Cumplen la fecha prevista</span>
                 <span className="tarjeta-resumen-valor">
                   {datos.cumplimiento.porcentajeEnPlazo === null ? "Sin datos" : datos.cumplimiento.porcentajeEnPlazo + " %"}
@@ -414,9 +420,9 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
                     : datos.cumplimiento.enPlazo + " de " + datos.cumplimiento.evaluadas + " en plazo" +
                       (datos.cumplimiento.atrasoPromedioDias === null ? "" : " · atraso promedio " + datos.cumplimiento.atrasoPromedioDias + " d")}
                 </span>
-              </div>
+              </div></ElementoReporte>
             </div>
-            <GraficoBarras
+            <ElementoReporte codigo={codigoDeGrafico("Tiempo por etapa")}><GraficoBarras
               datos={datos.etapas.map((etapa) => ({
                 etiqueta: etiquetaEstado(etapa.estado),
                 valor: etapa.promedioHoras,
@@ -424,12 +430,12 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
                 detalle: "Promedio de " + etapa.cantidad + (etapa.cantidad === 1 ? " tramo" : " tramos"),
               }))}
               vacio="Todavía no hay tramos terminados para calcular tiempos por etapa."
-            />
+            /></ElementoReporte>
           </>
         ))}
       </section>
 
-      <section aria-labelledby="titulo-repuestos-usados" className="panel">
+      <ElementoReporte codigo={codigoDeGrafico("¿Qué repuestos se usan más?")}><section aria-labelledby="titulo-repuestos-usados" className="panel">
         <div className="panel-heading">
           <h2 id="titulo-repuestos-usados">¿Qué repuestos se usan más?</h2>
         </div>
@@ -443,9 +449,9 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
             vacio="Todavía no hay repuestos asociados a órdenes en este período."
           />
         ))}
-      </section>
+      </section></ElementoReporte>
 
-      <section aria-labelledby="titulo-reincidencias" className="panel">
+      <ElementoReporte codigo={codigoDeGrafico("¿Qué máquinas vuelven una y otra vez a mantenimiento?")}><section aria-labelledby="titulo-reincidencias" className="panel">
         <div className="panel-heading">
           <h2 id="titulo-reincidencias">¿Qué máquinas vuelven una y otra vez a mantenimiento?</h2>
         </div>
@@ -456,7 +462,7 @@ export function PanelAnalitica({ filtros }: PropiedadesPanelAnalitica) {
             <TablaReincidencias elementos={datos.elementos} />
           ),
         )}
-      </section>
+      </section></ElementoReporte>
     </div>
   );
 }

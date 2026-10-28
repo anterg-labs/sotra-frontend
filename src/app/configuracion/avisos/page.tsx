@@ -2,7 +2,7 @@ import { listarReglasAvisoServidor } from "@/servicios/servidor/reportes";
 import type { ReglaAviso } from "@/tipos/reporte";
 import { FormularioReglasAviso } from "./formulario-reglas-aviso";
 
-export const metadata = { title: "Avisos de ineficiencia" };
+export const metadata = { title: "Reglas de avisos" };
 
 async function cargarReglas(): Promise<{ reglas: ReglaAviso[]; error: string }> {
   try {
@@ -19,7 +19,7 @@ export default async function PaginaConfiguracionAvisos() {
       <header className="page-heading">
         <div>
           <p className="eyebrow">Configuración</p>
-          <h1>Avisos de ineficiencia</h1>
+          <h1>Reglas de avisos</h1>
           <p className="texto-tenue">
             Cada regla compara un cálculo sobre las órdenes, la maquinaria y los repuestos con un umbral. Los umbrales no tienen límites fijos:
             ajustalos a la realidad de la empresa.

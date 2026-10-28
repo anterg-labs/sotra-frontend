@@ -22,6 +22,11 @@ beforeEach(() => {
 });
 
 describe("proxy: sesión obligatoria", () => {
+  it("conserva la IP y el puerto al mandar al login", async () => {
+    sesion.valor = null;
+    const respuesta = await pedir("http://192.168.1.47:3000/inicio");
+    expect(respuesta.headers.get("location")).toBe("http://192.168.1.47:3000/login?destino=%2Finicio");
+  });
   it("sin sesión manda al login de Keycloak y vuelve a la página pedida", async () => {
     sesion.valor = null;
     const respuesta = await pedir("http://localhost/ordenes-trabajo?estado=creada");

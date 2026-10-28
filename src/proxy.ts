@@ -60,7 +60,7 @@ function decidir(solicitud: NextAuthRequest, original: NextRequest) {
 
   if (decision.tipo === "sin-sesion-api") return new NextResponse(null, { status: 401 });
   if (decision.tipo === "iniciar-sesion" || decision.tipo === "redirigir") {
-    return NextResponse.redirect(new URL(decision.destino, solicitud.url));
+    return NextResponse.redirect(new URL(decision.destino, original.url));
   }
   if (decision.tipo === "sin-permiso") {
     const destino = original.nextUrl.clone();

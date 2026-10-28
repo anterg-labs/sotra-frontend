@@ -26,6 +26,7 @@ export type Indicadores = {
   promedioHorasHastaCierre: number | null;
   ordenesAltaPrioridadPendientes: number;
   ordenesPendientesDeValidacion: number;
+  ordenesSinAsignar: number;
   ordenesRecientes: OrdenTrabajo[];
 };
 

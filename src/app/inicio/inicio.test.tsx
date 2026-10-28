@@ -33,6 +33,7 @@ const indicadores: Indicadores = {
   promedioHorasHastaCierre: null,
   ordenesAltaPrioridadPendientes: 2,
   ordenesPendientesDeValidacion: 5,
+  ordenesSinAsignar: 3,
   ordenesRecientes: [],
 } as unknown as Indicadores;
 
@@ -42,6 +43,7 @@ describe("accesos del inicio", () => {
   it("cuenta por fase del catálogo: abiertas son las pendientes y en curso", () => {
     const accesos = armarAccesos(indicadores, alertas, estadosDePrueba);
 
+    expect(accesos).toHaveLength(8);
     expect(accesos.find((a) => a.etiqueta === "Órdenes abiertas")?.valor).toBe(10);
     expect(accesos.find((a) => a.etiqueta === "Pendientes")?.valor).toBe(5);
     expect(accesos.find((a) => a.etiqueta === "En curso")?.valor).toBe(5);
@@ -58,6 +60,7 @@ describe("accesos del inicio", () => {
     expect(enlaces["Pendientes"]).toBe("/ordenes-trabajo?fase=pendiente");
     expect(enlaces["En curso"]).toBe("/ordenes-trabajo?fase=en_curso");
     expect(enlaces["Por validar"]).toBe("/ordenes-trabajo?fase=por_validar");
+    expect(enlaces["Sin asignar"]).toBe("/ordenes-trabajo?sinAsignar=true");
     expect(enlaces["Repuestos con bajo stock"]).toBe("/repuestos?stock=alerta");
   });
 
@@ -80,6 +83,7 @@ describe("pantalla de inicio", () => {
 
     const accesos = screen.getByRole("region", { name: "Accesos directos" });
     expect(within(accesos).getByRole("link", { name: /Órdenes abiertas/ })).toHaveAttribute("href", "/ordenes-trabajo");
+    expect(within(accesos).getByRole("link", { name: /Sin asignar/ })).toHaveTextContent("3");
     expect(within(accesos).getByRole("link", { name: /Alertas de maquinaria/ })).toHaveTextContent("1 críticas");
     expect(screen.getByRole("link", { name: "Nueva orden de trabajo" })).toHaveAttribute("href", "/ordenes-trabajo/nuevo");
   });

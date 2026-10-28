@@ -11,6 +11,7 @@ export function construirConsultaOrdenes(filtros: FiltrosOrdenesTrabajo) {
   }
   if (filtros.fase) parametros.append("fase", filtros.fase);
   if (filtros.soloActivas) parametros.append("soloActivas", "true");
+  if (filtros.sinAsignar) parametros.append("sinAsignar", "true");
   if (filtros.conSugerencias) parametros.append("conSugerencias", "true");
   for (const [nombre, valor] of parametrosDeOrden(filtros)) parametros.append(nombre, valor);
   parametros.append("pagina", String(filtros.pagina));

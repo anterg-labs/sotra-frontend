@@ -73,6 +73,7 @@ const indicadores = {
   promedioHorasHastaCierre: null,
   ordenesAltaPrioridadPendientes: 2,
   ordenesPendientesDeValidacion: 1,
+  ordenesSinAsignar: 1,
   ordenesRecientes: [
     { id: 11, nombreCliente: "ACME", nombreActivo: "Retro 1", nombreTecnico: null, prioridad: "alta", estado: "en_progreso" },
   ],

@@ -33,6 +33,7 @@ export function leerFiltrosOrdenes(parametros: ParametrosBusqueda, estados: read
     clienteId: leerIdFiltro(parametros, "clienteId"),
     activoId: leerIdFiltro(parametros, "activoId"),
     tecnicoId: leerIdFiltro(parametros, "tecnicoId"),
+    sinAsignar: primerValor(parametros.sinAsignar) === "true",
     estado: leerOpcion(parametros, "estado", estados.map((estado) => estado.valor)),
     fase: leerOpcion(parametros, "fase", estados.map((estado) => estado.fase)),
     prioridad: leerOpcion(parametros, "prioridad", ["alta", "media", "baja"]),
@@ -54,6 +55,7 @@ export function construirUrlOrdenes(filtros: FiltrosOrdenesTrabajo) {
   return construirUrlListado(RUTA_ORDENES, {
     ...filtros,
     soloActivas: filtros.soloActivas ? "true" : "",
+    sinAsignar: filtros.sinAsignar ? "true" : "",
     conSugerencias: filtros.conSugerencias ? "true" : "",
     eliminadas: filtros.eliminadas ? "true" : "",
   });;

@@ -117,7 +117,7 @@ describe("permisos en la interfaz", () => {
     pathname.valor = "/clientes";
     render(conSesion(["tecnico"], <EstructuraAplicacion>contenido</EstructuraAplicacion>));
     const barra = within(screen.getByRole("navigation", { name: "Navegación del técnico" }));
-    expect(barra.getAllByRole("link").map((enlace) => enlace.getAttribute("href"))).toEqual(["/tecnico", "/activos", "/clientes", "/documentacion-tecnica"]);
+    expect(barra.getAllByRole("link").map((enlace) => enlace.getAttribute("href"))).toEqual(["/tecnico", "/activos", "/clientes", "/documentacion-tecnica", "/configuracion"]);
     expect(barra.getByRole("link", { name: "Clientes" })).toHaveAttribute("aria-current", "page");
     fireEvent.click(screen.getByRole("button", { name: "Menú de usuario: Ana Pérez" }));
     expect(screen.getByRole("button", { name: "Cerrar sesión" })).toBeInTheDocument();

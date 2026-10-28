@@ -229,6 +229,20 @@ describe("navegación del listado", () => {
 describe("tabla de clientes (baja y reactivación)", () => {
   const clientes = [cliente(1), cliente(2, "inactivo")];
 
+  it("ofrece tarjetas de clientes con los datos principales y enlace al detalle", () => {
+    const { container } = render(conNavegacion(<TablaClientes clientes={clientes} filtros={{ buscar: "", estado: "", pagina: 1 }} />));
+    const tarjetas = container.querySelector(".listado-tarjetas-tecnico");
+    const tabla = container.querySelector(".tabla-listado-tecnico");
+    expect(tarjetas).toBeInTheDocument();
+    expect(tabla).toContainElement(screen.getByRole("table"));
+    const enlace = within(tarjetas as HTMLElement).getByRole("link", { name: /Cliente 1/ });
+    expect(enlace).toHaveAttribute("href", "/clientes/1");
+    expect(enlace).toHaveTextContent("Contacto 1");
+    expect(enlace).toHaveTextContent("c1@mail.com");
+    expect(enlace).toHaveTextContent("0990001");
+    expect(enlace).toHaveTextContent("Activos asociados");
+  });
+
   it("pide confirmación antes de dar de baja y llama a la acción", async () => {
     cambiarEstadoClienteAccion.mockResolvedValue({ exito: true });
     render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaClientes clientes={clientes} filtros={{ buscar: "", estado: "", pagina: 1 }} /></ProveedorNavegacionListado>);
@@ -308,6 +322,20 @@ describe("tabla de clientes (baja y reactivación)", () => {
 });
 
 describe("alta de cliente", () => {
+  it("mantiene abierto el formulario y sus datos al pulsar fuera o fallar el guardado", async () => {
+    crearClienteAccion.mockResolvedValue({ exito: false, errores: {}, mensaje: "No se pudo guardar." });
+    render(<AltaCliente />);
+    fireEvent.click(screen.getByRole("button", { name: "Registrar nuevo cliente" }));
+    const dialogo = await screen.findByRole("dialog", { name: "Registrar nuevo cliente" });
+    fireEvent.change(within(dialogo).getByLabelText("Nombre o razón social"), { target: { value: "Cliente pendiente" } });
+    fireEvent.change(within(dialogo).getByLabelText("Nombre de contacto"), { target: { value: "Contacto" } });
+    fireEvent.click(dialogo);
+    expect(dialogo).toHaveAttribute("open");
+    fireEvent.click(within(dialogo).getByRole("button", { name: "Confirmar registro" }));
+    expect(await within(dialogo).findByText("No se pudo guardar.")).toBeInTheDocument();
+    expect(dialogo).toHaveAttribute("open");
+    expect(within(dialogo).getByLabelText("Nombre o razón social")).toHaveValue("Cliente pendiente");
+  });
   it("abre el alta en un modal accesible y, al guardar, cierra, resalta y avisa", async () => {
     crearClienteAccion.mockResolvedValue({ exito: true, registro: cliente(9) });
     render(<AltaCliente />);

@@ -11,6 +11,15 @@ const vigente = { estado: "listo", terminos };
 const abrir = () => fireEvent.click(screen.getByRole("button", { name: "Términos y condiciones" }));
 const montarYabrir = () => { const vista = render(<BotonTerminos />); abrir(); return vista; };
 const marcar = () => fireEvent.click(screen.getByRole("checkbox"));
+
+it("ofrece la lectura manual de términos como tarjeta de Configuración", async () => {
+  obtenerTerminosVigentesAccion.mockResolvedValue({ estado: "vacio" });
+  render(<BotonTerminos presentacion="tarjeta" />);
+  const boton = screen.getByRole("button", { name: /Leer términos y condiciones/ });
+  expect(boton).toHaveClass("opcion-configuracion");
+  fireEvent.click(boton);
+  expect(await screen.findByText("Todavía no hay términos publicados.")).toBeInTheDocument();
+});
 async function leer() {
   const region = await screen.findByRole("region", { name: "Texto de los términos y condiciones" });
   fireEvent.scroll(region, { target: { scrollTop: 400 } });

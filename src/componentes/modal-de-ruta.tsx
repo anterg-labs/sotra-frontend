@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useMemo } from "react";
 import { Modal } from "@/componentes/modal";
+import { RutaDeNavegacion } from "@/componentes/ruta-de-navegacion";
 
 type ContextoModalDeRuta = { cerrar: () => void } | null;
 
@@ -73,7 +74,8 @@ export function ModalDeRuta(props: PropiedadesModalDeRuta) {
   const cerrar = useCallback(() => (rutaDeRetorno ? enrutador.replace(rutaDeRetorno) : enrutador.back()), [enrutador, rutaDeRetorno]);
   const valor = useMemo(() => ({ cerrar }), [cerrar]);
   const modal = (
-    <Modal alCerrar={cerrar} descripcion={props.descripcion} estaAbierto tamano={props.tamano} titulo={props.titulo}>
+    <Modal alCerrar={cerrar} cierreSoloConBotones descripcion={props.descripcion} estaAbierto tamano={props.tamano} titulo={props.titulo}>
+      <RutaDeNavegacion enModal />
       <div className="form-panel">{props.children}</div>
     </Modal>
   );

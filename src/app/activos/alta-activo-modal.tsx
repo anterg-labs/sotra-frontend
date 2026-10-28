@@ -18,7 +18,7 @@ export function AltaActivoModal(props: { clientes: Cliente[] | null; modelosMaqu
       <button className="primary-button" onClick={() => setEstaAbierto(true)} type="button">
         Registrar nuevo activo
       </button>
-      <Modal alCerrar={() => setEstaAbierto(false)} estaAbierto={estaAbierto} titulo="Registrar nuevo activo">
+      <Modal alCerrar={() => setEstaAbierto(false)} cierreSoloConBotones estaAbierto={estaAbierto} titulo="Registrar nuevo activo">
         <div className="form-panel">
           <AltaActivo
             alCancelar={() => setEstaAbierto(false)}

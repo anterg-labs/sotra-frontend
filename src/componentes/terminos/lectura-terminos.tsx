@@ -6,6 +6,7 @@ import { DocumentoTerminos } from "./documento-terminos";
 
 export function LecturaTerminos(props: { terminos: TerminosCondiciones; requiereAceptacion: boolean; alAceptar: () => Promise<void> }) {
   const referenciaTexto = useRef<HTMLDivElement>(null);
+  const centinelaFinal = useRef<HTMLSpanElement>(null);
   const [llegoAlFinal, setLlegoAlFinal] = useState(false);
   const [acepta, setAcepta] = useState(false);
   const [estaGuardando, setEstaGuardando] = useState(false);
@@ -15,13 +16,20 @@ export function LecturaTerminos(props: { terminos: TerminosCondiciones; requiere
     const texto = referenciaTexto.current;
     if (!texto) return;
     const comprobarFinal = () => {
+      if (typeof IntersectionObserver !== "undefined" && getComputedStyle(texto).overflowY === "visible") return;
       if (texto.clientHeight > 0 && texto.scrollHeight - texto.scrollTop <= texto.clientHeight + 2) setLlegoAlFinal(true);
     };
     const cuadro = window.requestAnimationFrame(comprobarFinal);
     texto.addEventListener("scroll", comprobarFinal);
     const observador = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(comprobarFinal);
     observador?.observe(texto);
-    return () => { window.cancelAnimationFrame(cuadro); texto.removeEventListener("scroll", comprobarFinal); observador?.disconnect(); };
+    // El centinela detecta el final aunque se desplace el modal completo y no el recuadro del texto (pantallas chicas).
+    const final = centinelaFinal.current;
+    const visibilidad = final && typeof IntersectionObserver !== "undefined"
+      ? new IntersectionObserver((entradas) => { if (entradas.some((entrada) => entrada.isIntersecting)) setLlegoAlFinal(true); })
+      : null;
+    if (final) visibilidad?.observe(final);
+    return () => { window.cancelAnimationFrame(cuadro); texto.removeEventListener("scroll", comprobarFinal); observador?.disconnect(); visibilidad?.disconnect(); };
   }, []);
 
   async function aceptar() {
@@ -34,7 +42,7 @@ export function LecturaTerminos(props: { terminos: TerminosCondiciones; requiere
   }
 
   return <div className="grid gap-4">
-    <DocumentoTerminos documento={props.terminos} ref={referenciaTexto} />
+    <DocumentoTerminos centinelaFinal={centinelaFinal} documento={props.terminos} ref={referenciaTexto} />
     {props.requiereAceptacion ? <>
       <p id="ayuda-lectura-terminos">Recorré el texto hasta el final para habilitar la casilla de aceptación.</p>
       <label className="flex items-center gap-2">

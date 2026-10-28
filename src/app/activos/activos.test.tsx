@@ -129,6 +129,18 @@ describe("barra de filtros de activos (en vivo)", () => {
 describe("tabla de activos (baja)", () => {
   const activos = [activo(1), activo(2, "inactivo", null)];
 
+  it("ofrece tarjetas de activos con cliente, modelo y detalle sin retirar la tabla", () => {
+    const { container } = render(conNavegacion(<TablaActivos activos={activos} filtros={{ buscar: "", clienteId: "", modeloMaquinaId: "", estado: "", pagina: 1 }} />));
+    const tarjetas = container.querySelector(".listado-tarjetas-tecnico");
+    expect(tarjetas).toBeInTheDocument();
+    expect(container.querySelector(".tabla-listado-tecnico")).toContainElement(screen.getByRole("table"));
+    const enlace = within(tarjetas as HTMLElement).getByRole("link", { name: /Retro 1/ });
+    expect(enlace).toHaveAttribute("href", "/activos/1");
+    expect(enlace).toHaveTextContent("SN-1");
+    expect(enlace).toHaveTextContent("ACME");
+    expect(enlace).toHaveTextContent("CAT 320");
+  });
+
   it("da de baja con confirmación nombrando el activo", async () => {
     cambiarEstadoActivoAccion.mockResolvedValue({ exito: true });
     render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaActivos activos={activos} filtros={{ buscar: "", clienteId: "", modeloMaquinaId: "", estado: "", pagina: 1 }} /></ProveedorNavegacionListado>);

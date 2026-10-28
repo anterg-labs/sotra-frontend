@@ -9,6 +9,8 @@ type PropiedadesModal = {
   alCerrar: () => void;
   /** Evita cerrar mientras se guarda, para no perder un envío en curso. */
   estaOcupado?: boolean;
+  /** Los formularios solo salen mediante sus botones o al guardar con éxito. */
+  cierreSoloConBotones?: boolean;
   /** Modal bloqueante: sin ✕, sin Esc y sin cerrar al hacer clic afuera. Solo se va cuando la pantalla deja de abrirlo. */
   obligatorio?: boolean;
   /** Ancho: `normal` (formularios cortos) o `amplio` (formularios largos, como el de una orden). */
@@ -24,7 +26,7 @@ type PropiedadesModal = {
  * En pantallas chicas ocupa toda la pantalla.
  */
 export function Modal(props: PropiedadesModal) {
-  const { titulo, estaAbierto, alCerrar, estaOcupado = false, obligatorio = false, tamano = "normal", descripcion, children } = props;
+  const { titulo, estaAbierto, alCerrar, estaOcupado = false, cierreSoloConBotones = false, obligatorio = false, tamano = "normal", descripcion, children } = props;
   const referencia = useRef<HTMLDialogElement>(null);
   const cuerpoReferencia = useRef<HTMLDivElement>(null);
   const idTitulo = useId();
@@ -83,7 +85,7 @@ export function Modal(props: PropiedadesModal) {
 
   function cerrarConEscape(evento: React.SyntheticEvent<HTMLDialogElement>) {
     evento.preventDefault();
-    solicitarCierre();
+    if (!cierreSoloConBotones) solicitarCierre();
   }
 
   // Esc dos veces seguidas sin interacción puede cerrar el <dialog> sin que se pueda cancelar: si es obligatorio, se vuelve a abrir.
@@ -94,7 +96,7 @@ export function Modal(props: PropiedadesModal) {
   }
 
   function cerrarAlHacerClicFuera(evento: React.MouseEvent<HTMLDialogElement>) {
-    if (evento.target === referencia.current) {
+    if (!cierreSoloConBotones && evento.target === referencia.current) {
       solicitarCierre();
     }
   }

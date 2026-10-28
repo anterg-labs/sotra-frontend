@@ -1,9 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSelectedLayoutSegment } from "next/navigation";
+import { usePathname, useRouter, useSelectedLayoutSegment } from "next/navigation";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { IconoFlechaIzquierda } from "@/componentes/iconos";
 
 type Migaja = { etiqueta: string; ruta: string };
+const ContextoRutaAnterior = createContext<string | null>(null);
+
+/** Comparte la última página interna con la ruta visible y los formularios abiertos como modal. */
+export function ProveedorHistorialNavegacion(props: { children: React.ReactNode }) {
+  const ruta = usePathname();
+  const ultimaRuta = useRef(ruta);
+  const [rutaAnterior, setRutaAnterior] = useState<string | null>(null);
+  useEffect(() => {
+    if (ultimaRuta.current !== ruta) {
+      setRutaAnterior(ultimaRuta.current);
+      ultimaRuta.current = ruta;
+    }
+  }, [ruta]);
+  return <ContextoRutaAnterior.Provider value={rutaAnterior}>{props.children}</ContextoRutaAnterior.Provider>;
+}
 
 const SECCIONES: Record<string, string> = {
   "ordenes-trabajo": "Órdenes de trabajo",
@@ -13,6 +30,7 @@ const SECCIONES: Record<string, string> = {
   usuarios: "Usuarios",
   "documentacion-tecnica": "Documentación",
   configuracion: "Configuración",
+  tecnico: "Mi trabajo",
 };
 
 const SUBSECCIONES: Record<string, string> = {
@@ -20,6 +38,10 @@ const SUBSECCIONES: Record<string, string> = {
   "activos/tipos": "Tipos de máquina",
   "repuestos/movimientos": "Movimientos de stock",
   "configuracion/terminos": "Términos y condiciones",
+  "configuracion/perfil": "Mi perfil",
+  "configuracion/avisos": "Reglas de avisos",
+  "configuracion/reportes": "Reportes",
+  "configuracion/demoras-etapas": "Demoras por etapa",
 };
 
 const DETALLES: Record<string, (id: string) => string> = {
@@ -32,9 +54,10 @@ const DETALLES: Record<string, (id: string) => string> = {
   "repuestos/movimientos": (id) => "Movimiento N° " + id,
   usuarios: () => "Detalle del usuario",
   "documentacion-tecnica": () => "Detalle del documento",
+  tecnico: (id) => "Orden N° " + id,
 };
 
-const ACCIONES: Record<string, string> = { nuevo: "Nuevo registro", editar: "Modificar" };
+const ACCIONES: Record<string, string> = { nuevo: "Nuevo registro", editar: "Editar" };
 
 /** Migajas de la ruta actual; vacío si la pantalla es de primer nivel o no está en el mapa. */
 export function migajasDeRuta(ruta: string): Migaja[] {
@@ -52,7 +75,7 @@ export function migajasDeRuta(ruta: string): Migaja[] {
       migajas.push({ etiqueta: subseccion, ruta: rutaAcumulada });
     } else if (segmento in ACCIONES) {
       const prefijo = ACCIONES[segmento];
-      migajas.push({ etiqueta: segmento === "nuevo" ? "Nuevo " + etiquetaDeAlta(clave) : prefijo, ruta: rutaAcumulada });
+      migajas.push({ etiqueta: segmento === "nuevo" ? etiquetaDeAlta(clave) : prefijo, ruta: rutaAcumulada });
     } else if (/^\d+$/.test(segmento) && DETALLES[clave]) {
       migajas.push({ etiqueta: DETALLES[clave](segmento), ruta: rutaAcumulada });
     } else {
@@ -64,30 +87,42 @@ export function migajasDeRuta(ruta: string): Migaja[] {
 
 function etiquetaDeAlta(clave: string) {
   const nombres: Record<string, string> = {
-    "ordenes-trabajo": "orden",
-    clientes: "cliente",
-    activos: "activo",
-    "activos/modelos": "modelo",
-    "activos/tipos": "tipo",
-    repuestos: "repuesto",
-    usuarios: "usuario",
-    "documentacion-tecnica": "documento",
+    "ordenes-trabajo": "Nueva orden",
+    clientes: "Nuevo cliente",
+    activos: "Nuevo activo",
+    "activos/modelos": "Nuevo modelo",
+    "activos/tipos": "Nuevo tipo",
+    repuestos: "Nuevo repuesto",
+    usuarios: "Nuevo usuario",
+    "documentacion-tecnica": "Nuevo documento",
   };
-  return nombres[clave] ?? "registro";
+  return nombres[clave] ?? "Nuevo registro";
 }
 
 /**
  * Dónde está la persona dentro de la aplicación («Órdenes de trabajo / Orden N° 8»), con cada nivel anterior como enlace
  * para volver. Se oculta mientras hay un modal abierto: la pantalla de fondo es otra.
  */
-export function RutaDeNavegacion() {
+export function RutaDeNavegacion(props: { enModal?: boolean } = {}) {
   const ruta = usePathname();
+  const enrutador = useRouter();
   const hayModal = useSelectedLayoutSegment("modal") !== null;
-  const migajas = hayModal ? [] : migajasDeRuta(ruta ?? "");
+  const rutaAnterior = useContext(ContextoRutaAnterior);
+  const migajas = hayModal && !props.enModal ? [] : migajasDeRuta(ruta ?? "");
   if (migajas.length === 0) return null;
 
+  const rutaSuperior = migajas.at(-2)?.ruta ?? migajas[0].ruta;
+
+  function volver() {
+    if (rutaAnterior && rutaAnterior !== ruta) enrutador.back();
+    else enrutador.push(rutaSuperior);
+  }
+
   return (
-    <nav aria-label="Ruta de navegación" className="ruta-navegacion">
+    <nav aria-label="Ruta de navegación" className={"ruta-navegacion" + (props.enModal ? " ruta-navegacion-modal" : "")}>
+      <button aria-label="Volver" className="enlace-volver" onClick={volver} title="Volver" type="button">
+        <IconoFlechaIzquierda />
+      </button>
       <ol>
         {migajas.map((migaja, indice) => {
           const esUltima = indice === migajas.length - 1;

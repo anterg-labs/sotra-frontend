@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { IconoConfiguracion, IconoUsuarios } from "@/componentes/iconos";
 import { tienePermisoServidor } from "@/servicios/servidor/sesion";
+import { BotonTerminos } from "@/componentes/terminos/modal-terminos";
+import { BotonCerrarSesion } from "./boton-cerrar-sesion";
 
 export const metadata = { title: "Configuración" };
 
@@ -19,7 +21,7 @@ export default async function PaginaConfiguracion() {
   if (await tienePermisoServidor("configuracion.gestionar")) {
     opciones.push({
       ruta: "/configuracion/terminos",
-      titulo: "Términos y condiciones",
+      titulo: "Administrar términos",
       descripcion: "Editá el documento que se muestra a las personas usuarias.",
       icono: <IconoConfiguracion />,
     });
@@ -41,7 +43,7 @@ export default async function PaginaConfiguracion() {
     <main className="page-content">
       <header className="page-heading">
         <div>
-          <p className="eyebrow">Administración</p>
+          <p className="eyebrow">Cuenta y ajustes</p>
           <h1>Configuración</h1>
         </div>
       </header>
@@ -58,6 +60,8 @@ export default async function PaginaConfiguracion() {
             </Link>
           </li>
         ))}
+        <li><BotonTerminos presentacion="tarjeta" /></li>
+        <li><BotonCerrarSesion /></li>
       </ul>
     </main>
   );

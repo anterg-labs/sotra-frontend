@@ -191,6 +191,14 @@ describe("EstructuraAplicacion: navegación de escritorio", () => {
     render(<EstructuraAplicacion>x</EstructuraAplicacion>);
     expect(screen.getByRole("navigation", { name: "Navegación principal" })).toBeInTheDocument();
   });
+
+  it("incluye Configuración en la barra inferior del técnico", () => {
+    pathname.valor = "/tecnico";
+    render(<EstructuraAplicacion>x</EstructuraAplicacion>);
+    const barra = screen.getByRole("navigation", { name: "Navegación del técnico" });
+    expect(within(barra).getByRole("link", { name: "Configuración" })).toHaveAttribute("href", "/configuracion");
+    expect(within(barra).getByRole("link", { name: "Mi trabajo" })).toHaveAttribute("aria-current", "page");
+  });
 });
 
 describe("AltaUsuario", () => {

@@ -55,6 +55,21 @@ export function TablaClientes(props: { clientes: Cliente[]; filtros: FiltrosClie
 
   return (
     <>
+      <ul aria-label="Clientes" className="listado-tarjetas-tecnico">
+        {clientes.map((cliente) => (
+          <li key={cliente.id}>
+            <Link className="tecnico-tarjeta tarjeta-listado-tecnico" href={"/clientes/" + cliente.id}>
+              <span className="tarjeta-listado-cabecera"><strong>{cliente.razonSocial}</strong><EstadoRegistro estado={cliente.estado} /></span>
+              <span className="tarjeta-listado-dato"><span>Contacto</span>{cliente.nombreContacto}</span>
+              {cliente.correo ? <span className="tarjeta-listado-dato"><span>Correo</span>{cliente.correo}</span> : null}
+              {cliente.telefono ? <span className="tarjeta-listado-dato"><span>Teléfono</span>{cliente.telefono}</span> : null}
+              <span className="tarjeta-listado-dato"><span>Activos asociados</span>{cliente.cantidadActivosAsociados}</span>
+              <span className="tarjeta-listado-ver">Ver detalle →</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <div className="tabla-listado-tecnico">
       <ContenedorTabla etiqueta="Listado de clientes">
         <table>
           <thead>
@@ -150,6 +165,7 @@ export function TablaClientes(props: { clientes: Cliente[]; filtros: FiltrosClie
           </tbody>
         </table>
       </ContenedorTabla>
+      </div>
 
       {modales}
     </>

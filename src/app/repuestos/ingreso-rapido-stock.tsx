@@ -76,7 +76,7 @@ export function IngresoRapidoStock() {
       <button className="primary-button" onClick={abrir} type="button">
         Ingresar stock
       </button>
-      <Modal alCerrar={() => setEstaAbierto(false)} estaAbierto={estaAbierto} estaOcupado={estaEnviando} titulo="Ingresar stock">
+      <Modal alCerrar={() => setEstaAbierto(false)} cierreSoloConBotones estaAbierto={estaAbierto} estaOcupado={estaEnviando} titulo="Ingresar stock">
         <form aria-busy={estaEnviando} className="form-panel" noValidate onSubmit={confirmar}>
           <div className="form-field">
             <Combobox

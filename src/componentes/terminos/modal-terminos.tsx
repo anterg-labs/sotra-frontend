@@ -6,6 +6,7 @@ import { obtenerTerminosVigentesAccion } from "@/app/terminos/acciones";
 import { useAceptacionGuardada } from "@/hooks/use-aceptacion-terminos";
 import { guardarAceptacion } from "@/utilidades/aceptacion-terminos";
 import type { ResultadoTerminosVigentes } from "@/tipos/terminos";
+import { IconoDocumentacion } from "@/componentes/iconos";
 import { DialogoTerminos } from "./dialogo-terminos";
 
 const LecturaTerminos = dynamic(() => import("./lectura-terminos").then((modulo) => modulo.LecturaTerminos), {
@@ -15,7 +16,7 @@ const LecturaTerminos = dynamic(() => import("./lectura-terminos").then((modulo)
 export const EVENTO_TERMINOS_PUBLICADOS = "sotra:terminos-publicados";
 
 /** Consulta manual desde el footer: no solicita el documento ni abre el modal en segundo plano. */
-export function BotonTerminos() {
+export function BotonTerminos({ presentacion = "enlace" }: { presentacion?: "enlace" | "tarjeta" }) {
   const aceptacion = useAceptacionGuardada();
   const [estaAbierto, setEstaAbierto] = useState(false);
   const [resultado, setResultado] = useState<ResultadoTerminosVigentes | null>(null);
@@ -51,7 +52,9 @@ export function BotonTerminos() {
   }
 
   return <>
-    <button className="app-pie-enlace" onClick={() => { setEstaAbierto(true); void consultar(); }} type="button">Términos y condiciones</button>
+    <button className={presentacion === "tarjeta" ? "opcion-configuracion opcion-configuracion-boton" : "app-pie-enlace"} onClick={() => { setEstaAbierto(true); void consultar(); }} type="button">
+      {presentacion === "tarjeta" ? <><span aria-hidden="true" className="opcion-configuracion-icono"><IconoDocumentacion /></span><span><strong>Leer términos y condiciones</strong><small>Consultá el documento vigente.</small></span></> : "Términos y condiciones"}
+    </button>
     <DialogoTerminos alCerrar={cerrar} estaAbierto={estaAbierto} obligatorio={requiereAceptacion}>
       {resultado === null ? <p aria-busy="true" role="status">Cargando los términos y condiciones…</p> : null}
       {resultado?.estado === "error" ? <div className="grid gap-3"><p className="form-error-banner" role="alert">No se pudieron obtener los términos y condiciones.</p><button className="secondary-button" onClick={() => { void consultar(); }} type="button">Reintentar</button></div> : null}

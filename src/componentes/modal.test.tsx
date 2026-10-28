@@ -13,10 +13,10 @@ beforeAll(() => {
 
 afterEach(() => vi.restoreAllMocks());
 
-function dibujar(estaOcupado = false) {
+function dibujar(estaOcupado = false, cierreSoloConBotones = false) {
   const alCerrar = vi.fn();
   render(
-    <Modal alCerrar={alCerrar} estaAbierto estaOcupado={estaOcupado} titulo="Nuevo">
+    <Modal alCerrar={alCerrar} cierreSoloConBotones={cierreSoloConBotones} estaAbierto estaOcupado={estaOcupado} titulo="Nuevo">
       <input aria-label="Nombre" />
     </Modal>,
   );
@@ -24,6 +24,19 @@ function dibujar(estaOcupado = false) {
 }
 
 describe("Modal", () => {
+  it("un formulario conserva sus datos al pulsar fuera o Escape; la cruz permite salir", () => {
+    const alCerrar = dibujar(false, true);
+    const dialogo = screen.getByRole("dialog", { name: "Nuevo" });
+    fireEvent.input(screen.getByLabelText("Nombre"), { target: { value: "Dato pendiente" } });
+    fireEvent.click(dialogo);
+    fireEvent(dialogo, new Event("cancel", { bubbles: true, cancelable: true }));
+    expect(dialogo).toHaveAttribute("open");
+    expect(screen.getByLabelText("Nombre")).toHaveValue("Dato pendiente");
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    expect(alCerrar).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Cerrar" }));
+    expect(screen.getByRole("alertdialog", { name: "¿Descartar los cambios?" })).toBeInTheDocument();
+  });
   it("se nombra con su título, bloquea el scroll de la página y cierra sin confirmar si no hay datos", () => {
     const alCerrar = dibujar();
     expect(screen.getByRole("dialog", { name: "Nuevo" })).toBeInTheDocument();

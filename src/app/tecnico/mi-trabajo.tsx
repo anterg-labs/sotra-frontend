@@ -34,12 +34,9 @@ export function MiTrabajo(props: PropiedadesMiTrabajo) {
   }
 
   // Un chip por cada estado en que hay órdenes, en el orden del catálogo.
-  const chips = [
-    { valor: "", etiqueta: "Todas" },
-    ...estados
+  const chips = estados
       .filter((estado) => (ordenes ?? []).some((orden) => orden.estado === estado.valor))
-      .map((estado) => ({ valor: estado.valor, etiqueta: estado.etiqueta })),
-  ];
+      .map((estado) => ({ valor: estado.valor, etiqueta: estado.etiqueta }));
   const visibles = (ordenes ?? []).filter(
     (orden) => (filtro === "" || orden.estado === filtro) && (buscarNumero.trim() === "" || String(orden.id).includes(buscarNumero.trim())),
   );
@@ -71,23 +68,28 @@ export function MiTrabajo(props: PropiedadesMiTrabajo) {
         <p className="empty-state">Elegí un técnico para ver sus órdenes.</p>
       ) : (
         <>
-          <div aria-label="Filtro por estado" className="chips-filtro" role="group">
+          <div className="tecnico-busqueda">
+            <div className="form-field">
+              <label htmlFor="numeroOrden">Buscar por número de orden</label>
+              <input id="numeroOrden" inputMode="numeric" onChange={(evento) => setBuscarNumero(evento.target.value)} type="search" value={buscarNumero} />
+            </div>
+            <button aria-pressed={filtro === ""} className="chip-filtro" onClick={() => setFiltro("")} type="button">
+              Todas <span className="chip-filtro-contador">{ordenes?.length ?? 0}</span>
+            </button>
+          </div>
+
+          {chips.length > 0 ? <div aria-label="Filtro por estado" className="chips-filtro" role="group">
             {chips.map((chip) => (
               <button aria-pressed={filtro === chip.valor} className="chip-filtro" key={chip.valor} onClick={() => setFiltro(chip.valor)} type="button">
                 {chip.etiqueta}
                 {ordenes !== null ? (
                   <span className="chip-filtro-contador">
-                    {chip.valor === "" ? ordenes.length : ordenes.filter((orden) => orden.estado === chip.valor).length}
+                    {ordenes.filter((orden) => orden.estado === chip.valor).length}
                   </span>
                 ) : null}
               </button>
             ))}
-          </div>
-
-          <div className="form-field">
-            <label htmlFor="numeroOrden">Buscar por número de orden</label>
-            <input id="numeroOrden" inputMode="numeric" onChange={(evento) => setBuscarNumero(evento.target.value)} type="search" value={buscarNumero} />
-          </div>
+          </div> : null}
 
           {estaPendiente ? <p className="empty-state">Cargando tus órdenes…</p> : null}
           {!estaPendiente && ordenes !== null && visibles.length === 0 ? <p className="empty-state">No tenés órdenes pendientes con este filtro.</p> : null}

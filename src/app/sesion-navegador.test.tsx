@@ -19,6 +19,11 @@ vi.mock("@/componentes/avisos", () => ({
 vi.mock("@/componentes/estructura-aplicacion", () => ({
   EstructuraAplicacion: (p: { children: React.ReactNode }) => <div data-testid="aplicacion">{p.children}</div>,
 }));
+vi.mock("@/componentes/ruta-de-navegacion", () => ({
+  ProveedorHistorialNavegacion: (p: { children: React.ReactNode }) => p.children,
+  RutaDeNavegacion: () => null,
+}));
+vi.mock("@/servicios/servidor/ordenes-trabajo", () => ({ listarEstadosOrdenTrabajoOVacio: async () => [] }));
 vi.mock("@/componentes/registro-service-worker", () => ({ RegistroServiceWorker: () => null }));
 vi.mock("next/image", () => ({ default: (p: { alt: string }) => <span aria-label={p.alt} role="img" /> }));
 

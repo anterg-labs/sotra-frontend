@@ -17,7 +17,7 @@ export function AltaModelo(props: { tiposMaquina: TipoMaquina[] | null }) {
       <button className="primary-button" onClick={() => setEstaAbierto(true)} type="button">
         Registrar modelo
       </button>
-      <Modal alCerrar={() => setEstaAbierto(false)} estaAbierto={estaAbierto} titulo="Registrar nuevo modelo de máquina">
+      <Modal alCerrar={() => setEstaAbierto(false)} cierreSoloConBotones estaAbierto={estaAbierto} titulo="Registrar nuevo modelo de máquina">
         <div className="form-panel">
           <AltaModeloMaquina
             alCancelar={() => setEstaAbierto(false)}

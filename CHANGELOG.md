@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.97 (2026-10-28)
+
+- Pruebas: las pruebas de alta de órdenes y de documentos técnicos simulan la ruta actual que ahora usa la navegación de los modales.
+
 ## Version 1.0.96 (2026-10-28)
 
 - Términos y condiciones: en pantallas chicas el texto se recorre con el desplazamiento del modal y la casilla se habilita al llegar al final; antes quedaba bloqueada y no se podía aceptar ni salir.

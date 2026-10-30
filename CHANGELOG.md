@@ -1,4 +1,8 @@
 # CHANGELOG
+## Version 1.0.101 (2026-10-28)
+
+- Reportes: los filtros de estado y tipo de mantenimiento aclaran que aplican al resumen y a las descargas; el resto de las secciones usa fecha, cliente y activo.
+
 ## Version 1.0.100 (2026-10-28)
 
 - Activos: el listado y las tarjetas suman el tipo de máquina y la ubicación, ordenables.

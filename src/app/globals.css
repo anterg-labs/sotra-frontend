@@ -1796,6 +1796,23 @@ body:has(.navegacion-pendiente) .tecnico-contenido {
 .usuario-menu-salir svg { width: 18px; height: 18px; }
 .usuario-menu-error { margin: 6px 12px; color: var(--peligro-texto); font-size: 12px; }
 
+/* Campana de notificaciones (RFG-05): a la derecha del encabezado, junto al menú de usuario. */
+.campana-notificaciones { position: relative; margin-left: auto; flex-shrink: 0; }
+.campana-notificaciones + .usuario-menu { margin-left: 8px; }
+.campana-boton { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid var(--borde); border-radius: 50%; background: var(--superficie); color: var(--texto); }
+.campana-boton:hover, .campana-boton[aria-expanded="true"] { background: var(--superficie-suave); border-color: var(--borde-fuerte); }
+.campana-boton svg { width: 20px; height: 20px; }
+.campana-contador { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--acento); color: #fff; font-size: 11px; font-weight: 650; line-height: 20px; text-align: center; }
+.campana-panel { position: absolute; top: calc(100% + 10px); right: 0; z-index: 30; width: min(360px, calc(100vw - 32px)); max-height: min(70vh, 480px); overflow-y: auto; padding: 6px; border: 1px solid var(--borde); border-radius: var(--radio-m); background: var(--superficie); box-shadow: 0 12px 36px rgb(36 52 73 / 14%); }
+.campana-panel[hidden] { display: none; }
+.campana-panel-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--borde); font-size: 13px; }
+.campana-estado { margin: 0; padding: 16px 12px; color: var(--texto-tenue); font-size: 13px; }
+.campana-lista { margin: 0; padding: 0; list-style: none; }
+.campana-aviso { display: grid; gap: 4px; min-height: 44px; margin-top: 4px; padding: 10px 12px; border-radius: var(--radio-s); color: var(--texto); font-size: 13px; text-decoration: none; }
+a.campana-aviso:hover { background: var(--acento-suave); }
+.campana-aviso time { color: var(--texto-tenue); font-size: 11px; }
+.campana-aviso[data-sin-leer] { background: var(--acento-suave); font-weight: 600; }
+
 .app-contenido {
   flex: 1;
   padding-bottom: calc(var(--pie-alto) + 16px);

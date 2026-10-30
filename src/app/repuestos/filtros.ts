@@ -11,7 +11,7 @@ import type { FiltrosRepuestos } from "@/tipos/repuesto";
 export const RUTA_REPUESTOS = "/repuestos";
 
 /** Columnas por las que se puede ordenar; coinciden con las que acepta la API. */
-export const COLUMNAS_ORDENABLES_REPUESTOS = ["codigo", "nombre", "marca", "ubicacion", "cantidad", "cantidadMinima", "cantidadReservada", "cantidadEntregada", "cantidadDisponible", "estado"] as const;
+export const COLUMNAS_ORDENABLES_REPUESTOS = ["codigo", "nombre", "marca", "categoria", "ubicacion", "cantidad", "cantidadMinima", "cantidadReservada", "cantidadEntregada", "cantidadDisponible", "estado"] as const;
 
 export type FiltroStock = "" | "alerta" | "bajo" | "sin_stock";
 
@@ -20,6 +20,7 @@ export type FiltrosUrlRepuestos = {
   buscar: string;
   estado: string;
   ubicacion: string;
+  categoria: string;
   stock: FiltroStock;
   pagina: number;
   ordenarPor?: string;
@@ -32,6 +33,7 @@ export function leerFiltrosRepuestos(parametros: ParametrosBusqueda): FiltrosUrl
     buscar: primerValor(parametros.buscar),
     estado: leerEstado(parametros),
     ubicacion: primerValor(parametros.ubicacion),
+    categoria: primerValor(parametros.categoria),
     stock: stock === "alerta" || stock === "bajo" || stock === "sin_stock" ? stock : "",
     pagina: leerPagina(parametros),
     ...leerOrden(parametros, COLUMNAS_ORDENABLES_REPUESTOS),
@@ -48,6 +50,7 @@ export function aFiltrosApiRepuestos(filtros: FiltrosUrlRepuestos): FiltrosRepue
     buscar: filtros.buscar,
     estado: filtros.estado,
     ubicacion: filtros.ubicacion,
+    categoria: filtros.categoria,
     bajoStock: filtros.stock === "alerta",
     estadoStock: filtros.stock === "bajo" || filtros.stock === "sin_stock" ? filtros.stock : "",
     // Sin orden elegido, los repuestos más críticos van primero; con una columna elegida manda esa columna.

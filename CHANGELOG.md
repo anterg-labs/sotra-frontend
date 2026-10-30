@@ -1,4 +1,11 @@
 # CHANGELOG
+## Version 1.0.100 (2026-10-28)
+
+- Activos: el listado y las tarjetas suman el tipo de máquina y la ubicación, ordenables.
+
+## Version 1.0.99 (2026-10-28)
+
+- Repuestos: el alta, la modificación y el detalle muestran categoría, modelo o compatibilidad, unidad de medida y observaciones; el listado suma la columna y el filtro de categoría, y un nombre repetido se avisa junto al campo.
 
 ## Version 1.0.98 (2026-10-28)
 

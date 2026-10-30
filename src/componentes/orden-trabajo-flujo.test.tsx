@@ -57,7 +57,7 @@ const tecnicos = [{ id: 7, nombre: "Tomás", apellido: "Ruiz" }] as never[];
 /** Un repuesto como lo entrega la API, con su stock y lo reservado y entregado a órdenes. */
 function repuestoConStock(id: number, codigo: string, nombre: string, extra: Record<string, unknown> = {}) {
   return {
-    id, codigo, nombre, descripcion: "", marca: "", ubicacion: "", cantidad: 10, cantidadMinima: 2, cantidadReservada: 0,
+    id, codigo, nombre, descripcion: "", marca: "", ubicacion: "", categoria: "", modeloCompatibilidad: "", unidadMedida: "unidad", observaciones: "", cantidad: 10, cantidadMinima: 2, cantidadReservada: 0,
     cantidadEntregada: 0, cantidadDisponible: 10, estado: "activo", estadoStock: "normal", ...extra,
   };
 }

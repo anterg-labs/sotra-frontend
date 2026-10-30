@@ -20,6 +20,7 @@ const VALORES_ORDEN = {
   codigo: (fila: Repuesto): ValorOrdenable => fila.codigo,
   nombre: (fila: Repuesto): ValorOrdenable => fila.nombre,
   marca: (fila: Repuesto): ValorOrdenable => fila.marca,
+  categoria: (fila: Repuesto): ValorOrdenable => fila.categoria,
   ubicacion: (fila: Repuesto): ValorOrdenable => fila.ubicacion,
   cantidad: (fila: Repuesto): ValorOrdenable => fila.cantidad,
   cantidadMinima: (fila: Repuesto): ValorOrdenable => fila.cantidadMinima,
@@ -65,6 +66,7 @@ export function TablaRepuestos(props: { repuestos: Repuesto[]; filtros: FiltrosU
               {columna("codigo", "Código")}
               {columna("nombre", "Nombre")}
               {columna("marca", "Marca")}
+              {columna("categoria", "Categoría")}
               {columna("ubicacion", "Ubicación")}
               {columna("cantidad", "Stock")}
               {columna("cantidadMinima", "Mínima")}
@@ -90,6 +92,7 @@ export function TablaRepuestos(props: { repuestos: Repuesto[]; filtros: FiltrosU
                   <td><strong>{repuesto.codigo}</strong></td>
                   <td>{repuesto.nombre}</td>
                   <td>{repuesto.marca}</td>
+                  <td>{repuesto.categoria}</td>
                   <td>{repuesto.ubicacion}</td>
                   <td className="celda-numerica">
                     <strong>{repuesto.cantidad}</strong>

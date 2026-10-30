@@ -9,7 +9,7 @@ vi.mock("@/servicios/servicio-repuestos", () => ({ listarRepuestosPaginados }));
 
 function repuesto(id: number, extra: Partial<Repuesto> = {}): Repuesto {
   return {
-    id, codigo: "R" + id, nombre: "Filtro " + id, descripcion: "", marca: "", ubicacion: "", cantidad: 10, cantidadMinima: 2,
+    id, codigo: "R" + id, nombre: "Filtro " + id, descripcion: "", marca: "", ubicacion: "", categoria: "", modeloCompatibilidad: "", unidadMedida: "unidad", observaciones: "", cantidad: 10, cantidadMinima: 2,
     cantidadReservada: 3, cantidadEntregada: 2, cantidadDisponible: 5, estado: "activo", estadoStock: "normal", ...extra,
   };
 }

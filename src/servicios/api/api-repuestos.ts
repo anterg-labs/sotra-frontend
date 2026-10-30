@@ -14,6 +14,9 @@ export async function apiListarRepuestosPaginados(filtros: FiltrosRepuestos) {
   if (filtros.ubicacion.trim() !== "") {
     parametros.append("ubicacion", filtros.ubicacion.trim());
   }
+  if (filtros.categoria?.trim()) {
+    parametros.append("categoria", filtros.categoria.trim());
+  }
   if (filtros.bajoStock) {
     parametros.append("bajoStock", "true");
   }

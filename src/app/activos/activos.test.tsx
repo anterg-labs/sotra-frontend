@@ -29,7 +29,8 @@ vi.mock("./acciones", () => ({ cambiarEstadoActivoAccion, crearActivoAccion }));
 function activo(id: number, estado: "activo" | "inactivo" = "activo", nombre: string | null = "Retro " + id) {
   return {
     id, clienteId: 1, nombreCliente: "ACME", numSerie: "SN-" + id, descripcion: null, modeloMaquinaId: 2,
-    nombreModeloMaquina: "CAT 320", anioFabricacion: 2020, nombre, ubicacion: null, estado,
+    nombreModeloMaquina: "CAT 320", nombreTipoMaquina: "Excavadora", anioFabricacion: 2020, nombre,
+    ubicacion: id === 1 ? "Obra Norte" : null, estado,
   };
 }
 const cliente = { id: 1, razonSocial: "ACME", estado: "activo" };
@@ -139,6 +140,19 @@ describe("tabla de activos (baja)", () => {
     expect(enlace).toHaveTextContent("SN-1");
     expect(enlace).toHaveTextContent("ACME");
     expect(enlace).toHaveTextContent("CAT 320");
+    expect(enlace).toHaveTextContent("Excavadora");
+    expect(enlace).toHaveTextContent("Obra Norte");
+  });
+
+  it("muestra el tipo de máquina y la ubicación como columnas ordenables (RF003-06)", () => {
+    render(conNavegacion(<TablaActivos activos={activos} filtros={filtrosVacios} />));
+    const tabla = screen.getByRole("table");
+    expect(within(tabla).getByRole("button", { name: /Tipo de máquina: ordenar/ })).toBeInTheDocument();
+    expect(within(tabla).getByRole("button", { name: /Ubicación: ordenar/ })).toBeInTheDocument();
+    const filas = within(tabla).getAllByRole("row");
+    expect(filas[1]).toHaveTextContent("Excavadora");
+    expect(filas[1]).toHaveTextContent("Obra Norte");
+    expect(filas[2]).toHaveTextContent("—");
   });
 
   it("da de baja con confirmación nombrando el activo", async () => {

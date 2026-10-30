@@ -105,9 +105,25 @@ export function PanelStock(props: { repuesto: Repuesto; abrirIngreso: boolean })
           <dt>Marca</dt>
           <dd>{repuesto.marca}</dd>
         </div>
+        <div>
+          <dt>Categoría o tipo</dt>
+          <dd>{repuesto.categoria}</dd>
+        </div>
+        <div>
+          <dt>Modelo o compatibilidad</dt>
+          <dd>{repuesto.modeloCompatibilidad}</dd>
+        </div>
+        <div>
+          <dt>Unidad de medida</dt>
+          <dd>{repuesto.unidadMedida}</dd>
+        </div>
         <div className="detail-wide">
           <dt>Descripción</dt>
           <dd>{repuesto.descripcion}</dd>
+        </div>
+        <div className="detail-wide">
+          <dt>Observaciones adicionales</dt>
+          <dd>{repuesto.observaciones}</dd>
         </div>
         <div>
           <dt>Ubicación</dt>

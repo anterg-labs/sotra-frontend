@@ -26,7 +26,7 @@ vi.mock("next/cache", () => ({ revalidatePath }));
 vi.mock("@/servicios/servidor/repuestos", () => r);
 vi.mock("@/servicios/servidor/movimientos-stock", () => m);
 
-const datos = { codigo: "R-1", nombre: "Filtro", descripcion: "", marca: "", ubicacion: "", cantidad: 3, cantidadMinima: 1 };
+const datos = { codigo: "R-1", nombre: "Filtro", descripcion: "", marca: "", ubicacion: "", categoria: null, modeloCompatibilidad: null, unidadMedida: null, observaciones: null, cantidad: 3, cantidadMinima: 1 };
 const guardado = { id: 5, ...datos, estado: "activo", estadoStock: "normal" };
 const movimiento = { id: 9, tipo: "ingreso" };
 
@@ -50,6 +50,19 @@ describe("acciones de repuestos", () => {
     await expect(crearRepuestoAccion(datos)).resolves.toEqual({ exito: true, registro: guardado });
     expect(r.crearRepuestoServidor).toHaveBeenCalledWith({ ...datos, descripcion: null, marca: null, ubicacion: null });
     expect(revalidatePath).toHaveBeenCalledWith("/repuestos", "layout");
+  });
+
+  it("manda los datos nuevos del repuesto y deja en null los que vienen vacíos", async () => {
+    r.crearRepuestoServidor.mockResolvedValue(guardado);
+    await crearRepuestoAccion({ ...datos, categoria: "Lubricantes", modeloCompatibilidad: "  ", unidadMedida: "litro", observaciones: "" });
+    expect(r.crearRepuestoServidor).toHaveBeenCalledWith(expect.objectContaining({
+      categoria: "Lubricantes", modeloCompatibilidad: null, unidadMedida: "litro", observaciones: null,
+    }));
+  });
+
+  it("muestra el error de nombre repetido junto al campo nombre", async () => {
+    r.crearRepuestoServidor.mockRejectedValue(new ErrorDeApi("Ya existe un repuesto con ese nombre.", "NOMBRE_REPUESTO_DUPLICADO", 409));
+    await expect(crearRepuestoAccion(datos)).resolves.toMatchObject({ exito: false, errores: { nombre: "Ya existe un repuesto con ese nombre." } });
   });
 
   it("valida en el servidor sin llamar a la API y rechaza formas inválidas", async () => {

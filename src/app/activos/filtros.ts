@@ -12,7 +12,7 @@ import type { FiltrosActivos } from "@/tipos/activo";
 export const RUTA_ACTIVOS = "/activos";
 
 /** Columnas por las que se puede ordenar; coinciden con las que acepta la API. */
-export const COLUMNAS_ORDENABLES_ACTIVOS = ["nombre", "numSerie", "nombreCliente", "nombreModeloMaquina", "estado"] as const;
+export const COLUMNAS_ORDENABLES_ACTIVOS = ["nombre", "numSerie", "nombreCliente", "nombreModeloMaquina", "nombreTipoMaquina", "ubicacion", "estado"] as const;
 
 export function leerFiltrosActivos(parametros: ParametrosBusqueda): FiltrosActivos {
   return {

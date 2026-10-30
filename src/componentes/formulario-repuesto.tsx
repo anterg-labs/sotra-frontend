@@ -31,6 +31,10 @@ export function FormularioRepuesto(props: PropiedadesFormularioRepuesto) {
   const [descripcion, setDescripcion] = useState(repuestoInicial?.descripcion ?? "");
   const [marca, setMarca] = useState(repuestoInicial?.marca ?? "");
   const [ubicacion, setUbicacion] = useState(repuestoInicial?.ubicacion ?? "");
+  const [categoria, setCategoria] = useState(repuestoInicial?.categoria ?? "");
+  const [modeloCompatibilidad, setModeloCompatibilidad] = useState(repuestoInicial?.modeloCompatibilidad ?? "");
+  const [unidadMedida, setUnidadMedida] = useState(repuestoInicial?.unidadMedida ?? "unidad");
+  const [observaciones, setObservaciones] = useState(repuestoInicial?.observaciones ?? "");
   const [cantidad, setCantidad] = useState(String(repuestoInicial?.cantidad ?? 0));
   const [cantidadMinima, setCantidadMinima] = useState(String(repuestoInicial?.cantidadMinima ?? 0));
 
@@ -55,6 +59,10 @@ export function FormularioRepuesto(props: PropiedadesFormularioRepuesto) {
       descripcion: descripcion.trim() === "" ? null : descripcion,
       marca: marca.trim() === "" ? null : marca,
       ubicacion: ubicacion.trim() === "" ? null : ubicacion,
+      categoria: categoria.trim() === "" ? null : categoria,
+      modeloCompatibilidad: modeloCompatibilidad.trim() === "" ? null : modeloCompatibilidad,
+      unidadMedida: unidadMedida.trim() === "" ? null : unidadMedida,
+      observaciones: observaciones.trim() === "" ? null : observaciones,
       cantidad: numeroODesconocido(cantidad),
       cantidadMinima: numeroODesconocido(cantidadMinima),
     });
@@ -101,6 +109,35 @@ export function FormularioRepuesto(props: PropiedadesFormularioRepuesto) {
         </div>
 
         <div className="form-field">
+          <label htmlFor="categoria">Categoría o tipo (opcional)</label>
+          <input {...atributosDeCampo("categoria")} id="categoria" onChange={(evento) => setCategoria(evento.target.value)} value={categoria} />
+          {mostrarError("categoria")}
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="modeloCompatibilidad">Modelo o compatibilidad (opcional)</label>
+          <input
+            {...atributosDeCampo("modeloCompatibilidad")}
+            id="modeloCompatibilidad"
+            onChange={(evento) => setModeloCompatibilidad(evento.target.value)}
+            value={modeloCompatibilidad}
+          />
+          {mostrarError("modeloCompatibilidad")}
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="unidadMedida">Unidad de medida</label>
+          <input
+            {...atributosDeCampo("unidadMedida")}
+            id="unidadMedida"
+            onChange={(evento) => setUnidadMedida(evento.target.value)}
+            placeholder="unidad, litro, metro…"
+            value={unidadMedida}
+          />
+          {mostrarError("unidadMedida")}
+        </div>
+
+        <div className="form-field">
           <label htmlFor="cantidad">Cantidad en stock</label>
           <input
             {...atributosDeCampo("cantidad")}
@@ -138,6 +175,18 @@ export function FormularioRepuesto(props: PropiedadesFormularioRepuesto) {
       <div className="form-field form-field-full">
         <label htmlFor="descripcion">Descripción (opcional)</label>
         <textarea id="descripcion" onChange={(evento) => setDescripcion(evento.target.value)} rows={3} value={descripcion} />
+      </div>
+
+      <div className="form-field form-field-full">
+        <label htmlFor="observaciones">Observaciones adicionales (opcional)</label>
+        <textarea
+          {...atributosDeCampo("observaciones")}
+          id="observaciones"
+          onChange={(evento) => setObservaciones(evento.target.value)}
+          rows={3}
+          value={observaciones}
+        />
+        {mostrarError("observaciones")}
       </div>
 
       <div className="form-actions">

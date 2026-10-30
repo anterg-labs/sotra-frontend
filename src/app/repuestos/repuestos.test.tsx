@@ -26,7 +26,7 @@ vi.mock("./acciones", () => ({ cambiarEstadoRepuestoAccion, crearRepuestoAccion 
 
 function repuesto(id: number, estadoStock: "normal" | "bajo" | "sin_stock" = "normal", estado: "activo" | "inactivo" = "activo") {
   return {
-    id, codigo: "R-" + id, nombre: "Filtro " + id, descripcion: "", marca: "CAT", ubicacion: "Depósito " + id,
+    id, codigo: "R-" + id, nombre: "Filtro " + id, descripcion: "", marca: "CAT", ubicacion: "Depósito " + id, categoria: "Filtros", modeloCompatibilidad: "", unidadMedida: "unidad", observaciones: "",
     cantidad: estadoStock === "sin_stock" ? 0 : 10, cantidadMinima: 5, estado, estadoStock,
     cantidadReservada: 2, cantidadEntregada: 1, cantidadDisponible: estadoStock === "sin_stock" ? 0 : 7,
   };
@@ -34,7 +34,7 @@ function repuesto(id: number, estadoStock: "normal" | "bajo" | "sin_stock" = "no
 const pagina = (elementos: unknown[], totalPaginas = 1) => ({
   elementos, pagina: 1, tamanoPagina: 20, totalElementos: elementos.length, totalPaginas,
 });
-const filtrosVacios = { buscar: "", estado: "", ubicacion: "", stock: "" as const, pagina: 1 };
+const filtrosVacios = { buscar: "", estado: "", ubicacion: "", categoria: "", stock: "" as const, pagina: 1 };
 const conNavegacion = (ui: React.ReactNode) => <ProveedorNavegacionListado etiquetaCarga="Cargando repuestos…">{ui}</ProveedorNavegacionListado>;
 
 beforeEach(() => {
@@ -46,10 +46,16 @@ describe("filtros de la URL de repuestos", () => {
   it("lee los filtros, ignora valores inválidos de stock y arma la URL", () => {
     expect(leerFiltrosRepuestos({})).toEqual(filtrosVacios);
     expect(leerFiltrosRepuestos({ buscar: "f", estado: "activo", ubicacion: "A", stock: "bajo", pagina: "2" })).toEqual({
-      buscar: "f", estado: "activo", ubicacion: "A", stock: "bajo", pagina: 2,
+      buscar: "f", estado: "activo", ubicacion: "A", categoria: "", stock: "bajo", pagina: 2,
     });
     expect(leerFiltrosRepuestos({ stock: "otro" }).stock).toBe("");
     expect(construirUrlRepuestos({ ...filtrosVacios, stock: "alerta", pagina: 3 })).toBe("/repuestos?stock=alerta&pagina=3");
+  });
+
+  it("lleva el filtro de categoría de la URL a la API", () => {
+    expect(leerFiltrosRepuestos({ categoria: "Lubricantes" }).categoria).toBe("Lubricantes");
+    expect(construirUrlRepuestos({ ...filtrosVacios, categoria: "Lubricantes" })).toBe("/repuestos?categoria=Lubricantes");
+    expect(aFiltrosApiRepuestos({ ...filtrosVacios, categoria: "Lubricantes" })).toMatchObject({ categoria: "Lubricantes" });
   });
 
   it("traduce el filtro de stock a los parámetros de la API", () => {
@@ -169,7 +175,7 @@ describe("tabla de repuestos (baja y reactivación)", () => {
 
   it("confirma la baja nombrando el repuesto y avisa a los contadores de stock", async () => {
     cambiarEstadoRepuestoAccion.mockResolvedValue({ exito: true });
-    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaRepuestos filtros={{ buscar: "", estado: "", ubicacion: "", stock: "", pagina: 1 }} repuestos={repuestos} /></ProveedorNavegacionListado>);
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaRepuestos filtros={filtrosVacios} repuestos={repuestos} /></ProveedorNavegacionListado>);
     fireEvent.click(screen.getByRole("button", { name: "Dar de baja" }));
     const dialogo = screen.getByRole("dialog", { name: "Dar de baja repuesto" });
     expect(dialogo).toHaveTextContent("Filtro 1");
@@ -183,7 +189,7 @@ describe("tabla de repuestos (baja y reactivación)", () => {
     cambiarEstadoRepuestoAccion
       .mockResolvedValueOnce({ exito: true })
       .mockResolvedValueOnce({ exito: false, mensaje: "No se pudo reactivar el repuesto seleccionado." });
-    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaRepuestos filtros={{ buscar: "", estado: "", ubicacion: "", stock: "", pagina: 1 }} repuestos={repuestos} /></ProveedorNavegacionListado>);
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaRepuestos filtros={filtrosVacios} repuestos={repuestos} /></ProveedorNavegacionListado>);
     fireEvent.click(screen.getByRole("button", { name: "Reactivar repuesto" }));
     expect(cambiarEstadoRepuestoAccion).not.toHaveBeenCalled();
     fireEvent.click(within(await screen.findByRole("dialog", { name: "Reactivar repuesto" }, { timeout: 4000 })).getByRole("button", { name: "Reactivar" }));
@@ -195,7 +201,7 @@ describe("tabla de repuestos (baja y reactivación)", () => {
   });
 
   it("cancelar la baja no llama a la acción; resalta el repuesto nuevo", () => {
-    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaRepuestos filtros={{ buscar: "", estado: "", ubicacion: "", stock: "", pagina: 1 }} repuestos={repuestos} /></ProveedorNavegacionListado>);
+    render(<ProveedorNavegacionListado etiquetaCarga="Cargando"><TablaRepuestos filtros={filtrosVacios} repuestos={repuestos} /></ProveedorNavegacionListado>);
     fireEvent.click(screen.getByRole("button", { name: "Dar de baja" }));
     fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
     expect(cambiarEstadoRepuestoAccion).not.toHaveBeenCalled();

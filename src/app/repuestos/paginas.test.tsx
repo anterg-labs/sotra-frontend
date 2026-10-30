@@ -39,7 +39,7 @@ vi.mock("./listado-repuestos", () => ({
 }));
 
 const repuesto = {
-  id: 5, codigo: "R-5", nombre: "Filtro", descripcion: "Aceite", marca: "CAT", ubicacion: "A1",
+  id: 5, codigo: "R-5", nombre: "Filtro", descripcion: "Aceite", marca: "CAT", ubicacion: "A1", categoria: "Filtros", modeloCompatibilidad: "Serie 300", unidadMedida: "unidad", observaciones: "Sin novedades",
   cantidad: 10, cantidadMinima: 4, estado: "activo", estadoStock: "normal",
 };
 const movimiento = {
@@ -66,7 +66,7 @@ describe("página del listado de repuestos (Server Component)", () => {
     expect(screen.getByLabelText("Buscar")).toHaveValue("fil");
     expect(screen.getByRole("link", { name: "Movimientos de stock" })).toHaveAttribute("href", "/repuestos/movimientos");
     expect(await screen.findByText("Listado simulado")).toBeInTheDocument();
-    expect(listado).toHaveBeenCalledWith({ consulta: expect.any(Promise), filtros: { buscar: "fil", estado: "", ubicacion: "", stock: "bajo", pagina: 2 } });
+    expect(listado).toHaveBeenCalledWith({ consulta: expect.any(Promise), filtros: { buscar: "fil", estado: "", ubicacion: "", categoria: "", stock: "bajo", pagina: 2 } });
   });
 
   it("si fallan las alertas el listado sigue funcionando sin aviso", async () => {

@@ -24,22 +24,32 @@ import {
 import { obtenerErrorStockMinimo, obtenerErroresRepuesto } from "@/validaciones/repuesto";
 
 const MENSAJE_GENERAL = "No se pudo guardar el repuesto.";
-const campoPorCodigoDuplicado = { CODIGO_REPUESTO_DUPLICADO: "codigo" };
+const campoPorDuplicado = { CODIGO_REPUESTO_DUPLICADO: "codigo", NOMBRE_REPUESTO_DUPLICADO: "nombre" };
 
 function revalidarRepuestos() {
   revalidatePath("/repuestos", "layout");
 }
 
+function textoOVacio(valor: unknown): string | null {
+  return typeof valor === "string" && valor.trim() !== "" ? valor : null;
+}
+
 /** Una Server Action es un endpoint público: la entrada se revisa como si viniera de cualquier cliente. */
 function leerRepuesto(datos: unknown): CrearRepuestoInput | null {
   if (typeof datos !== "object" || datos === null) return null;
-  const { codigo, nombre, descripcion, marca, ubicacion, cantidad, cantidadMinima } = datos as Record<string, unknown>;
+  const { codigo, nombre, descripcion, marca, ubicacion, categoria, modeloCompatibilidad, unidadMedida, observaciones, cantidad, cantidadMinima } =
+    datos as Record<string, unknown>;
+  const esTextoOpcional = (valor: unknown) => valor === null || typeof valor === "string";
   if (
     typeof codigo !== "string" ||
     typeof nombre !== "string" ||
     !(descripcion === null || typeof descripcion === "string") ||
     !(marca === null || typeof marca === "string") ||
     !(ubicacion === null || typeof ubicacion === "string") ||
+    !esTextoOpcional(categoria) ||
+    !esTextoOpcional(modeloCompatibilidad) ||
+    !esTextoOpcional(unidadMedida) ||
+    !esTextoOpcional(observaciones) ||
     typeof cantidad !== "number" ||
     typeof cantidadMinima !== "number"
   ) {
@@ -50,6 +60,10 @@ function leerRepuesto(datos: unknown): CrearRepuestoInput | null {
     descripcion: descripcion?.trim() === "" ? null : descripcion,
     marca: marca?.trim() === "" ? null : marca,
     ubicacion: ubicacion?.trim() === "" ? null : ubicacion,
+    categoria: textoOVacio(categoria),
+    modeloCompatibilidad: textoOVacio(modeloCompatibilidad),
+    unidadMedida: textoOVacio(unidadMedida),
+    observaciones: textoOVacio(observaciones),
     cantidad, cantidadMinima,
   };
 }
@@ -69,7 +83,7 @@ async function guardarRepuesto(
     revalidarRepuestos();
     return { exito: true, registro };
   } catch (error) {
-    return resultadoFallido(error, campoPorCodigoDuplicado, MENSAJE_GENERAL);
+    return resultadoFallido(error, campoPorDuplicado, MENSAJE_GENERAL);
   }
 }
 

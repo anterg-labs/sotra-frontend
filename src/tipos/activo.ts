@@ -8,6 +8,8 @@ export type Activo = {
   descripcion: string | null;
   modeloMaquinaId: number;
   nombreModeloMaquina?: string | null;
+  tipoMaquinaId?: number | null;
+  nombreTipoMaquina?: string | null;
   anioFabricacion: number | null;
   nombre: string | null;
   ubicacion: string | null;

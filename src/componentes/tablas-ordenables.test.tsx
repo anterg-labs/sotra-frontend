@@ -103,7 +103,7 @@ describe("tablas ordenables en el navegador", () => {
 
   it("los repuestos con bajo stock ordenan por cantidad y por estado de stock", () => {
     const repuesto = (id: number, codigo: string, cantidad: number, estadoStock: Repuesto["estadoStock"]): Repuesto => ({
-      id, codigo, nombre: "Repuesto " + codigo, descripcion: "", marca: "", ubicacion: "", cantidad, cantidadMinima: 5, estado: "activo", estadoStock,
+      id, codigo, nombre: "Repuesto " + codigo, descripcion: "", marca: "", ubicacion: "", categoria: "", modeloCompatibilidad: "", unidadMedida: "unidad", observaciones: "", cantidad, cantidadMinima: 5, estado: "activo", estadoStock,
       cantidadReservada: 0, cantidadEntregada: 0, cantidadDisponible: cantidad,
     });
     render(<TablaRepuestosBajoStock repuestos={[repuesto(1, "B-1", 3, "bajo"), repuesto(2, "A-1", 0, "sin_stock"), repuesto(3, "C-1", 4, "bajo")]} />);

@@ -16,6 +16,7 @@ export function listarRepuestosServidor(filtros: FiltrosRepuestos) {
   if (filtros.buscar.trim() !== "") parametros.append("buscar", filtros.buscar.trim());
   if (filtros.estado !== "") parametros.append("estado", filtros.estado);
   if (filtros.ubicacion.trim() !== "") parametros.append("ubicacion", filtros.ubicacion.trim());
+  if (filtros.categoria?.trim()) parametros.append("categoria", filtros.categoria.trim());
   if (filtros.bajoStock) parametros.append("bajoStock", "true");
   if (filtros.estadoStock) parametros.append("estadoStock", filtros.estadoStock);
   if (filtros.orden) parametros.append("orden", filtros.orden);

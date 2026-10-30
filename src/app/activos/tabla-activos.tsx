@@ -20,6 +20,8 @@ const VALORES_ORDEN = {
   numSerie: (fila: Activo): ValorOrdenable => fila.numSerie,
   nombreCliente: (fila: Activo): ValorOrdenable => fila.nombreCliente ?? null,
   nombreModeloMaquina: (fila: Activo): ValorOrdenable => fila.nombreModeloMaquina ?? null,
+  nombreTipoMaquina: (fila: Activo): ValorOrdenable => fila.nombreTipoMaquina ?? null,
+  ubicacion: (fila: Activo): ValorOrdenable => fila.ubicacion ?? null,
   estado: (fila: Activo): ValorOrdenable => fila.estado === "activo",
 };
 
@@ -59,7 +61,9 @@ export function TablaActivos(props: { activos: Activo[]; filtros: FiltrosActivos
               <span className="tarjeta-listado-cabecera"><strong>{activo.nombre ?? activo.numSerie}</strong><EstadoRegistro estado={activo.estado} /></span>
               <span className="tarjeta-listado-dato"><span>Número de serie</span>{activo.numSerie}</span>
               <span className="tarjeta-listado-dato"><span>Cliente</span>{activo.nombreCliente ?? `Cliente ${activo.clienteId}`}</span>
+              <span className="tarjeta-listado-dato"><span>Tipo de máquina</span>{activo.nombreTipoMaquina ?? "—"}</span>
               <span className="tarjeta-listado-dato"><span>Modelo</span>{activo.nombreModeloMaquina ?? `Modelo ${activo.modeloMaquinaId}`}</span>
+              <span className="tarjeta-listado-dato"><span>Ubicación</span>{activo.ubicacion ?? "—"}</span>
               <span className="tarjeta-listado-ver">Ver detalle →</span>
             </Link>
           </li>
@@ -73,7 +77,9 @@ export function TablaActivos(props: { activos: Activo[]; filtros: FiltrosActivos
               {columna("nombre", "Nombre")}
               {columna("numSerie", "Número de serie")}
               {columna("nombreCliente", "Cliente")}
+              {columna("nombreTipoMaquina", "Tipo de máquina")}
               {columna("nombreModeloMaquina", "Modelo")}
+              {columna("ubicacion", "Ubicación")}
               {columna("estado", "Estado")}
               <th>Acciones</th>
             </tr>
@@ -90,7 +96,9 @@ export function TablaActivos(props: { activos: Activo[]; filtros: FiltrosActivos
                   <td><strong>{activo.nombre ?? "Sin nombre"}</strong></td>
                   <td>{activo.numSerie}</td>
                   <td>{activo.nombreCliente ?? `Cliente ${activo.clienteId}`}</td>
+                  <td>{activo.nombreTipoMaquina ?? "—"}</td>
                   <td>{activo.nombreModeloMaquina ?? `Modelo ${activo.modeloMaquinaId}`}</td>
+                  <td>{activo.ubicacion ?? "—"}</td>
                   <td><EstadoRegistro estado={activo.estado} /></td>
                   <td>
                     <div className="table-actions">

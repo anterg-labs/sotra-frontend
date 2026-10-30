@@ -35,7 +35,7 @@ function crearLineas(orden: OrdenTrabajo, repuestos: Repuesto[]): LineaRepuestoO
   return orden.repuestos.map((repuestoDeLaOrden) => ({
     repuesto: repuestos.find((repuesto) => repuesto.id === repuestoDeLaOrden.id) ?? {
       id: repuestoDeLaOrden.id, codigo: repuestoDeLaOrden.codigo, nombre: repuestoDeLaOrden.nombre, descripcion: "", marca: "",
-      ubicacion: "", cantidad: repuestoDeLaOrden.cantidad, cantidadMinima: 0, cantidadReservada: 0, cantidadEntregada: 0,
+      ubicacion: "", categoria: "", modeloCompatibilidad: "", unidadMedida: "unidad", observaciones: "", cantidad: repuestoDeLaOrden.cantidad, cantidadMinima: 0, cantidadReservada: 0, cantidadEntregada: 0,
       cantidadDisponible: 0, estado: "activo", estadoStock: "normal",
     },
     cantidad: repuestoDeLaOrden.cantidad,

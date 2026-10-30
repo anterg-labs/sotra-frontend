@@ -146,7 +146,7 @@ const orden = (id: number, extra: Record<string, unknown> = {}) => ({
 });
 /** Repuesto R3: 10 en stock y 3 reservadas (las de esta orden), o sea 7 disponibles; la orden puede pedir hasta 7 + 3 = 10. */
 const repuestoConStock = (extra: Record<string, unknown> = {}) => ({
-  id: 3, codigo: "R3", nombre: "Filtro", descripcion: "", marca: "", ubicacion: "", cantidad: 10, cantidadMinima: 2,
+  id: 3, codigo: "R3", nombre: "Filtro", descripcion: "", marca: "", ubicacion: "", categoria: "", modeloCompatibilidad: "", unidadMedida: "unidad", observaciones: "", cantidad: 10, cantidadMinima: 2,
   cantidadReservada: 3, cantidadEntregada: 0, cantidadDisponible: 7, estado: "activo", estadoStock: "normal", ...extra,
 });
 const tecnico = { id: 7, nombre: "Tomás", apellido: "Ruiz" };

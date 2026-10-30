@@ -46,7 +46,7 @@ function numeroOpcional(texto: string) {
 /** Si el catálogo no trae el repuesto de una orden, se muestra con lo que se sabe y sin margen para subir la cantidad. */
 function repuestoSinStockConocido(repuesto: OrdenTrabajo["repuestos"][number]): Repuesto {
   return {
-    id: repuesto.id, codigo: repuesto.codigo, nombre: repuesto.nombre, descripcion: "", marca: "", ubicacion: "",
+    id: repuesto.id, codigo: repuesto.codigo, nombre: repuesto.nombre, descripcion: "", marca: "", ubicacion: "", categoria: "", modeloCompatibilidad: "", unidadMedida: "unidad", observaciones: "",
     cantidad: repuesto.cantidad, cantidadMinima: 0, cantidadReservada: 0, cantidadEntregada: 0, cantidadDisponible: 0,
     estado: "activo", estadoStock: "normal",
   };

@@ -9,7 +9,7 @@ import {
 import { obtenerErroresRepuesto, obtenerErrorStockMinimo } from "./repuesto";
 
 describe("validaciones de repuestos", () => {
-  const repuesto = { codigo: "R1", nombre: "Filtro", descripcion: "", marca: "", ubicacion: "", cantidad: 1, cantidadMinima: 0 };
+  const repuesto = { codigo: "R1", nombre: "Filtro", descripcion: "", marca: "", ubicacion: "", categoria: "", modeloCompatibilidad: "", unidadMedida: "unidad", observaciones: "", cantidad: 1, cantidadMinima: 0 };
 
   it("valida cada campo con su mensaje", () => {
     expect(obtenerErroresRepuesto(repuesto)).toEqual({});
@@ -21,6 +21,10 @@ describe("validaciones de repuestos", () => {
     });
     const largos = obtenerErroresRepuesto({ ...repuesto, codigo: "a".repeat(51), nombre: "a".repeat(121), marca: "a".repeat(101), ubicacion: "a".repeat(121) });
     expect(Object.keys(largos)).toEqual(["codigo", "nombre", "marca", "ubicacion"]);
+    const nuevosLargos = obtenerErroresRepuesto({
+      ...repuesto, categoria: "a".repeat(81), modeloCompatibilidad: "a".repeat(121), unidadMedida: "a".repeat(31), observaciones: "a".repeat(2001),
+    });
+    expect(Object.keys(nuevosLargos)).toEqual(["categoria", "modeloCompatibilidad", "unidadMedida", "observaciones"]);
     expect(obtenerErroresRepuesto({ ...repuesto, codigo: "a".repeat(50), nombre: "a".repeat(120) })).toEqual({});
   });
 

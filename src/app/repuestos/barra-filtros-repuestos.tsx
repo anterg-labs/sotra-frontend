@@ -6,7 +6,7 @@ import { construirUrlRepuestos, type FiltroStock, type FiltrosUrlRepuestos } fro
 import { FiltrosAvanzados, hayFiltrosAplicados } from "@/componentes/listado/filtros-avanzados";
 
 type ValoresRepuestos = Omit<FiltrosUrlRepuestos, "pagina">;
-const VACIOS: ValoresRepuestos = { buscar: "", estado: "", ubicacion: "", stock: "" };
+const VACIOS: ValoresRepuestos = { buscar: "", estado: "", ubicacion: "", categoria: "", stock: "" };
 
 const chipsStock: { valor: FiltroStock; etiqueta: string }[] = [
   { valor: "", etiqueta: "Todos" },
@@ -27,7 +27,7 @@ function contadorDelChip(valor: FiltroStock, alertas: AlertasStock | null) {
 export function BarraFiltrosRepuestos(props: { filtros: FiltrosUrlRepuestos; alertas: AlertasStock | null }) {
   const { filtros, alertas } = props;
   const { valores, cambiar, aplicarAhora, limpiar, estaPendiente } = useFiltrosEnVivo<ValoresRepuestos>({
-    inicial: { buscar: filtros.buscar, estado: filtros.estado, ubicacion: filtros.ubicacion, stock: filtros.stock, ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden },
+    inicial: { buscar: filtros.buscar, estado: filtros.estado, ubicacion: filtros.ubicacion, categoria: filtros.categoria, stock: filtros.stock, ordenarPor: filtros.ordenarPor, direccionOrden: filtros.direccionOrden },
     construirUrl: (v) => construirUrlRepuestos({ ...v, pagina: 1 }),
   });
 
@@ -65,12 +65,21 @@ export function BarraFiltrosRepuestos(props: { filtros: FiltrosUrlRepuestos; ale
           <input
             id="buscarRepuesto"
             onChange={(evento) => cambiar({ buscar: evento.target.value }, true)}
-            placeholder="Código, nombre, marca o descripción"
+            placeholder="Código, nombre, marca, categoría o descripción"
             type="text"
             value={valores.buscar}
           />
         </div>
         <FiltrosAvanzados alLimpiar={() => limpiar(VACIOS)} hayFiltros={hayFiltrosAplicados(valores)}>
+          <div className="form-field">
+            <label htmlFor="categoriaRepuestoFiltro">Categoría</label>
+            <input
+              id="categoriaRepuestoFiltro"
+              onChange={(evento) => cambiar({ categoria: evento.target.value }, true)}
+              type="text"
+              value={valores.categoria}
+            />
+          </div>
           <div className="form-field">
             <label htmlFor="ubicacionRepuestoFiltro">Ubicación</label>
             <input

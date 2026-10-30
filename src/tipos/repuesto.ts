@@ -15,6 +15,13 @@ export type Repuesto = {
   descripcion: string;
   marca: string;
   ubicacion: string;
+  /** Categoría o tipo; vacío si no se cargó. */
+  categoria: string;
+  /** Modelo de máquina o compatibilidad; vacío si no se cargó. */
+  modeloCompatibilidad: string;
+  /** Unidad de medida (por ejemplo `unidad`, `litro` o `metro`). */
+  unidadMedida: string;
+  observaciones: string;
   cantidad: number;
   cantidadMinima: number;
   /** Reservadas por órdenes que todavía no empezaron: siguen en la empresa pero no se pueden asignar a otra orden. */
@@ -33,6 +40,11 @@ export type CrearRepuestoInput = {
   descripcion: string | null;
   marca: string | null;
   ubicacion: string | null;
+  categoria: string | null;
+  modeloCompatibilidad: string | null;
+  /** Si va vacía, la API la guarda como `unidad`. */
+  unidadMedida: string | null;
+  observaciones: string | null;
   cantidad: number;
   cantidadMinima: number;
 };
@@ -43,6 +55,7 @@ export type FiltrosRepuestos = {
   buscar: string;
   estado: string;
   ubicacion: string;
+  categoria?: string;
   bajoStock: boolean;
   estadoStock?: EstadoStock | "";
   orden?: "criticidad";

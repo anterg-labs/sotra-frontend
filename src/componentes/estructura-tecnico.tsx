@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { IconoActivos, IconoClientes, IconoConfiguracion, IconoDocumentacion, IconoOrdenesTrabajo, IconoRepuestos } from "@/componentes/iconos";
 import { BotonTerminos } from "@/componentes/terminos/modal-terminos";
 import { IndicadorNavegacion } from "@/componentes/indicador-navegacion";
+import { CampanaNotificaciones } from "@/componentes/campana-notificaciones";
 import { MenuUsuario } from "@/componentes/menu-usuario";
 import { useUsuarioEnSesion } from "@/componentes/sesion/contexto-sesion";
 import { esSoloTecnico, tienePermiso, type Permiso } from "@/seguridad/permisos";
@@ -47,6 +48,7 @@ export function EstructuraTecnico({ children }: { children: React.ReactNode }) {
             <IndicadorNavegacion destino="Escritorio" />
           </Link>
         )}
+        <CampanaNotificaciones rutaDeLaOrden={(ordenId) => "/tecnico/" + ordenId} />
         <MenuUsuario alCerrarSesion={cerrarSesion} usuario={usuario} />
       </header>
       <main className="tecnico-contenido">{children}</main>

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { cerrarSesion } from "@/servicios/servicio-sesion";
+import { CampanaNotificaciones } from "@/componentes/campana-notificaciones";
 import { MenuUsuario } from "@/componentes/menu-usuario";
 import { useUsuarioEnSesion } from "@/componentes/sesion/contexto-sesion";
 import { esSoloTecnico, tienePermiso, type Permiso } from "@/seguridad/permisos";
@@ -371,6 +372,7 @@ function EstructuraEscritorio(props: EstructuraAplicacionProps) {
               Vista móvil
             </a>
           ) : null}
+          <CampanaNotificaciones rutaDeLaOrden={(ordenId) => "/ordenes-trabajo/" + ordenId} />
           <MenuUsuario usuario={usuarioEnSesion} alCerrarSesion={salirDeLaSesion} />
         </header>
         <div className="app-contenido">{children}</div>

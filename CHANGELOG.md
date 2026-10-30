@@ -1,4 +1,9 @@
 # CHANGELOG
+
+## Version 1.0.104 (2026-10-28)
+
+- Notificaciones: campana en el encabezado con la cantidad de avisos sin leer y la bandeja de los últimos; al abrir un aviso se marca como leído y lleva a su orden, y se pueden marcar todos.
+
 ## Version 1.0.103 (2026-10-28)
 
 - PWA: el manifiesto declara su identidad (`id`) y categorías, con una prueba de que cumple lo que Chrome pide para ofrecer la instalación.

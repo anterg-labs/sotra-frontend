@@ -45,7 +45,7 @@ describe("servicio-reportes", () => {
 
     expect(indicadores.totalOrdenes).toBe(3);
     expect(indicadores.activosConMasIntervenciones[0].nombre).toBe("Excavadora 01");
-    expect(fetch).toHaveBeenCalledWith("/api/v1/reportes/indicadores", { cache: "no-store" });
+    expect(fetch).toHaveBeenCalledWith("/api/v1/reportes/indicadores", expect.objectContaining({ cache: "no-store" }));
   });
 
   it("envía solo los filtros completados", async () => {
@@ -62,7 +62,7 @@ describe("servicio-reportes", () => {
 
     expect(fetch).toHaveBeenCalledWith(
       "/api/v1/reportes/indicadores?fechaDesde=2026-01-01&fechaHasta=2026-12-31&clienteId=4&estado=en_progreso&tipo=preventivo",
-      { cache: "no-store" },
+      expect.objectContaining({ cache: "no-store" }),
     );
   });
 

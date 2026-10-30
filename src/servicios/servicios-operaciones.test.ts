@@ -83,9 +83,9 @@ describe("solicitudes-http", () => {
     expect(error).toMatchObject({ message: "Falla genérica", estadoHttp: 502 });
   });
 
-  it("propaga los errores de red sin enmascararlos", async () => {
+  it("convierte los errores de red en un error de API no disponible con el mensaje de la operación", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
-    await expect(leerTodasLasPaginas("/x", "Falla")).rejects.toThrow("Failed to fetch");
+    await expect(leerTodasLasPaginas("/x", "Falla")).rejects.toMatchObject({ message: "Falla", codigo: "API_NO_DISPONIBLE", estadoHttp: 503 });
   });
 });
 

@@ -42,7 +42,7 @@ describe("servicio-evidencias", () => {
     const evidencias = await listarEvidencias(7);
 
     expect(evidencias[0].observacion).toBe("Se cambió el filtro");
-    expect(fetch).toHaveBeenCalledWith("/api/v1/ordenes-trabajo/7/evidencias", { cache: "no-store" });
+    expect(fetch).toHaveBeenCalledWith("/api/v1/ordenes-trabajo/7/evidencias", expect.objectContaining({ cache: "no-store" }));
   });
 
   it("no registra una observación vacía", async () => {

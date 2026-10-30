@@ -1,4 +1,9 @@
 # CHANGELOG
+## Version 1.0.102 (2026-10-28)
+
+- Conexión: las llamadas desde el navegador tienen un tiempo máximo (más largo para subir archivos) y un corte de red se muestra con un mensaje claro en lugar de «Failed to fetch».
+- CI: el flujo de QA ejecuta las pruebas con cobertura; se quita el paso de integración que nunca corría porque ese script no existe.
+
 ## Version 1.0.101 (2026-10-28)
 
 - Reportes: los filtros de estado y tipo de mantenimiento aclaran que aplican al resumen y a las descargas; el resto de las secciones usa fecha, cliente y activo.

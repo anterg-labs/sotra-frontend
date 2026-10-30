@@ -80,7 +80,7 @@ describe("servicio-ordenes-trabajo", () => {
     expect(respuesta.elementos).toHaveLength(1);
     expect(respuesta.elementos[0].descripcion).toBe("Cambiar aceite del motor");
     expect(respuesta.totalPaginas).toBe(1);
-    expect(fetch).toHaveBeenCalledWith("/api/v1/ordenes-trabajo?pagina=1", { cache: "no-store" });
+    expect(fetch).toHaveBeenCalledWith("/api/v1/ordenes-trabajo?pagina=1", expect.objectContaining({ cache: "no-store" }));
   });
 
   it("envía la búsqueda y los filtros completados", async () => {
@@ -102,7 +102,7 @@ describe("servicio-ordenes-trabajo", () => {
 
     expect(fetch).toHaveBeenCalledWith(
       "/api/v1/ordenes-trabajo?buscar=aceite&clienteId=1&estado=pendiente&prioridad=alta&pagina=2",
-      { cache: "no-store" },
+      expect.objectContaining({ cache: "no-store" }),
     );
   });
 
@@ -160,11 +160,11 @@ describe("servicio-ordenes-trabajo", () => {
   it("envía el cambio de estado con su motivo", async () => {
     await cambiarEstadoOrdenTrabajo(1, "pausado", " Falta de repuestos ", true);
 
-    expect(fetch).toHaveBeenCalledWith("/api/v1/ordenes-trabajo/1/estado", {
+    expect(fetch).toHaveBeenCalledWith("/api/v1/ordenes-trabajo/1/estado", expect.objectContaining({
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ estado: "pausado", motivo: "Falta de repuestos" }),
-    });
+    }));
   });
 
   it("no asigna técnico si no se eligió ninguno", async () => {
@@ -174,11 +174,11 @@ describe("servicio-ordenes-trabajo", () => {
   it("envía la asignación del técnico", async () => {
     await asignarTecnicoOrdenTrabajo(1, "25");
 
-    expect(fetch).toHaveBeenCalledWith("/api/v1/ordenes-trabajo/1/tecnico", {
+    expect(fetch).toHaveBeenCalledWith("/api/v1/ordenes-trabajo/1/tecnico", expect.objectContaining({
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ tecnicoId: 25 }),
-    });
+    }));
   });
 
   it("muestra la fecha prevista con formato día, mes y año", () => {

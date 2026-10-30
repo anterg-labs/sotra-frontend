@@ -77,9 +77,27 @@ export function volverAIniciarSesion() {
   window.location.assign(rutaDeInicioDeSesion(window.location.pathname + window.location.search));
 }
 
+export const TIEMPO_ESPERA_PEDIDO_MS = 30_000;
+/** Las subidas de archivos (hasta decenas de MB) necesitan más margen que una consulta. */
+export const TIEMPO_ESPERA_SUBIDA_MS = 120_000;
+
+/**
+ * Pedido a la API desde el navegador, con tiempo de espera máximo. Un corte de red o una espera agotada llegan como
+ * `ErrorDeApi` (`API_NO_DISPONIBLE`), igual que en el servidor; si quien llama cancela con su propia señal, la
+ * cancelación se propaga tal cual para que pueda ignorarla.
+ */
 export async function enviarPedidoApi(ruta: string, opciones: RequestInit, mensajeError: string) {
   const urlBaseApi = obtenerUrlBaseApi();
-  const respuesta = await fetch(urlBaseApi + ruta, opciones);
+  const limite = AbortSignal.timeout(opciones.body instanceof FormData ? TIEMPO_ESPERA_SUBIDA_MS : TIEMPO_ESPERA_PEDIDO_MS);
+  const senal = opciones.signal ? AbortSignal.any([opciones.signal, limite]) : limite;
+
+  let respuesta: Response;
+  try {
+    respuesta = await fetch(urlBaseApi + ruta, { ...opciones, signal: senal });
+  } catch (error) {
+    if (opciones.signal?.aborted) throw error;
+    throw new ErrorDeApi(mensajeError, "API_NO_DISPONIBLE", 503);
+  }
 
   if (!respuesta.ok) {
     if (respuesta.status === 401) volverAIniciarSesion();

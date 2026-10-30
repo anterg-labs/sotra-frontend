@@ -45,16 +45,13 @@ jobs:
       #   env:
       #     CI: true
 
-      - name: Generar cobertura si está configurada
-        run: npm run test:coverage --if-present
+      # Vitest ejecuta las pruebas de componentes, páginas y servicios (con las dependencias simuladas) y mide la cobertura.
+      # Las pruebas de extremo a extremo (`npm run test:e2e`, Playwright) necesitan la pila completa con Keycloak y se
+      # ejecutan en local; este flujo no las corre.
+      - name: Ejecutar pruebas con cobertura
+        run: npm run test:coverage
         env:
           CI: true
-
-      - name: Ejecutar pruebas de integración si están configuradas
-        run: npm run test:integration --if-present
-        env:
-          CI: true
-          API_URL: http://localhost:5000
 
       - name: Compilar frontend
         run: npm run build

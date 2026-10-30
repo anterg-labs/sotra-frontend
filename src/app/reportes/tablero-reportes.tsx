@@ -109,7 +109,7 @@ export function TableroReportes(props: PropiedadesTablero) {
 
         <div className="form-field">
           <label htmlFor="estado">Estado</label>
-          <select id="estado" onChange={(evento) => cambiar({ estado: evento.target.value })} value={estado}>
+          <select aria-describedby="ayuda-filtros-resumen" id="estado" onChange={(evento) => cambiar({ estado: evento.target.value })} value={estado}>
             <option value="">Todos los estados</option>
             {estados.map((estado) => (
               <option key={estado.valor} value={estado.valor}>{estado.etiqueta}</option>
@@ -119,7 +119,7 @@ export function TableroReportes(props: PropiedadesTablero) {
 
         <div className="form-field">
           <label htmlFor="tipo">Tipo de mantenimiento</label>
-          <select id="tipo" onChange={(evento) => cambiar({ tipo: evento.target.value })} value={tipo}>
+          <select aria-describedby="ayuda-filtros-resumen" id="tipo" onChange={(evento) => cambiar({ tipo: evento.target.value })} value={tipo}>
             <option value="">Todos los tipos</option>
             <option value="preventivo">Preventivo</option>
             <option value="correctivo">Correctivo</option>
@@ -133,6 +133,9 @@ export function TableroReportes(props: PropiedadesTablero) {
             {estaPendiente ? "Calculando indicadores…" : ""}
           </span>
         </div>
+        <p className="field-hint" id="ayuda-filtros-resumen">
+          Estado y tipo de mantenimiento filtran el resumen y las descargas; el resto de las secciones usa fecha, cliente y activo.
+        </p>
       </form>
 
       {!props.desactivados?.includes("descarga") && tiposVisibles.length > 0 && <details className="panel-descarga-plegable mb-6">

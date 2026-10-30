@@ -208,6 +208,13 @@ describe("tablero de reportes (isla)", () => {
     expect(screen.getByLabelText("Estado")).toHaveValue("");
   });
 
+  it("aclara que estado y tipo de mantenimiento filtran solo el resumen y las descargas", () => {
+    render(tablero());
+    const ayuda = screen.getByText(/Estado y tipo de mantenimiento filtran el resumen y las descargas/);
+    expect(screen.getByLabelText("Estado")).toHaveAccessibleDescription(ayuda.textContent ?? "");
+    expect(screen.getByLabelText("Tipo de mantenimiento")).toHaveAccessibleDescription(ayuda.textContent ?? "");
+  });
+
   it("al elegir un cliente solo ofrece sus activos y descarta el activo previo", () => {
     render(tablero());
     fireEvent.focus(screen.getByRole("combobox", { name: "Activo" }));

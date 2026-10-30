@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    // La identidad de la app instalada no cambia aunque se mueva `start_url`.
+    id: "/tecnico",
     name: "SOTRA - Seguimiento de órdenes de trabajo",
     short_name: "SOTRA",
     description: "Órdenes de trabajo, evidencias y consulta técnica de CVM para el trabajo en campo.",
@@ -10,6 +12,7 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     orientation: "portrait",
     lang: "es",
+    categories: ["business", "productivity"],
     background_color: "#ffffff",
     theme_color: "#f4f7fb",
     icons: [

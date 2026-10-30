@@ -984,6 +984,11 @@ label:has(input:disabled) {
   justify-self: end;
 }
 
+.barra-filtros-reportes > .field-hint {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
 /* Descarga de reportes: a todo el ancho, con los campos a la izquierda y los botones a la derecha. */
 .panel-descarga {
   display: flex;

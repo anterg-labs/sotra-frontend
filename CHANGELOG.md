@@ -1,4 +1,8 @@
 # CHANGELOG
+## Version 1.0.103 (2026-10-28)
+
+- PWA: el manifiesto declara su identidad (`id`) y categorías, con una prueba de que cumple lo que Chrome pide para ofrecer la instalación.
+
 ## Version 1.0.102 (2026-10-28)
 
 - Conexión: las llamadas desde el navegador tienen un tiempo máximo (más largo para subir archivos) y un corte de red se muestra con un mensaje claro en lugar de «Failed to fetch».

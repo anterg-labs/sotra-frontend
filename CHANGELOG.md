@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.105 (2026-10-30)
+
+- Documentación: el README explica cómo funciona la campana de notificaciones y que sin sesión de Keycloak la bandeja queda vacía.
+
 ## Version 1.0.104 (2026-10-28)
 
 - Notificaciones: campana en el encabezado con la cantidad de avisos sin leer y la bandeja de los últimos; al abrir un aviso se marca como leído y lleva a su orden, y se pueden marcar todos.

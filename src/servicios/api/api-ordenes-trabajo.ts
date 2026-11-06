@@ -74,10 +74,25 @@ export async function apiActualizarOrdenTrabajo(
   return ordenActualizada as OrdenTrabajo;
 }
 
-export async function apiSolicitarSugerenciaOrdenTrabajo(datosOrden: SolicitarSugerenciaInput) {
+const MENSAJE_SIN_DOCUMENTACION = "El sistema no encontró información suficiente en la documentación técnica para esta tarea.";
+const MENSAJE_SUGERENCIA_FALLIDA = "No se pudo obtener la sugerencia para la orden de trabajo.";
+
+/** Una línea de la respuesta: el avance, la sugerencia o el error (el estado HTTP ya se envió con la primera línea). */
+type LineaDeSugerencia = {
+  etapa?: string;
+  sugerencia?: string;
+  modo?: SugerenciaOrdenTrabajo["modo"];
+  error?: { estado?: number };
+};
+
+/** Pide la sugerencia y avisa cada etapa a medida que la API la empieza. */
+export async function apiSolicitarSugerenciaOrdenTrabajo(
+  datosOrden: SolicitarSugerenciaInput,
+  alAvanzar?: (etapa: string) => void,
+) {
   const urlBaseApi = obtenerUrlBaseApi();
   const opciones = crearOpcionesJson("POST", datosOrden);
-  const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo/sugerencia", opciones);
+  const respuesta = await fetch(urlBaseApi + "/api/v1/ordenes-trabajo/sugerencia/etapas", opciones);
   if (respuesta.status === 401) {
     volverAIniciarSesion();
     throw new Error(MENSAJE_SESION_VENCIDA);
@@ -85,15 +100,30 @@ export async function apiSolicitarSugerenciaOrdenTrabajo(datosOrden: SolicitarSu
   if (respuesta.status === 403) {
     throw new Error(MENSAJE_SIN_PERMISO);
   }
-  if (respuesta.status === 422) {
-    throw new Error("El sistema no encontró información suficiente en la documentación técnica para esta tarea.");
-  }
-  if (!respuesta.ok) {
-    throw new Error("No se pudo obtener la sugerencia para la orden de trabajo.");
+  if (!respuesta.ok || respuesta.body === null) {
+    throw new Error(MENSAJE_SUGERENCIA_FALLIDA);
   }
 
-  const sugerenciaObtenida = await respuesta.json();
-  return sugerenciaObtenida as SugerenciaOrdenTrabajo;
+  const lector = respuesta.body.pipeThrough(new TextDecoderStream()).getReader();
+  let pendiente = "";
+  while (true) {
+    const { done, value } = await lector.read();
+    pendiente += value ?? "";
+    const lineas = pendiente.split("\n");
+    pendiente = done ? "" : (lineas.pop() ?? "");
+    for (const linea of lineas) {
+      if (linea.trim() === "") continue;
+      const datos = JSON.parse(linea) as LineaDeSugerencia;
+      if (datos.error) {
+        throw new Error(datos.error.estado === 422 ? MENSAJE_SIN_DOCUMENTACION : MENSAJE_SUGERENCIA_FALLIDA);
+      }
+      if (datos.sugerencia !== undefined) {
+        return { sugerencia: datos.sugerencia, modo: datos.modo } as SugerenciaOrdenTrabajo;
+      }
+      if (datos.etapa) alAvanzar?.(datos.etapa);
+    }
+    if (done) throw new Error(MENSAJE_SUGERENCIA_FALLIDA);
+  }
 }
 
 /** Causas de falla activas para clasificar una correctiva. */

@@ -14,9 +14,18 @@ type PropiedadesSugerenciasOrdenTrabajo = {
   alCambiarSugerencias: (sugerencias: string[]) => void;
 };
 
+/** Lo que ve la persona mientras espera. Una etapa desconocida se ignora: la API puede sumar otras. */
+const TEXTOS_DE_ETAPAS: Record<string, string> = {
+  buscando: "Buscando en la documentación técnica",
+  eligiendo: "Eligiendo la información más adecuada",
+  ampliando: "Ampliando la búsqueda",
+  redactando: "Preparando la sugerencia",
+};
+
 export function SugerenciasOrdenTrabajo(props: PropiedadesSugerenciasOrdenTrabajo) {
   const [cantidadSolicitudes, setCantidadSolicitudes] = useState(props.sugerencias.length);
   const [estaSolicitandoSugerencia, setEstaSolicitandoSugerencia] = useState(false);
+  const [etapas, setEtapas] = useState<string[]>([]);
   const [errorSugerencia, setErrorSugerencia] = useState("");
   const [asistenteNoDisponible, setAsistenteNoDisponible] = useState(false);
   const referenciaError = useRef<HTMLParagraphElement>(null);
@@ -28,7 +37,14 @@ export function SugerenciasOrdenTrabajo(props: PropiedadesSugerenciasOrdenTrabaj
     }
   }
 
+  function agregarEtapa(etapa: string) {
+    if (!(etapa in TEXTOS_DE_ETAPAS)) return;
+    setEtapas((anteriores) => (anteriores.includes(etapa) ? anteriores : [...anteriores, etapa]));
+  }
+
   async function obtenerTextoSugerencia() {
+    // La primera etapa se muestra enseguida, sin esperar la primera respuesta de la API.
+    setEtapas(["buscando"]);
     const datosSugerencia: SolicitarSugerenciaInput = {
       descripcion: props.descripcion,
       numero: cantidadSolicitudes + 1,
@@ -36,7 +52,7 @@ export function SugerenciasOrdenTrabajo(props: PropiedadesSugerenciasOrdenTrabaj
       activoId: props.activoId === "" ? null : Number(props.activoId),
     };
 
-    const sugerenciaObtenida = await solicitarSugerenciaOrdenTrabajo(datosSugerencia);
+    const sugerenciaObtenida = await solicitarSugerenciaOrdenTrabajo(datosSugerencia, agregarEtapa);
     setCantidadSolicitudes(cantidadSolicitudes + 1);
     setAsistenteNoDisponible(sugerenciaObtenida.sinIa);
     return sugerenciaObtenida.texto;
@@ -123,15 +139,6 @@ export function SugerenciasOrdenTrabajo(props: PropiedadesSugerenciasOrdenTrabaj
     textoBotonSugerencia = "Solicitando…";
   }
 
-  let mensajeBuscandoSugerencia = null;
-  if (estaSolicitandoSugerencia) {
-    mensajeBuscandoSugerencia = (
-      <p className="empty-state">
-        El sistema está buscando la sugerencia en la documentación técnica. Puede tardar unos segundos…
-      </p>
-    );
-  }
-
   return (
     <>
       <div className="form-field form-field-full">
@@ -146,7 +153,24 @@ export function SugerenciasOrdenTrabajo(props: PropiedadesSugerenciasOrdenTrabaj
             {textoBotonSugerencia}
           </button>
         </div>
-        {mensajeBuscandoSugerencia}
+        {estaSolicitandoSugerencia ? (
+          <ul aria-live="polite" className="etapas-sugerencia" role="status">
+            {etapas.map((etapa, indice) => {
+              const enCurso = indice === etapas.length - 1;
+              return (
+                <li className={enCurso ? "etapa-sugerencia-en-curso" : undefined} key={etapa}>
+                  {enCurso ? (
+                    <span aria-hidden="true" className="indicador-carga" />
+                  ) : (
+                    <span aria-hidden="true" className="etapa-sugerencia-lista">✓</span>
+                  )}
+                  {TEXTOS_DE_ETAPAS[etapa]}
+                  {enCurso ? "…" : ""}
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
         {asistenteNoDisponible ? (
           <p className="aviso-sin-ia" role="status">
             El asistente de IA no está disponible en este momento. Se muestra el texto original del manual, sin resumir.

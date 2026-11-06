@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Version 1.0.106 (2026-11-06)
+
+- Órdenes: mientras se genera una sugerencia, el formulario muestra en lenguaje simple qué etapa está en curso y cuáles terminaron. Usa la ruta nueva `POST /api/v1/ordenes-trabajo/sugerencia/etapas` de la API (backend 1.0.119 o posterior).
+
 ## Version 1.0.105 (2026-10-30)
 
 - Documentación: el README explica cómo funciona la campana de notificaciones y que sin sesión de Keycloak la bandeja queda vacía.

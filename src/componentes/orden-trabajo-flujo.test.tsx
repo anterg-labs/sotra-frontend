@@ -251,9 +251,9 @@ describe("SugerenciasOrdenTrabajo", () => {
     const alCambiar = dibujar(["Previa"]);
     fireEvent.click(screen.getByRole("button", { name: "Solicitar sugerencia" }));
     expect(screen.getByRole("button", { name: "Solicitando…" })).toBeDisabled();
-    expect(screen.getByText(/buscando la sugerencia en la documentación técnica/)).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Buscando en la documentación técnica…");
     await waitFor(() => expect(alCambiar).toHaveBeenCalledWith(["Previa", "Revisar sellos"]));
-    expect(s.solicitarSugerenciaOrdenTrabajo).toHaveBeenCalledWith({ descripcion: "Fuga de aceite", numero: 2, sesion: "sesion-1", activoId: 7 });
+    expect(s.solicitarSugerenciaOrdenTrabajo).toHaveBeenCalledWith({ descripcion: "Fuga de aceite", numero: 2, sesion: "sesion-1", activoId: 7 }, expect.any(Function));
     expect(JSON.parse(localStorage.getItem("clave") ?? "[]")).toEqual(["Previa", "Revisar sellos"]);
   });
 
@@ -302,7 +302,7 @@ describe("SugerenciasOrdenTrabajo", () => {
     fireEvent.click(screen.getByRole("button", { name: "Solicitar sugerencia" }));
     await waitFor(() => expect(alCambiar).toHaveBeenCalledWith(["X"]));
     expect(localStorage.length).toBe(0);
-    expect(s.solicitarSugerenciaOrdenTrabajo).toHaveBeenCalledWith({ descripcion: "d", numero: 1, sesion: "s", activoId: null });
+    expect(s.solicitarSugerenciaOrdenTrabajo).toHaveBeenCalledWith({ descripcion: "d", numero: 1, sesion: "s", activoId: null }, expect.any(Function));
   });
 });
 

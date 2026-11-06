@@ -1776,6 +1776,11 @@ body:has(.navegacion-pendiente) .tecnico-contenido {
 .carga-pagina-estado p { margin: 0; }
 @keyframes giro-carga { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .indicador-carga { animation: none; } }
+/* Etapas que se muestran mientras se genera una sugerencia. */
+.etapas-sugerencia { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; color: var(--texto-tenue); font-size: 13px; }
+.etapas-sugerencia li { display: flex; align-items: center; gap: 10px; }
+.etapa-sugerencia-en-curso { color: var(--texto); font-weight: 600; }
+.etapa-sugerencia-lista { flex: 0 0 18px; color: var(--acento); font-weight: 700; text-align: center; }
 .usuario-menu { position: relative; margin-left: auto; min-width: 0; }
 .usuario-menu-boton { display: flex; align-items: center; gap: 10px; max-width: 280px; min-height: 44px; padding: 5px 10px 5px 5px; border: 1px solid var(--borde); border-radius: 28px; background: var(--superficie); color: var(--texto); }
 .usuario-menu-boton:hover, .usuario-menu-boton[aria-expanded="true"] { background: var(--superficie-suave); border-color: var(--borde-fuerte); }

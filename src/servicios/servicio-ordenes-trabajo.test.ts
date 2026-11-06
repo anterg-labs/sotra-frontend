@@ -203,7 +203,7 @@ describe("servicio-ordenes-trabajo", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => {
-        return new Response(JSON.stringify({ codigo: "SIN_CONTEXTO_TECNICO" }), { status: 422 });
+        return new Response(JSON.stringify({ error: { estado: 422, codigo: "SIN_CONTEXTO_TECNICO" } }), { status: 200 });
       }),
     );
 

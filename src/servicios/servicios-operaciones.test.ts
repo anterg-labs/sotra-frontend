@@ -344,9 +344,9 @@ describe("servicio-ordenes-trabajo", () => {
     const { llamadas } = simularFetch(() => ({ cuerpo: { sugerencia: "Revisar sellos" } }));
     await expect(solicitarSugerenciaOrdenTrabajo({ descripcion: " ", numero: 1, sesion: "s" })).rejects.toThrow("Escribí la descripción");
     expect(await solicitarSugerenciaOrdenTrabajo({ descripcion: "Fuga", numero: 1, sesion: "s" })).toEqual({ texto: "Revisar sellos", sinIa: false });
-    expect(llamadas[0]).toMatchObject({ metodo: "POST", url: "/api/v1/ordenes-trabajo/sugerencia" });
+    expect(llamadas[0]).toMatchObject({ metodo: "POST", url: "/api/v1/ordenes-trabajo/sugerencia/etapas" });
 
-    simularFetch(() => ({ estado: 422, cuerpo: {} }));
+    simularFetch(() => ({ cuerpo: { error: { estado: 422 } } }));
     await expect(solicitarSugerenciaOrdenTrabajo({ descripcion: "Fuga", numero: 1, sesion: "s" })).rejects.toThrow("información suficiente");
     simularFetch(() => ({ estado: 503, cuerpo: {} }));
     await expect(solicitarSugerenciaOrdenTrabajo({ descripcion: "Fuga", numero: 1, sesion: "s" })).rejects.toThrow("No se pudo obtener la sugerencia");

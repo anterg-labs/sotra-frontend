@@ -166,12 +166,12 @@ export async function actualizarRepuestosOrdenTrabajo(ordenTrabajoId: number, re
   return apiActualizarRepuestosOrdenTrabajo(ordenTrabajoId, repuestos);
 }
 
-export async function solicitarSugerenciaOrdenTrabajo(input: SolicitarSugerenciaInput) {
+export async function solicitarSugerenciaOrdenTrabajo(input: SolicitarSugerenciaInput, alAvanzar?: (etapa: string) => void) {
   if (!input.descripcion.trim()) {
     throw new Error("Escribí la descripción de la tarea para pedir la sugerencia.");
   }
 
-  const respuesta = await apiSolicitarSugerenciaOrdenTrabajo(input);
+  const respuesta = await apiSolicitarSugerenciaOrdenTrabajo(input, alAvanzar);
   const sugerenciaObtenida: SugerenciaObtenida = {
     texto: respuesta.sugerencia,
     sinIa: respuesta.modo === "sin_ia",

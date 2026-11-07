@@ -77,7 +77,7 @@ export async function apiActualizarOrdenTrabajo(
 const MENSAJE_SIN_DOCUMENTACION = "El sistema no encontró información suficiente en la documentación técnica para esta tarea.";
 const MENSAJE_SUGERENCIA_FALLIDA = "No se pudo obtener la sugerencia para la orden de trabajo.";
 
-/** Una línea de la respuesta: el avance, la sugerencia o el error (el estado HTTP ya se envió con la primera línea). */
+/** Un evento de la respuesta: el avance, la sugerencia o el error (el estado HTTP ya se envió con el primer evento). */
 type LineaDeSugerencia = {
   etapa?: string;
   sugerencia?: string;
@@ -85,7 +85,10 @@ type LineaDeSugerencia = {
   error?: { estado?: number };
 };
 
-/** Pide la sugerencia y avisa cada etapa a medida que la API la empieza. */
+/**
+ * Pide la sugerencia y avisa cada etapa a medida que la API la empieza. La API responde eventos del servidor
+ * (`data: {...}` y una línea en blanco), el formato que Cloudflare reenvía sin juntar las etapas.
+ */
 export async function apiSolicitarSugerenciaOrdenTrabajo(
   datosOrden: SolicitarSugerenciaInput,
   alAvanzar?: (etapa: string) => void,
@@ -112,8 +115,9 @@ export async function apiSolicitarSugerenciaOrdenTrabajo(
     const lineas = pendiente.split("\n");
     pendiente = done ? "" : (lineas.pop() ?? "");
     for (const linea of lineas) {
-      if (linea.trim() === "") continue;
-      const datos = JSON.parse(linea) as LineaDeSugerencia;
+      // Solo las líneas "data:" traen datos; las vacías cierran el evento y las demás (comentarios) se ignoran.
+      if (!linea.startsWith("data:")) continue;
+      const datos = JSON.parse(linea.slice("data:".length)) as LineaDeSugerencia;
       if (datos.error) {
         throw new Error(datos.error.estado === 422 ? MENSAJE_SIN_DOCUMENTACION : MENSAJE_SUGERENCIA_FALLIDA);
       }

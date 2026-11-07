@@ -25,6 +25,24 @@ function dibujar(valor = "", buscarOpciones?: (consulta: string) => Promise<type
 }
 
 describe("Combobox", () => {
+  it("no despliega la lista con el foco automático de un modal, sí al hacer clic", () => {
+    dibujar();
+    const entrada = screen.getByRole("combobox", { name: "Activo" });
+    entrada.setAttribute("data-foco-inicial", "");
+    fireEvent.focus(entrada);
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    expect(entrada).not.toHaveAttribute("data-foco-inicial");
+
+    fireEvent.click(entrada);
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+  });
+
+  it("con el foco de la persona despliega la lista como siempre", () => {
+    dibujar();
+    fireEvent.focus(screen.getByRole("combobox", { name: "Activo" }));
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+  });
+
   it("no selecciona opciones locales con Enter mientras espera la búsqueda remota", async () => {
     const buscarOpciones = vi.fn().mockResolvedValue([{ valor: "4", etiqueta: "Álamo remoto" }]);
     const alCambiar = dibujar("", buscarOpciones);

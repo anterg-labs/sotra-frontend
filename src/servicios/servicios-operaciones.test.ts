@@ -341,12 +341,18 @@ describe("servicio-ordenes-trabajo", () => {
   });
 
   it("solicita sugerencias: valida, traduce 422 y 5xx, y devuelve el texto", async () => {
-    const { llamadas } = simularFetch(() => ({ cuerpo: { sugerencia: "Revisar sellos" } }));
+    // La API responde eventos del servidor: "data: {...}" y una línea en blanco.
+    const responderEvento = (datos: object) => {
+      const simulado = vi.fn(async () => new Response("data: " + JSON.stringify(datos) + "\n\n", { status: 200 }));
+      vi.stubGlobal("fetch", simulado);
+      return simulado;
+    };
+    const simulado = responderEvento({ sugerencia: "Revisar sellos" });
     await expect(solicitarSugerenciaOrdenTrabajo({ descripcion: " ", numero: 1, sesion: "s" })).rejects.toThrow("Escribí la descripción");
     expect(await solicitarSugerenciaOrdenTrabajo({ descripcion: "Fuga", numero: 1, sesion: "s" })).toEqual({ texto: "Revisar sellos", sinIa: false });
-    expect(llamadas[0]).toMatchObject({ metodo: "POST", url: "/api/v1/ordenes-trabajo/sugerencia/etapas" });
+    expect(simulado).toHaveBeenCalledWith("/api/v1/ordenes-trabajo/sugerencia/etapas", expect.objectContaining({ method: "POST" }));
 
-    simularFetch(() => ({ cuerpo: { error: { estado: 422 } } }));
+    responderEvento({ error: { estado: 422 } });
     await expect(solicitarSugerenciaOrdenTrabajo({ descripcion: "Fuga", numero: 1, sesion: "s" })).rejects.toThrow("información suficiente");
     simularFetch(() => ({ estado: 503, cuerpo: {} }));
     await expect(solicitarSugerenciaOrdenTrabajo({ descripcion: "Fuga", numero: 1, sesion: "s" })).rejects.toThrow("No se pudo obtener la sugerencia");

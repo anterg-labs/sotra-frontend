@@ -5,7 +5,7 @@ import { obtenerTokenAcceso } from "@/servicios/servidor/token-acceso";
 /** Encabezados del navegador que la API necesita; el resto (cookies de sesión incluidas) no sale de Next. */
 const ENCABEZADOS_DEL_PEDIDO = ["accept", "accept-language", "content-type", "if-match"];
 /** Encabezados de la API que el navegador necesita (por ejemplo, el nombre de la descarga). */
-const ENCABEZADOS_DE_LA_RESPUESTA = ["content-type", "content-disposition", "etag", "cache-control"];
+const ENCABEZADOS_DE_LA_RESPUESTA = ["content-type", "content-disposition", "etag", "cache-control", "x-accel-buffering"];
 
 type Contexto = { params: Promise<{ ruta: string[] }> };
 

@@ -66,7 +66,7 @@ describe("401 y 403 en los pedidos del navegador", () => {
   it("la sugerencia de IA va por el mismo origen y trata 401 y 403 igual", async () => {
     const { llamadas } = simularFetch(() => ({ estado: 403 }));
     await expect(apiSolicitarSugerenciaOrdenTrabajo({ descripcion: "x", numero: 1, sesion: "s" })).rejects.toThrow("No tenés permiso para realizar esta acción.");
-    expect(llamadas[0].url).toBe("/api/v1/ordenes-trabajo/sugerencia");
+    expect(llamadas[0].url).toBe("/api/v1/ordenes-trabajo/sugerencia/etapas");
 
     simularFetch(() => ({ estado: 401 }));
     await expect(apiSolicitarSugerenciaOrdenTrabajo({ descripcion: "x", numero: 1, sesion: "s" })).rejects.toThrow("Tu sesión venció");

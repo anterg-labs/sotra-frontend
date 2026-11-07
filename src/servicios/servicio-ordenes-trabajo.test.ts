@@ -203,7 +203,7 @@ describe("servicio-ordenes-trabajo", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => {
-        return new Response(JSON.stringify({ error: { estado: 422, codigo: "SIN_CONTEXTO_TECNICO" } }), { status: 200 });
+        return new Response("data: " + JSON.stringify({ error: { estado: 422, codigo: "SIN_CONTEXTO_TECNICO" } }) + "\n\n", { status: 200 });
       }),
     );
 
@@ -216,7 +216,7 @@ describe("servicio-ordenes-trabajo", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => {
-        return new Response(JSON.stringify({ sugerencia: "Texto de la documentación", modo: "ia" }), { status: 200 });
+        return new Response("data: " + JSON.stringify({ sugerencia: "Texto de la documentación", modo: "ia" }) + "\n\n", { status: 200 });
       }),
     );
 
@@ -229,7 +229,7 @@ describe("servicio-ordenes-trabajo", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => {
-        return new Response(JSON.stringify({ sugerencia: "Texto del manual", modo: "sin_ia" }), { status: 200 });
+        return new Response("data: " + JSON.stringify({ sugerencia: "Texto del manual", modo: "sin_ia" }) + "\n\n", { status: 200 });
       }),
     );
 
@@ -242,7 +242,7 @@ describe("servicio-ordenes-trabajo", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => {
-        return new Response(JSON.stringify({ sugerencia: "Texto del manual", modo: "descartada" }), { status: 200 });
+        return new Response("data: " + JSON.stringify({ sugerencia: "Texto del manual", modo: "descartada" }) + "\n\n", { status: 200 });
       }),
     );
 

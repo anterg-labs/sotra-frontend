@@ -24,6 +24,12 @@ function dibujar(estaOcupado = false, cierreSoloConBotones = false) {
 }
 
 describe("Modal", () => {
+  it("al abrirse enfoca el primer campo marcándolo como foco automático", () => {
+    dibujar();
+    expect(screen.getByLabelText("Nombre")).toHaveFocus();
+    expect(screen.getByLabelText("Nombre")).toHaveAttribute("data-foco-inicial");
+  });
+
   it("un formulario conserva sus datos al pulsar fuera o Escape; la cruz permite salir", () => {
     const alCerrar = dibujar(false, true);
     const dialogo = screen.getByRole("dialog", { name: "Nuevo" });

@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import type { OpcionCombobox } from "./combobox";
+import { quitarFocoInicial } from "@/componentes/foco-inicial";
 
 type PropiedadesComboboxMultiple = {
   id: string;
@@ -117,9 +118,10 @@ export function ComboboxMultiple(props: PropiedadesComboboxMultiple) {
           setIndiceActivo(0);
           setEstaAbierto(true);
         }}
-        onFocus={() => {
+        onClick={() => setEstaAbierto(true)}
+        onFocus={(evento) => {
           setOpcionesRemotas(null);
-          setEstaAbierto(true);
+          if (!quitarFocoInicial(evento.currentTarget)) setEstaAbierto(true);
         }}
         onKeyDown={manejarTeclado}
         placeholder={props.textoVacio ?? "Buscar y seleccionar"}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { quitarFocoInicial } from "@/componentes/foco-inicial";
 
 export type OpcionCombobox = { valor: string; etiqueta: string };
 
@@ -122,11 +123,12 @@ export function Combobox(props: PropiedadesCombobox) {
             setIndiceActivo(0);
             setEstaAbierto(true);
           }}
-          onFocus={() => {
+          onClick={() => setEstaAbierto(true)}
+          onFocus={(evento) => {
             setConsulta("");
             setRespuestaRemota(null);
-            setEstaAbierto(true);
             setIndiceActivo(0);
+            if (!quitarFocoInicial(evento.currentTarget)) setEstaAbierto(true);
           }}
           onKeyDown={manejarTeclado}
           placeholder={props.deshabilitado ? "Seleccioná primero un cliente" : props.textoVacio ?? "Buscar o seleccionar"}

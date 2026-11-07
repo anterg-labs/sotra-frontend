@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { DialogoDescartarCambios } from "@/componentes/dialogo-descartar-cambios";
+import { ATRIBUTO_FOCO_INICIAL } from "@/componentes/foco-inicial";
 
 type PropiedadesModal = {
   titulo: string;
@@ -54,6 +55,8 @@ export function Modal(props: PropiedadesModal) {
       const campo = primerCampo();
       const actual = document.activeElement;
       if (!campo || (actual && cuerpo.contains(actual) && actual !== cuerpo)) return false;
+      // Un selector que abre su lista al recibir el foco no la despliega por este foco automático.
+      campo.setAttribute(ATRIBUTO_FOCO_INICIAL, "");
       campo.focus();
       return true;
     };

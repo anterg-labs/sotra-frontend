@@ -2,6 +2,7 @@
 
 ## Version 1.0.106 (2026-11-06)
 
+- Órdenes: el registro de evidencias solo aparece cuando la orden ya se inició. En una orden pendiente, la sección de evidencias muestra "Las evidencias se registran una vez iniciada la orden." y no ofrece el formulario. Usa el campo `admiteEvidencias` del detalle de la orden (backend 1.0.130 o posterior).
 - Órdenes: mientras se genera una sugerencia, el formulario muestra en lenguaje simple qué etapa está en curso y cuáles terminaron. Usa la ruta nueva `POST /api/v1/ordenes-trabajo/sugerencia/etapas` de la API (backend 1.0.119 o posterior).
 
 ## Version 1.0.105 (2026-10-30)

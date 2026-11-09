@@ -93,8 +93,9 @@ vi.mock("@/servicios/servidor/repuestos", () => ({
 }));
 vi.mock("@/servicios/servidor/usuarios", () => ({ obtenerUsuarioServidor: s.obtenerUsuarioServidor }));
 vi.mock("@/componentes/evidencias-orden-trabajo", () => ({
-  EvidenciasOrdenTrabajo: (p: { ordenTrabajoId: number; permiteRegistrar: boolean }) => (
-    <div data-registrar={String(p.permiteRegistrar)} data-testid="evidencias">{p.ordenTrabajoId}</div>
+  AVISO_ORDEN_SIN_INICIAR: "Las evidencias se registran una vez iniciada la orden.",
+  EvidenciasOrdenTrabajo: (p: { ordenTrabajoId: number; permiteRegistrar: boolean; avisoSinRegistro?: string }) => (
+    <div data-aviso={p.avisoSinRegistro ?? ""} data-registrar={String(p.permiteRegistrar)} data-testid="evidencias">{p.ordenTrabajoId}</div>
   ),
 }));
 vi.mock("@/componentes/formulario-orden-trabajo", () => ({
@@ -132,7 +133,7 @@ const orden = (id: number, extra: Record<string, unknown> = {}) => ({
   tecnicoId: null, nombreTecnico: null,
   tipo: "correctivo", prioridad: "alta", descripcion: "Cambiar filtro", observaciones: "", fechaPrevistaEjecucion: "2026-10-20",
   estado: "pendiente", creadoEn: "2026-10-01T10:00:00Z", fechaInicio: null, fechaCierre: null, sugerencias: [], repuestos: [],
-  transiciones: [transicion("en_progreso"), transicion("pausado", { exigeMotivo: true })],
+  transiciones: [transicion("en_progreso"), transicion("pausado", { exigeMotivo: true })], admiteEvidencias: true,
   historialEstados: [
     { estado: "pendiente", estadoAnterior: null, fechaHora: "2026-10-01T10:00:00Z", observacion: "Alta", usuarioId: null, nombreUsuario: null },
     { estado: "en_progreso", estadoAnterior: "pendiente", fechaHora: "2026-10-02T10:00:00Z", observacion: "Arranca el trabajo", usuarioId: 4, nombreUsuario: "Ana Pérez" },
@@ -525,13 +526,21 @@ describe("detalle de orden de trabajo", () => {
   });
 
   it("una orden cerrada es solo de consulta: sin modificar, sin técnico ni cambios de estado, sin registrar evidencias", async () => {
-    s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11, { estado: "cerrado", transiciones: [] }));
+    s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11, { estado: "cerrado", transiciones: [], admiteEvidencias: false }));
     render(await DetalleOrden(parametros("11")));
     expect(screen.queryByRole("button", { name: "Guardar repuestos" })).not.toBeInTheDocument();
     expect(screen.getByText("La orden está cerrada o eliminada y solo queda disponible para consulta.")).toBeInTheDocument();
     expect(screen.getByText("No hay cambios de estado disponibles para esta orden.")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Modificar" })).not.toBeInTheDocument();
     expect(screen.getByTestId("evidencias")).toHaveAttribute("data-registrar", "false");
+    expect(screen.getByTestId("evidencias")).toHaveAttribute("data-aviso", "");
+  });
+
+  it("una orden pendiente no deja registrar evidencias y avisa que primero hay que iniciarla", async () => {
+    s.obtenerOrdenTrabajoServidor.mockResolvedValue(orden(11, { estado: "pendiente", admiteEvidencias: false }));
+    render(await DetalleOrden(parametros("11")));
+    expect(screen.getByTestId("evidencias")).toHaveAttribute("data-registrar", "false");
+    expect(screen.getByTestId("evidencias")).toHaveAttribute("data-aviso", "Las evidencias se registran una vez iniciada la orden.");
   });
 
   it("asigna un técnico y muestra la confirmación", async () => {

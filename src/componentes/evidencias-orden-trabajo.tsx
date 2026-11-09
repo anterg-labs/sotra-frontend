@@ -12,9 +12,14 @@ import {
 import type { Evidencia } from "@/tipos/evidencia";
 import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
 
+/** Se muestra cuando la orden está abierta pero todavía no se inició: la API no admite evidencias hasta entonces. */
+export const AVISO_ORDEN_SIN_INICIAR = "Las evidencias se registran una vez iniciada la orden.";
+
 type PropiedadesEvidenciasOrdenTrabajo = {
   ordenTrabajoId: number;
   permiteRegistrar: boolean;
+  /** Texto que explica por qué no se pueden registrar evidencias todavía (por ejemplo, la orden no se inició). */
+  avisoSinRegistro?: string;
 };
 
 export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo) {
@@ -280,6 +285,9 @@ export function EvidenciasOrdenTrabajo(props: PropiedadesEvidenciasOrdenTrabajo)
         <h2>Evidencias</h2>
         {botonRegistrar}
       </div>
+      {!props.permiteRegistrar && props.avisoSinRegistro ? (
+        <p className="mb-4 text-sm texto-tenue">{props.avisoSinRegistro}</p>
+      ) : null}
       {avisoExito}
       {mensajeError}
       {formulario}

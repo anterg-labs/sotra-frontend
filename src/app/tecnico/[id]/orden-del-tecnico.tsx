@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { EvidenciasOrdenTrabajo } from "@/componentes/evidencias-orden-trabajo";
+import { AVISO_ORDEN_SIN_INICIAR, EvidenciasOrdenTrabajo } from "@/componentes/evidencias-orden-trabajo";
 import { ModalConfirmacion } from "@/componentes/modal-confirmacion";
 import {
   cambiarEstadoOrdenTrabajo,
@@ -52,7 +52,7 @@ export function OrdenDelTecnico(props: { ordenInicial: OrdenTrabajo }) {
 
   // Qué puede hacer el técnico lo dicta la base (`transicion_estado_ot`); un estado sin salidas es final.
   const acciones = orden.transiciones.filter((transicion) => transicion.puedeTecnico);
-  const puedeRegistrarEvidencias = orden.transiciones.length > 0;
+  const puedeRegistrarEvidencias = orden.admiteEvidencias;
   const nombreDeLaAccion = (transicion: TransicionOrden) => transicion.accion ?? etiquetaEstado(transicion.estado);
 
   return (
@@ -98,7 +98,11 @@ export function OrdenDelTecnico(props: { ordenInicial: OrdenTrabajo }) {
       ) : null}
 
       <section aria-label="Evidencias" className="tecnico-tarjeta">
-        <EvidenciasOrdenTrabajo ordenTrabajoId={orden.id} permiteRegistrar={puedeRegistrarEvidencias} />
+        <EvidenciasOrdenTrabajo
+          avisoSinRegistro={orden.transiciones.length > 0 ? AVISO_ORDEN_SIN_INICIAR : undefined}
+          ordenTrabajoId={orden.id}
+          permiteRegistrar={puedeRegistrarEvidencias}
+        />
       </section>
 
       <section aria-labelledby="titulo-historial" className="tecnico-tarjeta">

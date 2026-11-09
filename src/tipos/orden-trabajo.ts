@@ -138,6 +138,8 @@ export type OrdenTrabajo = {
   sugerencias: string[];
   repuestos: RepuestoDeOrden[];
   transiciones: TransicionOrden[];
+  /** Si se pueden registrar evidencias: la orden ya se inició y todavía no se cerró ni se eliminó (lo decide la API). */
+  admiteEvidencias: boolean;
   historialEstados: HistorialEstadoOrdenTrabajo[];
   historialTecnicos: HistorialTecnicoOrdenTrabajo[];
   historialRepuestos: HistorialRepuestoOrdenTrabajo[];

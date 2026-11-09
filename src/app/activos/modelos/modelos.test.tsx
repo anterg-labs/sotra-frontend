@@ -94,7 +94,7 @@ describe("barra de filtros de modelos (en vivo)", () => {
     expect(replace).not.toHaveBeenCalled();
     await esperarRetardoDeBusqueda();
     expect(replace).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenCalledWith("/activos/modelos?buscar=cat");
+    expect(replace).toHaveBeenCalledWith("/activos/modelos?buscar=cat", { scroll: false });
   });
 
   it("aplica texto, tipo (combobox) y estado en la URL sin botón y los limpia", async () => {
@@ -105,9 +105,9 @@ describe("barra de filtros de modelos (en vivo)", () => {
     fireEvent.click(await screen.findByRole("option", { name: "Tipo 3" }));
     fireEvent.change(screen.getByLabelText("Estado del modelo"), { target: { value: "activo" } });
     expect(screen.queryByRole("button", { name: "Filtrar modelos" })).not.toBeInTheDocument();
-    expect(replace).toHaveBeenLastCalledWith("/activos/modelos?buscar=cat&tipoMaquinaId=3&estado=activo");
+    expect(replace).toHaveBeenLastCalledWith("/activos/modelos?buscar=cat&tipoMaquinaId=3&estado=activo", { scroll: false });
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
-    expect(replace).toHaveBeenLastCalledWith("/activos/modelos");
+    expect(replace).toHaveBeenLastCalledWith("/activos/modelos", { scroll: false });
   });
 
   it("muestra el tipo elegido en la URL aunque no esté en la primera página", () => {

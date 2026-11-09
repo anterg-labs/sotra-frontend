@@ -31,6 +31,11 @@ type PropiedadesBarra = {
   tecnicos: Usuario[];
   /** Sin permiso para listar usuarios (técnico, pañolero) no se muestra el filtro por técnico. */
   puedeFiltrarPorTecnico?: boolean;
+  /**
+   * Id del usuario en sesión cuando además de otro rol es técnico y tiene órdenes asignadas: muestra «Mis tareas»,
+   * que filtra el listado por ese técnico. `null` o ausente, el botón no aparece.
+   */
+  idTecnicoMisTareas?: string | null;
 };
 
 /**
@@ -55,6 +60,10 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
 
   const fasesDelCatalogo = [...new Set(estados.map((estado) => estado.fase))];
   const activosDelCliente = props.activos.filter((activo) => valores.clienteId === "" || String(activo.clienteId) === valores.clienteId);
+  const idMisTareas = props.idTecnicoMisTareas ?? null;
+  const misTareasActivo = idMisTareas !== null && valores.tecnicoId === idMisTareas;
+  // «Mis tareas» tiene su propio botón: no cuenta como filtro avanzado (no abre el panel ni marca el punto).
+  const hayFiltros = hayFiltrosAplicados(misTareasActivo ? { ...valores, tecnicoId: "" } : valores);
 
   return (
     <form
@@ -78,7 +87,21 @@ export function BarraFiltrosOrdenes(props: PropiedadesBarra) {
         />
       </div>
 
-      <FiltrosAvanzados alLimpiar={() => limpiar({ ...VACIOS, vista: valores.vista, mes: valores.mes, meses: valores.meses, eliminadas: valores.eliminadas })} hayFiltros={hayFiltrosAplicados(valores)}>
+      <FiltrosAvanzados
+        accionesExtra={idMisTareas !== null ? (
+          <button
+            aria-pressed={misTareasActivo}
+            className="boton-mis-tareas"
+            onClick={() => cambiar({ tecnicoId: misTareasActivo ? "" : idMisTareas })}
+            title={misTareasActivo ? "Ver todas las órdenes" : "Ver solo las órdenes asignadas a mí"}
+            type="button"
+          >
+            Mis tareas
+          </button>
+        ) : null}
+        alLimpiar={() => limpiar({ ...VACIOS, vista: valores.vista, mes: valores.mes, meses: valores.meses, eliminadas: valores.eliminadas })}
+        hayFiltros={hayFiltros}
+      >
         <Combobox
           alCambiar={(clienteId) => cambiar({ clienteId, activoId: "" })}
           buscarOpciones={async (consulta) => {

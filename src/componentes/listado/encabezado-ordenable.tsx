@@ -37,7 +37,7 @@ export function EncabezadoOrdenable(props: PropiedadesEncabezado) {
         className="encabezado-ordenable"
         aria-disabled={estaPendiente || undefined}
         onClick={() => {
-          if (!estaPendiente) navegacion?.navegar(urlSiguiente ?? construirUrl?.(siguiente) ?? "");
+          if (!estaPendiente) navegacion?.navegar(urlSiguiente ?? construirUrl?.(siguiente) ?? "", { conservarScroll: true });
         }}
         type="button"
       >

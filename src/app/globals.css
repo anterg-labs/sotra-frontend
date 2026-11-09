@@ -1057,6 +1057,37 @@ label:has(input:disabled) {
   color: var(--texto);
 }
 
+/* «Mis tareas»: interruptor junto a «Filtros avanzados» para quien además de su rol es técnico. */
+.boton-mis-tareas {
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 14px;
+  background: var(--superficie);
+  border: 1px solid var(--borde-fuerte);
+  border-radius: var(--radio-m);
+  color: var(--texto);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.boton-mis-tareas:hover {
+  background: var(--superficie-suave);
+}
+
+.boton-mis-tareas:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.boton-mis-tareas[aria-pressed="true"] {
+  background: var(--acento-suave);
+  border-color: var(--acento);
+  color: var(--acento);
+}
+
 /* Punto discreto: avisa que hay un filtro avanzado distinto del valor por defecto. */
 .boton-filtros-avanzados[data-activo="true"] {
   position: relative;

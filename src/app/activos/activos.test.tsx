@@ -108,9 +108,9 @@ describe("barra de filtros de activos (en vivo)", () => {
     fireEvent.click(await screen.findByRole("option", { name: "CAT 320" }));
     fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "activo" } });
     expect(screen.queryByRole("button", { name: "Aplicar filtros" })).not.toBeInTheDocument();
-    expect(replace).toHaveBeenLastCalledWith("/activos?buscar=SN-1&clienteId=1&modeloMaquinaId=2&estado=activo");
+    expect(replace).toHaveBeenLastCalledWith("/activos?buscar=SN-1&clienteId=1&modeloMaquinaId=2&estado=activo", { scroll: false });
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
-    expect(replace).toHaveBeenLastCalledWith("/activos");
+    expect(replace).toHaveBeenLastCalledWith("/activos", { scroll: false });
     expect(push).not.toHaveBeenCalled();
   });
 
@@ -123,7 +123,7 @@ describe("barra de filtros de activos (en vivo)", () => {
     expect(replace).not.toHaveBeenCalled();
     await esperarRetardoDeBusqueda();
     expect(replace).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenCalledWith("/activos?buscar=SN-9");
+    expect(replace).toHaveBeenCalledWith("/activos?buscar=SN-9", { scroll: false });
   });
 });
 

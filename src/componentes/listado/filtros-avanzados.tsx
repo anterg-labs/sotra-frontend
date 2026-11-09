@@ -7,6 +7,8 @@ type PropiedadesFiltrosAvanzados = {
   /** Hay algún filtro aplicado además de la búsqueda: el panel arranca abierto y el botón lo señala con un punto. */
   hayFiltros: boolean;
   alLimpiar: () => void;
+  /** Botones que van a la derecha del de «Filtros avanzados» (por ejemplo, «Mis tareas»). */
+  accionesExtra?: React.ReactNode;
   children: React.ReactNode;
 };
 
@@ -44,6 +46,7 @@ export function FiltrosAvanzados(props: PropiedadesFiltrosAvanzados) {
           <IconoFiltrosAvanzados />
           <span className="sr-only">Filtros avanzados</span>
         </button>
+        {props.accionesExtra}
       </div>
       {estaAbierto ? (
         <fieldset className="filtros-avanzados" id={id}>

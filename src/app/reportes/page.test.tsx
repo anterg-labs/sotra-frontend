@@ -199,11 +199,10 @@ describe("tablero de reportes (isla)", () => {
     fireEvent.click(screen.getByRole("button", { name: "1 de mayo de 2026" }));
     expect(screen.queryByRole("button", { name: "Aplicar filtros" })).not.toBeInTheDocument();
     expect(replace).toHaveBeenLastCalledWith(
-      "/reportes?fechaDesde=2026-05-01&fechaHasta=2026-05-01&clienteId=1&estado=cerrado&tipo=preventivo",
-    );
+      "/reportes?fechaDesde=2026-05-01&fechaHasta=2026-05-01&clienteId=1&estado=cerrado&tipo=preventivo", { scroll: false });
 
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
-    expect(replace).toHaveBeenLastCalledWith("/reportes");
+    expect(replace).toHaveBeenLastCalledWith("/reportes", { scroll: false });
     expect(push).not.toHaveBeenCalled();
     expect(screen.getByLabelText("Estado")).toHaveValue("");
   });

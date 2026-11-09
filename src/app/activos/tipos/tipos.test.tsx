@@ -86,7 +86,7 @@ describe("barra de filtros de tipos (en vivo)", () => {
     expect(replace).not.toHaveBeenCalled();
     await esperarRetardoDeBusqueda();
     expect(replace).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenCalledWith("/activos/tipos?buscar=gr");
+    expect(replace).toHaveBeenCalledWith("/activos/tipos?buscar=gr", { scroll: false });
   });
 
   it("aplica texto y estado en la URL sin botón y los limpia", () => {
@@ -95,9 +95,9 @@ describe("barra de filtros de tipos (en vivo)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
     fireEvent.change(screen.getByLabelText("Estado del tipo"), { target: { value: "inactivo" } });
     expect(screen.queryByRole("button", { name: "Filtrar tipos" })).not.toBeInTheDocument();
-    expect(replace).toHaveBeenLastCalledWith("/activos/tipos?buscar=gr&estado=inactivo");
+    expect(replace).toHaveBeenLastCalledWith("/activos/tipos?buscar=gr&estado=inactivo", { scroll: false });
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
-    expect(replace).toHaveBeenLastCalledWith("/activos/tipos");
+    expect(replace).toHaveBeenLastCalledWith("/activos/tipos", { scroll: false });
     expect(screen.getByLabelText("Buscar tipo")).toHaveValue("");
   });
 });

@@ -141,7 +141,7 @@ describe("barra de filtros de documentos (en vivo)", () => {
     expect(replace).not.toHaveBeenCalled();
     await esperarRetardoDeBusqueda();
     expect(replace).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenCalledWith("/documentacion-tecnica?buscar=manual");
+    expect(replace).toHaveBeenCalledWith("/documentacion-tecnica?buscar=manual", { scroll: false });
   });
 
   it("filtra por texto y activo (combobox) sin botón y limpia", async () => {
@@ -151,9 +151,9 @@ describe("barra de filtros de documentos (en vivo)", () => {
     fireEvent.focus(screen.getByRole("combobox", { name: "Activo asociado" }));
     expect(screen.getByRole("option", { name: "SN-3" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("option", { name: "Retro 2" }));
-    expect(replace).toHaveBeenLastCalledWith("/documentacion-tecnica?buscar=manual&activoId=2");
+    expect(replace).toHaveBeenLastCalledWith("/documentacion-tecnica?buscar=manual&activoId=2", { scroll: false });
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
-    expect(replace).toHaveBeenLastCalledWith("/documentacion-tecnica");
+    expect(replace).toHaveBeenLastCalledWith("/documentacion-tecnica", { scroll: false });
   });
 });
 

@@ -60,7 +60,7 @@ describe("filtros de la URL", () => {
     expect(within(filas[1]).getByRole("cell", { name: "0" })).toBeInTheDocument();
     expect(within(filas[2]).getByRole("link", { name: /^Ver las 4 órdenes activas/ })).toHaveAttribute("href", expect.stringMatching(/^\/ordenes-trabajo\?(clienteId|tecnicoId)=\d+&soloActivas=true$/));
     fireEvent.click(screen.getByRole("button", { name: /Órdenes de trabajo/ }));
-    expect(push).toHaveBeenLastCalledWith(expect.stringContaining("ordenarPor=cantidadOrdenesAsociadas"));
+    expect(push).toHaveBeenLastCalledWith(expect.stringContaining("ordenarPor=cantidadOrdenesAsociadas"), { scroll: false });
     expect(leerFiltrosClientes({ ordenarPor: "cantidadOrdenesAsociadas" }).ordenarPor).toBe("cantidadOrdenesAsociadas");
   });
   it("lee buscar, estado y página con valores seguros por defecto", () => {
@@ -142,7 +142,7 @@ describe("barra de filtros (en vivo)", () => {
     expect(replace).not.toHaveBeenCalled();
     await esperarRetardoDeBusqueda();
     expect(replace).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenCalledWith("/clientes?buscar=acme");
+    expect(replace).toHaveBeenCalledWith("/clientes?buscar=acme", { scroll: false });
     expect(push).not.toHaveBeenCalled();
   });
 
@@ -152,7 +152,7 @@ describe("barra de filtros (en vivo)", () => {
     abrirFiltrosAvanzados();
     fireEvent.change(screen.getByLabelText("Mostrar"), { target: { value: "inactivo" } });
     expect(replace).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenLastCalledWith("/clientes?buscar=acme&estado=inactivo");
+    expect(replace).toHaveBeenLastCalledWith("/clientes?buscar=acme&estado=inactivo", { scroll: false });
   });
 
   it("el interruptor de activos asociados se aplica al instante y se lee de la URL", () => {
@@ -162,9 +162,9 @@ describe("barra de filtros (en vivo)", () => {
     render(conNavegacion(<BarraFiltrosClientes filtros={filtrosVacios} />));
     abrirFiltrosAvanzados();
     fireEvent.click(screen.getByRole("switch", { name: "Solo con activos asociados" }));
-    expect(replace).toHaveBeenLastCalledWith("/clientes?conActivos=true");
+    expect(replace).toHaveBeenLastCalledWith("/clientes?conActivos=true", { scroll: false });
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
-    expect(replace).toHaveBeenLastCalledWith("/clientes");
+    expect(replace).toHaveBeenLastCalledWith("/clientes", { scroll: false });
   });
 
   it("limpia los campos y vuelve al listado sin filtros", () => {
@@ -172,7 +172,7 @@ describe("barra de filtros (en vivo)", () => {
     expect(screen.getByLabelText("Buscar")).toHaveValue("acme");
     abrirFiltrosAvanzados();
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
-    expect(replace).toHaveBeenLastCalledWith("/clientes");
+    expect(replace).toHaveBeenLastCalledWith("/clientes", { scroll: false });
     expect(screen.getByLabelText("Buscar")).toHaveValue("");
     expect(screen.getByLabelText("Mostrar")).toHaveValue("activo");
   });

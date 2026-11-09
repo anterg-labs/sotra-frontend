@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { EvidenciasOrdenTrabajo } from "@/componentes/evidencias-orden-trabajo";
+import { AVISO_ORDEN_SIN_INICIAR, EvidenciasOrdenTrabajo } from "@/componentes/evidencias-orden-trabajo";
 import { etiquetaDeLectura } from "@/componentes/campos-datos-orden";
 import { LineaDeTiempoOrden, RecorridoDeLaOrden } from "@/componentes/linea-de-tiempo-orden";
 import { useDatos } from "@/componentes/use-datos";
@@ -413,7 +413,11 @@ export function DetalleOrdenTrabajo(props: PropiedadesDetalleOrden) {
         repuestosIniciales={props.repuestosDeLaOrden ?? []}
       />
 
-      <EvidenciasOrdenTrabajo ordenTrabajoId={orden.id} permiteRegistrar={!ordenEstaTerminada && puedeRegistrarAvance} />
+      <EvidenciasOrdenTrabajo
+        avisoSinRegistro={puedeRegistrarAvance && !ordenEstaTerminada ? AVISO_ORDEN_SIN_INICIAR : undefined}
+        ordenTrabajoId={orden.id}
+        permiteRegistrar={orden.admiteEvidencias && puedeRegistrarAvance}
+      />
       </div>
 
       <div className="grid gap-6">

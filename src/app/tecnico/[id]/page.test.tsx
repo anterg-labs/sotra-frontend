@@ -13,7 +13,10 @@ function render(ui: ReactElement) {
 const obtenerOrdenTrabajoServidor = vi.hoisted(() => vi.fn());
 const cambiarEstadoOrdenTrabajo = vi.hoisted(() => vi.fn());
 
-vi.mock("@/componentes/evidencias-orden-trabajo", () => ({ EvidenciasOrdenTrabajo: () => <p>Evidencias de la orden</p> }));
+vi.mock("@/componentes/evidencias-orden-trabajo", () => ({
+  AVISO_ORDEN_SIN_INICIAR: "Las evidencias se registran una vez iniciada la orden.",
+  EvidenciasOrdenTrabajo: () => <p>Evidencias de la orden</p>,
+}));
 vi.mock("@/servicios/servidor/ordenes-trabajo", () => ({ obtenerOrdenTrabajoServidor }));
 vi.mock("@/servicios/servicio-ordenes-trabajo", async (importarOriginal) => ({
   ...await importarOriginal<typeof import("@/servicios/servicio-ordenes-trabajo")>(),
@@ -26,6 +29,7 @@ function orden(estado: string, transiciones: TransicionOrden[] = transicionesDeP
     nombreTecnico: "Roberto Pérez", tipo: "correctivo", prioridad: "alta", descripcion: "Cambiar el filtro",
     observaciones: "", fechaPrevistaEjecucion: "2026-12-02", estado, creadoEn: "2026-10-08T12:00:00Z",
     fechaInicio: null, fechaCierre: null, sugerencias: [], repuestos: [], transiciones,
+    admiteEvidencias: estado !== "pendiente" && transiciones.length > 0,
     historialEstados: [{ estado: "pendiente", estadoAnterior: null, fechaHora: "2026-10-08T12:00:00Z", observacion: null, usuarioId: null, nombreUsuario: null }],
     historialTecnicos: [],
   };

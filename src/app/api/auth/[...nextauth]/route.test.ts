@@ -41,3 +41,52 @@ describe("origen público del callback de sesión", () => {
     expect(registrarFalloSesion).toHaveBeenCalledWith("AUTH_CALLBACK_ERROR", 302);
   });
 });
+
+describe("reintento automático del login", () => {
+  const errorDeCallback = () => new Response(null, { status: 302, headers: {
+    location: "https://sotra.test/login/error?error=Configuration",
+    "set-cookie": "__Secure-authjs.state=; Path=/; Max-Age=0",
+  } });
+
+  function callback(cookies = "") {
+    return GET(new NextRequest("https://sotra.test/api/auth/callback/keycloak?code=viejo&state=viejo", {
+      headers: cookies ? { cookie: cookies } : {},
+    }));
+  }
+
+  it("la primera falla vuelve al login con la página pedida y marca el reintento", async () => {
+    manejadores.GET.mockResolvedValue(errorDeCallback());
+    const respuesta = await callback("__Secure-authjs.callback-url=https%3A%2F%2Fsotra.test%2Factivos%3Fpagina%3D2");
+    expect(respuesta.headers.get("location")).toBe("https://sotra.test/login?destino=%2Factivos%3Fpagina%3D2");
+    const cookies = respuesta.headers.getSetCookie();
+    expect(cookies).toContain("__Secure-authjs.state=; Path=/; Max-Age=0");
+    expect(cookies.some((c) => c.startsWith("sotra-reintento-login=1;") && c.includes("Path=/api/auth"))).toBe(true);
+  });
+
+  it("sin página pedida, o con una externa, vuelve al inicio", async () => {
+    manejadores.GET.mockResolvedValue(errorDeCallback());
+    const respuesta = await callback("authjs.callback-url=https%3A%2F%2Fotro.test%2F%2Fmalo");
+    expect(respuesta.headers.get("location")).toBe("https://sotra.test/login?destino=%2F");
+  });
+
+  it("si ya se reintentó, muestra la pantalla de error y borra la marca", async () => {
+    manejadores.GET.mockResolvedValue(errorDeCallback());
+    const respuesta = await callback("sotra-reintento-login=1");
+    expect(respuesta.headers.get("location")).toBe("https://sotra.test/login/error?error=Configuration");
+    expect(respuesta.headers.getSetCookie().some((c) => c.startsWith("sotra-reintento-login=;") && c.includes("Max-Age=0"))).toBe(true);
+  });
+
+  it("otros errores no se reintentan", async () => {
+    manejadores.GET.mockResolvedValue(new Response(null, { status: 302,
+      headers: { location: "https://sotra.test/login/error?error=AccessDenied" } }));
+    const respuesta = await callback();
+    expect(respuesta.headers.get("location")).toBe("https://sotra.test/login/error?error=AccessDenied");
+  });
+
+  it("un login que termina bien borra la marca", async () => {
+    manejadores.GET.mockResolvedValue(new Response(null, { status: 302, headers: { location: "https://sotra.test/" } }));
+    const respuesta = await callback("sotra-reintento-login=1");
+    expect(respuesta.headers.get("location")).toBe("https://sotra.test/");
+    expect(respuesta.headers.getSetCookie().some((c) => c.startsWith("sotra-reintento-login=;"))).toBe(true);
+  });
+});

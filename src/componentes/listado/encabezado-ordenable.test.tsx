@@ -36,7 +36,7 @@ describe("título de columna ordenable", () => {
     nombre.focus();
     fireEvent.click(nombre);
 
-    expect(push).toHaveBeenCalledWith("/x?ordenarPor=nombre&direccionOrden=asc");
+    expect(push).toHaveBeenCalledWith("/x?ordenarPor=nombre&direccionOrden=asc", { scroll: false });
     expect(await screen.findByRole("columnheader", { name: /Nombre/ })).toHaveAttribute("aria-sort", "ascending");
     expect(screen.getByRole("button", { name: "Nombre: ordenar de forma descendente" })).toHaveFocus();
     expect(screen.getByRole("button", { name: /Estado/ })).not.toBeDisabled();

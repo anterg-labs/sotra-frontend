@@ -72,7 +72,7 @@ describe("filtros en vivo", () => {
     expect(replace).not.toHaveBeenCalled();
     await esperarRetardoDeBusqueda();
     expect(replace).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenCalledWith("/lista?buscar=acme");
+    expect(replace).toHaveBeenCalledWith("/lista?buscar=acme", { scroll: false });
     expect(push).not.toHaveBeenCalled();
   });
 
@@ -81,9 +81,9 @@ describe("filtros en vivo", () => {
     fireEvent.change(screen.getByLabelText("Buscar"), { target: { value: "acme" } });
     fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "activo" } });
     expect(replace).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenLastCalledWith("/lista?buscar=acme&estado=activo");
+    expect(replace).toHaveBeenLastCalledWith("/lista?buscar=acme&estado=activo", { scroll: false });
     fireEvent.change(screen.getByLabelText("Desde"), { target: { value: "2026-05-01" } });
-    expect(replace).toHaveBeenLastCalledWith("/lista?buscar=acme&estado=activo&desde=2026-05-01");
+    expect(replace).toHaveBeenLastCalledWith("/lista?buscar=acme&estado=activo&desde=2026-05-01", { scroll: false });
   });
 
   it("no queda un temporizador pendiente después de aplicar de inmediato", async () => {
@@ -125,13 +125,13 @@ describe("filtros en vivo", () => {
 
     fireEvent.change(screen.getByLabelText("Hasta"), { target: { value: "2026-06-20" } });
     expect(replace).toHaveBeenCalledTimes(2);
-    expect(replace).toHaveBeenLastCalledWith("/lista?desde=2026-06-10&hasta=2026-06-20");
+    expect(replace).toHaveBeenLastCalledWith("/lista?desde=2026-06-10&hasta=2026-06-20", { scroll: false });
   });
 
   it("limpiar filtros vacía los campos y navega a la lista sin filtros", () => {
     render(conProveedor(<Barra inicial={{ ...vacios, buscar: "acme", estado: "activo" }} />));
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
-    expect(replace).toHaveBeenCalledWith("/lista");
+    expect(replace).toHaveBeenCalledWith("/lista", { scroll: false });
     expect(screen.getByLabelText("Buscar")).toHaveValue("");
     expect(screen.getByLabelText("Estado")).toHaveValue("");
   });
@@ -142,7 +142,7 @@ describe("filtros en vivo", () => {
     fireEvent.change(buscar, { target: { value: "acme" } });
     const envio = fireEvent.submit(buscar.closest("form") as HTMLFormElement);
     expect(envio).toBe(false);
-    expect(replace).toHaveBeenCalledWith("/lista?buscar=acme");
+    expect(replace).toHaveBeenCalledWith("/lista?buscar=acme", { scroll: false });
   });
 
   it("al escribir conserva el mismo campo, con foco, y la tabla anterior sigue a la vista mientras carga", async () => {
@@ -185,6 +185,6 @@ describe("filtros en vivo", () => {
     await esperarRetardoDeBusqueda();
     fireEvent.change(screen.getByLabelText("Buscar"), { target: { value: "acme" } });
     await esperarRetardoDeBusqueda();
-    expect(replace).toHaveBeenLastCalledWith("/lista?buscar=acme");
+    expect(replace).toHaveBeenLastCalledWith("/lista?buscar=acme", { scroll: false });
   });
 });

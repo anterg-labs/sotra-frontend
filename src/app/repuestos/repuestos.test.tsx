@@ -115,7 +115,7 @@ describe("aviso de alerta de stock", () => {
     expect(within(aviso).getAllByRole("listitem")).toHaveLength(5);
     expect(within(aviso).getAllByRole("link", { name: "Ingresar stock" })[0]).toHaveAttribute("href", "/repuestos/1?ingresar=1");
     fireEvent.click(within(aviso).getByRole("button", { name: "Ver los 7 repuestos con alerta" }));
-    expect(push).toHaveBeenLastCalledWith("/repuestos?stock=alerta");
+    expect(push).toHaveBeenLastCalledWith("/repuestos?stock=alerta", { scroll: false });
   });
 
   it("no se muestra cuando no hay alertas", () => {
@@ -139,7 +139,7 @@ describe("barra de filtros de repuestos (en vivo)", () => {
     expect(replace).not.toHaveBeenCalled();
     await esperarRetardoDeBusqueda();
     expect(replace).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenCalledWith("/repuestos?buscar=filtro");
+    expect(replace).toHaveBeenCalledWith("/repuestos?buscar=filtro", { scroll: false });
   });
 
   it("si la URL cambia desde fuera (por ejemplo «Ver los repuestos con alerta») los chips se resincronizan", () => {
@@ -155,7 +155,7 @@ describe("barra de filtros de repuestos (en vivo)", () => {
     expect(screen.getByRole("button", { name: /Sin stock/ })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: /Con alerta/ })).toHaveTextContent("3");
     fireEvent.click(screen.getByRole("button", { name: /Stock bajo/ }));
-    expect(replace).toHaveBeenLastCalledWith("/repuestos?buscar=f&stock=bajo");
+    expect(replace).toHaveBeenLastCalledWith("/repuestos?buscar=f&stock=bajo", { scroll: false });
   });
 
   it("aplica texto, ubicación y estado conservando el chip, y limpia todo", () => {
@@ -163,9 +163,9 @@ describe("barra de filtros de repuestos (en vivo)", () => {
     fireEvent.change(screen.getByLabelText("Buscar"), { target: { value: "filtro" } });
     fireEvent.change(screen.getByLabelText("Ubicación"), { target: { value: "A1" } });
     fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "activo" } });
-    expect(replace).toHaveBeenLastCalledWith("/repuestos?buscar=filtro&estado=activo&ubicacion=A1&stock=bajo");
+    expect(replace).toHaveBeenLastCalledWith("/repuestos?buscar=filtro&estado=activo&ubicacion=A1&stock=bajo", { scroll: false });
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
-    expect(replace).toHaveBeenLastCalledWith("/repuestos");
+    expect(replace).toHaveBeenLastCalledWith("/repuestos", { scroll: false });
     expect(screen.getByLabelText("Buscar")).toHaveValue("");
   });
 });

@@ -62,7 +62,7 @@ describe("filtros de la URL de usuarios", () => {
     expect(within(filas[1]).getByRole("cell", { name: "0" })).toBeInTheDocument();
     expect(within(filas[2]).getByRole("link", { name: /^Ver las 4 órdenes activas/ })).toHaveAttribute("href", expect.stringMatching(/^\/ordenes-trabajo\?(clienteId|tecnicoId)=\d+&soloActivas=true$/));
     fireEvent.click(screen.getByRole("button", { name: /Órdenes asignadas/ }));
-    expect(push).toHaveBeenLastCalledWith(expect.stringContaining("ordenarPor=cantidadOrdenesAsignadas"));
+    expect(push).toHaveBeenLastCalledWith(expect.stringContaining("ordenarPor=cantidadOrdenesAsignadas"), { scroll: false });
     expect(leerFiltrosUsuarios({ ordenarPor: "cantidadOrdenesAsignadas" }).ordenarPor).toBe("cantidadOrdenesAsignadas");
   });
   it("lee los filtros con valores seguros y arma la URL", () => {
@@ -138,24 +138,24 @@ describe("barra de filtros de usuarios (en vivo)", () => {
     expect(replace).not.toHaveBeenCalled();
     await esperarRetardoDeBusqueda();
     expect(replace).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana");
+    expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana", { scroll: false });
 
     fireEvent.click(screen.getByRole("button", { name: "Filtros avanzados" }));
     fireEvent.change(screen.getByLabelText("Rol"), { target: { value: "2" } });
-    expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana&rolId=2");
+    expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana&rolId=2", { scroll: false });
     fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "activo" } });
-    expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana&rolId=2");
+    expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana&rolId=2", { scroll: false });
     fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "inactivo" } });
-    expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana&rolId=2&estado=inactivo");
+    expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana&rolId=2&estado=inactivo", { scroll: false });
     fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "" } });
-    expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana&rolId=2&estado=todos");
+    expect(replace).toHaveBeenLastCalledWith("/usuarios?buscar=ana&rolId=2&estado=todos", { scroll: false });
     expect(push).not.toHaveBeenCalled();
   });
 
   it("limpia los filtros", () => {
     render(conNavegacion(<BarraFiltrosUsuarios filtros={{ buscar: "ana", rolId: "2", estado: "inactivo", pagina: 1 }} roles={roles} />));
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
-    expect(replace).toHaveBeenLastCalledWith("/usuarios");
+    expect(replace).toHaveBeenLastCalledWith("/usuarios", { scroll: false });
     expect(screen.getByLabelText("Buscar")).toHaveValue("");
     expect(screen.getByLabelText("Rol")).toHaveValue("");
     expect(screen.getByLabelText("Estado")).toHaveValue("activo");

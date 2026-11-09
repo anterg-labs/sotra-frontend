@@ -281,7 +281,7 @@ describe("barra de filtros de órdenes (en vivo)", () => {
     expect(replace).not.toHaveBeenCalled();
     await esperarRetardoDeBusqueda();
     expect(replace).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenCalledWith("/ordenes-trabajo?buscar=fuga");
+    expect(replace).toHaveBeenCalledWith("/ordenes-trabajo?buscar=fuga", { scroll: false });
   });
 
   it("combina todos los filtros en la URL y los limpia", async () => {
@@ -300,10 +300,9 @@ describe("barra de filtros de órdenes (en vivo)", () => {
     fireEvent.change(screen.getByLabelText("Tipo de mantenimiento"), { target: { value: "preventivo" } });
     fireEvent.click(screen.getByRole("switch", { name: "Solo con recomendaciones de IA" }));
     expect(replace).toHaveBeenLastCalledWith(
-      "/ordenes-trabajo?buscar=fuga&clienteId=1&activoId=2&tecnicoId=7&estado=pausado&prioridad=alta&tipo=preventivo&conSugerencias=true",
-    );
+      "/ordenes-trabajo?buscar=fuga&clienteId=1&activoId=2&tecnicoId=7&estado=pausado&prioridad=alta&tipo=preventivo&conSugerencias=true", { scroll: false });
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
-    expect(replace).toHaveBeenLastCalledWith("/ordenes-trabajo");
+    expect(replace).toHaveBeenLastCalledWith("/ordenes-trabajo", { scroll: false });
     expect(screen.getByLabelText("Buscar")).toHaveValue("");
   });
 
@@ -312,7 +311,7 @@ describe("barra de filtros de órdenes (en vivo)", () => {
     expect(screen.getByRole("switch", { name: "Solo sin asignar" })).toBeChecked();
     fireEvent.change(screen.getByLabelText("Buscar"), { target: { value: "fuga" } });
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
-    expect(replace).toHaveBeenLastCalledWith("/ordenes-trabajo");
+    expect(replace).toHaveBeenLastCalledWith("/ordenes-trabajo", { scroll: false });
     expect(screen.getByRole("switch", { name: "Solo sin asignar" })).not.toBeChecked();
   });
 
@@ -337,7 +336,7 @@ describe("barra de filtros de órdenes (en vivo)", () => {
     expect(replace).not.toHaveBeenCalled();
     fireEvent.click(await screen.findByRole("option", { name: "Cliente remoto" }));
     expect(s.listarClientesPaginados).toHaveBeenCalledWith({ buscar: "Cliente remoto", estado: "", pagina: 1 });
-    expect(replace).toHaveBeenLastCalledWith("/ordenes-trabajo?clienteId=99&estado=pausado");
+    expect(replace).toHaveBeenLastCalledWith("/ordenes-trabajo?clienteId=99&estado=pausado", { scroll: false });
     expect(entrada).toHaveValue("Cliente remoto");
     expect(screen.getByRole("combobox", { name: "Activo" })).toHaveValue("");
   });

@@ -6,9 +6,12 @@ import { leerOrdenDeUrl, type OrdenListado } from "./url-listado";
 
 type ContextoNavegacion = {
   estaPendiente: boolean;
-  /** Navegación con historial (paginación). */
-  navegar: (url: string) => void;
-  /** Navegación de filtros en vivo: reemplaza la entrada del historial para no apilar una por cada cambio. */
+  /**
+   * Navegación con historial (paginación, orden de columnas). Por defecto sube al inicio de la página; con
+   * `conservarScroll` (ordenar una columna, aplicar un filtro) la página queda donde está.
+   */
+  navegar: (url: string, opciones?: { conservarScroll?: boolean }) => void;
+  /** Navegación de filtros en vivo: reemplaza la entrada del historial para no apilar una por cada cambio y no mueve el scroll. */
   reemplazar: (url: string) => void;
   /** Última URL a la que se navegó desde esta pantalla (`null` si todavía no hubo ninguna). */
   ultimaUrl: () => string | null;
@@ -46,15 +49,16 @@ export function ProveedorNavegacionListado(props: { etiquetaCarga: string; child
   const ultima = useRef<string | null>(null);
   const [urlPendiente, setUrlPendiente] = useState<string | null>(null);
 
-  const navegar = (url: string) => {
+  const navegar = (url: string, opciones?: { conservarScroll?: boolean }) => {
     ultima.current = url;
     setUrlPendiente(url);
-    iniciarTransicion(() => enrutador.push(url));
+    iniciarTransicion(() => (opciones?.conservarScroll ? enrutador.push(url, { scroll: false }) : enrutador.push(url)));
   };
+  // Next sube al inicio de la página en cada navegación: al filtrar, la lista tiene que quedar donde el usuario la estaba mirando.
   const reemplazar = (url: string) => {
     ultima.current = url;
     setUrlPendiente(url);
-    iniciarTransicion(() => enrutador.replace(url));
+    iniciarTransicion(() => enrutador.replace(url, { scroll: false }));
   };
   const ordenPendiente = estaPendiente && urlPendiente !== null ? leerOrdenDeUrl(urlPendiente) : null;
 

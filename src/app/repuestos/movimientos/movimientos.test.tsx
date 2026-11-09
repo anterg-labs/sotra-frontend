@@ -108,7 +108,7 @@ describe("barra de filtros de movimientos (en vivo)", () => {
     expect(replace).not.toHaveBeenCalled();
     await esperarRetardoDeBusqueda();
     expect(replace).toHaveBeenCalledTimes(1);
-    expect(replace).toHaveBeenCalledWith("/repuestos/movimientos?buscar=filtro");
+    expect(replace).toHaveBeenCalledWith("/repuestos/movimientos?buscar=filtro", { scroll: false });
   });
 
   it("combina todos los filtros en la URL y los limpia", async () => {
@@ -125,10 +125,9 @@ describe("barra de filtros de movimientos (en vivo)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Fecha" }));
     fireEvent.click(screen.getByRole("button", { name: "5 de octubre de 2026" }));
     expect(replace).toHaveBeenLastCalledWith(
-      "/repuestos/movimientos?buscar=filtro&repuestoId=5&tipo=ingreso&fechaDesde=2026-10-05&fechaHasta=2026-10-05&ubicacion=A1&usuarioId=3",
-    );
+      "/repuestos/movimientos?buscar=filtro&repuestoId=5&tipo=ingreso&fechaDesde=2026-10-05&fechaHasta=2026-10-05&ubicacion=A1&usuarioId=3", { scroll: false });
     fireEvent.click(screen.getByRole("button", { name: "Limpiar filtros" }));
-    expect(replace).toHaveBeenLastCalledWith("/repuestos/movimientos");
+    expect(replace).toHaveBeenLastCalledWith("/repuestos/movimientos", { scroll: false });
   });
 
   it("no navega con un rango de fechas invertido (por ejemplo desde la URL) y enfoca el selector de fecha", () => {

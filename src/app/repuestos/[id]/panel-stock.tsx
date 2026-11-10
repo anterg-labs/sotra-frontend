@@ -13,6 +13,7 @@ import type { Repuesto } from "@/tipos/repuesto";
 import { obtenerErroresIngresoStock } from "@/validaciones/movimiento-stock";
 import { registrarIngresoStockAccion } from "../acciones";
 import { AvisoEnLinea } from "@/componentes/aviso-en-linea";
+import { ModalOrdenesReservadas } from "./ordenes-reservadas";
 
 const idsCamposIngreso: Record<string, string> = {
   cantidad: "cantidadIngreso",
@@ -30,6 +31,7 @@ export function PanelStock(props: { repuesto: Repuesto; abrirIngreso: boolean })
   const [mensajeExito, setMensajeExito] = useState("");
   const [cantidad, setCantidad] = useState("");
   const [observaciones, setObservaciones] = useState("");
+  const [mostrarOrdenes, setMostrarOrdenes] = useState(false);
 
   const { errores, errorGeneral, estaEnviando, enviar, referenciaErrorGeneral } = useFormularioAccion({
     validar: (datos: IngresoStockInput) => obtenerErroresIngresoStock(datos),
@@ -144,7 +146,21 @@ export function PanelStock(props: { repuesto: Repuesto; abrirIngreso: boolean })
         </div>
         <div>
           <dt>Reservado</dt>
-          <dd>{repuesto.cantidadReservada}</dd>
+          <dd>
+            {repuesto.cantidadReservada > 0 ? (
+              <button
+                aria-label={"Reservado: " + repuesto.cantidadReservada + ". Ver las órdenes que lo tienen reservado"}
+                className="numero-enlace"
+                onClick={() => setMostrarOrdenes(true)}
+                title="Ver las órdenes que tienen este repuesto reservado"
+                type="button"
+              >
+                {repuesto.cantidadReservada}
+              </button>
+            ) : (
+              repuesto.cantidadReservada
+            )}
+          </dd>
         </div>
         <div>
           <dt>Entregado</dt>
@@ -236,6 +252,8 @@ export function PanelStock(props: { repuesto: Repuesto; abrirIngreso: boolean })
           tipo={accionStock}
         />
       ) : null}
+
+      <ModalOrdenesReservadas alCerrar={() => setMostrarOrdenes(false)} estaAbierto={mostrarOrdenes} repuestoId={repuesto.id} />
     </section>
   );
 }

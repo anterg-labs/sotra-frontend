@@ -752,6 +752,29 @@ label:has(input:disabled) {
   text-decoration: underline;
 }
 
+/* Un número que abre más detalle: mismo tamaño que el dato, subrayado para que se note que se puede tocar. */
+.numero-enlace {
+  padding: 0;
+  color: var(--acento);
+  font: inherit;
+  font-weight: 700;
+  background: none;
+  border: 0;
+  border-radius: var(--radio-s);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.numero-enlace:hover {
+  text-decoration-thickness: 2px;
+}
+
+.numero-enlace:focus-visible {
+  outline: none;
+  box-shadow: var(--anillo-foco);
+}
+
 .table-container {
   overflow-x: auto;
 }

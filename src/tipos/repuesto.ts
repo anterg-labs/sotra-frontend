@@ -63,3 +63,20 @@ export type FiltrosRepuestos = {
   direccionOrden?: "asc" | "desc" | "";
   pagina: number;
 };
+
+/** Orden que tiene unidades de un repuesto reservadas o entregadas (`GET /repuestos/{id}/ordenes-comprometidas`). */
+export type OrdenComprometida = {
+  ordenId: number;
+  /** `reservado`: la orden todavía no empezó; `entregado`: está en curso. */
+  estadoRepuesto: "reservado" | "entregado";
+  cantidad: number;
+  /** Estado actual de la orden (valor del catálogo `estado_ot`). */
+  estadoOrden: string;
+  nombreCliente: string;
+  nombreActivo: string;
+  nombreTecnico: string | null;
+  /** `yyyy-MM-dd`. */
+  fechaPrevistaEjecucion: string;
+  /** Desde cuándo están reservadas o entregadas (ISO); `null` si no quedó registrado. */
+  desde: string | null;
+};

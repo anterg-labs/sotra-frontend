@@ -1,7 +1,7 @@
 import { parametrosDeOrden } from "@/componentes/listado/url-listado";
 import { leerDatosApi, leerPagina } from "@/servicios/api/solicitudes-http";
 import type { Pagina } from "@/tipos/pagina";
-import type { AlertasStock, FiltrosRepuestos, Repuesto } from "@/tipos/repuesto";
+import type { AlertasStock, FiltrosRepuestos, OrdenComprometida, Repuesto } from "@/tipos/repuesto";
 
 export async function apiListarRepuestosPaginados(filtros: FiltrosRepuestos) {
   const parametros = new URLSearchParams();
@@ -41,4 +41,13 @@ export async function apiObtenerRepuesto(repuestoId: number) {
 export async function apiObtenerAlertasStock() {
   const alertas = await leerDatosApi("/api/v1/repuestos/alertas-stock", { cache: "no-store" }, "No se pudieron obtener las alertas de stock.");
   return alertas as AlertasStock;
+}
+
+export async function apiListarOrdenesComprometidas(repuestoId: number, estado?: OrdenComprometida["estadoRepuesto"]) {
+  const ordenes = await leerDatosApi(
+    "/api/v1/repuestos/" + repuestoId + "/ordenes-comprometidas" + (estado ? "?estado=" + estado : ""),
+    { cache: "no-store" },
+    "No se pudieron obtener las órdenes que tienen este repuesto.",
+  );
+  return ordenes as OrdenComprometida[];
 }

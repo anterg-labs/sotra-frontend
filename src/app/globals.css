@@ -2955,8 +2955,8 @@ input[type="checkbox"][role="switch"]:disabled {
   .tarjeta-listado-cabecera { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
   .tarjeta-listado-cabecera strong { min-width: 0; }
   .tarjeta-listado-cabecera .status { flex: none; }
-  .tarjeta-listado-dato { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; }
-  .tarjeta-listado-dato > span { color: var(--texto-tenue); }
+  .tarjeta-listado-dato { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; text-align: right; }
+  .tarjeta-listado-dato > span:first-child { flex: none; color: var(--texto-tenue); text-align: left; white-space: nowrap; }
   .tarjeta-listado-ver { margin-top: 4px; color: var(--acento); font-size: 13px; font-weight: 700; }
 }
 

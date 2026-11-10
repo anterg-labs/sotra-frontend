@@ -53,6 +53,26 @@ export function TablaDocumentos(props: { documentos: DocumentoTecnico[]; filtros
 
   return (
     <>
+      <ul aria-label="Documentos" className="listado-tarjetas-tecnico">
+        {documentos.map((documento) => (
+          <li key={documento.id}>
+            <Link className="tecnico-tarjeta tarjeta-listado-tecnico" href={"/documentacion-tecnica/" + documento.id}>
+              <span className="tarjeta-listado-cabecera">
+                <strong>{documento.titulo}</strong>
+                <span className={documento.vigente ? "status status-activo" : "status status-inactivo"}>
+                  {documento.vigente ? "Vigente" : "Obsoleto"}
+                </span>
+              </span>
+              <span className="tarjeta-listado-dato"><span>Tipo</span>{obtenerEtiquetaTipoDocumento(documento.tipo)}</span>
+              <span className="tarjeta-listado-dato"><span>Asociado a</span>{descripcionDeAsociacion(documento)}</span>
+              <span className="tarjeta-listado-dato"><span>Sugerencias de IA</span><span><EstadoSugerenciasIa documento={documento} /></span></span>
+              <span className="tarjeta-listado-dato"><span>Fecha de carga</span>{formatearFechaCorta(documento.creadoEn)}</span>
+              <span className="tarjeta-listado-ver">Ver detalle →</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <div className="tabla-listado-tecnico">
       <ContenedorTabla etiqueta="Listado de documentación">
         <table>
           <thead>
@@ -124,6 +144,7 @@ export function TablaDocumentos(props: { documentos: DocumentoTecnico[]; filtros
           </tbody>
         </table>
       </ContenedorTabla>
+      </div>
 
       {modales}
     </>
